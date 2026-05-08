@@ -10,6 +10,7 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
+import redis.clients.jedis.builders.CommandObjectsConfig;
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.JedisBinaryCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -56,12 +57,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   private final Cache cache;
 
   protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol) {
-    this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol);
+    this(new DefaultCommandExecutor(provider), provider, protocol, null, null);
   }
 
   @Experimental
   protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol, Cache cache) {
-    this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol, cache);
+    this(new DefaultCommandExecutor(provider), provider, protocol, null, cache);
   }
 
   /**
@@ -75,7 +76,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   protected UnifiedJedis(Connection connection) {
     this.provider = null;
     this.executor = new SimpleCommandExecutor(connection);
-    this.commandObjects = new CommandObjects(connection.getRedisProtocol());
+    this.commandObjects = createCommandObjects(connection.getRedisProtocol(), null);
 
     if (connection instanceof CacheConnection) {
       this.cache = ((CacheConnection) connection).getCache();
@@ -89,21 +90,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    */
   @Deprecated
   public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
-    this(new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider);
-  }
-
-  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider) {
-    this(executor, provider, new CommandObjects());
+    this(new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider, null,
+        null, null);
   }
 
   /**
-   * Uses a fetched connection to process protocol. Should be avoided if possible.
+   * Test-only ctor that accepts a pre-built {@link CommandObjects}. The protocol stored on the
+   * supplied object is overridden by probing the provider.
    * @deprecated
    */
   @VisibleForTesting
   @Deprecated
   protected UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
-    this(executor, provider, commandObjects, null, null);
+    this.provider = provider;
+    this.executor = executor;
+    this.commandObjects = commandObjects;
+    this.cache = null;
     if (this.provider != null) {
       try (Connection conn = this.provider.getConnection()) {
         if (conn != null) {
@@ -117,19 +119,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     }
   }
 
+  /**
+   * Builder-facing constructor. The client owns {@link CommandObjects} construction: this ctor
+   * resolves the protocol (probing the provider when {@code protocol} is null), then delegates to
+   * {@link #createCommandObjects(RedisProtocol, CommandObjectsConfig)} so subclasses can supply a
+   * specialized type (e.g. {@code ClusterCommandObjects}).
+   */
   @Experimental
-  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
-      RedisProtocol protocol) {
-    this(executor, provider, commandObjects, protocol, (Cache) null);
-  }
-
-  @Experimental
-  UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
-      RedisProtocol protocol, Cache cache) {
+  protected UnifiedJedis(CommandExecutor executor, ConnectionProvider provider,
+      RedisProtocol protocol, CommandObjectsConfig commandObjectsConfig, Cache cache) {
 
     this.provider = provider;
     this.executor = executor;
-    this.commandObjects = commandObjects;
 
     // When the protocol is left unspecified, auto-negotiation may have resolved it to either
     // RESP2 or RESP3 on the wire. Probe a connection to learn the actual value so the command
@@ -148,11 +149,18 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
       throw new IllegalArgumentException("Client-side caching is only supported with RESP3.");
     }
 
-    if (resolvedProtocol != null) {
-      this.commandObjects.setProtocol(resolvedProtocol);
-    }
-
+    this.commandObjects = createCommandObjects(resolvedProtocol, commandObjectsConfig);
     this.cache = cache;
+  }
+
+  /**
+   * Factory hook for the {@link CommandObjects} instance held by this client. Subclasses (e.g.
+   * {@code JedisCluster}) override to return their specialized subtype. Called from the
+   * constructor — must not depend on subclass instance state.
+   */
+  protected CommandObjects createCommandObjects(RedisProtocol protocol,
+      CommandObjectsConfig config) {
+    return new CommandObjects(protocol, config);
   }
 
   @Override

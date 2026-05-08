@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 
 import redis.clients.jedis.builders.ClusterClientBuilder;
+import redis.clients.jedis.builders.CommandObjectsConfig;
 import redis.clients.jedis.executors.ClusterCommandExecutor;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.params.MSetExParams;
@@ -61,10 +62,16 @@ public class RedisClusterClient extends UnifiedJedis {
   private final CommandFlagsRegistry commandFlagsRegistry;
 
   private RedisClusterClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
-      CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache,
+      RedisProtocol redisProtocol, CommandObjectsConfig commandObjectsConfig, Cache cache,
       CommandFlagsRegistry commandFlagsRegistry) {
-    super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+    super(commandExecutor, connectionProvider, redisProtocol, commandObjectsConfig, cache);
     this.commandFlagsRegistry = commandFlagsRegistry;
+  }
+
+  @Override
+  protected CommandObjects createCommandObjects(RedisProtocol protocol,
+      CommandObjectsConfig config) {
+    return new ClusterCommandObjects(protocol, config);
   }
 
   /**
@@ -137,8 +144,8 @@ public class RedisClusterClient extends UnifiedJedis {
 
     @Override
     protected RedisClusterClient createClient() {
-      return new RedisClusterClient(commandExecutor, connectionProvider, commandObjects,
-          clientConfig.getRedisProtocol(), cache, getCommandFlags());
+      return new RedisClusterClient(commandExecutor, connectionProvider,
+          clientConfig.getRedisProtocol(), commandObjectsConfig(), cache, getCommandFlags());
     }
   }
 

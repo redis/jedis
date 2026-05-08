@@ -74,7 +74,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   protected UnifiedJedis(Connection connection) {
     this.provider = null;
     this.executor = new SimpleCommandExecutor(connection);
-    this.commandObjects = newCommandObjects(connection.getRedisProtocol());
+    RedisProtocol proto = connection.getRedisProtocol();
+    this.commandObjects = newCommandObjects(proto != null ? proto : RedisProtocol.RESP2);
 
     if (connection instanceof CacheConnection) {
       this.cache = ((CacheConnection) connection).getCache();
@@ -124,7 +125,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
     // When the protocol is left unspecified, auto-negotiation may have resolved it to either
     // RESP2 or RESP3 on the wire. Probe a connection to learn the actual value so the command
-    // objects parse replies with the correct decoder.
+    // objects parse replies with the correct decoder. If the probe fails or the connection has
+    // not yet negotiated, fall back to RESP2 — matching the wire default and preserving lazy
+    // construction semantics.
     RedisProtocol resolvedProtocol = protocol;
     if (resolvedProtocol == null && provider != null) {
       try (Connection conn = provider.getConnection()) {
@@ -133,6 +136,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
         }
       } catch (JedisException ignored) {
       }
+    }
+    if (resolvedProtocol == null) {
+      resolvedProtocol = RedisProtocol.RESP2;
     }
 
     if (cache != null && resolvedProtocol != RedisProtocol.RESP3) {

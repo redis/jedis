@@ -32,7 +32,8 @@ public class Pipeline extends AbstractPipeline implements DatabasePipelineComman
   }
 
   private static CommandObjects createCommandObjects(Connection connection) {
-    return new CommandObjects(connection.getRedisProtocol());
+    RedisProtocol proto = connection.getRedisProtocol();
+    return new CommandObjects(proto != null ? proto : RedisProtocol.RESP2);
   }
 
   Pipeline(Connection connection, boolean closeConnection, CommandObjects commandObjects) {

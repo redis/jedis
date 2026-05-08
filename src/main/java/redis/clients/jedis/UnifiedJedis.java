@@ -184,6 +184,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.flushAll());
   }
 
+  public Map<String, String> configGet(String pattern) {
+    return executeCommand(commandObjects.configGet(pattern));
+  }
+
+  public Map<String, String> configGet(String... patterns) {
+    return executeCommand(commandObjects.configGet(patterns));
+  }
+
   public String configSet(String parameter, String value) {
     return executeCommand(commandObjects.configSet(parameter, value));
   }

@@ -114,5 +114,16 @@ class DefaultJedisClientConfigTest {
         () -> DefaultJedisClientConfig.builder(uri).build());
       assertThat(ex.getMessage(), containsString("Invalid Redis URI"));
     }
+
+    @Test
+    void builderFromPreservesDirectUserAndPassword() {
+      DefaultJedisClientConfig original = DefaultJedisClientConfig.builder().user("testuser")
+          .password("testpass").build();
+
+      DefaultJedisClientConfig copied = DefaultJedisClientConfig.builder().from(original).build();
+
+      assertThat(copied.getUser(), equalTo("testuser"));
+      assertThat(copied.getPassword(), equalTo("testpass"));
+    }
   }
 }

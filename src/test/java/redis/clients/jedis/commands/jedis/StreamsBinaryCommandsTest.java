@@ -43,7 +43,7 @@ import static redis.clients.jedis.util.StreamEntryBinaryListMatcher.equalsStream
  * possible. e.g., by using a common base class
  */
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 @Tag("integration")
 public class StreamsBinaryCommandsTest extends JedisCommandsTestBase {
 

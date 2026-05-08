@@ -14,6 +14,30 @@ public interface JedisClientConfig {
   }
 
   /**
+   * Whether the client should auto-negotiate the highest RESP protocol available with the server
+   * when no protocol is explicitly requested.
+   * <p>
+   * When this returns {@code true} and {@link #getRedisProtocol()} is {@code null}, the client
+   * sends {@code HELLO 3} on connect and gracefully falls back to RESP2 if the server does not
+   * support RESP3. When {@code false} and the protocol is {@code null}, the client preserves the
+   * legacy behaviour of skipping {@code HELLO} entirely and assuming RESP2 on the wire.
+   * </p>
+   * <p>
+   * When {@link #getRedisProtocol()} is non-{@code null}, this flag is ignored — the requested
+   * protocol is enforced strictly.
+   * </p>
+   * <p>
+   * The legacy {@link Jedis} class does not support RESP3 wire format, so it ignores this flag and
+   * emits a warning when callers leave it enabled.
+   * </p>
+   * @return {@code true} to auto-negotiate the protocol (default), {@code false} to preserve legacy
+   *         {@code HELLO}-less behaviour
+   */
+  default boolean isAutoNegotiateProtocol() {
+    return true;
+  }
+
+  /**
    * @return Connection timeout in milliseconds
    */
   default int getConnectionTimeoutMillis() {

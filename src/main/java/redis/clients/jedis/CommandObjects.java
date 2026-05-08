@@ -7,6 +7,7 @@ import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import org.json.JSONArray;
@@ -18,6 +19,7 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.bloom.RedisBloomProtocol.*;
+import redis.clients.jedis.builders.CommandObjectsConfig;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.json.*;
 import redis.clients.jedis.json.JsonProtocol.JsonCommand;
@@ -45,7 +47,20 @@ public class CommandObjects {
   }
 
   public CommandObjects(RedisProtocol protocol) {
+    this(protocol, null);
+  }
+
+  public CommandObjects(RedisProtocol protocol, CommandObjectsConfig config) {
     this.protocol = protocol;
+    if (config != null) {
+      setIfPresent(config.getKeyPreProcessor(), v -> this.keyPreProcessor = v);
+      setIfPresent(config.getJsonObjectMapper(), v -> this.jsonObjectMapper = v);
+      setIfPresent(config.getSearchDialect(), this.searchDialect::set);
+    }
+  }
+
+  private static <T> void setIfPresent(T value, Consumer<T> setter) {
+    if (value != null) setter.accept(value);
   }
 
   // TODO: restrict?

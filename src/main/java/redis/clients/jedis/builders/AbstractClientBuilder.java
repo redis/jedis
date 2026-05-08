@@ -37,7 +37,6 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
   protected Cache cache = null;
   protected CacheConfig cacheConfig = null;
   protected CommandExecutor commandExecutor = null;
-  protected CommandObjects commandObjects = null;
   protected ConnectionProvider connectionProvider = null;
   protected CommandKeyArgumentPreProcessor keyPreProcessor = null;
   protected JsonObjectMapper jsonObjectMapper = null;
@@ -88,11 +87,13 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
   }
 
   /**
-   * Factory method for creating CommandObjects. Subclasses may override to provide specialized
-   * CommandObjects implementations (e.g., ClusterCommandObjects).
+   * Snapshots the fluent configuration into an immutable {@link CommandObjectsConfig}. The client
+   * constructor passes this to its {@link CommandObjects} factory hook so all knobs land via the
+   * constructor rather than through post-construction setters.
    */
-  protected CommandObjects createDefaultCommandObjects() {
-    return new CommandObjects();
+  protected CommandObjectsConfig commandObjectsConfig() {
+    Integer dialect = (searchDialect != SearchProtocol.DEFAULT_DIALECT) ? searchDialect : null;
+    return new CommandObjectsConfig(keyPreProcessor, jsonObjectMapper, dialect);
   }
 
   /**
@@ -124,8 +125,8 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    * <li>Creates cache from cacheConfig if provided</li>
    * <li>Creates default connection provider if not already set</li>
    * <li>Creates default command executor if not already set</li>
-   * <li>Applies common configuration to command objects</li>
-   * <li>Creates and returns the specific client instance</li>
+   * <li>Creates and returns the specific client instance — the client owns {@link CommandObjects}
+   * construction via its factory hook.</li>
    * </ol>
    * @return the configured Redis client instance
    */
@@ -151,14 +152,6 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
     if (this.commandExecutor == null) {
       this.commandExecutor = createDefaultCommandExecutor();
     }
-
-    // Ensure CommandObjects are created (and allow subclasses to override the type)
-    if (this.commandObjects == null) {
-      this.commandObjects = createDefaultCommandObjects();
-    }
-
-    // Apply common configuration
-    this.applyCommandObjectsConfiguration(commandObjects);
 
     // Create and return the specific client instance
     return createClient();
@@ -293,27 +286,6 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
     }
     this.searchDialect = searchDialect;
     return self();
-  }
-
-  /**
-   * Applies common configuration to the CommandObjects instance.
-   * <p>
-   * This method is called by concrete builders to configure the CommandObjects with the common
-   * settings like key preprocessor, JSON mapper, and search dialect.
-   * @param commandObjects the CommandObjects instance to configure
-   */
-  public void applyCommandObjectsConfiguration(CommandObjects commandObjects) {
-    if (keyPreProcessor != null) {
-      commandObjects.setKeyArgumentPreProcessor(keyPreProcessor);
-    }
-
-    if (jsonObjectMapper != null) {
-      commandObjects.setJsonObjectMapper(jsonObjectMapper);
-    }
-
-    if (searchDialect != SearchProtocol.DEFAULT_DIALECT) {
-      commandObjects.setDefaultSearchDialect(searchDialect);
-    }
   }
 
   /**

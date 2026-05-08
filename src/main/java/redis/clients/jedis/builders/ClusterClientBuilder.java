@@ -133,11 +133,6 @@ public abstract class ClusterClientBuilder<C>
   }
 
   @Override
-  protected CommandObjects createDefaultCommandObjects() {
-    return new ClusterCommandObjects();
-  }
-
-  @Override
   protected void validateSpecificConfiguration() {
     validateCommonConfiguration();
 

@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.net.URI;
 
+import redis.clients.jedis.builders.CommandObjectsConfig;
 import redis.clients.jedis.builders.StandaloneClientBuilder;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.executors.CommandExecutor;
@@ -39,8 +40,8 @@ import redis.clients.jedis.util.Pool;
 public class RedisClient extends UnifiedJedis {
 
   private RedisClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
-      CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
-    super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+      RedisProtocol redisProtocol, CommandObjectsConfig commandObjectsConfig, Cache cache) {
+    super(commandExecutor, connectionProvider, redisProtocol, commandObjectsConfig, cache);
   }
 
   /**
@@ -146,8 +147,8 @@ public class RedisClient extends UnifiedJedis {
 
     @Override
     protected RedisClient createClient() {
-      return new RedisClient(commandExecutor, connectionProvider, commandObjects,
-          clientConfig.getRedisProtocol(), cache);
+      return new RedisClient(commandExecutor, connectionProvider,
+          clientConfig.getRedisProtocol(), commandObjectsConfig(), cache);
     }
   }
 

@@ -39,10 +39,4 @@ public final class CommandObjectsConfig {
     return searchDialect;
   }
 
-  /**
-   * @return a config that holds no overrides — equivalent to library defaults.
-   */
-  public static CommandObjectsConfig empty() {
-    return new CommandObjectsConfig(null, null, null);
-  }
 }

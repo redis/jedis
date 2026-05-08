@@ -16,6 +16,25 @@ import redis.clients.jedis.util.KeyValue;
 
 public class ClusterCommandObjects extends CommandObjects {
 
+  /**
+   * @deprecated Use {@link #ClusterCommandObjects(RedisProtocol)} so the protocol is supplied via
+   *             the constructor. The no-arg constructor will be removed in the next major
+   *             release.
+   */
+  @Deprecated
+  public ClusterCommandObjects() {
+  }
+
+  /**
+   * Constructs a {@code ClusterCommandObjects} bound to the given Redis protocol. This
+   * constructor will become the only supported entry point in the next major release.
+   * @param protocol the negotiated Redis protocol; passing {@code null} is allowed for backward
+   *                 compatibility but will be rejected in the next major release.
+   */
+  public ClusterCommandObjects(RedisProtocol protocol) {
+    super(protocol);
+  }
+
   @Override
   protected ClusterCommandArguments commandArguments(ProtocolCommand command) {
     ClusterCommandArguments comArgs = new ClusterCommandArguments(command);

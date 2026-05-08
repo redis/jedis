@@ -301,7 +301,11 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    * This method is called by concrete builders to configure the CommandObjects with the common
    * settings like key preprocessor, JSON mapper, and search dialect.
    * @param commandObjects the CommandObjects instance to configure
+   * @deprecated Will be removed in the next major release. The client constructor will own
+   *             {@link CommandObjects} construction and apply this configuration internally;
+   *             callers should rely on {@code build()} alone.
    */
+  @Deprecated
   public void applyCommandObjectsConfiguration(CommandObjects commandObjects) {
     if (keyPreProcessor != null) {
       commandObjects.setKeyArgumentPreProcessor(keyPreProcessor);

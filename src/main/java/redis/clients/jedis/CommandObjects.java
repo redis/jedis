@@ -40,7 +40,30 @@ public class CommandObjects {
 
   private RedisProtocol protocol;
 
-  // TODO: restrict?
+  /**
+   * @deprecated Use {@link #CommandObjects(RedisProtocol)} so the protocol is supplied via the
+   *             constructor. The no-arg constructor will be removed in the next major release.
+   */
+  @Deprecated
+  public CommandObjects() {
+  }
+
+  /**
+   * Constructs a {@code CommandObjects} bound to the given Redis protocol. This constructor will
+   * become the only supported entry point in the next major release; prefer it over the
+   * combination of the no-arg constructor and {@link #setProtocol(RedisProtocol)}.
+   * @param protocol the negotiated Redis protocol; passing {@code null} is allowed for backward
+   *                 compatibility but will be rejected in the next major release.
+   */
+  public CommandObjects(RedisProtocol protocol) {
+    this.protocol = protocol;
+  }
+
+  /**
+   * @deprecated Pass the protocol via {@link #CommandObjects(RedisProtocol)} instead. This setter
+   *             will be removed in the next major release.
+   */
+  @Deprecated
   public final void setProtocol(RedisProtocol proto) {
     this.protocol = proto;
   }

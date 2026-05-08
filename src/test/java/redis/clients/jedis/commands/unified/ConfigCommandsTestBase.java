@@ -18,8 +18,8 @@ import redis.clients.jedis.RedisProtocol;
  * deployment. Subclasses parameterize by {@link RedisProtocol} so the same assertions cover both
  * RESP2 and RESP3, and by deployment topology (standalone vs OSS Cluster) so the request/response
  * policy wiring is exercised end-to-end.
- *
- * <p>Parameter names used here ({@code slowlog-max-len} and {@code slowlog-log-slower-than}) are
+ * <p>
+ * Parameter names used here ({@code slowlog-max-len} and {@code slowlog-log-slower-than}) are
  * supported by both Redis OSS and Redis Enterprise per the
  * <a href="https://redis.io/docs/latest/operate/rs/references/compatibility/config-settings/">
  * Redis Enterprise config compatibility table</a>, so the same suite is portable across
@@ -45,7 +45,8 @@ public abstract class ConfigCommandsTestBase extends UnifiedJedisCommandsTestBas
 
   @Test
   public void configGetMultiplePatterns() {
-    Map<String, String> reply = jedis.configGet(PARAM_SLOWLOG_MAX_LEN, PARAM_SLOWLOG_LOG_SLOWER_THAN);
+    Map<String, String> reply = jedis.configGet(PARAM_SLOWLOG_MAX_LEN,
+      PARAM_SLOWLOG_LOG_SLOWER_THAN);
 
     assertThat(reply, aMapWithSize(2));
     assertThat(reply, hasKey(PARAM_SLOWLOG_MAX_LEN));
@@ -63,6 +64,6 @@ public abstract class ConfigCommandsTestBase extends UnifiedJedisCommandsTestBas
   public void configGetUnknownParameterReturnsEmpty() {
     Map<String, String> reply = jedis.configGet("definitely-not-a-real-config-name-xyz");
 
-    assertThat(reply, equalTo(java.util.Collections.<String, String>emptyMap()));
+    assertThat(reply, equalTo(java.util.Collections.<String, String> emptyMap()));
   }
 }

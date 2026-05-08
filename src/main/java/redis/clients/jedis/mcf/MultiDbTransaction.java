@@ -32,34 +32,6 @@ public class MultiDbTransaction extends AbstractTransaction {
   private boolean inMulti = false;
 
   /**
-   * A MULTI command will be added to be sent to server. WATCH/UNWATCH/MULTI commands must not be
-   * called with this object.
-   * @param provider
-   */
-  @Deprecated
-  public MultiDbTransaction(MultiDbConnectionProvider provider) {
-    this(provider, true);
-  }
-
-  /**
-   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
-   * be {@code doMulti=false}.
-   * @param provider
-   * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
-   */
-  @Deprecated
-  public MultiDbTransaction(MultiDbConnectionProvider provider, boolean doMulti) {
-    this.failoverProvider = new MultiDbConnectionSupplier(provider);
-
-    try (Connection connection = failoverProvider.getConnection()) {
-      RedisProtocol proto = connection.getRedisProtocol();
-      if (proto != null) this.commandObjects.setProtocol(proto);
-    }
-
-    if (doMulti) multi();
-  }
-
-  /**
    * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
    * be {@code doMulti=false}.
    * @param provider

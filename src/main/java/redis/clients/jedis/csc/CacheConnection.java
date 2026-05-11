@@ -145,7 +145,7 @@ public class CacheConnection extends Connection {
   }
 
   private void initializeClientSideCache() {
-    if (protocol != RedisProtocol.RESP3) {
+    if (getRedisProtocol() != RedisProtocol.RESP3) {
       throw new JedisException("Client side caching is only supported with RESP3.");
     }
     Objects.requireNonNull(cache);

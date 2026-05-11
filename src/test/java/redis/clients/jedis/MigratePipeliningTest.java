@@ -25,7 +25,7 @@ import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
 public class MigratePipeliningTest extends JedisCommandsTestBase {
 
@@ -75,7 +75,7 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
     dest.select(db);
 
     destAuth = new Jedis(destEndpointWithAuth.getHostAndPort(),
-        destEndpointWithAuth.getClientConfigBuilder().build());
+        destEndpointWithAuth.getClientConfigBuilder().serverDefaultProtocol().build());
     destAuth.flushAll();
     destAuth.select(dbAuth);
   }

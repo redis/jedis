@@ -3,9 +3,11 @@ package redis.clients.jedis;
 import java.time.Duration;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
+import java.util.function.Supplier;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
 
@@ -63,31 +65,39 @@ public class ClusterPipeline extends MultiNodePipelineBase {
   private AutoCloseable closeable = null;
 
   public ClusterPipeline(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig) {
-    this(new ClusterConnectionProvider(clusterNodes, clientConfig),
-        createClusterCommandObjects(clientConfig.getRedisProtocol()));
+    this(new ClusterConnectionProvider(clusterNodes, clientConfig), clientConfig);
     this.closeable = this.provider;
   }
 
   public ClusterPipeline(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig),
-        createClusterCommandObjects(clientConfig.getRedisProtocol()));
+    this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig), clientConfig);
     this.closeable = this.provider;
   }
 
   public ClusterPipeline(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig, Duration topologyRefreshPeriod) {
     this(new ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig, topologyRefreshPeriod),
-        createClusterCommandObjects(clientConfig.getRedisProtocol()));
+        clientConfig);
     this.closeable = this.provider;
   }
 
-  public ClusterPipeline(ClusterConnectionProvider provider) {
-    this(provider, new ClusterCommandObjects());
+  private ClusterPipeline(ClusterConnectionProvider provider, JedisClientConfig clientConfig) {
+    this(provider, createClusterCommandObjects(provider, clientConfig.getRedisProtocol(),
+        clientConfig.isAutoNegotiateProtocol()));
+  }
+
+  public ClusterPipeline(ClusterConnectionProvider provider, RedisProtocol protocol) {
+    this(provider, createClusterCommandObjects(provider, protocol, true));
   }
 
   public ClusterPipeline(ClusterConnectionProvider provider, ClusterCommandObjects commandObjects) {
-    super(commandObjects);
+    this(provider, () -> commandObjects);
+  }
+
+  private ClusterPipeline(ClusterConnectionProvider provider,
+      Supplier<ClusterCommandObjects> commandObjectsSupplier) {
+    super(commandObjectsSupplier.get());
     this.provider = provider;
   }
 
@@ -97,10 +107,24 @@ public class ClusterPipeline extends MultiNodePipelineBase {
     this.provider = provider;
   }
 
-  private static ClusterCommandObjects createClusterCommandObjects(RedisProtocol protocol) {
-    ClusterCommandObjects cco = new ClusterCommandObjects();
-    if (protocol == RedisProtocol.RESP3) cco.setProtocol(protocol);
-    return cco;
+  private static Supplier<ClusterCommandObjects> createClusterCommandObjects(
+      ClusterConnectionProvider provider, RedisProtocol protocol, boolean autoNegotiateProtocol) {
+    return () -> {
+      RedisProtocol effective = protocol;
+
+      boolean protocolResolvedOnWire = protocol == null && autoNegotiateProtocol;
+      if (protocolResolvedOnWire) {
+        try (Connection conn = provider.getConnection()) {
+          RedisProtocol resolved = conn.getRedisProtocol();
+          if (resolved != null) {
+            effective = resolved;
+          }
+        } catch (JedisException je) {
+          // Protocol negotiation failed, leave protocol=null on the command objects.
+        }
+      }
+      return new ClusterCommandObjects(effective);
+    };
   }
 
   @Override

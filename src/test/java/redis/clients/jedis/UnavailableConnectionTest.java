@@ -16,6 +16,7 @@ import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.TestEnvUtil;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -71,11 +72,12 @@ public class UnavailableConnectionTest {
     try {
       brokenJedis1.close(); // we need capture/mock to test this properly
     } catch (JedisException e) {
-      // ignore this due to behavior change in commons-pool2 2.13.1 ;
-      // GenericObjectPool#invalidateObject now attempts to replace the invalidated instance
-      // which fails when ConnectionFactory#makeObject() fails with an exception.
-      assertTrue(e.getCause().getMessage().contains("java.net.SocketException: Connection reset"),
-        "Failing with unexpected message!");
+      // Behavior change in commons-pool2 2.13.1: GenericObjectPool#invalidateObject now
+      // attempts to replace the invalidated instance, which fails when
+      // ConnectionFactory#makeObject() cannot reach the (shut down) server. The underlying
+      // socket failure varies by environment (Connection refused / Connection reset / etc.).
+      assertInstanceOf(JedisConnectionException.class, e.getCause(),
+          "Unexpected cause for broken-resource return: " + e.getCause());
     }
     try {
       poolForBrokenJedis1.getResource();

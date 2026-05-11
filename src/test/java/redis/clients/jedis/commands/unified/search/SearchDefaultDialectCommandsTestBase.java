@@ -24,6 +24,7 @@ import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.schemafields.NumericField;
+import redis.clients.jedis.search.schemafields.TagField;
 import redis.clients.jedis.search.schemafields.TextField;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;

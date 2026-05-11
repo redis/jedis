@@ -40,6 +40,14 @@ public class CommandObjects {
 
   private RedisProtocol protocol;
 
+  // TODO: Remove together with setProtocol
+  public CommandObjects() {
+  }
+
+  public CommandObjects(RedisProtocol protocol) {
+    this.protocol = protocol;
+  }
+
   // TODO: restrict?
   public final void setProtocol(RedisProtocol proto) {
     this.protocol = proto;
@@ -2962,7 +2970,7 @@ public class CommandObjects {
     for (Map.Entry<byte[], byte[]> entry : streams) {
       args.add(entry.getValue());
     }
-    return new CommandObject<>(args, BuilderFactory.RAW_OBJECT_LIST);
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_RAW_OBJECT_LIST);
   }
 
   public final CommandObject<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadBinary(
@@ -3005,7 +3013,7 @@ public class CommandObjects {
     for (Map.Entry<byte[], byte[]> entry : streams) {
       args.add(entry.getValue());
     }
-    return new CommandObject<>(args, BuilderFactory.RAW_OBJECT_LIST);
+    return new CommandObject<>(args, BuilderFactory.STREAM_READ_RAW_OBJECT_LIST);
   }
 
   public final CommandObject<List<Map.Entry<byte[], List<StreamEntryBinary>>>> xreadGroupBinary(
@@ -4019,9 +4027,9 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.STRLEN).key(key).add(path), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Object> jsonNumIncrBy(String key, Path2 path, double value) {
+  public final CommandObject<Object> jsonNumIncrBy(String key, Path2 path, Number value) {
     return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value),
-        JsonBuilderFactory.JSON_ARRAY_OR_DOUBLE_LIST);
+        JsonBuilderFactory.JSON_ARRAY_OR_NUMBER_LIST);
   }
 
   @Deprecated

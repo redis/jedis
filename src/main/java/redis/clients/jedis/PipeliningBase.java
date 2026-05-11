@@ -4121,7 +4121,7 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<Object> jsonNumIncrBy(String key, Path2 path, double value) {
+  public Response<Object> jsonNumIncrBy(String key, Path2 path, Number value) {
     return appendCommand(commandObjects.jsonNumIncrBy(key, path, value));
   }
 

@@ -36,7 +36,7 @@ import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 public class BinaryValuesCommandsTest extends JedisCommandsTestBase {
   byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };

@@ -27,11 +27,13 @@ import redis.clients.jedis.providers.PooledConnectionProvider;
  * on if a Redis Stack server is needed, or a standalone suffices.
  * <p>
  * In principle all subclasses of this class should be parameterized tests,
- * to run with several versions of RESP. {@link CommandsTestsParameters#respVersions}
+ * to run with several versions of RESP. {@link CommandsTestsParameters#jedisRespVersions}
+ * The strict (non-{@code null}) RESP versions are the right fit here: CommandObjects receive a
+ * specific protocol after auto-negotiation has already happened.
  */
 @Tag("integration")
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 public abstract class CommandObjectsTestBase {
 
   /**
@@ -58,14 +60,14 @@ public abstract class CommandObjectsTestBase {
   public CommandObjectsTestBase(RedisProtocol protocol, EndpointConfig endpoint) {
     this.protocol = protocol;
     this.endpoint = endpoint;
-    commandObjects = new CommandObjects();
-    commandObjects.setProtocol(protocol);
+    commandObjects = new CommandObjects(protocol);
   }
 
   @BeforeEach
   public void setUp() {
     // Configure a default command executor.
     DefaultJedisClientConfig clientConfig = endpoint.getClientConfigBuilder().protocol(protocol)
+        .autoNegotiateProtocol(false)
         .build();
 
     ConnectionProvider connectionProvider = new PooledConnectionProvider(endpoint.getHostAndPort(),

@@ -463,8 +463,8 @@ public class JsonExample {
         // Tests for 'update_bikes' step.
         // REMOVE_START
         assertEquals("[1920,2072,3264,1475,3941]", res39.toString());
-        assertEquals("[1820,1972,3164,1375,3841]", res40.toString());
-        assertEquals("[1920,2072,3264,1475,3941]", res41.toString());
+        assertEquals("[1820,1972,3164,1375,3841]", res40.toString().replace(" ", ""));
+        assertEquals("[1920,2072,3264,1475,3941]", res41.toString().replace(" ", ""));
         // REMOVE_END
 
 

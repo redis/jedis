@@ -32,7 +32,7 @@ public class ACLJedisIT extends JedisTlsTestBase {
   @Test
   public void connectWithConfig() {
     try (Jedis jedis = new Jedis(aclEndpoint.getHostAndPort(),
-        DefaultJedisClientConfig.builder().ssl(true).build())) {
+        DefaultJedisClientConfig.builder().serverDefaultProtocol().ssl(true).build())) {
       jedis.auth(aclEndpoint.getUsername(), aclEndpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }

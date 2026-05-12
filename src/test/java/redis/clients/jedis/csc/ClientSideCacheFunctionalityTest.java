@@ -55,6 +55,40 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
     }
   }
 
+  @Test
+  public void invalidateAllWithLargeCacheTest() {
+    final int count = 10000;
+
+    // 1. Populate Redis with 10k keys
+    for (int i = 0; i < count; i++) {
+      control.set("key" + i, "value" + i);
+    }
+
+    try (RedisClient jedis = RedisClient.builder()
+            .hostAndPort(hnp)
+            .clientConfig(clientConfig.get())
+            .cacheConfig(CacheConfig.builder().maxSize(count).build())
+            .build()) {
+
+      Cache cache = jedis.getCache();
+
+      // 2. Load all 10k keys into cache
+      for (int i = 0; i < count; i++) {
+        jedis.get("key" + i);
+      }
+      assertEquals(count, cache.getSize());
+
+      // 3. Trigger NULL invalidation (option A: via flushAll)
+      control.flushAll();
+
+      // 4. Access a key to trigger cache invalidation
+      jedis.get("key0");
+
+      await().atMost(5, TimeUnit.SECONDS)
+              .untilAsserted(() -> assertEquals(1, cache.getSize()));
+    }
+  }
+
   @Test // T.4.1
   public void lruEvictionTest() {
     final int count = 100;
@@ -640,4 +674,6 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       assertEquals(1, stats.getMissCount());
     }
   }
+
+
 }

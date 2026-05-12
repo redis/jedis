@@ -1,0 +1,73 @@
+name: Benchmarks
+
+on:
+  schedule:
+    - cron: '0 1 * * *' # nightly build at 1 AM UTC
+  workflow_dispatch: # allow manual trigger
+
+jobs:
+  benchmark:
+    name: Execute JMH benchmarksgithub-action-benchmark
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout project
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+          cache: 'maven'
+
+      - name: Setup Maven
+        uses: s4u/setup-maven-action@v1.14.0
+        with:
+          java-version: 8
+
+      - name: Set up Docker Compose environment
+        run: |
+          make start
+        env:
+          REDIS_ENV_WORK_DIR: ${{ github.workspace }}/work
+
+      - name: Maven offline dependencies
+        run: |
+          mvn -q dependency:go-offline
+
+      - name: Run JMH benchmarks
+        run: |
+          mvn -Pjmh clean test
+        env:
+          JVM_OPTS: -Xmx3200m
+          TERM: dumb
+
+      - name: Tear down Docker Compose environment
+        if: always()
+        run: |
+          make stop
+
+      # Download previous benchmark result from cache (if exists)
+      - name: Download previous benchmark data
+        uses: actions/cache@v4
+        with:
+          path: ./cache
+          key: ${{ runner.os }}-benchmark
+
+      # Store benchmark result and compare with previous runs
+      - name: Store benchmark result
+        uses: benchmark-action/github-action-benchmark@v1
+        with:
+          tool: 'jmh'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          comment-on-alert: false
+          # Uncomment to enable automatic pushes to gh-pages
+          auto-push: false
+          gh-repository: 'github.com/redis/jedis'
+          gh-pages-branch: 'master'
+          benchmark-data-dir-path: './docs/static/benchmarks'
+          output-file-path: benchmarks.json
+          fail-on-alert: false
+          alert-threshold: '200%'
+          alert-comment-cc-users: '@ggivo'

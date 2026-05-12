@@ -56,53 +56,22 @@ public class ProtocolReadBenchmark {
     private RedisInputStream mixedTenPush;            // 10 pushes + regular response
     private RedisInputStream mixedHundredPush;        // 100 pushes + regular response
 
+    // Raw bytes for recreating streams
+    private byte[] singlePushBytes;
+    private byte[] largePushBytes;
+    private byte[] mixedSinglePushBytes;
+    private byte[] mixedTenPushBytes;
+    private byte[] mixedHundredPushBytes;
+
     // Cache for testing
     private Cache cache;
-    
+
     @Setup
     public void setup() {
-        // === Setup baseline streams (no cache) ===
-
-        baselineSimpleStringStream = new RedisInputStream(
-            new ByteArrayInputStream("+OK\r\n".getBytes())
-        );
-
-        baselineBulkStringStream = new RedisInputStream(
-            new ByteArrayInputStream("$5\r\nHello\r\n".getBytes())
-        );
-
-        baselineArrayStream = new RedisInputStream(
-            new ByteArrayInputStream("*3\r\n$3\r\nfoo\r\n$3\r\nbar\r\n$3\r\nbaz\r\n".getBytes())
-        );
-
-        baselineMultiBulkStream = new RedisInputStream(
-            new ByteArrayInputStream("*4\r\n$3\r\nfoo\r\n$13\r\nbarbarbarfooz\r\n$5\r\nHello\r\n$5\r\nWorld\r\n".getBytes())
-        );
-
-        // === Setup cache-aware streams (same data, but used with cache) ===
-
-        cacheSimpleStringStream = new RedisInputStream(
-            new ByteArrayInputStream("+OK\r\n".getBytes())
-        );
-
-        cacheBulkStringStream = new RedisInputStream(
-            new ByteArrayInputStream("$5\r\nHello\r\n".getBytes())
-        );
-
-        cacheArrayStream = new RedisInputStream(
-            new ByteArrayInputStream("*3\r\n$3\r\nfoo\r\n$3\r\nbar\r\n$3\r\nbaz\r\n".getBytes())
-        );
-
-        cacheMultiBulkStream = new RedisInputStream(
-            new ByteArrayInputStream("*4\r\n$3\r\nfoo\r\n$13\r\nbarbarbarfooz\r\n$5\r\nHello\r\n$5\r\nWorld\r\n".getBytes())
-        );
-
-        // === Push invalidation messages ===
+        // === Store raw bytes for stream recreation ===
 
         // Single push with 1 key: >2\r\n$10\r\ninvalidate\r\n*1\r\n$3\r\nkey\r\n
-        singlePushStream = new RedisInputStream(
-            new ByteArrayInputStream(">2\r\n$10\r\ninvalidate\r\n*1\r\n$3\r\nkey\r\n".getBytes())
-        );
+        singlePushBytes = ">2\r\n$10\r\ninvalidate\r\n*1\r\n$3\r\nkey\r\n".getBytes();
 
         // Large push with 100 keys invalidated at once
         StringBuilder largePush = new StringBuilder(">2\r\n$10\r\ninvalidate\r\n*100\r\n");
@@ -110,17 +79,12 @@ public class ProtocolReadBenchmark {
             String key = "key:" + i;
             largePush.append("$").append(key.length()).append("\r\n").append(key).append("\r\n");
         }
-        largePushStream = new RedisInputStream(
-            new ByteArrayInputStream(largePush.toString().getBytes())
-        );
+        largePushBytes = largePush.toString().getBytes();
 
         // === Mixed streams (push + regular response) ===
 
         // 1 push + response: >2\r\n$10\r\ninvalidate\r\n*1\r\n$3\r\nkey\r\n+OK\r\n
-        String mixed1 = ">2\r\n$10\r\ninvalidate\r\n*1\r\n$3\r\nkey\r\n+OK\r\n";
-        mixedSinglePush = new RedisInputStream(
-            new ByteArrayInputStream(mixed1.getBytes())
-        );
+        mixedSinglePushBytes = ">2\r\n$10\r\ninvalidate\r\n*1\r\n$3\r\nkey\r\n+OK\r\n".getBytes();
 
         // 10 pushes + response
         StringBuilder mixed10 = new StringBuilder();
@@ -128,9 +92,7 @@ public class ProtocolReadBenchmark {
             mixed10.append(">2\r\n$10\r\ninvalidate\r\n*1\r\n$4\r\nkey").append(i).append("\r\n");
         }
         mixed10.append("+OK\r\n");
-        mixedTenPush = new RedisInputStream(
-            new ByteArrayInputStream(mixed10.toString().getBytes())
-        );
+        mixedTenPushBytes = mixed10.toString().getBytes();
 
         // 100 pushes + response (heavy invalidation scenario)
         StringBuilder mixed100 = new StringBuilder();
@@ -138,9 +100,7 @@ public class ProtocolReadBenchmark {
             mixed100.append(">2\r\n$10\r\ninvalidate\r\n*1\r\n$5\r\nkey").append(String.format("%02d", i)).append("\r\n");
         }
         mixed100.append("+OK\r\n");
-        mixedHundredPush = new RedisInputStream(
-            new ByteArrayInputStream(mixed100.toString().getBytes())
-        );
+        mixedHundredPushBytes = mixed100.toString().getBytes();
 
         // Create cache for testing
         cache = CacheFactory.getCache(
@@ -156,6 +116,34 @@ public class ProtocolReadBenchmark {
             // Cache entries would be here in real scenario
         }
     }
+
+    /**
+     * Recreate streams before each benchmark invocation.
+     * This is necessary because streams get consumed during reading.
+     */
+    @Setup(Level.Invocation)
+    public void recreateStreams() {
+        // Recreate push streams
+        singlePushStream = new RedisInputStream(new ByteArrayInputStream(singlePushBytes));
+        largePushStream = new RedisInputStream(new ByteArrayInputStream(largePushBytes));
+
+        // Recreate mixed streams
+        mixedSinglePush = new RedisInputStream(new ByteArrayInputStream(mixedSinglePushBytes));
+        mixedTenPush = new RedisInputStream(new ByteArrayInputStream(mixedTenPushBytes));
+        mixedHundredPush = new RedisInputStream(new ByteArrayInputStream(mixedHundredPushBytes));
+
+        // Recreate baseline streams
+        baselineSimpleStringStream = new RedisInputStream(new ByteArrayInputStream("+OK\r\n".getBytes()));
+        baselineBulkStringStream = new RedisInputStream(new ByteArrayInputStream("$5\r\nHello\r\n".getBytes()));
+        baselineArrayStream = new RedisInputStream(new ByteArrayInputStream("*3\r\n$3\r\nfoo\r\n$3\r\nbar\r\n$3\r\nbaz\r\n".getBytes()));
+        baselineMultiBulkStream = new RedisInputStream(new ByteArrayInputStream("*4\r\n$3\r\nfoo\r\n$13\r\nbarbarbarfooz\r\n$5\r\nHello\r\n$5\r\nWorld\r\n".getBytes()));
+
+        // Recreate cache-aware streams
+        cacheSimpleStringStream = new RedisInputStream(new ByteArrayInputStream("+OK\r\n".getBytes()));
+        cacheBulkStringStream = new RedisInputStream(new ByteArrayInputStream("$5\r\nHello\r\n".getBytes()));
+        cacheArrayStream = new RedisInputStream(new ByteArrayInputStream("*3\r\n$3\r\nfoo\r\n$3\r\nbar\r\n$3\r\nbaz\r\n".getBytes()));
+        cacheMultiBulkStream = new RedisInputStream(new ByteArrayInputStream("*4\r\n$3\r\nfoo\r\n$13\r\nbarbarbarfooz\r\n$5\r\nHello\r\n$5\r\nWorld\r\n".getBytes()));
+    }
     
     // ========== BASELINE PROTOCOL OPERATIONS (NO CACHE) ==========
 
@@ -166,7 +154,6 @@ public class ProtocolReadBenchmark {
     public void readSimpleString(Blackhole blackhole) throws Exception {
         Object result = Protocol.read(baselineSimpleStringStream);
         blackhole.consume(result);
-        baselineSimpleStringStream.reset();
     }
 
     /**
@@ -176,7 +163,6 @@ public class ProtocolReadBenchmark {
     public void readBulkString(Blackhole blackhole) throws Exception {
         Object result = Protocol.read(baselineBulkStringStream);
         blackhole.consume(result);
-        baselineBulkStringStream.reset();
     }
 
     /**
@@ -186,7 +172,6 @@ public class ProtocolReadBenchmark {
     public void readArray(Blackhole blackhole) throws Exception {
         Object result = Protocol.read(baselineArrayStream);
         blackhole.consume(result);
-        baselineArrayStream.reset();
     }
 
     /**
@@ -196,7 +181,6 @@ public class ProtocolReadBenchmark {
     public void readMultiBulkResponse(Blackhole blackhole) throws Exception {
         Object result = Protocol.read(baselineMultiBulkStream);
         blackhole.consume(result);
-        baselineMultiBulkStream.reset();
     }
 
     /**
@@ -219,7 +203,6 @@ public class ProtocolReadBenchmark {
     public void cacheAwareReadSimpleString(Blackhole blackhole) throws Exception {
         Object result = Protocol.read(cacheSimpleStringStream, cache);
         blackhole.consume(result);
-        cacheSimpleStringStream.reset();
     }
 
     /**
@@ -230,7 +213,6 @@ public class ProtocolReadBenchmark {
     public void cacheAwareReadBulkString(Blackhole blackhole) throws Exception {
         Object result = Protocol.read(cacheBulkStringStream, cache);
         blackhole.consume(result);
-        cacheBulkStringStream.reset();
     }
 
     /**
@@ -241,7 +223,6 @@ public class ProtocolReadBenchmark {
     public void cacheAwareReadArray(Blackhole blackhole) throws Exception {
         Object result = Protocol.read(cacheArrayStream, cache);
         blackhole.consume(result);
-        cacheArrayStream.reset();
     }
 
     /**
@@ -252,7 +233,6 @@ public class ProtocolReadBenchmark {
     public void cacheAwareReadMultiBulkResponse(Blackhole blackhole) throws Exception {
         Object result = Protocol.read(cacheMultiBulkStream, cache);
         blackhole.consume(result);
-        cacheMultiBulkStream.reset();
     }
 
     // ========== PUSH MESSAGE PROCESSING: Direct invalidation overhead ==========
@@ -263,9 +243,8 @@ public class ProtocolReadBenchmark {
      */
     @Benchmark
     public void processSinglePushInvalidation(Blackhole blackhole) throws Exception {
-        Object result = Protocol.readPushes(singlePushStream, cache, false);
+        Object result = Protocol.readPushes(singlePushStream, cache, true);
         blackhole.consume(result);
-        singlePushStream.reset();
     }
 
     /**
@@ -274,9 +253,8 @@ public class ProtocolReadBenchmark {
      */
     @Benchmark
     public void processLargePushInvalidation(Blackhole blackhole) throws Exception {
-        Object result = Protocol.readPushes(largePushStream, cache, false);
+        Object result = Protocol.readPushes(largePushStream, cache, true);
         blackhole.consume(result);
-        largePushStream.reset();
     }
 
     // ========== MIXED STREAMS: Realistic scenarios with push + response ==========
@@ -289,7 +267,6 @@ public class ProtocolReadBenchmark {
     public void readWith1PushMessage(Blackhole blackhole) throws Exception {
         Object result = Protocol.read(mixedSinglePush, cache);
         blackhole.consume(result);
-        mixedSinglePush.reset();
     }
 
     /**
@@ -300,7 +277,6 @@ public class ProtocolReadBenchmark {
     public void readWith10PushMessages(Blackhole blackhole) throws Exception {
         Object result = Protocol.read(mixedTenPush, cache);
         blackhole.consume(result);
-        mixedTenPush.reset();
     }
 
     /**
@@ -311,6 +287,5 @@ public class ProtocolReadBenchmark {
     public void readWith100PushMessages(Blackhole blackhole) throws Exception {
         Object result = Protocol.read(mixedHundredPush, cache);
         blackhole.consume(result);
-        mixedHundredPush.reset();
     }
 }

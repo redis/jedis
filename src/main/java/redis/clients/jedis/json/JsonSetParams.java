@@ -53,7 +53,7 @@ public class JsonSetParams implements IParams {
   /**
    * Set the floating-point high accuracy type to FP16.
    * @return JsonSetParams
-   * @since 7.5
+   * @since 8.0
    */
   public JsonSetParams fp16() {
     this.fpha = FphaType.FP16;
@@ -63,7 +63,7 @@ public class JsonSetParams implements IParams {
   /**
    * Set the floating-point high accuracy type to BF16.
    * @return JsonSetParams
-   * @since 7.5
+   * @since 8.0
    */
   public JsonSetParams bf16() {
     this.fpha = FphaType.BF16;
@@ -73,7 +73,7 @@ public class JsonSetParams implements IParams {
   /**
    * Set the floating-point high accuracy type to FP32.
    * @return JsonSetParams
-   * @since 7.5
+   * @since 8.0
    */
   public JsonSetParams fp32() {
     this.fpha = FphaType.FP32;
@@ -83,7 +83,7 @@ public class JsonSetParams implements IParams {
   /**
    * Set the floating-point high accuracy type to FP64.
    * @return JsonSetParams
-   * @since 7.5
+   * @since 8.0
    */
   public JsonSetParams fp64() {
     this.fpha = FphaType.FP64;

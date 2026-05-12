@@ -50,7 +50,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           comment-on-alert: false
           # Uncomment to enable automatic pushes to gh-pages
-          auto-push: false
+          auto-push: true
           gh-repository: 'github.com/redis/jedis'
           gh-pages-branch: 'master'
           benchmark-data-dir-path: './docs/static/benchmarks'

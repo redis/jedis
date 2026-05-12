@@ -173,13 +173,15 @@ public interface StringCommands extends BitCommands {
 
   /**
    * <b><a href="http://redis.io/commands/mget">MGet Command</a></b>
-   * Get the values of all the specified keys. If one or more keys don't exist or is not of type
-   * String, a 'nil' value is returned instead of the value of the specified key, but the operation
-   * never fails.
+   * Get the values of all the specified keys.
+   * <p>
+   * At least one key must be supplied; otherwise the server returns an error.
    * <p>
    * Time complexity: O(1) for every key
-   * @param keys
-   * @return Multi bulk reply
+   *
+   * @param keys the keys to get
+   * @return a list of values in the same order as {@code keys};
+   *         entries are {@code null} for keys that do not exist or do not hold a string value
    */
   List<String> mget(String... keys);
 

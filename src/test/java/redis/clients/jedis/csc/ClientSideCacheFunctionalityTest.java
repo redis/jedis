@@ -86,16 +86,15 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       // 4. Access a key to trigger cache invalidation synchronously
       long invalidationStartTime = System.nanoTime();
       jedis.get("key0");
-      long invalidationElapsed =
-              invalidationStartTime > 0 ? TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - invalidationStartTime) : 0;
+      long invalidationElapsedNanos = System.nanoTime() - invalidationStartTime;
 
       assertEquals(1, cache.getSize());
 
       CacheStats stats = cache.getStats();
-      double keysPerSec = (count * 1000.0) / invalidationElapsed;
+      double keysPerSec = (count * 1_000_000_000.0) / invalidationElapsedNanos;
 
       log.info("invalidateAllWithLargeCacheTest: NULL invalidation flushed {} entries in {} ms ({} keys/sec)", count,
-              invalidationElapsed, String.format("%.2f", keysPerSec));
+              TimeUnit.NANOSECONDS.toMillis(invalidationElapsedNanos), String.format("%.2f", keysPerSec));
       log.info("cache stats: {}", stats);
     }
   }
@@ -131,13 +130,14 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       // 4. Now use the cached connection - it should process all pending invalidations synchronously
       long processingStartTime = System.nanoTime();
       jedis.get("key0");
-      long processingElapsed = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - processingStartTime);
+      long processingElapsedNanos = System.nanoTime() - processingStartTime;
+      long processingElapsed = TimeUnit.NANOSECONDS.toMillis(processingElapsedNanos);
 
       // 5. Verify all invalidations were processed
       CacheStats stats = cache.getStats();
       assertEquals(count, stats.getInvalidationCount());
 
-      double invalidationsPerSec = (count * 1000.0) / processingElapsed;
+      double invalidationsPerSec = (count * 1_000_000_000.0) / processingElapsedNanos;
 
       log.info("pendingInvalidationMessagesTest: {} pending invalidations processed in {} ms ({} invalidations/sec)", count,
               processingElapsed, String.format("%.2f", invalidationsPerSec));

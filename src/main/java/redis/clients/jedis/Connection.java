@@ -48,6 +48,7 @@ public class Connection implements Closeable {
   protected String version;
   private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
   private AuthXManager authXManager;
+  private JedisTelemetry telemetry = JedisTelemetry.noop();
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -74,6 +75,8 @@ public class Connection implements Closeable {
     this.socketFactory = socketFactory;
     this.soTimeout = clientConfig.getSocketTimeoutMillis();
     this.infiniteSoTimeout = clientConfig.getBlockingSocketTimeoutMillis();
+    this.telemetry = JedisTelemetry.create(clientConfig.getTelemetryConfig(), getTelemetryHostAndPort(),
+      clientConfig.getRedisProtocol());
     initializeFromClientConfig(clientConfig);
   }
 
@@ -164,22 +167,39 @@ public class Connection implements Closeable {
   }
 
   public Object executeCommand(final CommandArguments args) {
-    sendCommand(args);
-    return getOne();
+    long startNanos = telemetry.startCommand();
+    try {
+      sendCommand(args);
+      Object reply = getOne();
+      telemetry.recordCommandSuccess(args, startNanos);
+      return reply;
+    } catch (RuntimeException | Error e) {
+      telemetry.recordCommandError(args, startNanos, e);
+      throw e;
+    }
   }
 
   public <T> T executeCommand(final CommandObject<T> commandObject) {
     final CommandArguments args = commandObject.getArguments();
-    sendCommand(args);
-    if (!args.isBlocking()) {
-      return commandObject.getBuilder().build(getOne());
-    } else {
-      try {
-        setTimeoutInfinite();
-        return commandObject.getBuilder().build(getOne());
-      } finally {
-        rollbackTimeout();
+    long startNanos = telemetry.startCommand();
+    try {
+      sendCommand(args);
+      T reply;
+      if (!args.isBlocking()) {
+        reply = commandObject.getBuilder().build(getOne());
+      } else {
+        try {
+          setTimeoutInfinite();
+          reply = commandObject.getBuilder().build(getOne());
+        } finally {
+          rollbackTimeout();
+        }
       }
+      telemetry.recordCommandSuccess(args, startNanos);
+      return reply;
+    } catch (RuntimeException | Error e) {
+      telemetry.recordCommandError(args, startNanos, e);
+      throw e;
     }
   }
 
@@ -200,6 +220,7 @@ public class Connection implements Closeable {
   }
 
   public void sendCommand(final CommandArguments args) {
+    telemetry.recordCommandSent(args);
     try {
       connect();
       Protocol.sendCommand(outputStream, args);
@@ -236,16 +257,20 @@ public class Connection implements Closeable {
         inputStream = new RedisInputStream(socket.getInputStream());
 
         broken = false; // unset broken status when connection is (re)initialized
+        telemetry.recordConnectionOpened();
 
       } catch (JedisConnectionException jce) {
 
         setBroken();
+        telemetry.recordConnectionError(jce);
         throw jce;
 
       } catch (IOException ioe) {
 
         setBroken();
-        throw new JedisConnectionException("Failed to create input/output stream", ioe);
+        JedisConnectionException jce = new JedisConnectionException("Failed to create input/output stream", ioe);
+        telemetry.recordConnectionError(jce);
+        throw jce;
 
       } finally {
 
@@ -280,10 +305,12 @@ public class Connection implements Closeable {
         outputStream.flush();
         socket.close();
       } catch (IOException ex) {
+        telemetry.recordConnectionError(ex);
         throw new JedisConnectionException(ex);
       } finally {
         IOUtils.closeQuietly(socket);
         setBroken();
+        telemetry.recordConnectionClosed();
       }
     }
   }
@@ -613,5 +640,12 @@ public class Connection implements Closeable {
 
   protected AuthXManager getAuthXManager() {
     return authXManager;
+  }
+
+  private HostAndPort getTelemetryHostAndPort() {
+    if (socketFactory instanceof DefaultJedisSocketFactory) {
+      return ((DefaultJedisSocketFactory) socketFactory).getHostAndPort();
+    }
+    return null;
   }
 }

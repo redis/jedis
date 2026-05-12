@@ -5,6 +5,7 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import io.opentelemetry.api.OpenTelemetry;
 import redis.clients.jedis.authentication.AuthXManager;
 
 public final class DefaultJedisClientConfig implements JedisClientConfig {
@@ -33,6 +34,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final AuthXManager authXManager;
 
+  private final JedisTelemetryConfig telemetryConfig;
+
   private DefaultJedisClientConfig(DefaultJedisClientConfig.Builder builder) {
     this.redisProtocol = builder.redisProtocol;
     this.connectionTimeoutMillis = builder.connectionTimeoutMillis;
@@ -50,6 +53,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.clientSetInfoConfig = builder.clientSetInfoConfig;
     this.readOnlyForRedisClusterReplicas = builder.readOnlyForRedisClusterReplicas;
     this.authXManager = builder.authXManager;
+    this.telemetryConfig = builder.telemetryConfig;
   }
 
   @Override
@@ -143,6 +147,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return readOnlyForRedisClusterReplicas;
   }
 
+  @Override
+  public JedisTelemetryConfig getTelemetryConfig() {
+    return telemetryConfig;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -174,6 +183,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     private boolean readOnlyForRedisClusterReplicas = false;
 
     private AuthXManager authXManager = null;
+
+    private JedisTelemetryConfig telemetryConfig = JedisTelemetryConfig.disabled();
 
     private Builder() {
     }
@@ -297,6 +308,16 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
+    public Builder telemetryConfig(JedisTelemetryConfig telemetryConfig) {
+      this.telemetryConfig = telemetryConfig == null ? JedisTelemetryConfig.disabled() : telemetryConfig;
+      return this;
+    }
+
+    public Builder openTelemetry(OpenTelemetry openTelemetry) {
+      this.telemetryConfig = JedisTelemetryConfig.builder().openTelemetry(openTelemetry).build();
+      return this;
+    }
+
     public Builder from(JedisClientConfig instance) {
       this.redisProtocol = instance.getRedisProtocol();
       this.connectionTimeoutMillis = instance.getConnectionTimeoutMillis();
@@ -314,6 +335,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.clientSetInfoConfig = instance.getClientSetInfoConfig();
       this.readOnlyForRedisClusterReplicas = instance.isReadOnlyForRedisClusterReplicas();
       this.authXManager = instance.getAuthXManager();
+      this.telemetryConfig = instance.getTelemetryConfig();
       return this;
     }
   }
@@ -375,6 +397,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
 
     builder.authXManager(copy.getAuthXManager());
+    builder.telemetryConfig(copy.getTelemetryConfig());
 
     return builder.build();
   }

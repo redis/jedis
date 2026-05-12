@@ -115,4 +115,12 @@ public interface JedisClientConfig {
   default ClientSetInfoConfig getClientSetInfoConfig() {
     return ClientSetInfoConfig.DEFAULT;
   }
+
+  /**
+   * 获取 OpenTelemetry 指标配置。
+   * @return OpenTelemetry 指标配置
+   */
+  default JedisTelemetryConfig getTelemetryConfig() {
+    return JedisTelemetryConfig.disabled();
+  }
 }

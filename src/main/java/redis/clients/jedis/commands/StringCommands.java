@@ -166,22 +166,22 @@ public interface StringCommands extends BitCommands {
    * @param value
    * @return OK
    * @deprecated Use {@link StringCommands#set(String, String, SetParams)} with {@link SetParams#px(long)}.
-   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.0.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   String psetex(String key, long milliseconds, String value);
 
   /**
    * <b><a href="http://redis.io/commands/mget">MGet Command</a></b>
-   * Get the values of all the specified keys. If one or more keys don't exist or is not of type
-   * String, a 'nil' value is returned instead of the value of the specified key, but the operation
-   * never fails.
+   * Get the values of all the specified keys.
    * <p>
-   * At least one key must be supplied because Redis MGET requires one or more keys.
+   * At least one key must be supplied; otherwise the server returns an error.
    * <p>
    * Time complexity: O(1) for every key
-   * @param keys the keys to get; must not be empty
-   * @return Multi bulk reply
+   *
+   * @param keys the keys to get
+   * @return a list of values in the same order as {@code keys};
+   *         entries are {@code null} for keys that do not exist or do not hold a string value
    */
   List<String> mget(String... keys);
 

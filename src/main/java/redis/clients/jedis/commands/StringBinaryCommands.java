@@ -57,12 +57,14 @@ public interface StringBinaryCommands extends BitBinaryCommands {
   String psetex(byte[] key, long milliseconds, byte[] value);
 
   /**
-   * Gets the values of all the specified keys.
+   * Get the values of all the specified keys.
    * <p>
-   * At least one key must be supplied because Redis MGET requires one or more keys.
+   * At least one key must be supplied; otherwise the server returns an error.
    *
-   * @param keys the keys to get; must not be empty
-   * @return Multi bulk reply
+   * @param keys the keys to get
+   * @return a list of values in the same order as {@code keys};
+   *         entries are {@code null} for keys that do not exist or do not hold a string value
+   * @see StringCommands#mget(String...)
    */
   List<byte[]> mget(byte[]... keys);
 

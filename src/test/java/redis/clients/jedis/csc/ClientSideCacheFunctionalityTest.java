@@ -24,6 +24,8 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.CommandObjects;
 import redis.clients.jedis.RedisClient;
@@ -31,6 +33,8 @@ import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.util.TestEnvUtil;
 
 public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
+
+  private static final Logger log = LoggerFactory.getLogger(ClientSideCacheFunctionalityTest.class);
 
   @Test // T.5.1
   public void flushAllTest() {
@@ -64,11 +68,8 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       control.set("key" + i, "value" + i);
     }
 
-    try (RedisClient jedis = RedisClient.builder()
-            .hostAndPort(hnp)
-            .clientConfig(clientConfig.get())
-            .cacheConfig(CacheConfig.builder().maxSize(count).build())
-            .build()) {
+    try (RedisClient jedis = RedisClient.builder().hostAndPort(hnp).clientConfig(clientConfig.get())
+            .cacheConfig(CacheConfig.builder().maxSize(count).build()).build()) {
 
       Cache cache = jedis.getCache();
 
@@ -76,16 +77,71 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       for (int i = 0; i < count; i++) {
         jedis.get("key" + i);
       }
+
       assertEquals(count, cache.getSize());
 
-      // 3. Trigger NULL invalidation (option A: via flushAll)
+      // 3. Trigger NULL invalidation (via flushAll)
       control.flushAll();
 
-      // 4. Access a key to trigger cache invalidation
+      // 4. Access a key to trigger cache invalidation synchronously
+      long invalidationStartTime = System.nanoTime();
       jedis.get("key0");
+      long invalidationElapsed =
+              invalidationStartTime > 0 ? TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - invalidationStartTime) : 0;
 
-      await().atMost(5, TimeUnit.SECONDS)
-              .untilAsserted(() -> assertEquals(1, cache.getSize()));
+      assertEquals(1, cache.getSize());
+
+      CacheStats stats = cache.getStats();
+      double keysPerSec = (count * 1000.0) / invalidationElapsed;
+
+      log.info("invalidateAllWithLargeCacheTest: NULL invalidation flushed {} entries in {} ms ({} keys/sec)", count,
+              invalidationElapsed, String.format("%.2f", keysPerSec));
+      log.info("cache stats: {}", stats);
+    }
+  }
+
+  @Test
+  public void pendingInvalidationMessagesTest() throws InterruptedException {
+    final int count = 1000; // Hundreds of keys
+
+    try (RedisClient jedis = RedisClient.builder().hostAndPort(hnp).clientConfig(clientConfig.get())
+            .cacheConfig(CacheConfig.builder().maxSize(count).build()).build()) {
+      Cache cache = jedis.getCache();
+
+      // 1. Create and cache 1000 keys
+      for (int i = 0; i < count; i++) {
+        jedis.set("key" + i, "value" + i);
+      }
+      for (int i = 0; i < count; i++) {
+        jedis.get("key" + i);
+      }
+
+      assertEquals(count, cache.getSize());
+      assertEquals(0, cache.getStats().getInvalidationCount());
+
+      // 2. Use control connection to update ALL keys
+      // This generates hundreds of invalidation messages
+      for (int i = 0; i < count; i++) {
+        control.set("key" + i, "newvalue" + i);
+      }
+
+      // 3. Ensure all invalidation messages have been sent by the server
+      control.ping();
+
+      // 4. Now use the cached connection - it should process all pending invalidations synchronously
+      long processingStartTime = System.nanoTime();
+      jedis.get("key0");
+      long processingElapsed = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - processingStartTime);
+
+      // 5. Verify all invalidations were processed
+      CacheStats stats = cache.getStats();
+      assertEquals(count, stats.getInvalidationCount());
+
+      double invalidationsPerSec = (count * 1000.0) / processingElapsed;
+
+      log.info("pendingInvalidationMessagesTest: {} pending invalidations processed in {} ms ({} invalidations/sec)", count,
+              processingElapsed, String.format("%.2f", invalidationsPerSec));
+      log.info("cache stats: {}", stats);
     }
   }
 

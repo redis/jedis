@@ -6,7 +6,9 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.Endpoints;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.builders.StandaloneClientBuilder;
@@ -21,6 +23,7 @@ import java.util.concurrent.TimeUnit;
  * Provides a single comparable throughput number per client configuration:
  * <ul>
  *   <li>{@link JedisT1} — standalone Jedis, single-threaded baseline.</li>
+ *   <li>{@link JedisPoolT1}/{@link JedisPoolT8} — legacy JedisPool (deprecated), for comparison.</li>
  *   <li>{@link RedisClientT1}/{@link RedisClientT8} — pooled RedisClient, no CSC.</li>
  *   <li>{@link RedisClientCSCT1}/{@link RedisClientCSCT8} — pooled RedisClient with client-side cache.</li>
  * </ul>
@@ -153,6 +156,55 @@ public abstract class GetSetMixedR90W10Benchmark {
             return jedis.set(key, value);
         }
     }
+
+    // ====================================================================
+    // JedisPool (legacy pooled client, deprecated)
+    // ====================================================================
+
+    /**
+     * Shared setup for {@link JedisPool} variants. Each benchmark invocation borrows a
+     * {@link Jedis} from the pool, runs the operation, and returns it via try-with-resources.
+     * Abstract — JMH skips it.
+     */
+    public static abstract class JedisPoolBase extends GetSetMixedR90W10Benchmark {
+
+        protected JedisPool pool;
+
+        @Override
+        protected void setupClient() {
+            GenericObjectPoolConfig<Jedis> poolConfig = new GenericObjectPoolConfig<>();
+            poolConfig.setMaxTotal(POOL_SIZE);
+            poolConfig.setMaxIdle(POOL_SIZE);
+            pool = new JedisPool(poolConfig, new HostAndPort(endpoint.getHost(), endpoint.getPort()),
+                    DefaultJedisClientConfig.builder().password(endpoint.getPassword()).build());
+        }
+
+        @Override
+        protected void teardownClient() {
+            if (pool != null) pool.close();
+        }
+
+        @Override
+        protected String doGet(String key) {
+            try (Jedis j = pool.getResource()) {
+                return j.get(key);
+            }
+        }
+
+        @Override
+        protected String doSet(String key, String value) {
+            try (Jedis j = pool.getResource()) {
+                return j.set(key, value);
+            }
+        }
+    }
+
+    @Threads(1)
+    public static class JedisPoolT1 extends JedisPoolBase {}
+
+    @Threads(8)
+    public static class JedisPoolT8 extends JedisPoolBase {}
+
 
     // ====================================================================
     // RedisClient (no client-side cache)

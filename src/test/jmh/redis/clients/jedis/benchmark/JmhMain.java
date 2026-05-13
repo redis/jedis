@@ -120,7 +120,7 @@ public class JmhMain {
 
     /**
      * Run only the 90% read / 10% write mixed workload benchmark (requires live Redis server).
-     * Compares Jedis, RedisClient, and RedisClient+CSC under a fixed workload.
+     * Compares Jedis, JedisPool, RedisClient, and RedisClient+CSC under a fixed workload.
      * Uses benchmark class defaults for mode and timeUnit.
      */
     private static void runGetSetMixedR90W10Benchmarks() throws RunnerException {

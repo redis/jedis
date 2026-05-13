@@ -34,12 +34,14 @@ public class JmhMain {
 
     public static void main(String... args) throws RunnerException {
         // Uncomment the benchmark suite you want to run:
-        
-         runAllBenchmarks();
+
+        // runAllBenchmarks();
         // runJedisGetSetBenchmarks();
         // runProtocolBenchmarks();
         // runCRC16Benchmarks();
         // runSafeEncoderBenchmarks();
+        // runRedisClientGetSetBenchmarks();
+        // runGetSetMixedR90W10Benchmarks();
         // runSpecificBenchmark("CRC16Benchmark.getSlotString");
 
         // results saved to benchmarks.json and benchmark.log
@@ -117,6 +119,31 @@ public class JmhMain {
     }
 
     /**
+     * Run only RedisClient Client-Side Caching (CSC) benchmarks (requires live Redis server).
+     * Uses benchmark class defaults for mode and timeUnit.
+     */
+    private static void runRedisClientCSCBenchmarks() throws RunnerException {
+        System.out.println("Running RedisClient CSC benchmarks (requires Redis server)...");
+        new Runner(prepareOptions()
+                .include(".*RedisClientCSCBenchmark.*")
+                .build())
+                .run();
+    }
+
+    /**
+     * Run only the 90% read / 10% write mixed workload benchmark (requires live Redis server).
+     * Compares Jedis, RedisClient, and RedisClient+CSC under a fixed workload.
+     * Uses benchmark class defaults for mode and timeUnit.
+     */
+    private static void runGetSetMixedR90W10Benchmarks() throws RunnerException {
+        System.out.println("Running GetSetMixedR90W10 workload benchmarks (requires Redis server)...");
+        new Runner(prepareOptions()
+                .include(".*GetSetMixedR90W10Benchmark.*")
+                .build())
+                .run();
+    }
+
+    /**
      * Run a specific benchmark by name.
      * Uses benchmark class defaults for mode and timeUnit.
      *
@@ -150,25 +177,5 @@ public class JmhMain {
                 .resultFormat(ResultFormatType.JSON)
                 .result("benchmarks.json")
                 .output("benchmark.log");
-    }
-
-    /**
-     * Quick benchmark with minimal iterations (for development/testing).
-     */
-    private static void runQuickBenchmark(String benchmarkPattern) throws RunnerException {
-        System.out.println("Running QUICK benchmark: " + benchmarkPattern);
-        new Runner(new OptionsBuilder()
-                .forks(1)
-                .warmupIterations(1)
-                .warmupTime(TimeValue.seconds(1))
-                .measurementIterations(1)
-                .measurementTime(TimeValue.seconds(5))
-                .threads(1)
-                .timeout(TimeValue.seconds(5))
-                .mode(Mode.AverageTime)
-                .timeUnit(TimeUnit.NANOSECONDS)
-                .include(".*" + benchmarkPattern + ".*")
-                .build())
-                .run();
     }
 }

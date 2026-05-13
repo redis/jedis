@@ -38,6 +38,7 @@ public class JmhMain {
         // runAllBenchmarks();
         // runProtocolBenchmarks();
         // runCRC16Benchmarks();
+        runSafeEncoderBenchmarks();
         // runSpecificBenchmark("CRC16Benchmark.getSlotString");
 
         // results saved to benchmarks.json and benchmark.log
@@ -77,6 +78,19 @@ public class JmhMain {
                 .mode(Mode.AverageTime)
                 .timeUnit(TimeUnit.NANOSECONDS)
                 .include(".*CRC16Benchmark.*")
+                .build())
+                .run();
+    }
+
+    /**
+     * Run only SafeEncoder UTF-8 encoding/decoding benchmarks.
+     */
+    private static void runSafeEncoderBenchmarks() throws RunnerException {
+        System.out.println("Running SafeEncoder benchmarks...");
+        new Runner(prepareOptions()
+                .mode(Mode.AverageTime)
+                .timeUnit(TimeUnit.NANOSECONDS)
+                .include(".*SafeEncoderBenchmark.*")
                 .build())
                 .run();
     }

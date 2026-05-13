@@ -13,6 +13,7 @@ import redis.clients.jedis.util.RedisOutputStream;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Comprehensive JMH Benchmark for Jedis Protocol operations.
@@ -25,7 +26,13 @@ import java.io.ByteArrayOutputStream;
  *
  * Run with: mvn -Pjmh clean test
  */
+@BenchmarkMode(Mode.AverageTime)
+@OutputTimeUnit(TimeUnit.NANOSECONDS)
 @State(Scope.Benchmark)
+@Fork(1)
+@Warmup(iterations = 5, time = 2, timeUnit = TimeUnit.SECONDS)
+@Measurement(iterations = 5, time = 2, timeUnit = TimeUnit.SECONDS)
+@Threads(1)
 public class ProtocolReadBenchmark {
 
     // ========== BASELINE PROTOCOL DATA ==========

@@ -47,24 +47,22 @@ public class JmhMain {
 
     /**
      * Run all JMH benchmarks in the project.
+     * Uses benchmark class defaults for mode and timeUnit.
      */
     private static void runAllBenchmarks() throws RunnerException {
         System.out.println("Running ALL benchmarks...");
         new Runner(prepareOptions()
-                .mode(Mode.AverageTime)
-                .timeUnit(TimeUnit.NANOSECONDS)
                 .build())
                 .run();
     }
 
     /**
      * Run only Protocol-related benchmarks (RESP3, cache-aware, push messages).
+     * Uses benchmark class defaults for mode and timeUnit.
      */
     private static void runProtocolBenchmarks() throws RunnerException {
         System.out.println("Running Protocol benchmarks...");
         new Runner(prepareOptions()
-                .mode(Mode.AverageTime)
-                .timeUnit(TimeUnit.NANOSECONDS)
                 .include(".*ProtocolReadBenchmark.*")
                 .build())
                 .run();
@@ -72,12 +70,11 @@ public class JmhMain {
 
     /**
      * Run only CRC16 hash slot calculation benchmarks.
+     * Uses benchmark class defaults for mode and timeUnit.
      */
     private static void runCRC16Benchmarks() throws RunnerException {
         System.out.println("Running CRC16 benchmarks...");
         new Runner(prepareOptions()
-                .mode(Mode.AverageTime)
-                .timeUnit(TimeUnit.NANOSECONDS)
                 .include(".*CRC16Benchmark.*")
                 .build())
                 .run();
@@ -85,12 +82,11 @@ public class JmhMain {
 
     /**
      * Run only SafeEncoder UTF-8 encoding/decoding benchmarks.
+     * Uses benchmark class defaults for mode and timeUnit.
      */
     private static void runSafeEncoderBenchmarks() throws RunnerException {
         System.out.println("Running SafeEncoder benchmarks...");
         new Runner(prepareOptions()
-                .mode(Mode.AverageTime)
-                .timeUnit(TimeUnit.NANOSECONDS)
                 .include(".*SafeEncoderBenchmark.*")
                 .build())
                 .run();
@@ -98,12 +94,11 @@ public class JmhMain {
 
     /**
      * Run only Jedis GET/SET benchmarks (requires live Redis server).
+     * Uses benchmark class defaults for mode and timeUnit.
      */
     private static void runJedisGetSetBenchmarks() throws RunnerException {
         System.out.println("Running Jedis GET/SET benchmarks (requires Redis server)...");
         new Runner(prepareOptions()
-                .mode(Mode.Throughput)
-                .timeUnit(TimeUnit.SECONDS)
                 .include(".*JedisGetSetBenchmark.*")
                 .build())
                 .run();
@@ -111,14 +106,13 @@ public class JmhMain {
 
     /**
      * Run a specific benchmark by name.
-     * 
+     * Uses benchmark class defaults for mode and timeUnit.
+     *
      * @param benchmarkPattern Benchmark name pattern (e.g., "CRC16Benchmark.getSlotString")
      */
     private static void runSpecificBenchmark(String benchmarkPattern) throws RunnerException {
         System.out.println("Running benchmark: " + benchmarkPattern);
         new Runner(prepareOptions()
-                .mode(Mode.AverageTime)
-                .timeUnit(TimeUnit.NANOSECONDS)
                 .include(".*" + benchmarkPattern + ".*")
                 .build())
                 .run();
@@ -126,24 +120,21 @@ public class JmhMain {
 
     /**
      * Prepare common JMH options.
-     * 
-     * Configuration:
-     * - 1 fork (JVM instance)
-     * - 3 warmup iterations (1 second each)
-     * - 5 measurement iterations (1 second each)
-     * - Single thread
-     * - 10-second timeout per iteration
-     * - Results saved to benchmarks.json and benchmark.log
+     *
+     * Does NOT override benchmark class annotations.
+     * Benchmark classes should explicitly define:
+     * - @BenchmarkMode
+     * - @OutputTimeUnit
+     * - @Fork
+     * - @Warmup
+     * - @Measurement
+     * - @Threads (if needed)
+     *
+     * Only sets:
+     * - Result output format and files
      */
     private static ChainedOptionsBuilder prepareOptions() {
         return new OptionsBuilder()
-                .forks(1)
-                .warmupIterations(5)
-                .warmupTime(TimeValue.seconds(2))
-                .measurementIterations(5)
-                .measurementTime(TimeValue.seconds(2))
-                .threads(1)
-                .timeout(TimeValue.seconds(10))
                 .resultFormat(ResultFormatType.JSON)
                 .result("benchmarks.json")
                 .output("benchmark.log");

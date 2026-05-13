@@ -105,6 +105,18 @@ public class JmhMain {
     }
 
     /**
+     * Run only RedisClient GET/SET benchmarks (requires live Redis server).
+     * Uses benchmark class defaults for mode and timeUnit.
+     */
+    private static void runRedisClientGetSetBenchmarks() throws RunnerException {
+        System.out.println("Running RedisClient GET/SET benchmarks (requires Redis server)...");
+        new Runner(prepareOptions()
+                .include(".*RedisClientGetSetBenchmark.*")
+                .build())
+                .run();
+    }
+
+    /**
      * Run a specific benchmark by name.
      * Uses benchmark class defaults for mode and timeUnit.
      *

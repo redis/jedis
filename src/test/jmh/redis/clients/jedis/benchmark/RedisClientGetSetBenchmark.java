@@ -1,5 +1,6 @@
 package redis.clients.jedis.benchmark;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import redis.clients.jedis.*;
@@ -7,26 +8,27 @@ import redis.clients.jedis.*;
 import java.util.concurrent.TimeUnit;
 
 /**
- * JMH Benchmark for Jedis GET/SET operations on a live Redis server.
+ * JMH Benchmark for RedisClient GET/SET operations on a live Redis server.
  *
- * Benchmarks both regular and pipelined operations:
- * - Regular GET/SET: Single command per round-trip
- * - Pipelined GET/SET: Batched commands for reduced network overhead
+ * Benchmarks RedisClient (pooled connection) operations with concurrency testing.
+ * This base class is extended by specific thread-count benchmarks:
+ * - RedisClientGetSetBenchmark1Thread: Single-threaded baseline
+ * - RedisClientGetSetBenchmark8Threads: Moderate concurrency
+ * - RedisClientGetSetBenchmark64Threads: High concurrency
  *
  * Requirements:
  * - Running Redis instance on localhost:6379 (or configured endpoint)
  * - Redis 6.0+ recommended
  *
- * Run with: mvn -Pjmh test -Djmh.includes="JedisGetSetBenchmark"
+ * Run with: mvn -Pjmh test -Djmh.includes="RedisClientGetSetBenchmark"
  */
 @BenchmarkMode(Mode.Throughput)
 @OutputTimeUnit(TimeUnit.SECONDS)
-@State(Scope.Thread)
+@State(Scope.Benchmark)
 @Fork(1)
 @Warmup(iterations = 5, time = 2, timeUnit = TimeUnit.SECONDS)
 @Measurement(iterations = 5, time = 2, timeUnit = TimeUnit.SECONDS)
-@Threads(1)
-public class JedisGetSetBenchmark {
+public abstract class RedisClientGetSetBenchmark {
 
     private static final EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
 
@@ -44,7 +46,7 @@ public class JedisGetSetBenchmark {
     private static final String KEY = "foo";
     private static final String VALUE = "bar";
 
-    private Jedis jedis;
+    private RedisClient redisClient;
 
     /**
      * Per-thread reusable buffer for pipeline responses, avoids per-invocation
@@ -58,54 +60,67 @@ public class JedisGetSetBenchmark {
 
     @Setup(Level.Trial)
     public void setupTrial() {
-        // Connect to Redis
-        jedis = new Jedis(endpoint.getHostAndPort());
-        jedis.connect();
+        // Configure connection pool sized for max concurrency (64 threads)
+        // Pool size must exceed thread count to avoid measuring pool contention
+        GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
+        poolConfig.setMaxTotal(64);          // >= max thread count across all subclasses
+        poolConfig.setMaxIdle(64);           // Keep connections alive for reuse
+        poolConfig.setMinIdle(8);            // Warm pool for baseline scenarios
+        poolConfig.setBlockWhenExhausted(true);  // Block if pool exhausted (shouldn't happen)
+        poolConfig.setMaxWait(java.time.Duration.ofSeconds(5));  // Max wait time
 
-        // Authenticate if password is configured
-        String password = endpoint.getPassword();
-        if (password != null && !password.isEmpty()) {
-            jedis.auth(password);
-        }
+        // Create RedisClient with properly-sized connection pool
+        redisClient = RedisClient.builder()
+                .hostAndPort(endpoint.getHost(), endpoint.getPort())
+                .clientConfig(DefaultJedisClientConfig.builder()
+                        .password(endpoint.getPassword())
+                        .build())
+                .poolConfig(poolConfig)      // Critical: avoid pool contention
+                .build();
 
         // Clean database and pre-populate KEY so GET benchmarks hit a real value
-        jedis.flushDB();
-        jedis.set(KEY, VALUE);
+        try (Jedis jedis = new Jedis(endpoint.getHostAndPort())) {
+            if (endpoint.getPassword() != null && !endpoint.getPassword().isEmpty()) {
+                jedis.auth(endpoint.getPassword());
+            }
+            jedis.flushDB();
+            jedis.set(KEY, VALUE);
+        }
     }
 
     @TearDown(Level.Trial)
     public void teardownTrial() {
-        if (jedis != null) {
-            jedis.disconnect();
+        if (redisClient != null) {
+            redisClient.close();
         }
     }
 
     /**
-     * Benchmark SET operation.
+     * Benchmark SET operation using RedisClient.
      */
     @Benchmark
     public void set(Blackhole blackhole) {
-        String result = jedis.set(KEY, VALUE);
+        String result = redisClient.set(KEY, VALUE);
         blackhole.consume(result);
     }
 
     /**
-     * Benchmark GET operation.
+     * Benchmark GET operation using RedisClient.
      */
     @Benchmark
     public void get(Blackhole blackhole) {
-        String result = jedis.get(KEY);
+        String result = redisClient.get(KEY);
         blackhole.consume(result);
     }
 
     /**
-     * Benchmark pipelined SET operation.
+     * Benchmark pipelined SET operation using RedisClient.
      * Performs 1000 SET operations with intermediate sync every 100 operations.
      */
     @Benchmark
     @OperationsPerInvocation(TOTAL_OPERATIONS)
     public void pipelinedSet(PipelineState ps, Blackhole blackhole) {
-        try (Pipeline pipeline = jedis.pipelined()) {
+        try (Pipeline pipeline = redisClient.pipelined()) {
             Response<String>[] responses = ps.responses;
             int batchIndex = 0;
 
@@ -126,13 +141,13 @@ public class JedisGetSetBenchmark {
     }
 
     /**
-     * Benchmark pipelined GET operation.
+     * Benchmark pipelined GET operation using RedisClient.
      * Performs 1000 GET operations with intermediate sync every 100 operations.
      */
     @Benchmark
     @OperationsPerInvocation(TOTAL_OPERATIONS)
     public void pipelinedGet(PipelineState ps, Blackhole blackhole) {
-        try (Pipeline pipeline = jedis.pipelined()) {
+        try (Pipeline pipeline = redisClient.pipelined()) {
             Response<String>[] responses = ps.responses;
             int batchIndex = 0;
 
@@ -150,5 +165,28 @@ public class JedisGetSetBenchmark {
                 }
             }
         }
+    }
+
+    // ========== Concrete implementations with different thread counts ==========
+
+    /**
+     * Single-threaded benchmark (baseline).
+     */
+    @Threads(1)
+    public static class RedisClientGetSetBenchmark1Thread extends RedisClientGetSetBenchmark {
+    }
+
+    /**
+     * 8-thread benchmark (moderate concurrency).
+     */
+    @Threads(8)
+    public static class RedisClientGetSetBenchmark8Threads extends RedisClientGetSetBenchmark {
+    }
+
+    /**
+     * 64-thread benchmark (high concurrency).
+     */
+    @Threads(64)
+    public static class RedisClientGetSetBenchmark64Threads extends RedisClientGetSetBenchmark {
     }
 }

@@ -53,15 +53,45 @@ UTF-8 encoding/decoding performance.
 **Test data:** Rotates through 6 string patterns (2-44 chars)
 **Batch size:** 120 ops (6 patterns × 20)
 
-### JedisGetSetBenchmark (2 benchmarks) ⚠️ Requires Redis
-Real Jedis GET/SET operations over network.
+### JedisGetSetBenchmark (4 benchmarks) ⚠️ Requires Redis
+Jedis GET/SET operations over network.
 
 **Methods:**
 - `set` - Write performance (foo=bar)
 - `get` - Read performance (foo=bar)
+- `pipelinedSet` - Pipelined write (1000 ops, sync every 100)
+- `pipelinedGet` - Pipelined read (1000 ops, sync every 100)
 
 **Requirements:** Redis 6.0+ running on localhost:6379 (or configured endpoint)
 **Mode:** Throughput (ops/sec)
+
+### RedisClientGetSetBenchmark (12 benchmarks) ⚠️ Requires Redis
+RedisClient (pooled) GET/SET operations with concurrency testing.
+
+**Thread configurations:**
+- `RedisClientGetSetBenchmark1Thread` - 1 thread (baseline)
+- `RedisClientGetSetBenchmark8Threads` - 8 threads (moderate concurrency)
+- `RedisClientGetSetBenchmark64Threads` - 64 threads (high concurrency)
+
+**Methods per configuration:**
+- `set` - Write performance using pooled RedisClient
+- `get` - Read performance using pooled RedisClient
+- `pipelinedSet` - Pipelined write (1000 ops, sync every 100)
+- `pipelinedGet` - Pipelined read (1000 ops, sync every 100)
+
+**Pool configuration:**
+- MaxTotal: 64 connections (sized for max thread count)
+- MaxIdle: 64, MinIdle: 8
+- Prevents pool contention from skewing results
+
+**Workload:**
+- Same single key/value pair (`"foo"`/`"bar"`) as `JedisGetSetBenchmark` for direct comparability
+- 1-thread variant produces numbers comparable to `JedisGetSetBenchmark`
+- 8/64-thread variants exercise pool concurrency on the same workload
+
+**Requirements:** Redis 6.0+ running on localhost:6379 (or configured endpoint)
+**Mode:** Throughput (ops/sec)
+**Purpose:** Test connection pool efficiency and pipelining under different load levels
 
 ---
 
@@ -94,5 +124,5 @@ CRC16Benchmark.getSlotString     avgt    5  47.123 ± 2.456  ns/op
 - **Batching:** Fast operations (< 100 ns) use batching to reduce JMH overhead
 - **Test patterns:** Batch size is always a multiple of pattern count for consistent results
 - **IDE runner:** `JmhMain.java` provides easy IDE execution
-- **Redis required:** JedisGetSetBenchmark requires a running Redis instance (localhost:6379)
+- **Redis required:** JedisGetSetBenchmark and RedisClientGetSetBenchmark require a running Redis instance (localhost:6379)
 - **CI/CD:** GitHub Actions runs benchmarks nightly, results published to gh-pages

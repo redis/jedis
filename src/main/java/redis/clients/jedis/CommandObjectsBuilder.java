@@ -12,8 +12,11 @@ import redis.clients.jedis.search.SearchProtocol;
  * subclass to declare its own static {@code builder()} (which would clash with static-method hiding
  * rules for generic return types).
  * <p>
- * Package-private — the builder is an internal seam between the client constructor and
- * {@link CommandObjects}; external callers configure these knobs through {@link JedisClientConfig}.
+ * The setters and {@link #build()} method are package-private — the builder is an internal seam
+ * between the client constructor and {@link CommandObjects}, and external callers configure these
+ * knobs through {@link JedisClientConfig} on the client builder. The class itself is public only so
+ * that subclasses of {@link UnifiedJedis} in this package can be referenced through the generic
+ * return type of {@code applyClientConfig(...)}.
  */
 public class CommandObjectsBuilder<T extends CommandObjects> {
 

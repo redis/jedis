@@ -93,8 +93,8 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       CacheStats stats = cache.getStats();
       double keysPerSec = (count * 1_000_000_000.0) / invalidationElapsedNanos;
 
-      log.info("invalidateAllWithLargeCacheTest: NULL invalidation flushed {} entries in {} ms ({} keys/sec)", count,
-              TimeUnit.NANOSECONDS.toMillis(invalidationElapsedNanos), String.format("%.2f", keysPerSec));
+      log.info("invalidateAllWithLargeCacheTest: NULL invalidation flushed {} entries in {} ns ({} keys/sec)", count,
+              invalidationElapsedNanos, String.format("%.2f", keysPerSec));
       log.info("cache stats: {}", stats);
     }
   }
@@ -131,7 +131,6 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       long processingStartTime = System.nanoTime();
       jedis.get("key0");
       long processingElapsedNanos = System.nanoTime() - processingStartTime;
-      long processingElapsed = TimeUnit.NANOSECONDS.toMillis(processingElapsedNanos);
 
       // 5. Verify all invalidations were processed
       CacheStats stats = cache.getStats();
@@ -139,8 +138,8 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
       double invalidationsPerSec = (count * 1_000_000_000.0) / processingElapsedNanos;
 
-      log.info("pendingInvalidationMessagesTest: {} pending invalidations processed in {} ms ({} invalidations/sec)", count,
-              processingElapsed, String.format("%.2f", invalidationsPerSec));
+      log.info("pendingInvalidationMessagesTest: {} pending invalidations processed in {} ns ({} invalidations/sec)", count,
+              processingElapsedNanos, String.format("%.2f", invalidationsPerSec));
       log.info("cache stats: {}", stats);
     }
   }

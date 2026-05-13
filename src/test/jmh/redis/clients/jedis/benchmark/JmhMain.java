@@ -35,13 +35,14 @@ public class JmhMain {
     public static void main(String... args) throws RunnerException {
         // Uncomment the benchmark suite you want to run:
 
-        // runAllBenchmarks();
+         runAllBenchmarks();
         // runJedisGetSetBenchmarks();
         // runProtocolBenchmarks();
         // runCRC16Benchmarks();
         // runSafeEncoderBenchmarks();
         // runRedisClientGetSetBenchmarks();
         // runGetSetMixedR90W10Benchmarks();
+        // runPubSubPushBenchmarks();
         // runSpecificBenchmark("CRC16Benchmark.getSlotString");
 
         // results saved to benchmarks.json and benchmark.log
@@ -127,6 +128,20 @@ public class JmhMain {
         System.out.println("Running GetSetMixedR90W10 workload benchmarks (requires Redis server)...");
         new Runner(prepareOptions()
                 .include(".*GetSetMixedR90W10Benchmark.*")
+                .build())
+                .run();
+    }
+
+    /**
+     * Run only Pub/Sub push message benchmarks (requires live Redis server).
+     * Measures end-to-end publish→onMessage round-trip throughput.
+     * Uses benchmark class defaults for mode and timeUnit.
+     */
+    private static void runPubSubPushBenchmarks() throws RunnerException {
+        System.out.println("Running Pub/Sub push benchmarks (requires Redis server)...");
+        new Runner(prepareOptions()
+                .addProfiler("gc")
+                .include(".*PubSubPushBenchmark.*")
                 .build())
                 .run();
     }

@@ -1,7 +1,13 @@
 name: Publish Docs
 on:
   push:
-    branches: ["master"]
+    branches: ["master", "benchmark-data"]
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Deploy to GitHub Pages'
+        type: boolean
+        default: false
 permissions:
   contents: read
   pages: write
@@ -25,6 +31,15 @@ jobs:
       - name: Build docs
         run: |
           mkdocs build -d docsbuild
+      - name: Pull benchmark dashboard
+        uses: actions/checkout@v4
+        with:
+          ref: benchmark-data
+          path: benchmark-data
+      - name: Embed benchmark dashboard into site
+        run: |
+          mkdir -p docsbuild/benchmarks
+          cp -r benchmark-data/jedis/* docsbuild/benchmarks/
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact
@@ -32,5 +47,6 @@ jobs:
         with:
           path: 'docsbuild'
       - name: Deploy to GitHub Pages
+        if: github.event_name != 'workflow_dispatch' || inputs.deploy
         id: deployment
         uses: actions/deploy-pages@v4

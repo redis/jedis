@@ -10,7 +10,6 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.builders.ClusterClientBuilder;
-import redis.clients.jedis.builders.CommandObjectsConfig;
 import redis.clients.jedis.executors.ClusterCommandExecutor;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
@@ -296,14 +295,14 @@ public class JedisCluster extends UnifiedJedis {
   public JedisCluster(ClusterConnectionProvider provider, int maxAttempts,
       Duration maxTotalRetriesDuration) {
     super(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration,
-        StaticCommandFlagsRegistry.registry()), provider, null, null, null);
+        StaticCommandFlagsRegistry.registry()), provider, (RedisProtocol) null, null);
     this.commandFlagsRegistry = StaticCommandFlagsRegistry.registry();
   }
 
   private JedisCluster(ClusterConnectionProvider provider, int maxAttempts,
       Duration maxTotalRetriesDuration, RedisProtocol protocol) {
     super(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration,
-            StaticCommandFlagsRegistry.registry()), provider, protocol, null, null);
+            StaticCommandFlagsRegistry.registry()), provider, protocol, null);
     this.commandFlagsRegistry = StaticCommandFlagsRegistry.registry();
   }
 
@@ -352,21 +351,21 @@ public class JedisCluster extends UnifiedJedis {
   private JedisCluster(ClusterConnectionProvider provider, int maxAttempts,
       Duration maxTotalRetriesDuration, RedisProtocol protocol, Cache clientSideCache) {
     super(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration,
-            StaticCommandFlagsRegistry.registry()), provider, protocol, null, clientSideCache);
+            StaticCommandFlagsRegistry.registry()), provider, protocol, clientSideCache);
     this.commandFlagsRegistry = StaticCommandFlagsRegistry.registry();
   }
 
   private JedisCluster(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
-      RedisProtocol redisProtocol, CommandObjectsConfig commandObjectsConfig, Cache cache,
-      CommandFlagsRegistry commandFlagsRegistry) {
-    super(commandExecutor, connectionProvider, redisProtocol, commandObjectsConfig, cache);
+      JedisClientConfig clientConfig, Cache cache, CommandFlagsRegistry commandFlagsRegistry) {
+    super(commandExecutor, connectionProvider, clientConfig, cache);
     this.commandFlagsRegistry = commandFlagsRegistry;
   }
 
   @Override
   protected CommandObjects createCommandObjects(RedisProtocol protocol,
-      CommandObjectsConfig config) {
-    return new ClusterCommandObjects(protocol, config);
+      JedisClientConfig clientConfig) {
+    return applyClientConfig(new CommandObjectsBuilder<>(ClusterCommandObjects::new), protocol,
+        clientConfig).build();
   }
 
   /**
@@ -379,8 +378,8 @@ public class JedisCluster extends UnifiedJedis {
 
     @Override
     protected JedisCluster createClient() {
-      return new JedisCluster(commandExecutor, connectionProvider,
-          clientConfig.getRedisProtocol(), commandObjectsConfig(), cache, getCommandFlags());
+      return new JedisCluster(commandExecutor, connectionProvider, clientConfig, cache,
+          getCommandFlags());
     }
   }
 

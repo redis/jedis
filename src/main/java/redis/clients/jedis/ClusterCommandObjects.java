@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.builders.CommandObjectsConfig;
 import redis.clients.jedis.params.IParams;
 import redis.clients.jedis.params.MSetExParams;
 import redis.clients.jedis.params.ScanParams;
@@ -29,10 +28,6 @@ public class ClusterCommandObjects extends CommandObjects {
 
   public ClusterCommandObjects(RedisProtocol protocol) {
     super(protocol);
-  }
-
-  public ClusterCommandObjects(RedisProtocol protocol, CommandObjectsConfig config) {
-    super(protocol, config);
   }
 
   private static final String SCAN_PATTERN_MESSAGE = "Cluster mode only supports SCAN command"

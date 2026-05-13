@@ -2,7 +2,6 @@ package redis.clients.jedis;
 
 import java.util.Map;
 
-import redis.clients.jedis.builders.CommandObjectsConfig;
 import redis.clients.jedis.builders.SentinelClientBuilder;
 import redis.clients.jedis.csc.Cache;
 
@@ -41,9 +40,8 @@ import redis.clients.jedis.util.Pool;
  // @formatter:on
 public class RedisSentinelClient extends UnifiedJedis {
   private RedisSentinelClient(CommandExecutor commandExecutor,
-      ConnectionProvider connectionProvider, RedisProtocol redisProtocol,
-      CommandObjectsConfig commandObjectsConfig, Cache cache) {
-    super(commandExecutor, connectionProvider, redisProtocol, commandObjectsConfig, cache);
+      ConnectionProvider connectionProvider, JedisClientConfig clientConfig, Cache cache) {
+    super(commandExecutor, connectionProvider, clientConfig, cache);
   }
 
   /**
@@ -56,8 +54,7 @@ public class RedisSentinelClient extends UnifiedJedis {
 
     @Override
     protected RedisSentinelClient createClient() {
-      return new RedisSentinelClient(commandExecutor, connectionProvider,
-          clientConfig.getRedisProtocol(), commandObjectsConfig(), cache);
+      return new RedisSentinelClient(commandExecutor, connectionProvider, clientConfig, cache);
     }
   }
 

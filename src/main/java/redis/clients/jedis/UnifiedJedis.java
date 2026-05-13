@@ -181,7 +181,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    */
   protected CommandObjects createCommandObjects(RedisProtocol protocol,
       JedisClientConfig clientConfig) {
-    return applyClientConfig(CommandObjects.builder(), protocol, clientConfig).build();
+    return buildCommandObjects(CommandObjects.builder(), protocol, clientConfig).build();
   }
 
   /**
@@ -190,22 +190,23 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * override {@link #createCommandObjects(RedisProtocol, JedisClientConfig)} to construct a
    * specialized subtype.
    */
-  protected static <T extends CommandObjects> CommandObjectsBuilder<T> applyClientConfig(
+  protected static <T extends CommandObjects> CommandObjectsBuilder<T> buildCommandObjects(
       CommandObjectsBuilder<T> builder, RedisProtocol protocol, JedisClientConfig clientConfig) {
     builder.protocol(protocol);
-    if (clientConfig != null) {
-      CommandKeyArgumentPreProcessor preProcessor = clientConfig.getCommandKeyArgumentPreProcessor();
-      if (preProcessor != null) {
-        builder.commandKeyArgumentPreProcessor(preProcessor);
-      }
-      JsonObjectMapper mapper = clientConfig.getJsonObjectMapper();
-      if (mapper != null) {
-        builder.jsonObjectMapper(mapper);
-      }
-      int dialect = clientConfig.getSearchDialect();
-      if (dialect != redis.clients.jedis.search.SearchProtocol.DEFAULT_DIALECT) {
-        builder.searchDialect(dialect);
-      }
+    if (clientConfig == null) {
+      return builder;
+    }
+    CommandKeyArgumentPreProcessor preProcessor = clientConfig.getCommandKeyArgumentPreProcessor();
+    if (preProcessor != null) {
+      builder.commandKeyArgumentPreProcessor(preProcessor);
+    }
+    JsonObjectMapper mapper = clientConfig.getJsonObjectMapper();
+    if (mapper != null) {
+      builder.jsonObjectMapper(mapper);
+    }
+    int dialect = clientConfig.getSearchDialect();
+    if (dialect != redis.clients.jedis.search.SearchProtocol.DEFAULT_DIALECT) {
+      builder.searchDialect(dialect);
     }
     return builder;
   }

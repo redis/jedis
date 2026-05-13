@@ -15,7 +15,7 @@ import redis.clients.jedis.search.SearchProtocol;
  * Package-private — the builder is an internal seam between the client constructor and
  * {@link CommandObjects}; external callers configure these knobs through {@link JedisClientConfig}.
  */
-class CommandObjectsBuilder<T extends CommandObjects> {
+public class CommandObjectsBuilder<T extends CommandObjects> {
 
   private final Function<RedisProtocol, T> factory;
   private RedisProtocol protocol;

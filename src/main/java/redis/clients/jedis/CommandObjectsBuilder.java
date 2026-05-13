@@ -6,11 +6,11 @@ import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.search.SearchProtocol;
 
 /**
- * Fluent builder for {@link CommandObjects} and its subclasses. The builder is parameterised on
- * the concrete instance type and uses a {@link Function} factory so subclasses such as
- * {@link ClusterCommandObjects} can be constructed through the same fluent API without forcing
- * each subclass to declare its own static {@code builder()} (which would clash with static-method
- * hiding rules for generic return types).
+ * Fluent builder for {@link CommandObjects} and its subclasses. The builder is parameterised on the
+ * concrete instance type and uses a {@link Function} factory so subclasses such as
+ * {@link ClusterCommandObjects} can be constructed through the same fluent API without forcing each
+ * subclass to declare its own static {@code builder()} (which would clash with static-method hiding
+ * rules for generic return types).
  * <p>
  * Package-private — the builder is an internal seam between the client constructor and
  * {@link CommandObjects}; external callers configure these knobs through {@link JedisClientConfig}.

@@ -53,6 +53,16 @@ UTF-8 encoding/decoding performance.
 **Test data:** Rotates through 6 string patterns (2-44 chars)
 **Batch size:** 120 ops (6 patterns × 20)
 
+### JedisGetSetBenchmark (2 benchmarks) ⚠️ Requires Redis
+Real Jedis GET/SET operations over network.
+
+**Methods:**
+- `set` - Write performance (foo=bar)
+- `get` - Read performance (foo=bar)
+
+**Requirements:** Redis 6.0+ running on localhost:6379 (or configured endpoint)
+**Mode:** Throughput (ops/sec)
+
 ---
 
 ## Configuration
@@ -84,4 +94,5 @@ CRC16Benchmark.getSlotString     avgt    5  47.123 ± 2.456  ns/op
 - **Batching:** Fast operations (< 100 ns) use batching to reduce JMH overhead
 - **Test patterns:** Batch size is always a multiple of pattern count for consistent results
 - **IDE runner:** `JmhMain.java` provides easy IDE execution
+- **Redis required:** JedisGetSetBenchmark requires a running Redis instance (localhost:6379)
 - **CI/CD:** GitHub Actions runs benchmarks nightly, results published to gh-pages

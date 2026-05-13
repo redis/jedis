@@ -36,9 +36,10 @@ public class JmhMain {
         // Uncomment the benchmark suite you want to run:
         
         // runAllBenchmarks();
+        runJedisGetSetBenchmarks();
         // runProtocolBenchmarks();
         // runCRC16Benchmarks();
-        runSafeEncoderBenchmarks();
+        // runSafeEncoderBenchmarks();
         // runSpecificBenchmark("CRC16Benchmark.getSlotString");
 
         // results saved to benchmarks.json and benchmark.log
@@ -91,6 +92,19 @@ public class JmhMain {
                 .mode(Mode.AverageTime)
                 .timeUnit(TimeUnit.NANOSECONDS)
                 .include(".*SafeEncoderBenchmark.*")
+                .build())
+                .run();
+    }
+
+    /**
+     * Run only Jedis GET/SET benchmarks (requires live Redis server).
+     */
+    private static void runJedisGetSetBenchmarks() throws RunnerException {
+        System.out.println("Running Jedis GET/SET benchmarks (requires Redis server)...");
+        new Runner(prepareOptions()
+                .mode(Mode.Throughput)
+                .timeUnit(TimeUnit.SECONDS)
+                .include(".*JedisGetSetBenchmark.*")
                 .build())
                 .run();
     }

@@ -784,24 +784,19 @@
 										<classpath />
 										<argument>org.openjdk.jmh.Main</argument>
 										<argument>.*</argument>
-										<argument>-tu</argument>
-										<argument>ns</argument>
-										<argument>-f</argument>
-										<argument>1</argument>
-										<argument>-wi</argument>
-										<argument>3</argument>
-										<argument>-w</argument>
-										<argument>1</argument>
-										<argument>-r</argument>
-										<argument>1</argument>
-										<argument>-i</argument>
-										<argument>5</argument>
-										<argument>-bm</argument>
-										<argument>avgt</argument>
+										<!-- Result format: machine-readable JSON for the nightly trend-comparison job.
+                                             Other options: text (default, human-only), csv, scsv, latex. -->
 										<argument>-rf</argument>
 										<argument>json</argument>
+										<!-- Result filename. CI should rename/move this to a commit-tagged path
+                                             (e.g. results/benchmarks-${SHA}.json) so history accumulates instead of overwrites. -->
 										<argument>-rff</argument>
 										<argument>benchmarks.json</argument>
+										<!-- NOTE: Mode, output unit, forks, warmup, and measurement settings are intentionally
+                                             NOT specified here. Each benchmark class declares its own via @BenchmarkMode,
+                                             @OutputTimeUnit, @Fork, @Warmup, and @Measurement annotations.
+                                             Adding CLI flags like -bm, -tu, -f, -wi, -w, -i, -r here would silently override
+                                             those annotations for every benchmark, breaking per-benchmark tuning. -->
 									</arguments>
 								</configuration>
 							</execution>

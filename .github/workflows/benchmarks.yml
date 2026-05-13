@@ -26,6 +26,16 @@ jobs:
           distribution: 'temurin'
           cache: 'maven'
 
+      - name: Start Redis server
+        run: |
+          docker run --name redis-benchmark-test \
+            -p 6379:6379 \
+            -d redis:8.6.3 \
+            redis-server --requirepass foobared
+          # Wait for Redis to be ready
+          sleep 5
+          docker ps | grep redis-benchmark-test
+
       - name: Maven offline dependencies
         run: mvn -q dependency:go-offline
 
@@ -34,6 +44,10 @@ jobs:
         env:
           JVM_OPTS: -Xmx3200m
           TERM: dumb
+
+      - name: Stop Redis server
+        if: always()
+        run: docker rm -f redis-benchmark-test || true
 
       - name: Verify JMH output exists
         run: test -s benchmarks.json

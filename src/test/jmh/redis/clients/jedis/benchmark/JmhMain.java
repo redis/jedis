@@ -35,8 +35,8 @@ public class JmhMain {
     public static void main(String... args) throws RunnerException {
         // Uncomment the benchmark suite you want to run:
         
-        // runAllBenchmarks();
-        runJedisGetSetBenchmarks();
+         runAllBenchmarks();
+        // runJedisGetSetBenchmarks();
         // runProtocolBenchmarks();
         // runCRC16Benchmarks();
         // runSafeEncoderBenchmarks();

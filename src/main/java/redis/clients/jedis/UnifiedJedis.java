@@ -10,7 +10,6 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
-import redis.clients.jedis.builders.CommandObjectsConfig;
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.JedisBinaryCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -57,12 +56,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   private final Cache cache;
 
   protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol) {
-    this(new DefaultCommandExecutor(provider), provider, protocol, null, null);
+    this(new DefaultCommandExecutor(provider), provider, protocol, (Cache) null);
   }
 
   @Experimental
   protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol, Cache cache) {
-    this(new DefaultCommandExecutor(provider), provider, protocol, null, cache);
+    this(new DefaultCommandExecutor(provider), provider, protocol, cache);
   }
 
   /**
@@ -90,8 +89,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    */
   @Deprecated
   public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
-    this(new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider, null,
-        null, null);
+    this(new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
+        (RedisProtocol) null, null);
   }
 
   /**
@@ -120,14 +119,31 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * Builder-facing constructor. The client owns {@link CommandObjects} construction: this ctor
-   * resolves the protocol (probing the provider when {@code protocol} is null), then delegates to
-   * {@link #createCommandObjects(RedisProtocol, CommandObjectsConfig)} so subclasses can supply a
+   * Builder-facing constructor. The client owns {@link CommandObjects} construction: it reads the
+   * protocol (and the {@code CommandObjects} knobs) from {@code clientConfig}, probes the provider
+   * when the protocol is left unspecified, then delegates to
+   * {@link #createCommandObjects(RedisProtocol, JedisClientConfig)} so subclasses can supply a
    * specialized type (e.g. {@code ClusterCommandObjects}).
    */
   @Experimental
   protected UnifiedJedis(CommandExecutor executor, ConnectionProvider provider,
-      RedisProtocol protocol, CommandObjectsConfig commandObjectsConfig, Cache cache) {
+      JedisClientConfig clientConfig, Cache cache) {
+    this(executor, provider, clientConfig != null ? clientConfig.getRedisProtocol() : null,
+        clientConfig, cache);
+  }
+
+  /**
+   * Legacy constructor for code paths that have only a {@link RedisProtocol} in hand (no
+   * {@link JedisClientConfig}). Command-objects-level knobs (key pre-processor, JSON mapper, search
+   * dialect) fall back to library defaults.
+   */
+  protected UnifiedJedis(CommandExecutor executor, ConnectionProvider provider,
+      RedisProtocol protocol, Cache cache) {
+    this(executor, provider, protocol, null, cache);
+  }
+
+  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider,
+      RedisProtocol protocol, JedisClientConfig clientConfig, Cache cache) {
 
     this.provider = provider;
     this.executor = executor;
@@ -149,18 +165,49 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
       throw new IllegalArgumentException("Client-side caching is only supported with RESP3.");
     }
 
-    this.commandObjects = createCommandObjects(resolvedProtocol, commandObjectsConfig);
+    this.commandObjects = createCommandObjects(resolvedProtocol, clientConfig);
     this.cache = cache;
   }
 
   /**
    * Factory hook for the {@link CommandObjects} instance held by this client. Subclasses (e.g.
-   * {@code JedisCluster}) override to return their specialized subtype. Called from the
+   * {@link JedisCluster}) override to return their specialized subtype. Called from the
    * constructor — must not depend on subclass instance state.
+   * <p>
+   * The default implementation reads {@code commandKeyArgumentPreProcessor},
+   * {@code jsonObjectMapper}, and {@code searchDialect} from the supplied
+   * {@link JedisClientConfig} (when non-null) and applies them via the
+   * {@link CommandObjectsBuilder}.
    */
   protected CommandObjects createCommandObjects(RedisProtocol protocol,
-      CommandObjectsConfig config) {
-    return new CommandObjects(protocol, config);
+      JedisClientConfig clientConfig) {
+    return applyClientConfig(CommandObjects.builder(), protocol, clientConfig).build();
+  }
+
+  /**
+   * Applies the {@code CommandObjects}-relevant knobs from {@code clientConfig} onto a fluent
+   * {@link CommandObjectsBuilder}. Shared between {@link UnifiedJedis} and subclasses that
+   * override {@link #createCommandObjects(RedisProtocol, JedisClientConfig)} to construct a
+   * specialized subtype.
+   */
+  protected static <T extends CommandObjects> CommandObjectsBuilder<T> applyClientConfig(
+      CommandObjectsBuilder<T> builder, RedisProtocol protocol, JedisClientConfig clientConfig) {
+    builder.protocol(protocol);
+    if (clientConfig != null) {
+      CommandKeyArgumentPreProcessor preProcessor = clientConfig.getCommandKeyArgumentPreProcessor();
+      if (preProcessor != null) {
+        builder.commandKeyArgumentPreProcessor(preProcessor);
+      }
+      JsonObjectMapper mapper = clientConfig.getJsonObjectMapper();
+      if (mapper != null) {
+        builder.jsonObjectMapper(mapper);
+      }
+      int dialect = clientConfig.getSearchDialect();
+      if (dialect != redis.clients.jedis.search.SearchProtocol.DEFAULT_DIALECT) {
+        builder.searchDialect(dialect);
+      }
+    }
+    return builder;
   }
 
   @Override

@@ -79,21 +79,38 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
   }
 
   /**
-   * Creates a default client configuration based on the current configuration.
+   * Creates a default client configuration based on the current configuration. Any deprecated
+   * builder-level overrides ({@link #keyPreProcessor}, {@link #jsonObjectMapper},
+   * {@link #searchDialect}) are folded into the resulting config so the client constructor sees a
+   * single source of truth.
    * @return JedisClientConfig
    */
   protected JedisClientConfig createDefaultClientConfig() {
-    return DefaultJedisClientConfig.builder().build();
+    return applyDeprecatedCommandObjectFields(DefaultJedisClientConfig.builder()).build();
   }
 
   /**
-   * Snapshots the fluent configuration into an immutable {@link CommandObjectsConfig}. The client
-   * constructor passes this to its {@link CommandObjects} factory hook so all knobs land via the
-   * constructor rather than through post-construction setters.
+   * Layers the deprecated builder-level {@link CommandObjects} knobs onto a
+   * {@link DefaultJedisClientConfig.Builder}. Used both when creating a default config from scratch
+   * and when augmenting a user-supplied config in {@link #build()}.
    */
-  protected CommandObjectsConfig commandObjectsConfig() {
-    Integer dialect = (searchDialect != SearchProtocol.DEFAULT_DIALECT) ? searchDialect : null;
-    return new CommandObjectsConfig(keyPreProcessor, jsonObjectMapper, dialect);
+  private DefaultJedisClientConfig.Builder applyDeprecatedCommandObjectFields(
+      DefaultJedisClientConfig.Builder configBuilder) {
+    if (this.keyPreProcessor != null) {
+      configBuilder.commandKeyArgumentPreProcessor(this.keyPreProcessor);
+    }
+    if (this.jsonObjectMapper != null) {
+      configBuilder.jsonObjectMapper(this.jsonObjectMapper);
+    }
+    if (this.searchDialect != SearchProtocol.DEFAULT_DIALECT) {
+      configBuilder.searchDialect(this.searchDialect);
+    }
+    return configBuilder;
+  }
+
+  private boolean hasDeprecatedCommandObjectOverrides() {
+    return this.keyPreProcessor != null || this.jsonObjectMapper != null
+        || this.searchDialect != SearchProtocol.DEFAULT_DIALECT;
   }
 
   /**
@@ -141,6 +158,11 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
 
     if (this.clientConfig == null) {
       this.clientConfig = createDefaultClientConfig();
+    } else if (hasDeprecatedCommandObjectOverrides()) {
+      // User supplied a clientConfig AND used the deprecated builder-level setters — layer the
+      // setters on top so the explicit builder call wins over whatever the supplied config carried.
+      this.clientConfig = applyDeprecatedCommandObjectFields(
+        DefaultJedisClientConfig.builder().from(this.clientConfig)).build();
     }
 
     // Create default connection provider if not set
@@ -239,7 +261,13 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    *
    * @param keyPreProcessor the key preprocessor
    * @return this builder
+   * @deprecated use
+   *             {@link DefaultJedisClientConfig.Builder#commandKeyArgumentPreProcessor(CommandKeyArgumentPreProcessor)}
+   *             on the {@link JedisClientConfig} passed via
+   *             {@link #clientConfig(JedisClientConfig)}. When this setter is used it is folded
+   *             into the resulting client config at {@link #build()} time.
    */
+  @Deprecated
   public T keyPreProcessor(CommandKeyArgumentPreProcessor keyPreProcessor) {
     this.keyPreProcessor = keyPreProcessor;
     return self();
@@ -263,7 +291,12 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    *
    * @param jsonObjectMapper the JSON object mapper
    * @return this builder
+   * @deprecated use {@link DefaultJedisClientConfig.Builder#jsonObjectMapper(JsonObjectMapper)} on
+   *             the {@link JedisClientConfig} passed via {@link #clientConfig(JedisClientConfig)}.
+   *             When this setter is used it is folded into the resulting client config at
+   *             {@link #build()} time.
    */
+  @Deprecated
   public T jsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
     this.jsonObjectMapper = jsonObjectMapper;
     return self();
@@ -279,7 +312,12 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    * @param searchDialect the search dialect version
    * @return this builder
    * @throws IllegalArgumentException if dialect is 0 (not allowed)
+   * @deprecated use {@link DefaultJedisClientConfig.Builder#searchDialect(int)} on the
+   *             {@link JedisClientConfig} passed via {@link #clientConfig(JedisClientConfig)}. When
+   *             this setter is used it is folded into the resulting client config at
+   *             {@link #build()} time.
    */
+  @Deprecated
   public T searchDialect(int searchDialect) {
     if (searchDialect == 0) {
       throw new IllegalArgumentException("DIALECT=0 cannot be set.");

@@ -6,6 +6,8 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.authentication.AuthXManager;
+import redis.clients.jedis.json.JsonObjectMapper;
+import redis.clients.jedis.search.SearchProtocol;
 
 public interface JedisClientConfig {
 
@@ -170,5 +172,41 @@ public interface JedisClientConfig {
    */
   default ClientSetInfoConfig getClientSetInfoConfig() {
     return ClientSetInfoConfig.DEFAULT;
+  }
+
+  /**
+   * Optional key argument pre-processor applied to every command before it is sent. Returning
+   * {@code null} disables key rewriting.
+   * <p>
+   * <b>Not supported by the legacy {@link Jedis} class</b> — only the {@link UnifiedJedis} family
+   * ({@link RedisClient}, {@link RedisClusterClient}, {@link RedisSentinelClient},
+   * {@link MultiDbClient}) honours this value.
+   */
+  default CommandKeyArgumentPreProcessor getCommandKeyArgumentPreProcessor() {
+    return null;
+  }
+
+  /**
+   * Optional JSON object mapper used by RedisJSON commands. Returning {@code null} falls back to
+   * the library default (Gson-based).
+   * <p>
+   * <b>Not supported by the legacy {@link Jedis} class</b> — only the {@link UnifiedJedis} family
+   * ({@link RedisClient}, {@link RedisClusterClient}, {@link RedisSentinelClient},
+   * {@link MultiDbClient}) honours this value.
+   */
+  default JsonObjectMapper getJsonObjectMapper() {
+    return null;
+  }
+
+  /**
+   * Default search dialect applied to RediSearch commands when the caller does not specify one.
+   * Defaults to {@link SearchProtocol#DEFAULT_DIALECT}.
+   * <p>
+   * <b>Not supported by the legacy {@link Jedis} class</b> — only the {@link UnifiedJedis} family
+   * ({@link RedisClient}, {@link RedisClusterClient}, {@link RedisSentinelClient},
+   * {@link MultiDbClient}) honours this value.
+   */
+  default int getSearchDialect() {
+    return SearchProtocol.DEFAULT_DIALECT;
   }
 }

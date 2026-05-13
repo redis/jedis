@@ -119,18 +119,6 @@ public class JmhMain {
     }
 
     /**
-     * Run only RedisClient Client-Side Caching (CSC) benchmarks (requires live Redis server).
-     * Uses benchmark class defaults for mode and timeUnit.
-     */
-    private static void runRedisClientCSCBenchmarks() throws RunnerException {
-        System.out.println("Running RedisClient CSC benchmarks (requires Redis server)...");
-        new Runner(prepareOptions()
-                .include(".*RedisClientCSCBenchmark.*")
-                .build())
-                .run();
-    }
-
-    /**
      * Run only the 90% read / 10% write mixed workload benchmark (requires live Redis server).
      * Compares Jedis, RedisClient, and RedisClient+CSC under a fixed workload.
      * Uses benchmark class defaults for mode and timeUnit.

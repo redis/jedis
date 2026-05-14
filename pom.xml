@@ -595,6 +595,7 @@
 
 						<include>**/RespProtocol.java</include>
 						<include>**/ProtocolHandshake*.java</include>
+						<include>src/test/jmh/**/*.java</include>
 					</includes>
 				</configuration>
 				<executions>

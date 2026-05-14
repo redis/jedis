@@ -108,12 +108,6 @@ public class ProtocolReadBenchmark {
     // Create cache for testing
     cache = CacheFactory.getCache(
       CacheConfig.builder().maxSize(10000).cacheable(DefaultCacheable.INSTANCE).build());
-
-    // Pre-populate cache with some keys that will be invalidated
-    // This ensures the invalidation actually does work
-    for (int i = 0; i < 100; i++) {
-      // Cache entries would be here in real scenario
-    }
   }
 
   /**

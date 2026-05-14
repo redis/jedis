@@ -6,7 +6,10 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.MSetExParams;
 
+import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.LCSParams;
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.resps.IncrexResponse;
 import redis.clients.jedis.resps.LCSMatchResult;
 
 public interface StringBinaryCommands extends BitBinaryCommands {
@@ -99,6 +102,15 @@ public interface StringBinaryCommands extends BitBinaryCommands {
   long incrBy(byte[] key, long increment);
 
   double incrByFloat(byte[] key, double increment);
+
+  @Experimental
+  IncrexResponse<Long> increx(byte[] key);
+
+  @Experimental
+  IncrexResponse<Long> increx(byte[] key, long increment, IncrexParams params);
+
+  @Experimental
+  IncrexResponse<Double> increxFloat(byte[] key, double increment, IncrexParams params);
 
   long decr(byte[] key);
 

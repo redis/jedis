@@ -2562,6 +2562,50 @@ public final class BuilderFactory {
     }
   }
 
+  public static final Builder<IncrexResponse<Long>> INCREX_LONG = new Builder<IncrexResponse<Long>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public IncrexResponse<Long> build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+      long value = parseLongBulk(list.get(0));
+      long increment = parseLongBulk(list.get(1));
+      return new IncrexResponse<>(value, increment);
+    }
+
+    private long parseLongBulk(Object raw) {
+      if (raw instanceof Long) return (Long) raw;
+      return Long.parseLong(STRING.build(raw));
+    }
+
+    @Override
+    public String toString() {
+      return "IncrexResponse<Long>";
+    }
+  };
+
+  public static final Builder<IncrexResponse<Double>> INCREX_DOUBLE = new Builder<IncrexResponse<Double>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public IncrexResponse<Double> build(Object data) {
+      if (data == null) return null;
+      List<Object> list = (List<Object>) data;
+      double value = parseDoubleBulk(list.get(0));
+      double increment = parseDoubleBulk(list.get(1));
+      return new IncrexResponse<>(value, increment);
+    }
+
+    private double parseDoubleBulk(Object raw) {
+      if (raw instanceof Double) return (Double) raw;
+      return DoublePrecision.parseFloatingPointNumber(STRING.build(raw));
+    }
+
+    @Override
+    public String toString() {
+      return "IncrexResponse<Double>";
+    }
+  };
+
   private BuilderFactory() {
     throw new InstantiationError("Must not instantiate this class");
   }

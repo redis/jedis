@@ -929,6 +929,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public IncrexResponse<Long> increx(String key) {
+    return executeCommand(commandObjects.increx(key));
+  }
+
+  @Override
+  public IncrexResponse<Long> increx(String key, long increment, IncrexParams params) {
+    return executeCommand(commandObjects.increx(key, increment, params));
+  }
+
+  @Override
+  public IncrexResponse<Double> increxFloat(String key, double increment, IncrexParams params) {
+    return executeCommand(commandObjects.increxFloat(key, increment, params));
+  }
+
+  @Override
   public long decr(String key) {
     return executeCommand(commandObjects.decr(key));
   }
@@ -951,6 +966,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public double incrByFloat(byte[] key, double increment) {
     return executeCommand(commandObjects.incrByFloat(key, increment));
+  }
+
+  @Override
+  public IncrexResponse<Long> increx(byte[] key) {
+    return executeCommand(commandObjects.increx(key));
+  }
+
+  @Override
+  public IncrexResponse<Long> increx(byte[] key, long increment, IncrexParams params) {
+    return executeCommand(commandObjects.increx(key, increment, params));
+  }
+
+  @Override
+  public IncrexResponse<Double> increxFloat(byte[] key, double increment, IncrexParams params) {
+    return executeCommand(commandObjects.increxFloat(key, increment, params));
   }
 
   @Override

@@ -19,8 +19,10 @@ import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.params.MSetExParams;
 
 import redis.clients.jedis.resps.LCSMatchResult;
+import redis.clients.jedis.resps.IncrexResponse;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.util.TestEnvUtil;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -330,6 +332,166 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
     // Verify TTL is set
     long ttl = jedis.ttl(k1);
     assertTrue(ttl > 0L);
+  }
+
+  // ── INCREX ──────────────────────────────────────────
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxBasic() {
+    IncrexResponse<Long> res = jedis.increx("foo");
+    assertEquals(Long.valueOf(1), res.getValue());
+    assertEquals(Long.valueOf(1), res.getIncrement());
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxByIntWithBoundsAndExpiry() {
+    jedis.set("foo", "10");
+    IncrexParams params = new IncrexParams().lbound(0).ubound(20).ex(60);
+    IncrexResponse<Long> res = jedis.increx("foo", 2, params);
+    assertEquals(Long.valueOf(12), res.getValue());
+    assertEquals(Long.valueOf(2), res.getIncrement());
+    assertTrue(jedis.ttl("foo") > 0);
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxByFloatWithBoundsAndExpiry() {
+    jedis.set("foo", "3.25");
+    IncrexParams params = new IncrexParams().lbound(-1.5).ubound(9.5).ex(60);
+    IncrexResponse<Double> res = jedis.increxFloat("foo", 1.25, params);
+    assertEquals(4.5, res.getValue(), 0.0);
+    assertEquals(1.25, res.getIncrement(), 0.0);
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxNegativeIncrement() {
+    jedis.set("foo", "10");
+    IncrexParams params = new IncrexParams();
+    IncrexResponse<Long> res = jedis.increx("foo", -3, params);
+    assertEquals(Long.valueOf(7), res.getValue());
+    assertEquals(Long.valueOf(-3), res.getIncrement());
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxRejectOverflow() {
+    jedis.set("foo", "0");
+    IncrexParams params = new IncrexParams().ubound(5).overflow(IncrexParams.Overflow.REJECT);
+    IncrexResponse<Long> res = jedis.increx("foo", 10, params);
+    assertEquals(Long.valueOf(0), res.getValue());
+    assertEquals(Long.valueOf(0), res.getIncrement());
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxSatOverflowUbound() {
+    jedis.set("foo", "0");
+    IncrexParams params = new IncrexParams().ubound(5).overflow(IncrexParams.Overflow.SAT);
+    IncrexResponse<Long> res = jedis.increx("foo", 10, params);
+    assertEquals(Long.valueOf(5), res.getValue());
+    assertEquals(Long.valueOf(5), res.getIncrement());
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxSatOverflowLbound() {
+    jedis.set("foo", "5");
+    IncrexParams params = new IncrexParams().lbound(0).overflow(IncrexParams.Overflow.SAT);
+    IncrexResponse<Long> res = jedis.increx("foo", -100, params);
+    assertEquals(Long.valueOf(0), res.getValue());
+    assertEquals(Long.valueOf(-5), res.getIncrement());
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxFailOverflow() {
+    jedis.set("foo", "0");
+    IncrexParams params = new IncrexParams().ubound(5).overflow(IncrexParams.Overflow.FAIL);
+    assertThrows(JedisDataException.class, () -> jedis.increx("foo", 10, params));
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxSatStillAppliesExpiry() {
+    jedis.set("foo", "5");
+    IncrexParams params = new IncrexParams().ubound(5).overflow(IncrexParams.Overflow.SAT).ex(60);
+    IncrexResponse<Long> res = jedis.increx("foo", 1, params);
+    assertEquals(Long.valueOf(5), res.getValue());
+    assertEquals(Long.valueOf(0), res.getIncrement());
+    assertTrue(jedis.ttl("foo") > 0);
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxPersist() {
+    jedis.set("foo", "5");
+    jedis.expire("foo", 300);
+    IncrexParams params = new IncrexParams().persist();
+    IncrexResponse<Long> res = jedis.increx("foo", 2, params);
+    assertEquals(Long.valueOf(7), res.getValue());
+    assertEquals(Long.valueOf(2), res.getIncrement());
+    assertEquals(-1, jedis.ttl("foo"));
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxEnxNoExistingTtl() {
+    jedis.set("foo", "5");
+    IncrexParams params = new IncrexParams().ex(60).enx();
+    IncrexResponse<Long> res = jedis.increx("foo", 1, params);
+    assertEquals(Long.valueOf(6), res.getValue());
+    assertTrue(jedis.ttl("foo") > 0);
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxEnxWithExistingTtl() {
+    jedis.set("foo", "5");
+    jedis.expire("foo", 300);
+    long ttlBefore = jedis.ttl("foo");
+    IncrexParams params = new IncrexParams().ex(60).enx();
+    jedis.increx("foo", 1, params);
+    long ttlAfter = jedis.ttl("foo");
+    assertTrue(ttlAfter > 60, "ENX should preserve existing TTL");
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxNonExistentKey() {
+    IncrexParams params = new IncrexParams();
+    IncrexResponse<Long> res = jedis.increx("foo", 5, params);
+    assertEquals(Long.valueOf(5), res.getValue());
+    assertEquals(Long.valueOf(5), res.getIncrement());
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxNonNumericKey() {
+    jedis.set("foo", "hello");
+    IncrexParams params = new IncrexParams();
+    assertThrows(JedisDataException.class, () -> jedis.increx("foo", 1, params));
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxFloatSatOverflow() {
+    jedis.set("foo", "0.0");
+    IncrexParams params = new IncrexParams().ubound(5.0).overflow(IncrexParams.Overflow.SAT);
+    IncrexResponse<Double> res = jedis.increxFloat("foo", 10.0, params);
+    assertEquals(5.0, res.getValue(), 0.0);
+    assertEquals(5.0, res.getIncrement(), 0.0);
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxSyncParses() {
+    IncrexParams params = new IncrexParams();
+    IncrexResponse<Long> res = jedis.increx("foo", 3, params);
+    assertEquals(Long.valueOf(3), res.getValue());
+    assertEquals(Long.valueOf(3), res.getIncrement());
   }
 
 }

@@ -389,6 +389,21 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<IncrexResponse<Long>> increx(String key) {
+    return appendCommand(commandObjects.increx(key));
+  }
+
+  @Override
+  public Response<IncrexResponse<Long>> increx(String key, long increment, IncrexParams params) {
+    return appendCommand(commandObjects.increx(key, increment, params));
+  }
+
+  @Override
+  public Response<IncrexResponse<Double>> increxFloat(String key, double increment, IncrexParams params) {
+    return appendCommand(commandObjects.increxFloat(key, increment, params));
+  }
+
+  @Override
   public Response<Long> decr(String key) {
     return appendCommand(commandObjects.decr(key));
   }
@@ -3679,6 +3694,21 @@ public abstract class PipeliningBase
   @Override
   public Response<Double> incrByFloat(byte[] key, double increment) {
     return appendCommand(commandObjects.incrByFloat(key, increment));
+  }
+
+  @Override
+  public Response<IncrexResponse<Long>> increx(byte[] key) {
+    return appendCommand(commandObjects.increx(key));
+  }
+
+  @Override
+  public Response<IncrexResponse<Long>> increx(byte[] key, long increment, IncrexParams params) {
+    return appendCommand(commandObjects.increx(key, increment, params));
+  }
+
+  @Override
+  public Response<IncrexResponse<Double>> increxFloat(byte[] key, double increment, IncrexParams params) {
+    return appendCommand(commandObjects.increxFloat(key, increment, params));
   }
 
   @Override

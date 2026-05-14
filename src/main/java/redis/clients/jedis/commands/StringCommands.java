@@ -6,7 +6,10 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.MSetExParams;
 
+import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.LCSParams;
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.resps.IncrexResponse;
 import redis.clients.jedis.resps.LCSMatchResult;
 
 public interface StringCommands extends BitCommands {
@@ -298,6 +301,34 @@ public interface StringCommands extends BitCommands {
    * @return The value of the key after the increment
    */
   double incrByFloat(String key, double increment);
+
+  /**
+   * Increment the number stored at key by 1 using INCREX.
+   * @param key the key
+   * @return IncrexResponse containing the new value and actual increment
+   */
+  @Experimental
+  IncrexResponse<Long> increx(String key);
+
+  /**
+   * Increment the integer number stored at key with extended options.
+   * @param key the key
+   * @param increment the integer amount to increment by
+   * @param params bounds, overflow, and expiration options
+   * @return IncrexResponse containing the new value and actual increment
+   */
+  @Experimental
+  IncrexResponse<Long> increx(String key, long increment, IncrexParams params);
+
+  /**
+   * Increment the floating-point number stored at key with extended options.
+   * @param key the key
+   * @param increment the floating-point amount to increment by
+   * @param params bounds, overflow, and expiration options
+   * @return IncrexResponse containing the new value and actual increment
+   */
+  @Experimental
+  IncrexResponse<Double> increxFloat(String key, double increment, IncrexParams params);
 
   /**
    * <b><a href="http://redis.io/commands/decr">Decr Command</a></b>

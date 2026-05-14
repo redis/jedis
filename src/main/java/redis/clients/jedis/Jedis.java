@@ -1202,6 +1202,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.incrByFloat(key, increment));
   }
 
+  @Override
+  public IncrexResponse<Long> increx(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.increx(key));
+  }
+
+  @Override
+  public IncrexResponse<Long> increx(final byte[] key, final long increment, final IncrexParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.increx(key, increment, params));
+  }
+
+  @Override
+  public IncrexResponse<Double> increxFloat(final byte[] key, final double increment, final IncrexParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.increxFloat(key, increment, params));
+  }
+
   /**
    * Increment the number stored at key by one. If the key does not exist or contains a value of a
    * wrong type, set the key to the value of "0" before to perform the increment operation.
@@ -5862,6 +5880,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public double incrByFloat(final String key, final double increment) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.incrByFloat(key, increment));
+  }
+
+  @Override
+  public IncrexResponse<Long> increx(final String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.increx(key));
+  }
+
+  @Override
+  public IncrexResponse<Long> increx(final String key, final long increment, final IncrexParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.increx(key, increment, params));
+  }
+
+  @Override
+  public IncrexResponse<Double> increxFloat(final String key, final double increment, final IncrexParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.increxFloat(key, increment, params));
   }
 
   /**

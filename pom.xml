@@ -590,6 +590,7 @@
                         <include>src/test/java/redis/clients/jedis/util/server/*.java</include>
                         <include>**/ConnectionTestHelper.java</include>
 						<include>**/*MockTest.java</include>
+						<include>**/*Increx*.java</include>
 					</includes>
 				</configuration>
 				<executions>

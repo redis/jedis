@@ -56,9 +56,8 @@ public class CRC16Benchmark {
 
     /**
      * Counter for rotating through test set.
-     * Using modulo operation to cycle through keys.
      */
-    private int counter = 0;
+    private long counter = 0;
 
     // Multiple of KEYS.length so each invocation hits every pattern equally.
     private static final int BATCH_SIZE = 128;  // = 8 patterns × 16  // 128
@@ -83,7 +82,7 @@ public class CRC16Benchmark {
     @OperationsPerInvocation(BATCH_SIZE)
     public void getSlotString(Blackhole blackhole) {
         for (int i = 0; i < BATCH_SIZE; i++) {
-            int slot = JedisClusterCRC16.getSlot(STRING_TEST_SET[counter++ % STRING_TEST_SET.length]);
+            int slot = JedisClusterCRC16.getSlot(STRING_TEST_SET[(int) (counter++ % STRING_TEST_SET.length)]);
             blackhole.consume(slot);
         }
     }
@@ -100,7 +99,7 @@ public class CRC16Benchmark {
     @OperationsPerInvocation(BATCH_SIZE)
     public void getSlotBytes(Blackhole blackhole) {
         for (int i = 0; i < BATCH_SIZE; i++) {
-            int slot = JedisClusterCRC16.getSlot(byteTestSet[counter++ % byteTestSet.length]);
+            int slot = JedisClusterCRC16.getSlot(byteTestSet[(int) (counter++ % byteTestSet.length)]);
             blackhole.consume(slot);
         }
     }

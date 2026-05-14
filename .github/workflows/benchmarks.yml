@@ -42,7 +42,6 @@ jobs:
       - name: Run JMH benchmarks
         run: mvn -Pjmh clean test
         env:
-          JVM_OPTS: -Xmx3200m
           TERM: dumb
 
       - name: Stop Redis server

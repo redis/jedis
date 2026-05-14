@@ -30,7 +30,7 @@ jobs:
         run: |
           docker run --name redis-benchmark-test \
             -p 6379:6379 \
-            -d redis:8.6.3 \
+            -d redis:8.2.6 \
             redis-server --requirepass foobared
           # Wait for Redis to be ready
           sleep 5

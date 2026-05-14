@@ -51,7 +51,7 @@ public class SafeEncoderBenchmark {
   /**
    * Counter for rotating through test set.
    */
-  private int counter = 0;
+  private long counter = 0;
 
   /**
    * Batch size for each benchmark invocation. Multiple of TEST_STRINGS.length (6) to ensure each

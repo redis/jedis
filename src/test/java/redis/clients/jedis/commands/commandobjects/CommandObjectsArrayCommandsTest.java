@@ -115,8 +115,8 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   public void testArgrep() {
     String key = "argrep-key";
     exec(commandObjects.arinsert(key, "foo", "foobar", "baz"));
-    List<Object> matches = exec(commandObjects.argrep(key, 0L, 10L,
-        ArgrepParams.argrepParams().match("foo")));
+    List<Object> matches = exec(
+      commandObjects.argrep(key, 0L, 10L, ArgrepParams.argrepParams().match("foo")));
     assertThat(matches, notNullValue());
   }
 
@@ -124,15 +124,14 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   public void testArgrepBinary() {
     byte[] key = "argrep-key-b".getBytes();
     exec(commandObjects.arinsert(key, "alpha".getBytes(), "beta".getBytes()));
-    List<Object> matches = exec(commandObjects.argrep(key, 0L, 10L,
-        ArgrepParams.argrepParams().exact("alpha")));
+    List<Object> matches = exec(
+      commandObjects.argrep(key, 0L, 10L, ArgrepParams.argrepParams().exact("alpha")));
     assertThat(matches, notNullValue());
   }
 
   @Test
   public void testArinfoMissingKeyThrows() {
-    assertThrows(JedisDataException.class,
-        () -> exec(commandObjects.arinfo("missing-arinfo-key")));
+    assertThrows(JedisDataException.class, () -> exec(commandObjects.arinfo("missing-arinfo-key")));
   }
 
   @Test

@@ -121,7 +121,8 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   public void testArgetrange() {
     String key = "k";
     when(commandObjects.argetrange(key, 0L, 1L)).thenReturn(listStringCommandObject);
-    when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(java.util.Arrays.asList("a", "b"));
+    when(commandExecutor.executeCommand(listStringCommandObject))
+        .thenReturn(java.util.Arrays.asList("a", "b"));
 
     assertThat(jedis.argetrange(key, 0L, 1L).size(), equalTo(2));
     verify(commandExecutor).executeCommand(listStringCommandObject);
@@ -132,7 +133,8 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   public void testArgetrangeBinary() {
     byte[] key = "k".getBytes();
     when(commandObjects.argetrange(key, 0L, 1L)).thenReturn(listBytesCommandObject);
-    when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(java.util.Arrays.asList("a".getBytes(), "b".getBytes()));
+    when(commandExecutor.executeCommand(listBytesCommandObject))
+        .thenReturn(java.util.Arrays.asList("a".getBytes(), "b".getBytes()));
 
     assertThat(jedis.argetrange(key, 0L, 1L).size(), equalTo(2));
     verify(commandExecutor).executeCommand(listBytesCommandObject);
@@ -144,7 +146,8 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
     String key = "k";
     ArgrepParams params = ArgrepParams.argrepParams().match("foo");
     when(commandObjects.argrep(key, 0L, 10L, params)).thenReturn(listObjectCommandObject);
-    when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(java.util.Collections.emptyList());
+    when(commandExecutor.executeCommand(listObjectCommandObject))
+        .thenReturn(java.util.Collections.emptyList());
 
     jedis.argrep(key, 0L, 10L, params);
     verify(commandExecutor).executeCommand(listObjectCommandObject);
@@ -156,7 +159,8 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] key = "k".getBytes();
     ArgrepParams params = ArgrepParams.argrepParams().exact("foo");
     when(commandObjects.argrep(key, 0L, 10L, params)).thenReturn(listObjectCommandObject);
-    when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(java.util.Collections.emptyList());
+    when(commandExecutor.executeCommand(listObjectCommandObject))
+        .thenReturn(java.util.Collections.emptyList());
 
     jedis.argrep(key, 0L, 10L, params);
     verify(commandExecutor).executeCommand(listObjectCommandObject);
@@ -167,7 +171,8 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   public void testArinfo() {
     String key = "k";
     when(commandObjects.arinfo(key)).thenReturn(mapStringObjectCommandObject);
-    when(commandExecutor.executeCommand(mapStringObjectCommandObject)).thenReturn(java.util.Collections.emptyMap());
+    when(commandExecutor.executeCommand(mapStringObjectCommandObject))
+        .thenReturn(java.util.Collections.emptyMap());
 
     jedis.arinfo(key);
     verify(commandExecutor).executeCommand(mapStringObjectCommandObject);
@@ -178,7 +183,8 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   public void testArinfoBinary() {
     byte[] key = "k".getBytes();
     when(commandObjects.arinfo(key)).thenReturn(mapStringObjectCommandObject);
-    when(commandExecutor.executeCommand(mapStringObjectCommandObject)).thenReturn(java.util.Collections.emptyMap());
+    when(commandExecutor.executeCommand(mapStringObjectCommandObject))
+        .thenReturn(java.util.Collections.emptyMap());
 
     jedis.arinfo(key);
     verify(commandExecutor).executeCommand(mapStringObjectCommandObject);
@@ -189,7 +195,8 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   public void testArinfoFull() {
     String key = "k";
     when(commandObjects.arinfo(key, true)).thenReturn(mapStringObjectCommandObject);
-    when(commandExecutor.executeCommand(mapStringObjectCommandObject)).thenReturn(java.util.Collections.emptyMap());
+    when(commandExecutor.executeCommand(mapStringObjectCommandObject))
+        .thenReturn(java.util.Collections.emptyMap());
 
     jedis.arinfo(key, true);
     verify(commandExecutor).executeCommand(mapStringObjectCommandObject);
@@ -200,7 +207,8 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   public void testArinfoFullBinary() {
     byte[] key = "k".getBytes();
     when(commandObjects.arinfo(key, true)).thenReturn(mapStringObjectCommandObject);
-    when(commandExecutor.executeCommand(mapStringObjectCommandObject)).thenReturn(java.util.Collections.emptyMap());
+    when(commandExecutor.executeCommand(mapStringObjectCommandObject))
+        .thenReturn(java.util.Collections.emptyMap());
 
     jedis.arinfo(key, true);
     verify(commandExecutor).executeCommand(mapStringObjectCommandObject);
@@ -235,7 +243,8 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   public void testArlastitems() {
     String key = "k";
     when(commandObjects.arlastitems(key, 2L)).thenReturn(listStringCommandObject);
-    when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(java.util.Arrays.asList("a", "b"));
+    when(commandExecutor.executeCommand(listStringCommandObject))
+        .thenReturn(java.util.Arrays.asList("a", "b"));
 
     jedis.arlastitems(key, 2L);
     verify(commandExecutor).executeCommand(listStringCommandObject);
@@ -246,7 +255,8 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   public void testArlastitemsRevBinary() {
     byte[] key = "k".getBytes();
     when(commandObjects.arlastitems(key, 2L, true)).thenReturn(listBytesCommandObject);
-    when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(java.util.Arrays.asList("a".getBytes()));
+    when(commandExecutor.executeCommand(listBytesCommandObject))
+        .thenReturn(java.util.Arrays.asList("a".getBytes()));
 
     jedis.arlastitems(key, 2L, true);
     verify(commandExecutor).executeCommand(listBytesCommandObject);
@@ -280,7 +290,8 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
     String key = "k";
     long[] idx = { 0L, 1L };
     when(commandObjects.armget(key, idx)).thenReturn(listStringCommandObject);
-    when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(java.util.Arrays.asList("a", "b"));
+    when(commandExecutor.executeCommand(listStringCommandObject))
+        .thenReturn(java.util.Arrays.asList("a", "b"));
 
     jedis.armget(key, idx);
     verify(commandExecutor).executeCommand(listStringCommandObject);
@@ -292,7 +303,8 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] key = "k".getBytes();
     long[] idx = { 0L };
     when(commandObjects.armget(key, idx)).thenReturn(listBytesCommandObject);
-    when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(java.util.Arrays.asList("a".getBytes()));
+    when(commandExecutor.executeCommand(listBytesCommandObject))
+        .thenReturn(java.util.Arrays.asList("a".getBytes()));
 
     jedis.armget(key, idx);
     verify(commandExecutor).executeCommand(listBytesCommandObject);
@@ -420,7 +432,8 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   public void testArscan() {
     String key = "k";
     when(commandObjects.arscan(key, 0L, 10L)).thenReturn(listObjectCommandObject);
-    when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(java.util.Collections.emptyList());
+    when(commandExecutor.executeCommand(listObjectCommandObject))
+        .thenReturn(java.util.Collections.emptyList());
 
     jedis.arscan(key, 0L, 10L);
     verify(commandExecutor).executeCommand(listObjectCommandObject);
@@ -431,7 +444,8 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   public void testArscanLimitBinary() {
     byte[] key = "k".getBytes();
     when(commandObjects.arscan(key, 0L, 10L, 5L)).thenReturn(listObjectCommandObject);
-    when(commandExecutor.executeCommand(listObjectCommandObject)).thenReturn(java.util.Collections.emptyList());
+    when(commandExecutor.executeCommand(listObjectCommandObject))
+        .thenReturn(java.util.Collections.emptyList());
 
     jedis.arscan(key, 0L, 10L, 5L);
     verify(commandExecutor).executeCommand(listObjectCommandObject);

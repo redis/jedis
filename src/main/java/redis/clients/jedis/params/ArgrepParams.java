@@ -10,18 +10,14 @@ import redis.clients.jedis.Protocol.Keyword;
 /**
  * Optional arguments for the {@code ARGREP} command.
  * <p>
- * Predicates are added in the order their fluent setters are invoked.
- * Logical combinator ({@code AND}/{@code OR}), {@code LIMIT},
- * {@code WITHVALUES} and {@code NOCASE} are emitted after the predicate list,
- * matching the order required by the Redis wire protocol.
+ * Predicates are added in the order their fluent setters are invoked. Logical combinator
+ * ({@code AND}/{@code OR}), {@code LIMIT}, {@code WITHVALUES} and {@code NOCASE} are emitted after
+ * the predicate list, matching the order required by the Redis wire protocol.
  */
 public class ArgrepParams implements IParams {
 
   private enum PredicateType {
-    EXACT(Keyword.EXACT),
-    MATCH(Keyword.MATCH),
-    GLOB(Keyword.GLOB),
-    RE(Keyword.RE);
+    EXACT(Keyword.EXACT), MATCH(Keyword.MATCH), GLOB(Keyword.GLOB), RE(Keyword.RE);
 
     final Keyword keyword;
 
@@ -55,8 +51,7 @@ public class ArgrepParams implements IParams {
   }
 
   /**
-   * Add an {@code EXACT} predicate: matches elements whose value equals the
-   * given string exactly.
+   * Add an {@code EXACT} predicate: matches elements whose value equals the given string exactly.
    * @param value the literal value to match against
    * @return this {@link ArgrepParams}
    */
@@ -66,8 +61,7 @@ public class ArgrepParams implements IParams {
   }
 
   /**
-   * Add an {@code EXACT} predicate: matches elements whose value equals the
-   * given bytes exactly.
+   * Add an {@code EXACT} predicate: matches elements whose value equals the given bytes exactly.
    * @param value the literal value to match against
    * @return this {@link ArgrepParams}
    */
@@ -77,8 +71,7 @@ public class ArgrepParams implements IParams {
   }
 
   /**
-   * Add a {@code MATCH} predicate: matches elements that contain the given
-   * string as a substring.
+   * Add a {@code MATCH} predicate: matches elements that contain the given string as a substring.
    * @param value the substring to search for
    * @return this {@link ArgrepParams}
    */
@@ -88,8 +81,7 @@ public class ArgrepParams implements IParams {
   }
 
   /**
-   * Add a {@code MATCH} predicate: matches elements that contain the given
-   * bytes as a substring.
+   * Add a {@code MATCH} predicate: matches elements that contain the given bytes as a substring.
    * @param value the substring to search for
    * @return this {@link ArgrepParams}
    */
@@ -99,8 +91,8 @@ public class ArgrepParams implements IParams {
   }
 
   /**
-   * Add a {@code GLOB} predicate: matches elements against a glob-style
-   * pattern (supports {@code *}, {@code ?} and {@code [...]}).
+   * Add a {@code GLOB} predicate: matches elements against a glob-style pattern (supports
+   * {@code *}, {@code ?} and {@code [...]}).
    * @param pattern the glob pattern
    * @return this {@link ArgrepParams}
    */
@@ -110,8 +102,8 @@ public class ArgrepParams implements IParams {
   }
 
   /**
-   * Add a {@code GLOB} predicate: matches elements against a glob-style
-   * pattern (supports {@code *}, {@code ?} and {@code [...]}).
+   * Add a {@code GLOB} predicate: matches elements against a glob-style pattern (supports
+   * {@code *}, {@code ?} and {@code [...]}).
    * @param pattern the glob pattern as raw bytes
    * @return this {@link ArgrepParams}
    */
@@ -121,8 +113,7 @@ public class ArgrepParams implements IParams {
   }
 
   /**
-   * Add a {@code RE} predicate: matches elements against a regular
-   * expression.
+   * Add a {@code RE} predicate: matches elements against a regular expression.
    * @param pattern the regular expression
    * @return this {@link ArgrepParams}
    */
@@ -132,8 +123,7 @@ public class ArgrepParams implements IParams {
   }
 
   /**
-   * Add a {@code RE} predicate: matches elements against a regular
-   * expression.
+   * Add a {@code RE} predicate: matches elements against a regular expression.
    * @param pattern the regular expression as raw bytes
    * @return this {@link ArgrepParams}
    */
@@ -152,8 +142,8 @@ public class ArgrepParams implements IParams {
   }
 
   /**
-   * Combine multiple predicates with logical OR (the default if neither
-   * {@link #and()} nor {@link #or()} is set).
+   * Combine multiple predicates with logical OR (the default if neither {@link #and()} nor
+   * {@link #or()} is set).
    * @return this {@link ArgrepParams}
    */
   public ArgrepParams or() {
@@ -172,8 +162,7 @@ public class ArgrepParams implements IParams {
   }
 
   /**
-   * Request that the reply contains alternating index/value pairs instead of
-   * indices only.
+   * Request that the reply contains alternating index/value pairs instead of indices only.
    * @return this {@link ArgrepParams}
    */
   public ArgrepParams withValues() {
@@ -218,10 +207,8 @@ public class ArgrepParams implements IParams {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     ArgrepParams that = (ArgrepParams) o;
-    return withValues == that.withValues
-        && nocase == that.nocase
-        && Objects.equals(combinator, that.combinator)
-        && Objects.equals(limit, that.limit)
+    return withValues == that.withValues && nocase == that.nocase
+        && Objects.equals(combinator, that.combinator) && Objects.equals(limit, that.limit)
         && Objects.equals(predicates.size(), that.predicates.size());
   }
 

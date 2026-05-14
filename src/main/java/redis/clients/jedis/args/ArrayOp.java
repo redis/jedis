@@ -5,10 +5,9 @@ import redis.clients.jedis.util.SafeEncoder;
 /**
  * Aggregate operations for the {@code AROP} command.
  * <p>
- * Each constant corresponds to a Redis aggregate operator that {@code AROP}
- * applies over a range of array elements. {@link #MATCH} is the only operator
- * that takes an additional value argument; all other operators are used
- * without trailing arguments.
+ * Each constant corresponds to a Redis aggregate operator that {@code AROP} applies over a range of
+ * array elements. {@link #MATCH} is the only operator that takes an additional value argument; all
+ * other operators are used without trailing arguments.
  */
 public enum ArrayOp implements Rawable {
 

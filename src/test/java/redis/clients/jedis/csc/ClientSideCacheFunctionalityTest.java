@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.CommandObjects;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.util.TestEnvUtil;
@@ -100,10 +101,11 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   }
 
   @Test
-  public void pendingInvalidationMessagesTest() throws InterruptedException {
+  public void pendingInvalidationMessagesTest() {
     final int count = 1000; // Hundreds of keys
 
     try (RedisClient jedis = RedisClient.builder().hostAndPort(hnp).clientConfig(clientConfig.get())
+            .poolConfig(singleConnectionPoolConfig.get())
             .cacheConfig(CacheConfig.builder().maxSize(count).build()).build()) {
       Cache cache = jedis.getCache();
 
@@ -118,14 +120,27 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       assertEquals(count, cache.getSize());
       assertEquals(0, cache.getStats().getInvalidationCount());
 
+      // Capture the tracked connection's server-side id. Pool is pinned to 1 so this
+      // is the same connection that holds the cached entries and will receive the
+      // invalidation push messages.
+      long trackedClientId = (Long) jedis.sendCommand(Protocol.Command.CLIENT, "ID");
+
       // 2. Use control connection to update ALL keys
       // This generates hundreds of invalidation messages
       for (int i = 0; i < count; i++) {
         control.set("key" + i, "newvalue" + i);
       }
 
-      // 3. Ensure all invalidation messages have been sent by the server
-      control.ping();
+      // 3. Wait until the server has flushed all queued output (the invalidation
+      // frames) on the tracked client's connection. `oll` (output list length) and
+      // `omem` (output buffer memory) report what the server still has buffered for
+      // that client; once both are zero, every invalidation has been handed to the
+      // kernel and is on its way / already in the tracked socket's receive buffer.
+      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+              .until(() -> {
+                String info = control.clientList(trackedClientId);
+                return info != null && info.contains(" oll=0 ") && info.contains(" omem=0 ");
+              });
 
       // 4. Now use the cached connection - it should process all pending invalidations synchronously
       long processingStartTime = System.nanoTime();

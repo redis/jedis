@@ -177,7 +177,8 @@ public abstract class GetSetMixedR90W10Benchmark {
       poolConfig.setMaxTotal(POOL_SIZE);
       poolConfig.setMaxIdle(POOL_SIZE);
       pool = new JedisPool(poolConfig, new HostAndPort(endpoint.getHost(), endpoint.getPort()),
-          DefaultJedisClientConfig.builder().password(endpoint.getPassword()).build());
+          DefaultJedisClientConfig.builder().password(endpoint.getPassword())
+              .serverDefaultProtocol().build());
     }
 
     @Override

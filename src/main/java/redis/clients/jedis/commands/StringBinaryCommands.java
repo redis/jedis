@@ -56,6 +56,16 @@ public interface StringBinaryCommands extends BitBinaryCommands {
   @Deprecated
   String psetex(byte[] key, long milliseconds, byte[] value);
 
+  /**
+   * Get the values of all the specified keys.
+   * <p>
+   * At least one key must be supplied; otherwise the server returns an error.
+   *
+   * @param keys the keys to get
+   * @return a list of values in the same order as {@code keys};
+   *         entries are {@code null} for keys that do not exist or do not hold a string value
+   * @see StringCommands#mget(String...)
+   */
   List<byte[]> mget(byte[]... keys);
 
   String mset(byte[]... keysvalues);

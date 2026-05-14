@@ -1,4 +1,4 @@
-package redis.clients.jedis.benchmark;
+package redis.clients.jedis.benchmark.util;
 
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
@@ -78,7 +78,8 @@ public class SafeEncoderBenchmark {
   @OperationsPerInvocation(BATCH_SIZE)
   public void encodeStringToBytes(Blackhole blackhole) {
     for (int i = 0; i < BATCH_SIZE; i++) {
-      byte[] encoded = SafeEncoder.encode(TEST_STRINGS[counter++ % TEST_STRINGS.length]);
+      byte[] encoded = SafeEncoder
+          .encode(TEST_STRINGS[Math.toIntExact(counter++ % TEST_STRINGS.length)]);
       blackhole.consume(encoded);
     }
   }
@@ -93,7 +94,7 @@ public class SafeEncoderBenchmark {
   @OperationsPerInvocation(BATCH_SIZE)
   public void decodeBytesToString(Blackhole blackhole) {
     for (int i = 0; i < BATCH_SIZE; i++) {
-      String decoded = SafeEncoder.encode(testBytes[counter++ % testBytes.length]);
+      String decoded = SafeEncoder.encode(testBytes[Math.toIntExact(counter++ % testBytes.length)]);
       blackhole.consume(decoded);
     }
   }

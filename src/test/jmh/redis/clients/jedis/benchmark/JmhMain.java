@@ -29,7 +29,7 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
  * <li>Uncomment the desired run method in {@link #main(String...)}
  * <li>Or modify the include pattern
  * </ul>
- * @author Jedis Contributors
+ * @author Ivo Gaydazhiev
  */
 public class JmhMain {
 
@@ -38,13 +38,13 @@ public class JmhMain {
 
     runAllBenchmarks();
     // runJedisGetSetBenchmarks();
+    // runRedisClientGetSetBenchmarks();
     // runProtocolBenchmarks();
     // runCRC16Benchmarks();
     // runSafeEncoderBenchmarks();
-    // runRedisClientGetSetBenchmarks();
     // runGetSetMixedR90W10Benchmarks();
     // runPubSubPushBenchmarks();
-    // runSpecificBenchmark("CRC16Benchmark.getSlotString");
+    // runSpecificBenchmark("ProtocolReadBenchmark");
 
     // results saved to benchmarks.json and benchmark.log
   }
@@ -58,12 +58,12 @@ public class JmhMain {
   }
 
   /**
-   * Run only Protocol-related benchmarks (RESP3, cache-aware, push messages). Uses benchmark class
-   * defaults for mode and timeUnit.
+   * Run only Protocol-related benchmarks (encode, read, readPushes). Uses benchmark class defaults
+   * for mode and timeUnit.
    */
   private static void runProtocolBenchmarks() throws RunnerException {
     System.out.println("Running Protocol benchmarks...");
-    new Runner(prepareOptions().include(".*ProtocolReadBenchmark.*").build()).run();
+    new Runner(prepareOptions().include(".*benchmark\\.protocol\\..*Benchmark.*").build()).run();
   }
 
   /**
@@ -90,7 +90,7 @@ public class JmhMain {
    */
   private static void runJedisGetSetBenchmarks() throws RunnerException {
     System.out.println("Running Jedis GET/SET benchmarks (requires Redis server)...");
-    new Runner(prepareOptions().include(".*JedisGetSetBenchmark.*").build()).run();
+    new Runner(prepareOptions().include(".*benchmark\\.jedis\\..*").build()).run();
   }
 
   /**
@@ -99,7 +99,7 @@ public class JmhMain {
    */
   private static void runRedisClientGetSetBenchmarks() throws RunnerException {
     System.out.println("Running RedisClient GET/SET benchmarks (requires Redis server)...");
-    new Runner(prepareOptions().include(".*RedisClientGetSetBenchmark.*").build()).run();
+    new Runner(prepareOptions().include(".*benchmark\\.redisclient\\..*").build()).run();
   }
 
   /**

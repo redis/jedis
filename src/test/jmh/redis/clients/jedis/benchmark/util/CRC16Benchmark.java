@@ -1,4 +1,4 @@
-package redis.clients.jedis.benchmark;
+package redis.clients.jedis.benchmark.util;
 
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;

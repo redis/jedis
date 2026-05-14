@@ -80,10 +80,6 @@ public class UnavailableConnectionTest {
       }
     });
     threadForBrokenJedis1.start();
-    // Give the worker thread a moment to enter the blocking read before the proxy is
-    // disabled, so the failure is observed as a broken connection rather than a
-    // pre-send error.
-    Thread.sleep(200);
   }
 
   @Test

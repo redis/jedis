@@ -20,9 +20,6 @@ on:
     - cron: '0 1 * * *' # nightly build
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
 
   build:

@@ -9,9 +9,6 @@ on:
       - '[0-9].x'
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
 
   snapshot:

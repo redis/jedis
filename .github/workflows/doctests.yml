@@ -8,9 +8,6 @@ on:
   pull_request:
   workflow_dispatch:
 
-permissions:
-  contents: read
-
 jobs:
   doctests:
     runs-on: ubuntu-latest

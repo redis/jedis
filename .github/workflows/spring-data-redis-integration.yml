@@ -18,9 +18,6 @@ on:
         required: false
         default: '8'
 
-permissions:
-  contents: read
-
 jobs:
   integration-test:
     name: SDR Integration Test

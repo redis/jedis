@@ -19,9 +19,6 @@ on:
       - '[0-9].*'
       - 'feature/**'
 
-permissions:
-  contents: read
-
 jobs:
   unit-tests:
     name: Unit Tests

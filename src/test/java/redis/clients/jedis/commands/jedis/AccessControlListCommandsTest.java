@@ -48,7 +48,7 @@ import redis.clients.jedis.util.TestEnvUtil;
  * TODO: properly define and test exceptions
  */
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 @Tag("integration")
 @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
 public class AccessControlListCommandsTest extends JedisCommandsTestBase {

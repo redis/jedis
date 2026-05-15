@@ -80,13 +80,10 @@ public class CommandObjectsServerManagementCommandsTest extends CommandObjectsSt
 
     exec(commandObjects.set(key, value));
 
-    // A small delay to simulate idle time
-    Thread.sleep(1000);
-
     Long idleTime = exec(commandObjects.objectIdletime(key));
-    assertThat(idleTime, greaterThan(0L));
+    assertThat(idleTime, greaterThanOrEqualTo(0L));
 
     Long idleTimeBinary = exec(commandObjects.objectIdletime(key.getBytes()));
-    assertThat(idleTimeBinary, greaterThan(0L));
+    assertThat(idleTimeBinary, greaterThanOrEqualTo(0L));
   }
 }

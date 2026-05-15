@@ -2,6 +2,12 @@ name: Publish Docs
 on:
   push:
     branches: ["master"]
+  workflow_dispatch:
+    inputs:
+      deploy:
+        description: 'Deploy to GitHub Pages'
+        type: boolean
+        default: false
 permissions:
   contents: read
   pages: write
@@ -32,5 +38,6 @@ jobs:
         with:
           path: 'docsbuild'
       - name: Deploy to GitHub Pages
+        if: github.event_name != 'workflow_dispatch' || inputs.deploy
         id: deployment
         uses: actions/deploy-pages@v4

@@ -25,7 +25,7 @@ import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 public class SlowlogCommandsTest extends JedisCommandsTestBase {
 
   private static final String SLOWLOG_TIME_PARAM = "slowlog-log-slower-than";

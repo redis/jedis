@@ -104,7 +104,7 @@ public class ACLJedisPoolTest {
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     try (JedisPool pool = new JedisPool(config, endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().clientName("closable-reusable-pool")
+        endpoint.getClientConfigBuilder().serverDefaultProtocol().clientName("closable-reusable-pool")
         .build())) {
 
       Jedis jedis = pool.getResource();

@@ -8,8 +8,8 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * JMH benchmark for {@link SafeEncoder} UTF-8 encoding/decoding of the fixed string "foo bar!".
- *
- * <p>Run with: {@code mvn -Pjmh clean test}
+ * <p>
+ * Run with: {@code mvn -Pjmh clean test}
  */
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.NANOSECONDS)

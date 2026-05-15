@@ -44,7 +44,11 @@ public abstract class ClientSideCacheTestBase {
 
   @AfterEach
   public void tearDown() throws Exception {
-    control.close();
+    try {
+      control.flushAll();
+    } finally {
+      control.close();
+    }
   }
 
   protected static final Supplier<JedisClientConfig> clientConfig = () -> endpoint.getClientConfigBuilder().resp3().build();

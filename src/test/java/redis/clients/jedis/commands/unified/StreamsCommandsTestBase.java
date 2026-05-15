@@ -729,36 +729,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
     assertEquals(0L, nacked);
   }
 
-  @Test
-  @SinceRedisVersion("8.7.225")
-  public void xnackWithRetryCount() {
-    setUpTestStream();
-
-    StreamEntryID messageId = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
-    Map<String, StreamEntryID> streams = singletonMap(STREAM_KEY_1,
-      StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
-    jedis.xreadGroup(GROUP_NAME, CONSUMER_NAME,
-      XReadGroupParams.xReadGroupParams().count(1), streams);
-
-    XNackParams params = XNackParams.xNackParams().retryCount(10);
-    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.FAIL, params, messageId);
-    assertEquals(1L, nacked);
-  }
-
-  @Test
-  @SinceRedisVersion("8.7.225")
-  public void xnackWithForce() {
-    setUpTestStream();
-
-    // Add a message but don't read it (not in PEL)
-    StreamEntryID messageId = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
-
-    // With FORCE, XNACK should create PEL entry even if it doesn't exist
-    XNackParams params = XNackParams.xNackParams().force();
-    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.SILENT, params, messageId);
-    assertEquals(1L, nacked);
-  }
-
   // ========== XDELEX Command Tests ==========
 
   @Test

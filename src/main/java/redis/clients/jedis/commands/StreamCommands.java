@@ -122,12 +122,6 @@ public interface StreamCommands {
   long xnack(String key, String group, XNackMode mode, StreamEntryID... ids);
 
   /**
-   * XNACK key group SILENT|FAIL|FATAL IDS numids id [id ...] [RETRYCOUNT count] [FORCE]
-   * Negatively acknowledges pending messages with optional parameters.
-   */
-  long xnack(String key, String group, XNackMode mode, XNackParams params, StreamEntryID... ids);
-
-  /**
    * {@code XGROUP CREATE key groupName <id or $>}
    */
   String xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream);

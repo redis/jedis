@@ -40,11 +40,6 @@ public interface StreamPipelineBinaryCommands {
    */
   Response<Long> xnack(byte[] key, byte[] group, XNackMode mode, byte[]... ids);
 
-  /**
-   * XNACK key group SILENT|FAIL|FATAL IDS numids id [id ...] [RETRYCOUNT count] [FORCE]
-   */
-  Response<Long> xnack(byte[] key, byte[] group, XNackMode mode, XNackParams params, byte[]... ids);
-
   Response<String> xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream);
 
   Response<String> xgroupSetID(byte[] key, byte[] groupName, byte[] id);

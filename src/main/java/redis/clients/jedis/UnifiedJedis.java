@@ -3490,11 +3490,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long xnack(String key, String group, XNackMode mode, XNackParams params, StreamEntryID... ids) {
-    return executeCommand(commandObjects.xnack(key, group, mode, params, ids));
-  }
-
-  @Override
   public String xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
     return executeCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
@@ -3672,11 +3667,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long xnack(byte[] key, byte[] group, XNackMode mode, byte[]... ids) {
     return executeCommand(commandObjects.xnack(key, group, mode, ids));
-  }
-
-  @Override
-  public long xnack(byte[] key, byte[] group, XNackMode mode, XNackParams params, byte[]... ids) {
-    return executeCommand(commandObjects.xnack(key, group, mode, params, ids));
   }
 
   @Override

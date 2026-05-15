@@ -109,11 +109,6 @@ public interface StreamPipelineCommands {
   Response<Long> xnack(String key, String group, XNackMode mode, StreamEntryID... ids);
 
   /**
-   * XNACK key group SILENT|FAIL|FATAL IDS numids id [id ...] [RETRYCOUNT count] [FORCE]
-   */
-  Response<Long> xnack(String key, String group, XNackMode mode, XNackParams params, StreamEntryID... ids);
-
-  /**
    * {@code XGROUP CREATE key groupName <id or $>}
    */
   Response<String> xgroupCreate( String key, String groupName, StreamEntryID id, boolean makeStream);

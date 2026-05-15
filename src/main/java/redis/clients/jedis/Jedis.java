@@ -4993,12 +4993,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public long xnack(byte[] key, byte[] group, XNackMode mode, XNackParams params, byte[]... ids) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xnack(key, group, mode, params, ids));
-  }
-
-  @Override
   public String xgroupCreate(byte[] key, byte[] consumer, byte[] id, boolean makeStream) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xgroupCreate(key, consumer, id, makeStream));
@@ -10060,12 +10054,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long xnack(final String key, final String group, final XNackMode mode, final StreamEntryID... ids) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.xnack(key, group, mode, ids));
-  }
-
-  @Override
-  public long xnack(final String key, final String group, final XNackMode mode, final XNackParams params, final StreamEntryID... ids) {
-    checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.xnack(key, group, mode, params, ids));
   }
 
   @Override

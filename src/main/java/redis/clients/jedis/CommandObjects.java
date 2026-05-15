@@ -2687,21 +2687,9 @@ public class CommandObjects {
         .add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.LONG);
   }
 
-  public final CommandObject<Long> xnack(String key, String group, XNackMode mode,
-      XNackParams params, StreamEntryID... ids) {
-    return new CommandObject<>(commandArguments(XNACK).key(key).add(group).add(mode)
-        .add("IDS").add(ids.length).addObjects((Object[]) ids).addParams(params), BuilderFactory.LONG);
-  }
-
   public final CommandObject<Long> xnack(byte[] key, byte[] group, XNackMode mode, byte[]... ids) {
     return new CommandObject<>(commandArguments(XNACK).key(key).add(group).add(mode)
         .add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.LONG);
-  }
-
-  public final CommandObject<Long> xnack(byte[] key, byte[] group, XNackMode mode,
-      XNackParams params, byte[]... ids) {
-    return new CommandObject<>(commandArguments(XNACK).key(key).add(group).add(mode)
-        .add("IDS").add(ids.length).addObjects((Object[]) ids).addParams(params), BuilderFactory.LONG);
   }
 
   public final CommandObject<String> xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {

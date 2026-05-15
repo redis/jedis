@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit;
  * </pre>
  * <p>
  * This is an integration benchmark. For pure push-frame parser performance (no I/O), see
- * {@code ProtocolReadBenchmark.readWith*PushMessages} which exercises the same code paths at
+ * {@code protocol.ReadBenchmark.readWith*PushMessages} which exercises the same code paths at
  * nanosecond resolution against pre-built RESP buffers. The two are complementary:
  * <ul>
  * <li>Microbenchmark regresses → parser/decoder code change.</li>

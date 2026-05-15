@@ -44,7 +44,7 @@ public class JmhMain {
     // runSafeEncoderBenchmarks();
     // runGetSetMixedR90W10Benchmarks();
     // runPubSubPushBenchmarks();
-    // runSpecificBenchmark("ProtocolReadBenchmark");
+    // runSpecificBenchmark("ReadPushesBenchmark");
 
     // results saved to benchmarks.json and benchmark.log
   }

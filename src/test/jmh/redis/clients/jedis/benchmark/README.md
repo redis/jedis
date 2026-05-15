@@ -21,16 +21,32 @@ mvn -Pjmh test -Djmh.includes="CRC16Benchmark"   # Specific suite
 
 ## Available Benchmarks
 
-### ProtocolReadBenchmark (14 benchmarks)
-RESP3 protocol operations with client-side caching support.
+### protocol.ReadBenchmark (10 benchmarks)
+RESP3 `Protocol.read` operations with optional client-side cache.
 
 **Categories:**
-- Baseline protocol: `readSimpleString`, `readBulkString`, `readArray`, etc.
-- Cache-aware overhead: Same operations with cache enabled
-- Push processing: `processSinglePushInvalidation`, `processLargePushInvalidation`
-- Mixed scenarios: `readWith1/10/100PushMessages` (realistic workload)
+- Baseline reads (no cache): `readSimpleString`, `readBulkString`, `readArray`, `readMultiBulkResponse`
+- Cache-aware overhead: `cacheAwareRead*` variants (push-check path, no pushes present)
+- Mixed scenarios: `readWith1PushMessage`, `readWith100PushMessages` (push frames preceding a response)
 
-**Use case:** Measure client-side caching impact and push notification overhead.
+**Use case:** Measure RESP parsing cost and the overhead introduced by client-side caching.
+
+### protocol.ReadPushesBenchmark (2 benchmarks)
+`Protocol.readPushes` — client-side cache invalidation processing.
+
+**Methods:**
+- `drain1Pending` - One `readPushes` call drains 1 pending push frame
+- `drain1000Pending` - One `readPushes` call drains 1000 pending push frames
+
+**Use case:** Measure how `readPushes` per-call cost scales with burst size; reveals fixed-vs-amortized overhead.
+
+### protocol.SendCommandBenchmark (1 benchmark)
+`Protocol.sendCommand` — RESP command encoding.
+
+**Methods:**
+- `measureSendCommand` - Encode SET command (full path: `CommandArguments` + encode)
+
+**Use case:** Measure command-encoding cost without I/O.
 
 ### CRC16Benchmark (2 benchmarks)
 Redis Cluster hash slot calculation.
@@ -53,7 +69,7 @@ UTF-8 encoding/decoding performance.
 **Test data:** Rotates through 6 string patterns (2-44 chars)
 **Batch size:** 120 ops (6 patterns × 20)
 
-### JedisGetSetBenchmark (4 benchmarks) ⚠️ Requires Redis
+### jedis.GetSetBenchmark (4 benchmarks) ⚠️ Requires Redis
 Jedis GET/SET operations over network.
 
 **Methods:**
@@ -65,13 +81,13 @@ Jedis GET/SET operations over network.
 **Requirements:** Redis 6.0+ running on localhost:6379 (or configured endpoint)
 **Mode:** Throughput (ops/sec)
 
-### RedisClientGetSetBenchmark (12 benchmarks) ⚠️ Requires Redis
+### redisclient.GetSetBenchmark (12 benchmarks) ⚠️ Requires Redis
 RedisClient (pooled) GET/SET operations with concurrency testing.
 
 **Thread configurations:**
-- `RedisClientGetSetBenchmark1Thread` - 1 thread (baseline)
-- `RedisClientGetSetBenchmark8Threads` - 8 threads (moderate concurrency)
-- `RedisClientGetSetBenchmark64Threads` - 64 threads (high concurrency)
+- `redisclient.GetSetBenchmark$Threads1` - 1 thread (baseline)
+- `redisclient.GetSetBenchmark$Threads8` - 8 threads (moderate concurrency)
+- `redisclient.GetSetBenchmark$Threads64` - 64 threads (high concurrency)
 
 **Methods per configuration:**
 - `set` - Write performance using pooled RedisClient
@@ -85,8 +101,8 @@ RedisClient (pooled) GET/SET operations with concurrency testing.
 - Prevents pool contention from skewing results
 
 **Workload:**
-- Same single key/value pair (`"foo"`/`"bar"`) as `JedisGetSetBenchmark` for direct comparability
-- 1-thread variant produces numbers comparable to `JedisGetSetBenchmark`
+- Same single key/value pair (`"foo"`/`"bar"`) as `jedis.GetSetBenchmark` for direct comparability
+- 1-thread variant produces numbers comparable to `jedis.GetSetBenchmark`
 - 8/64-thread variants exercise pool concurrency on the same workload
 
 **Requirements:** Redis 6.0+ running on localhost:6379 (or configured endpoint)
@@ -124,5 +140,5 @@ CRC16Benchmark.getSlotString     avgt    5  47.123 ± 2.456  ns/op
 - **Batching:** Fast operations (< 100 ns) use batching to reduce JMH overhead
 - **Test patterns:** Batch size is always a multiple of pattern count for consistent results
 - **IDE runner:** `JmhMain.java` provides easy IDE execution
-- **Redis required:** JedisGetSetBenchmark and RedisClientGetSetBenchmark require a running Redis instance (localhost:6379)
+- **Redis required:** `jedis.GetSetBenchmark` and `redisclient.GetSetBenchmark` require a running Redis instance (localhost:6379)
 - **CI/CD:** GitHub Actions runs benchmarks nightly, results published to gh-pages

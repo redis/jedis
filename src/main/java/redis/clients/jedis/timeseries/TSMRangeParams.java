@@ -153,11 +153,11 @@ public class TSMRangeParams implements IParams {
   public TSMRangeParams aggregation(AggregationType[] aggregators, long bucketDuration) {
     if (aggregators != null) {
       if (aggregators.length == 0) {
-        throw new IllegalArgumentException("aggregators must be non-null and non-empty");
+        throw new IllegalArgumentException("Aggregators must be non-null and non-empty");
       }
       for (AggregationType a : aggregators) {
         if (a == null) {
-          throw new IllegalArgumentException("aggregators must not contain null elements");
+          throw new IllegalArgumentException("Aggregators must not contain null elements");
         }
       }
       this.aggregators = aggregators;

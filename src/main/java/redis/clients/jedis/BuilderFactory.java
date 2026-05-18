@@ -2562,6 +2562,116 @@ public final class BuilderFactory {
     }
   }
 
+  public static final Builder<OptionalLong> OPTIONAL_LONG = new Builder<OptionalLong>() {
+    @Override
+    public OptionalLong build(Object data) {
+      if (data == null) return OptionalLong.empty();
+      return OptionalLong.of((Long) data);
+    }
+
+    @Override
+    public String toString() {
+      return "OptionalLong";
+    }
+  };
+
+  public static final Builder<ArrayInfo> ARRAY_INFO = new Builder<ArrayInfo>() {
+    @Override
+    public ArrayInfo build(Object data) {
+      if (data == null) return null;
+      return new ArrayInfo(ENCODED_OBJECT_MAP.build(data));
+    }
+
+    @Override
+    public String toString() {
+      return "ArrayInfo";
+    }
+  };
+
+  public static final Builder<ArrayFullInfo> ARRAY_FULL_INFO = new Builder<ArrayFullInfo>() {
+    @Override
+    public ArrayFullInfo build(Object data) {
+      if (data == null) return null;
+      return new ArrayFullInfo(ENCODED_OBJECT_MAP.build(data));
+    }
+
+    @Override
+    public String toString() {
+      return "ArrayFullInfo";
+    }
+  };
+
+  private static Long buildIndex(Object data) {
+    if (data == null) return null;
+    if (data instanceof Long) return (Long) data;
+    if (data instanceof Number) return ((Number) data).longValue();
+    if (data instanceof byte[]) return Long.parseLong(SafeEncoder.encode((byte[]) data));
+    if (data instanceof String) return Long.parseLong((String) data);
+    throw new JedisDataException("Unexpected index type: " + data.getClass());
+  }
+
+  public static final Builder<List<KeyValue<Long, String>>> STRING_INDEXED_VALUE_LIST
+      = new Builder<List<KeyValue<Long, String>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<KeyValue<Long, String>> build(Object data) {
+      if (data == null) return null;
+      final List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyList();
+
+      if (list.get(0) instanceof KeyValue) {
+        final List<KeyValue<Long, String>> result = new ArrayList<>(list.size());
+        for (KeyValue kv : (List<KeyValue>) (List<?>) list) {
+          result.add(KeyValue.of(buildIndex(kv.getKey()), STRING.build(kv.getValue())));
+        }
+        return result;
+      }
+
+      final List<KeyValue<Long, String>> result = new ArrayList<>(list.size() / 2);
+      final Iterator<Object> iterator = list.iterator();
+      while (iterator.hasNext()) {
+        result.add(KeyValue.of(buildIndex(iterator.next()), STRING.build(iterator.next())));
+      }
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "List<KeyValue<Long, String>>";
+    }
+  };
+
+  public static final Builder<List<KeyValue<Long, byte[]>>> BINARY_INDEXED_VALUE_LIST
+      = new Builder<List<KeyValue<Long, byte[]>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<KeyValue<Long, byte[]>> build(Object data) {
+      if (data == null) return null;
+      final List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyList();
+
+      if (list.get(0) instanceof KeyValue) {
+        final List<KeyValue<Long, byte[]>> result = new ArrayList<>(list.size());
+        for (KeyValue kv : (List<KeyValue>) (List<?>) list) {
+          result.add(KeyValue.of(buildIndex(kv.getKey()), BINARY.build(kv.getValue())));
+        }
+        return result;
+      }
+
+      final List<KeyValue<Long, byte[]>> result = new ArrayList<>(list.size() / 2);
+      final Iterator<Object> iterator = list.iterator();
+      while (iterator.hasNext()) {
+        result.add(KeyValue.of(buildIndex(iterator.next()), BINARY.build(iterator.next())));
+      }
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "List<KeyValue<Long, byte[]>>";
+    }
+  };
+
   private BuilderFactory() {
     throw new InstantiationError("Must not instantiate this class");
   }

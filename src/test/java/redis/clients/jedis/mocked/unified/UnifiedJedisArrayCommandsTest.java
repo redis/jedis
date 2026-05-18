@@ -7,9 +7,12 @@ import static org.mockito.Mockito.when;
 
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.OptionalLong;
 
 import org.junit.jupiter.api.Test;
-import redis.clients.jedis.args.ArrayOp;
+import redis.clients.jedis.args.ArrayAggregate;
+import redis.clients.jedis.args.ArrayBitwise;
+import redis.clients.jedis.args.LongRange;
 import redis.clients.jedis.params.ArgrepParams;
 
 public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
@@ -73,7 +76,7 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testArdelrange() {
     String key = "k";
-    long[][] ranges = { { 0, 1 } };
+    LongRange[] ranges = { LongRange.of(0L, 1L) };
     when(commandObjects.ardelrange(key, ranges)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(2L);
 
@@ -85,7 +88,7 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testArdelrangeBinary() {
     byte[] key = "k".getBytes();
-    long[][] ranges = { { 0, 1 } };
+    LongRange[] ranges = { LongRange.of(0L, 1L) };
     when(commandObjects.ardelrange(key, ranges)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(2L);
 
@@ -145,12 +148,12 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   public void testArgrep() {
     String key = "k";
     ArgrepParams params = ArgrepParams.argrepParams().match("foo");
-    when(commandObjects.argrep(key, 0L, 10L, params)).thenReturn(listObjectCommandObject);
-    when(commandExecutor.executeCommand(listObjectCommandObject))
+    when(commandObjects.argrep(key, 0L, 10L, params)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject))
         .thenReturn(java.util.Collections.emptyList());
 
     jedis.argrep(key, 0L, 10L, params);
-    verify(commandExecutor).executeCommand(listObjectCommandObject);
+    verify(commandExecutor).executeCommand(listLongCommandObject);
     verify(commandObjects).argrep(key, 0L, 10L, params);
   }
 
@@ -158,61 +161,79 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   public void testArgrepBinary() {
     byte[] key = "k".getBytes();
     ArgrepParams params = ArgrepParams.argrepParams().exact("foo");
-    when(commandObjects.argrep(key, 0L, 10L, params)).thenReturn(listObjectCommandObject);
-    when(commandExecutor.executeCommand(listObjectCommandObject))
+    when(commandObjects.argrep(key, 0L, 10L, params)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject))
         .thenReturn(java.util.Collections.emptyList());
 
     jedis.argrep(key, 0L, 10L, params);
-    verify(commandExecutor).executeCommand(listObjectCommandObject);
+    verify(commandExecutor).executeCommand(listLongCommandObject);
     verify(commandObjects).argrep(key, 0L, 10L, params);
+  }
+
+  @Test
+  public void testArgrepWithValues() {
+    String key = "k";
+    ArgrepParams params = ArgrepParams.argrepParams().match("foo");
+    when(commandObjects.argrepWithValues(key, 0L, 10L, params)).thenReturn(listKeyValueLongStringCommandObject);
+    when(commandExecutor.executeCommand(listKeyValueLongStringCommandObject))
+        .thenReturn(java.util.Collections.emptyList());
+
+    jedis.argrepWithValues(key, 0L, 10L, params);
+    verify(commandExecutor).executeCommand(listKeyValueLongStringCommandObject);
+    verify(commandObjects).argrepWithValues(key, 0L, 10L, params);
+  }
+
+  @Test
+  public void testArgrepWithValuesBinary() {
+    byte[] key = "k".getBytes();
+    ArgrepParams params = ArgrepParams.argrepParams().exact("foo");
+    when(commandObjects.argrepWithValues(key, 0L, 10L, params)).thenReturn(listKeyValueLongBytesCommandObject);
+    when(commandExecutor.executeCommand(listKeyValueLongBytesCommandObject))
+        .thenReturn(java.util.Collections.emptyList());
+
+    jedis.argrepWithValues(key, 0L, 10L, params);
+    verify(commandExecutor).executeCommand(listKeyValueLongBytesCommandObject);
+    verify(commandObjects).argrepWithValues(key, 0L, 10L, params);
   }
 
   @Test
   public void testArinfo() {
     String key = "k";
-    when(commandObjects.arinfo(key)).thenReturn(mapStringObjectCommandObject);
-    when(commandExecutor.executeCommand(mapStringObjectCommandObject))
-        .thenReturn(java.util.Collections.emptyMap());
+    when(commandObjects.arinfo(key)).thenReturn(arrayInfoCommandObject);
 
     jedis.arinfo(key);
-    verify(commandExecutor).executeCommand(mapStringObjectCommandObject);
+    verify(commandExecutor).executeCommand(arrayInfoCommandObject);
     verify(commandObjects).arinfo(key);
   }
 
   @Test
   public void testArinfoBinary() {
     byte[] key = "k".getBytes();
-    when(commandObjects.arinfo(key)).thenReturn(mapStringObjectCommandObject);
-    when(commandExecutor.executeCommand(mapStringObjectCommandObject))
-        .thenReturn(java.util.Collections.emptyMap());
+    when(commandObjects.arinfo(key)).thenReturn(arrayInfoCommandObject);
 
     jedis.arinfo(key);
-    verify(commandExecutor).executeCommand(mapStringObjectCommandObject);
+    verify(commandExecutor).executeCommand(arrayInfoCommandObject);
     verify(commandObjects).arinfo(key);
   }
 
   @Test
   public void testArinfoFull() {
     String key = "k";
-    when(commandObjects.arinfo(key, true)).thenReturn(mapStringObjectCommandObject);
-    when(commandExecutor.executeCommand(mapStringObjectCommandObject))
-        .thenReturn(java.util.Collections.emptyMap());
+    when(commandObjects.arinfoFull(key)).thenReturn(arrayFullInfoCommandObject);
 
-    jedis.arinfo(key, true);
-    verify(commandExecutor).executeCommand(mapStringObjectCommandObject);
-    verify(commandObjects).arinfo(key, true);
+    jedis.arinfoFull(key);
+    verify(commandExecutor).executeCommand(arrayFullInfoCommandObject);
+    verify(commandObjects).arinfoFull(key);
   }
 
   @Test
   public void testArinfoFullBinary() {
     byte[] key = "k".getBytes();
-    when(commandObjects.arinfo(key, true)).thenReturn(mapStringObjectCommandObject);
-    when(commandExecutor.executeCommand(mapStringObjectCommandObject))
-        .thenReturn(java.util.Collections.emptyMap());
+    when(commandObjects.arinfoFull(key)).thenReturn(arrayFullInfoCommandObject);
 
-    jedis.arinfo(key, true);
-    verify(commandExecutor).executeCommand(mapStringObjectCommandObject);
-    verify(commandObjects).arinfo(key, true);
+    jedis.arinfoFull(key);
+    verify(commandExecutor).executeCommand(arrayFullInfoCommandObject);
+    verify(commandObjects).arinfoFull(key);
   }
 
   @Test
@@ -340,68 +361,121 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testArnext() {
     String key = "k";
-    when(commandObjects.arnext(key)).thenReturn(longCommandObject);
-    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(5L);
+    when(commandObjects.arnext(key)).thenReturn(optionalLongCommandObject);
+    when(commandExecutor.executeCommand(optionalLongCommandObject)).thenReturn(OptionalLong.of(5L));
 
-    assertThat(jedis.arnext(key), equalTo(5L));
-    verify(commandExecutor).executeCommand(longCommandObject);
+    assertThat(jedis.arnext(key), equalTo(OptionalLong.of(5L)));
+    verify(commandExecutor).executeCommand(optionalLongCommandObject);
     verify(commandObjects).arnext(key);
   }
 
   @Test
   public void testArnextBinary() {
     byte[] key = "k".getBytes();
-    when(commandObjects.arnext(key)).thenReturn(longCommandObject);
-    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(5L);
+    when(commandObjects.arnext(key)).thenReturn(optionalLongCommandObject);
+    when(commandExecutor.executeCommand(optionalLongCommandObject)).thenReturn(OptionalLong.of(5L));
 
-    assertThat(jedis.arnext(key), equalTo(5L));
-    verify(commandExecutor).executeCommand(longCommandObject);
+    assertThat(jedis.arnext(key), equalTo(OptionalLong.of(5L)));
+    verify(commandExecutor).executeCommand(optionalLongCommandObject);
     verify(commandObjects).arnext(key);
   }
 
   @Test
-  public void testArop() {
+  public void testAropBitwise() {
     String key = "k";
-    when(commandObjects.arop(key, 0L, 10L, ArrayOp.SUM)).thenReturn(objectCommandObject);
-    when(commandExecutor.executeCommand(objectCommandObject)).thenReturn("3");
+    LongRange range = LongRange.of(0L, 10L);
+    when(commandObjects.aropBitwise(key, range, ArrayBitwise.AND)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(3L);
 
-    jedis.arop(key, 0L, 10L, ArrayOp.SUM);
-    verify(commandExecutor).executeCommand(objectCommandObject);
-    verify(commandObjects).arop(key, 0L, 10L, ArrayOp.SUM);
+    assertThat(jedis.aropBitwise(key, range, ArrayBitwise.AND), equalTo(3L));
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).aropBitwise(key, range, ArrayBitwise.AND);
   }
 
   @Test
-  public void testAropBinary() {
+  public void testAropBitwiseBinary() {
     byte[] key = "k".getBytes();
-    when(commandObjects.arop(key, 0L, 10L, ArrayOp.USED)).thenReturn(objectCommandObject);
-    when(commandExecutor.executeCommand(objectCommandObject)).thenReturn(2L);
+    LongRange range = LongRange.of(0L, 10L);
+    when(commandObjects.aropBitwise(key, range, ArrayBitwise.OR)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(7L);
 
-    jedis.arop(key, 0L, 10L, ArrayOp.USED);
-    verify(commandExecutor).executeCommand(objectCommandObject);
-    verify(commandObjects).arop(key, 0L, 10L, ArrayOp.USED);
+    assertThat(jedis.aropBitwise(key, range, ArrayBitwise.OR), equalTo(7L));
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).aropBitwise(key, range, ArrayBitwise.OR);
   }
 
   @Test
-  public void testAropMatch() {
+  public void testAropAggregate() {
     String key = "k";
-    when(commandObjects.aropMatch(key, 0L, 10L, "v")).thenReturn(longCommandObject);
+    LongRange range = LongRange.of(0L, 10L);
+    when(commandObjects.aropAggregate(key, range, ArrayAggregate.SUM)).thenReturn(stringCommandObject);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("42");
+
+    assertThat(jedis.aropAggregate(key, range, ArrayAggregate.SUM), equalTo("42"));
+    verify(commandExecutor).executeCommand(stringCommandObject);
+    verify(commandObjects).aropAggregate(key, range, ArrayAggregate.SUM);
+  }
+
+  @Test
+  public void testAropAggregateBinary() {
+    byte[] key = "k".getBytes();
+    LongRange range = LongRange.of(0L, 10L);
+    byte[] result = "42".getBytes();
+    when(commandObjects.aropAggregate(key, range, ArrayAggregate.MIN)).thenReturn(bytesCommandObject);
+    when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(result);
+
+    assertThat(jedis.aropAggregate(key, range, ArrayAggregate.MIN), equalTo(result));
+    verify(commandExecutor).executeCommand(bytesCommandObject);
+    verify(commandObjects).aropAggregate(key, range, ArrayAggregate.MIN);
+  }
+
+  @Test
+  public void testAropCount() {
+    String key = "k";
+    LongRange range = LongRange.of(0L, 10L);
+    when(commandObjects.aropCount(key, range)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(2L);
+
+    assertThat(jedis.aropCount(key, range), equalTo(2L));
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).aropCount(key, range);
+  }
+
+  @Test
+  public void testAropCountBinary() {
+    byte[] key = "k".getBytes();
+    LongRange range = LongRange.of(0L, 10L);
+    when(commandObjects.aropCount(key, range)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(2L);
+
+    assertThat(jedis.aropCount(key, range), equalTo(2L));
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).aropCount(key, range);
+  }
+
+  @Test
+  public void testAropCountMatch() {
+    String key = "k";
+    LongRange range = LongRange.of(0L, 10L);
+    when(commandObjects.aropCount(key, range, "v")).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(1L);
 
-    assertThat(jedis.aropMatch(key, 0L, 10L, "v"), equalTo(1L));
+    assertThat(jedis.aropCount(key, range, "v"), equalTo(1L));
     verify(commandExecutor).executeCommand(longCommandObject);
-    verify(commandObjects).aropMatch(key, 0L, 10L, "v");
+    verify(commandObjects).aropCount(key, range, "v");
   }
 
   @Test
-  public void testAropMatchBinary() {
+  public void testAropCountMatchBinary() {
     byte[] key = "k".getBytes();
+    LongRange range = LongRange.of(0L, 10L);
     byte[] val = "v".getBytes();
-    when(commandObjects.aropMatch(key, 0L, 10L, val)).thenReturn(longCommandObject);
+    when(commandObjects.aropCount(key, range, val)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(1L);
 
-    assertThat(jedis.aropMatch(key, 0L, 10L, val), equalTo(1L));
+    assertThat(jedis.aropCount(key, range, val), equalTo(1L));
     verify(commandExecutor).executeCommand(longCommandObject);
-    verify(commandObjects).aropMatch(key, 0L, 10L, val);
+    verify(commandObjects).aropCount(key, range, val);
   }
 
   @Test
@@ -431,24 +505,24 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testArscan() {
     String key = "k";
-    when(commandObjects.arscan(key, 0L, 10L)).thenReturn(listObjectCommandObject);
-    when(commandExecutor.executeCommand(listObjectCommandObject))
+    when(commandObjects.arscan(key, 0L, 10L)).thenReturn(listKeyValueLongStringCommandObject);
+    when(commandExecutor.executeCommand(listKeyValueLongStringCommandObject))
         .thenReturn(java.util.Collections.emptyList());
 
     jedis.arscan(key, 0L, 10L);
-    verify(commandExecutor).executeCommand(listObjectCommandObject);
+    verify(commandExecutor).executeCommand(listKeyValueLongStringCommandObject);
     verify(commandObjects).arscan(key, 0L, 10L);
   }
 
   @Test
   public void testArscanLimitBinary() {
     byte[] key = "k".getBytes();
-    when(commandObjects.arscan(key, 0L, 10L, 5L)).thenReturn(listObjectCommandObject);
-    when(commandExecutor.executeCommand(listObjectCommandObject))
+    when(commandObjects.arscan(key, 0L, 10L, 5L)).thenReturn(listKeyValueLongBytesCommandObject);
+    when(commandExecutor.executeCommand(listKeyValueLongBytesCommandObject))
         .thenReturn(java.util.Collections.emptyList());
 
     jedis.arscan(key, 0L, 10L, 5L);
-    verify(commandExecutor).executeCommand(listObjectCommandObject);
+    verify(commandExecutor).executeCommand(listKeyValueLongBytesCommandObject);
     verify(commandObjects).arscan(key, 0L, 10L, 5L);
   }
 

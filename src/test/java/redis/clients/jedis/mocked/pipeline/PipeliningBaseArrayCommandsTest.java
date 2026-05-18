@@ -10,7 +10,9 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Response;
-import redis.clients.jedis.args.ArrayOp;
+import redis.clients.jedis.args.ArrayAggregate;
+import redis.clients.jedis.args.ArrayBitwise;
+import redis.clients.jedis.args.LongRange;
 import redis.clients.jedis.params.ArgrepParams;
 
 public class PipeliningBaseArrayCommandsTest extends PipeliningBaseMockedTestBase {
@@ -58,7 +60,7 @@ public class PipeliningBaseArrayCommandsTest extends PipeliningBaseMockedTestBas
 
   @Test
   public void testArdelrange() {
-    long[][] ranges = { { 0, 1 } };
+    LongRange[] ranges = { LongRange.of(0L, 1L) };
     when(commandObjects.ardelrange("k", ranges)).thenReturn(longCommandObject);
     Response<Long> r = pipeliningBase.ardelrange("k", ranges);
     assertThat(commands, contains(longCommandObject));
@@ -68,7 +70,7 @@ public class PipeliningBaseArrayCommandsTest extends PipeliningBaseMockedTestBas
   @Test
   public void testArdelrangeBinary() {
     byte[] key = "k".getBytes();
-    long[][] ranges = { { 0, 1 } };
+    LongRange[] ranges = { LongRange.of(0L, 1L) };
     when(commandObjects.ardelrange(key, ranges)).thenReturn(longCommandObject);
     Response<Long> r = pipeliningBase.ardelrange(key, ranges);
     assertThat(commands, contains(longCommandObject));
@@ -110,48 +112,65 @@ public class PipeliningBaseArrayCommandsTest extends PipeliningBaseMockedTestBas
   @Test
   public void testArgrep() {
     ArgrepParams params = ArgrepParams.argrepParams().match("x");
-    when(commandObjects.argrep("k", 0L, 10L, params)).thenReturn(listObjectCommandObject);
+    when(commandObjects.argrep("k", 0L, 10L, params)).thenReturn(listLongCommandObject);
     pipeliningBase.argrep("k", 0L, 10L, params);
-    assertThat(commands, contains(listObjectCommandObject));
+    assertThat(commands, contains(listLongCommandObject));
   }
 
   @Test
   public void testArgrepBinary() {
     byte[] key = "k".getBytes();
     ArgrepParams params = ArgrepParams.argrepParams().exact("x");
-    when(commandObjects.argrep(key, 0L, 10L, params)).thenReturn(listObjectCommandObject);
+    when(commandObjects.argrep(key, 0L, 10L, params)).thenReturn(listLongCommandObject);
     pipeliningBase.argrep(key, 0L, 10L, params);
-    assertThat(commands, contains(listObjectCommandObject));
+    assertThat(commands, contains(listLongCommandObject));
+  }
+
+  @Test
+  public void testArgrepWithValues() {
+    ArgrepParams params = ArgrepParams.argrepParams().match("x");
+    when(commandObjects.argrepWithValues("k", 0L, 10L, params)).thenReturn(listKeyValueLongStringCommandObject);
+    pipeliningBase.argrepWithValues("k", 0L, 10L, params);
+    assertThat(commands, contains(listKeyValueLongStringCommandObject));
+  }
+
+  @Test
+  public void testArgrepWithValuesBinary() {
+    byte[] key = "k".getBytes();
+    ArgrepParams params = ArgrepParams.argrepParams().exact("x");
+    when(commandObjects.argrepWithValues(key, 0L, 10L, params)).thenReturn(listKeyValueLongBytesCommandObject);
+    pipeliningBase.argrepWithValues(key, 0L, 10L, params);
+    assertThat(commands, contains(listKeyValueLongBytesCommandObject));
   }
 
   @Test
   public void testArinfo() {
-    when(commandObjects.arinfo("k")).thenReturn(mapStringObjectCommandObject);
+    when(commandObjects.arinfo("k")).thenReturn(arrayInfoCommandObject);
     pipeliningBase.arinfo("k");
-    assertThat(commands, contains(mapStringObjectCommandObject));
+    assertThat(commands, contains(arrayInfoCommandObject));
   }
 
   @Test
   public void testArinfoBinary() {
     byte[] key = "k".getBytes();
-    when(commandObjects.arinfo(key)).thenReturn(mapStringObjectCommandObject);
+    when(commandObjects.arinfo(key)).thenReturn(arrayInfoCommandObject);
     pipeliningBase.arinfo(key);
-    assertThat(commands, contains(mapStringObjectCommandObject));
+    assertThat(commands, contains(arrayInfoCommandObject));
   }
 
   @Test
   public void testArinfoFull() {
-    when(commandObjects.arinfo("k", true)).thenReturn(mapStringObjectCommandObject);
-    pipeliningBase.arinfo("k", true);
-    assertThat(commands, contains(mapStringObjectCommandObject));
+    when(commandObjects.arinfoFull("k")).thenReturn(arrayFullInfoCommandObject);
+    pipeliningBase.arinfoFull("k");
+    assertThat(commands, contains(arrayFullInfoCommandObject));
   }
 
   @Test
   public void testArinfoFullBinary() {
     byte[] key = "k".getBytes();
-    when(commandObjects.arinfo(key, true)).thenReturn(mapStringObjectCommandObject);
-    pipeliningBase.arinfo(key, true);
-    assertThat(commands, contains(mapStringObjectCommandObject));
+    when(commandObjects.arinfoFull(key)).thenReturn(arrayFullInfoCommandObject);
+    pipeliningBase.arinfoFull(key);
+    assertThat(commands, contains(arrayFullInfoCommandObject));
   }
 
   @Test
@@ -239,47 +258,85 @@ public class PipeliningBaseArrayCommandsTest extends PipeliningBaseMockedTestBas
 
   @Test
   public void testArnext() {
-    when(commandObjects.arnext("k")).thenReturn(longCommandObject);
+    when(commandObjects.arnext("k")).thenReturn(optionalLongCommandObject);
     pipeliningBase.arnext("k");
-    assertThat(commands, contains(longCommandObject));
+    assertThat(commands, contains(optionalLongCommandObject));
   }
 
   @Test
   public void testArnextBinary() {
     byte[] key = "k".getBytes();
-    when(commandObjects.arnext(key)).thenReturn(longCommandObject);
+    when(commandObjects.arnext(key)).thenReturn(optionalLongCommandObject);
     pipeliningBase.arnext(key);
+    assertThat(commands, contains(optionalLongCommandObject));
+  }
+
+  @Test
+  public void testAropBitwise() {
+    LongRange range = LongRange.of(0L, 10L);
+    when(commandObjects.aropBitwise("k", range, ArrayBitwise.AND)).thenReturn(longCommandObject);
+    pipeliningBase.aropBitwise("k", range, ArrayBitwise.AND);
     assertThat(commands, contains(longCommandObject));
   }
 
   @Test
-  public void testArop() {
-    when(commandObjects.arop("k", 0L, 10L, ArrayOp.SUM)).thenReturn(objectCommandObject);
-    pipeliningBase.arop("k", 0L, 10L, ArrayOp.SUM);
-    assertThat(commands, contains(objectCommandObject));
-  }
-
-  @Test
-  public void testAropBinary() {
+  public void testAropBitwiseBinary() {
     byte[] key = "k".getBytes();
-    when(commandObjects.arop(key, 0L, 10L, ArrayOp.USED)).thenReturn(objectCommandObject);
-    pipeliningBase.arop(key, 0L, 10L, ArrayOp.USED);
-    assertThat(commands, contains(objectCommandObject));
-  }
-
-  @Test
-  public void testAropMatch() {
-    when(commandObjects.aropMatch("k", 0L, 10L, "v")).thenReturn(longCommandObject);
-    pipeliningBase.aropMatch("k", 0L, 10L, "v");
+    LongRange range = LongRange.of(0L, 10L);
+    when(commandObjects.aropBitwise(key, range, ArrayBitwise.OR)).thenReturn(longCommandObject);
+    pipeliningBase.aropBitwise(key, range, ArrayBitwise.OR);
     assertThat(commands, contains(longCommandObject));
   }
 
   @Test
-  public void testAropMatchBinary() {
+  public void testAropAggregate() {
+    LongRange range = LongRange.of(0L, 10L);
+    when(commandObjects.aropAggregate("k", range, ArrayAggregate.SUM)).thenReturn(stringCommandObject);
+    pipeliningBase.aropAggregate("k", range, ArrayAggregate.SUM);
+    assertThat(commands, contains(stringCommandObject));
+  }
+
+  @Test
+  public void testAropAggregateBinary() {
     byte[] key = "k".getBytes();
+    LongRange range = LongRange.of(0L, 10L);
+    when(commandObjects.aropAggregate(key, range, ArrayAggregate.MIN)).thenReturn(bytesCommandObject);
+    pipeliningBase.aropAggregate(key, range, ArrayAggregate.MIN);
+    assertThat(commands, contains(bytesCommandObject));
+  }
+
+  @Test
+  public void testAropCount() {
+    LongRange range = LongRange.of(0L, 10L);
+    when(commandObjects.aropCount("k", range)).thenReturn(longCommandObject);
+    pipeliningBase.aropCount("k", range);
+    assertThat(commands, contains(longCommandObject));
+  }
+
+  @Test
+  public void testAropCountBinary() {
+    byte[] key = "k".getBytes();
+    LongRange range = LongRange.of(0L, 10L);
+    when(commandObjects.aropCount(key, range)).thenReturn(longCommandObject);
+    pipeliningBase.aropCount(key, range);
+    assertThat(commands, contains(longCommandObject));
+  }
+
+  @Test
+  public void testAropCountMatch() {
+    LongRange range = LongRange.of(0L, 10L);
+    when(commandObjects.aropCount("k", range, "v")).thenReturn(longCommandObject);
+    pipeliningBase.aropCount("k", range, "v");
+    assertThat(commands, contains(longCommandObject));
+  }
+
+  @Test
+  public void testAropCountMatchBinary() {
+    byte[] key = "k".getBytes();
+    LongRange range = LongRange.of(0L, 10L);
     byte[] val = "v".getBytes();
-    when(commandObjects.aropMatch(key, 0L, 10L, val)).thenReturn(longCommandObject);
-    pipeliningBase.aropMatch(key, 0L, 10L, val);
+    when(commandObjects.aropCount(key, range, val)).thenReturn(longCommandObject);
+    pipeliningBase.aropCount(key, range, val);
     assertThat(commands, contains(longCommandObject));
   }
 
@@ -302,17 +359,17 @@ public class PipeliningBaseArrayCommandsTest extends PipeliningBaseMockedTestBas
 
   @Test
   public void testArscan() {
-    when(commandObjects.arscan("k", 0L, 10L)).thenReturn(listObjectCommandObject);
+    when(commandObjects.arscan("k", 0L, 10L)).thenReturn(listKeyValueLongStringCommandObject);
     pipeliningBase.arscan("k", 0L, 10L);
-    assertThat(commands, contains(listObjectCommandObject));
+    assertThat(commands, contains(listKeyValueLongStringCommandObject));
   }
 
   @Test
   public void testArscanLimitBinary() {
     byte[] key = "k".getBytes();
-    when(commandObjects.arscan(key, 0L, 10L, 5L)).thenReturn(listObjectCommandObject);
+    when(commandObjects.arscan(key, 0L, 10L, 5L)).thenReturn(listKeyValueLongBytesCommandObject);
     pipeliningBase.arscan(key, 0L, 10L, 5L);
-    assertThat(commands, contains(listObjectCommandObject));
+    assertThat(commands, contains(listKeyValueLongBytesCommandObject));
   }
 
   @Test

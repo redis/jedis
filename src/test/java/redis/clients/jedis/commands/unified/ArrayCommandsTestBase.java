@@ -9,14 +9,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.args.ArrayOp;
+import redis.clients.jedis.args.ArrayAggregate;
+import redis.clients.jedis.args.ArrayBitwise;
+import redis.clients.jedis.args.LongRange;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.ArgrepParams;
+import redis.clients.jedis.resps.ArrayFullInfo;
+import redis.clients.jedis.resps.ArrayInfo;
+import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
 
 @SinceRedisVersion("8.7.225")
@@ -58,7 +64,7 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
   public void ardelrange() {
     String key = "ardelrange";
     jedis.arinsert(key, "a", "b", "c", "d");
-    long deleted = jedis.ardelrange(key, new long[] { 0, 1 });
+    long deleted = jedis.ardelrange(key, LongRange.of(0L, 1L));
     assertTrue(deleted >= 0);
   }
 
@@ -66,7 +72,7 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
   public void ardelrangeBinary() {
     byte[] key = SafeEncoder.encode("ardelrange-b");
     jedis.arinsert(key, "a".getBytes(), "b".getBytes());
-    long deleted = jedis.ardelrange(key, new long[] { 0, 1 });
+    long deleted = jedis.ardelrange(key, LongRange.of(0L, 1L));
     assertTrue(deleted >= 0);
   }
 
@@ -105,7 +111,7 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
   public void argrep() {
     String key = "argrep";
     jedis.arinsert(key, "foo", "foobar");
-    List<Object> r = jedis.argrep(key, 0L, 10L, ArgrepParams.argrepParams().match("foo"));
+    List<Long> r = jedis.argrep(key, 0L, 10L, ArgrepParams.argrepParams().match("foo"));
     assertNotNull(r);
   }
 
@@ -113,7 +119,25 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
   public void argrepBinary() {
     byte[] key = SafeEncoder.encode("argrep-b");
     jedis.arinsert(key, "abc".getBytes());
-    List<Object> r = jedis.argrep(key, 0L, 10L, ArgrepParams.argrepParams().exact("abc"));
+    List<Long> r = jedis.argrep(key, 0L, 10L, ArgrepParams.argrepParams().exact("abc"));
+    assertNotNull(r);
+  }
+
+  @Test
+  public void argrepWithValues() {
+    String key = "argrepWithValues";
+    jedis.arinsert(key, "foo", "foobar");
+    List<KeyValue<Long, String>> r = jedis.argrepWithValues(key, 0L, 10L,
+        ArgrepParams.argrepParams().match("foo"));
+    assertNotNull(r);
+  }
+
+  @Test
+  public void argrepWithValuesBinary() {
+    byte[] key = SafeEncoder.encode("argrepWithValues-b");
+    jedis.arinsert(key, "abc".getBytes());
+    List<KeyValue<Long, byte[]>> r = jedis.argrepWithValues(key, 0L, 10L,
+        ArgrepParams.argrepParams().exact("abc"));
     assertNotNull(r);
   }
 
@@ -121,15 +145,15 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
   public void arinfo() {
     String key = "arinfo";
     jedis.arinsert(key, "a");
-    Map<String, Object> info = jedis.arinfo(key);
-    assertTrue(info.containsKey("count"));
+    ArrayInfo info = jedis.arinfo(key);
+    assertNotNull(info);
   }
 
   @Test
   public void arinfoFullBinary() {
     byte[] key = SafeEncoder.encode("arinfo-b");
     jedis.arinsert(key, "a".getBytes());
-    Map<String, Object> info = jedis.arinfo(key, true);
+    ArrayFullInfo info = jedis.arinfoFull(key);
     assertNotNull(info);
   }
 
@@ -216,43 +240,51 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
   public void arnext() {
     String key = "arnext";
     jedis.arinsert(key, "a", "b");
-    assertEquals(Long.valueOf(2L), jedis.arnext(key));
+    assertEquals(OptionalLong.of(2L), jedis.arnext(key));
   }
 
   @Test
   public void arnextMissingBinary() {
-    assertEquals(Long.valueOf(0L), jedis.arnext(SafeEncoder.encode("arnext-missing-b")));
+    assertEquals(OptionalLong.empty(), jedis.arnext(SafeEncoder.encode("arnext-missing-b")));
   }
 
   @Test
-  public void aropUsed() {
+  public void aropAggregate() {
     String key = "arop";
     jedis.arinsert(key, "1", "2");
-    Object r = jedis.arop(key, 0L, 10L, ArrayOp.USED);
+    String r = jedis.aropAggregate(key, LongRange.of(0L, 10L), ArrayAggregate.SUM);
     assertNotNull(r);
   }
 
   @Test
-  public void aropUsedBinary() {
+  public void aropBitwiseBinary() {
     byte[] key = SafeEncoder.encode("arop-b");
     jedis.arinsert(key, "1".getBytes());
-    Object r = jedis.arop(key, 0L, 10L, ArrayOp.USED);
-    assertNotNull(r);
-  }
-
-  @Test
-  public void aropMatch() {
-    String key = "aropMatch";
-    jedis.arinsert(key, "a", "a", "b");
-    long r = jedis.aropMatch(key, 0L, 10L, "a");
+    long r = jedis.aropBitwise(key, LongRange.of(0L, 10L), ArrayBitwise.AND);
     assertTrue(r >= 0);
   }
 
   @Test
-  public void aropMatchBinary() {
-    byte[] key = SafeEncoder.encode("aropMatch-b");
+  public void aropCount() {
+    String key = "aropCount";
+    jedis.arinsert(key, "1", "2");
+    long r = jedis.aropCount(key, LongRange.of(0L, 10L));
+    assertTrue(r >= 0);
+  }
+
+  @Test
+  public void aropCountMatch() {
+    String key = "aropCountMatch";
+    jedis.arinsert(key, "a", "a", "b");
+    long r = jedis.aropCount(key, LongRange.of(0L, 10L), "a");
+    assertTrue(r >= 0);
+  }
+
+  @Test
+  public void aropCountMatchBinary() {
+    byte[] key = SafeEncoder.encode("aropCountMatch-b");
     jedis.arinsert(key, "a".getBytes());
-    long r = jedis.aropMatch(key, 0L, 10L, "a".getBytes());
+    long r = jedis.aropCount(key, LongRange.of(0L, 10L), "a".getBytes());
     assertTrue(r >= 0);
   }
 
@@ -272,7 +304,7 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
 
   @Test
   public void arscanMissing() {
-    List<Object> r = jedis.arscan("arscan-missing", 0L, 10L);
+    List<KeyValue<Long, String>> r = jedis.arscan("arscan-missing", 0L, 10L);
     assertTrue(r.isEmpty());
   }
 
@@ -280,7 +312,7 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
   public void arscanLimitBinary() {
     byte[] key = SafeEncoder.encode("arscan-b");
     jedis.arinsert(key, "a".getBytes(), "b".getBytes());
-    List<Object> r = jedis.arscan(key, 0L, 10L, 1L);
+    List<KeyValue<Long, byte[]>> r = jedis.arscan(key, 0L, 10L, 1L);
     assertNotNull(r);
   }
 

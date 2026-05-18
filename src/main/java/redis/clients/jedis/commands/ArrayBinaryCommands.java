@@ -2,9 +2,15 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 
-import redis.clients.jedis.args.ArrayOp;
+import redis.clients.jedis.args.ArrayAggregate;
+import redis.clients.jedis.args.ArrayBitwise;
+import redis.clients.jedis.args.LongRange;
 import redis.clients.jedis.params.ArgrepParams;
+import redis.clients.jedis.resps.ArrayFullInfo;
+import redis.clients.jedis.resps.ArrayInfo;
+import redis.clients.jedis.util.KeyValue;
 
 /**
  * Binary commands for the Redis <b>array</b> data type.
@@ -16,6 +22,8 @@ public interface ArrayBinaryCommands {
    * non-empty elements in an array.
    * <p>
    * Time complexity: O(1)
+   * <p>
+   * Wire: {@code ARCOUNT key}
    * @param key the name of the key that holds the array
    * @return the number of non-empty elements, or {@code 0} if {@code key} does not exist
    * @since 8.0
@@ -23,11 +31,27 @@ public interface ArrayBinaryCommands {
   long arcount(byte[] key);
 
   /**
+   * <b><a href="https://redis.io/commands/ardel">ARDEL Command</a></b> Deletes the element at a
+   * single index in an array. If the index does not exist the array is unchanged.
+   * <p>
+   * Time complexity: O(1)
+   * <p>
+   * Wire: {@code ARDEL key index}
+   * @param key the name of the key that holds the array
+   * @param index the zero-based index to delete
+   * @return {@code 1} if an element was deleted, {@code 0} otherwise
+   * @since 8.0
+   */
+  long ardel(byte[] key, long index);
+
+  /**
    * <b><a href="https://redis.io/commands/ardel">ARDEL Command</a></b> Deletes elements at the
    * specified indices in an array. Indices that do not exist count as zero elements deleted and
    * leave the array unchanged.
    * <p>
    * Time complexity: O(N) where N is the number of indices supplied.
+   * <p>
+   * Wire: {@code ARDEL key index1 [index2 ...]}
    * @param key the name of the key that holds the array
    * @param indices one or more zero-based indices to delete
    * @return the number of elements actually deleted
@@ -37,23 +61,28 @@ public interface ArrayBinaryCommands {
 
   /**
    * <b><a href="https://redis.io/commands/ardelrange">ARDELRANGE Command</a></b> Deletes elements
-   * in one or more inclusive ranges of indices. Each range is processed in ascending order even if
-   * {@code start > end}; overlapping pairs count each element at most once.
+   * in one or more inclusive {@link LongRange} ranges of indices. Each range is processed in
+   * ascending order even if {@code start > end}; overlapping ranges count each element at most
+   * once.
    * <p>
    * Time complexity: O(M + N) where M is the number of ranges and N the total number of elements
    * they cover.
+   * <p>
+   * Wire: {@code ARDELRANGE key r1.start r1.end [r2.start r2.end ...]}
    * @param key the name of the key that holds the array
-   * @param ranges one or more {@code [start, end]} pairs
+   * @param ranges one or more inclusive index ranges
    * @return the number of elements deleted
    * @since 8.0
    */
-  long ardelrange(byte[] key, long[]... ranges);
+  long ardelrange(byte[] key, LongRange... ranges);
 
   /**
    * <b><a href="https://redis.io/commands/arget">ARGET Command</a></b> Returns the value stored at
    * a single index in an array.
    * <p>
    * Time complexity: O(1)
+   * <p>
+   * Wire: {@code ARGET key index}
    * @param key the name of the key that holds the array
    * @param index the zero-based index of the element to retrieve
    * @return the value at the given index, or {@code null} if the key or index does not exist
@@ -67,6 +96,8 @@ public interface ArrayBinaryCommands {
    * index order.
    * <p>
    * Time complexity: O(N) where N is the number of elements in the range.
+   * <p>
+   * Wire: {@code ARGETRANGE key start end}
    * @param key the name of the key that holds the array
    * @param start zero-based start index of the range
    * @param end zero-based end index of the range (inclusive)
@@ -77,46 +108,69 @@ public interface ArrayBinaryCommands {
 
   /**
    * <b><a href="https://redis.io/commands/argrep">ARGREP Command</a></b> Searches array elements
-   * within an inclusive index range using one or more textual predicates. Empty slots are skipped.
-   * Multiple predicates can be combined with {@code AND}/{@code OR} via {@link ArgrepParams}.
+   * within an inclusive index range using one or more textual predicates and returns the matching
+   * indices. Empty slots are skipped. Multiple predicates can be combined with {@code AND}/
+   * {@code OR} via {@link ArgrepParams}. Use {@link #argrepWithValues(byte[], long, long,
+   * ArgrepParams)} to also return the matching values.
    * <p>
    * Time complexity: O(N) where N is the number of elements scanned.
+   * <p>
+   * Wire: {@code ARGREP key start end <params>}
    * @param key the name of the key that holds the array
    * @param start zero-based start index (inclusive); when {@code start > end} the iteration is
    *          reversed
    * @param end zero-based end index (inclusive)
    * @param params the predicates and options to apply
-   * @return matching indices in traversal order, or alternating index/value pairs when
-   *         {@code WITHVALUES} is set; empty when no match
+   * @return the matching indices in traversal order; empty when no match
    * @since 8.0
    */
-  List<Object> argrep(byte[] key, long start, long end, ArgrepParams params);
+  List<Long> argrep(byte[] key, long start, long end, ArgrepParams params);
+
+  /**
+   * <b><a href="https://redis.io/commands/argrep">ARGREP Command</a></b> Searches array elements
+   * within an inclusive index range and returns the matching index/value pairs. Empty slots are
+   * skipped. This overload appends the {@code WITHVALUES} keyword to the wire arguments; do not
+   * also request it on {@link ArgrepParams}.
+   * <p>
+   * Time complexity: O(N) where N is the number of elements scanned.
+   * <p>
+   * Wire: {@code ARGREP key start end <params> WITHVALUES}
+   * @param key the name of the key that holds the array
+   * @param start zero-based start index (inclusive); when {@code start > end} the iteration is
+   *          reversed
+   * @param end zero-based end index (inclusive)
+   * @param params the predicates and options to apply
+   * @return the matching index/value pairs in traversal order; empty when no match
+   * @since 8.0
+   */
+  List<KeyValue<Long, byte[]>> argrepWithValues(byte[] key, long start, long end, ArgrepParams params);
 
   /**
    * <b><a href="https://redis.io/commands/arinfo">ARINFO Command</a></b> Returns metadata
-   * describing an array (counts, slice geometry, insertion cursor). Top-level fields are always
-   * returned.
+   * describing an array (counts, length, insertion cursor). Use {@link #arinfoFull(byte[])} for
+   * the per-slice statistics.
    * <p>
    * Time complexity: O(1)
+   * <p>
+   * Wire: {@code ARINFO key}
    * @param key the name of the key that holds the array
-   * @return a map of metadata fields to their values
+   * @return a typed {@link ArrayInfo}, or {@code null} if the key does not exist
    * @since 8.0
    */
-  Map<String, Object> arinfo(byte[] key);
+  ArrayInfo arinfo(byte[] key);
 
   /**
-   * <b><a href="https://redis.io/commands/arinfo">ARINFO Command</a></b> Returns metadata
-   * describing an array. When {@code full} is {@code true}, the reply additionally includes
-   * per-slice statistics.
+   * <b><a href="https://redis.io/commands/arinfo">ARINFO Command</a></b> Returns the {@code FULL}
+   * variant of the array metadata: the top-level fields plus the per-slice statistics block.
    * <p>
-   * Time complexity: O(1) without {@code FULL}; O(S) with {@code FULL} where S is the number of
-   * slices.
+   * Time complexity: O(S) where S is the number of slices.
+   * <p>
+   * Wire: {@code ARINFO key FULL}
    * @param key the name of the key that holds the array
-   * @param full whether to request the {@code FULL} variant
-   * @return a map of metadata fields to their values
+   * @return a typed {@link ArrayFullInfo}, or {@code null} if the key does not exist
    * @since 8.0
    */
-  Map<String, Object> arinfo(byte[] key, boolean full);
+  ArrayFullInfo arinfoFull(byte[] key);
 
   /**
    * <b><a href="https://redis.io/commands/arinsert">ARINSERT Command</a></b> Inserts one or more
@@ -124,6 +178,8 @@ public interface ArrayBinaryCommands {
    * advances by one for each value inserted.
    * <p>
    * Time complexity: O(N) where N is the number of values inserted.
+   * <p>
+   * Wire: {@code ARINSERT key value1 [value2 ...]}
    * @param key the name of the key that holds the array
    * @param values one or more values to insert
    * @return the last index at which a value was inserted
@@ -136,6 +192,8 @@ public interface ArrayBinaryCommands {
    * recently inserted elements in oldest-first order.
    * <p>
    * Time complexity: O(N) where N is the number of returned elements.
+   * <p>
+   * Wire: {@code ARLASTITEMS key count}
    * @param key the name of the key that holds the array
    * @param count the maximum number of elements to return
    * @return the list of last-inserted values
@@ -149,6 +207,9 @@ public interface ArrayBinaryCommands {
    * chronological order (most recent first) instead of the default oldest-first order.
    * <p>
    * Time complexity: O(N) where N is the number of returned elements.
+   * <p>
+   * Wire: {@code ARLASTITEMS key count [REV]} ({@code REV} is appended when {@code rev} is
+   * {@code true}).
    * @param key the name of the key that holds the array
    * @param count the maximum number of elements to return
    * @param rev whether to request the {@code REV} variant
@@ -162,6 +223,8 @@ public interface ArrayBinaryCommands {
    * array (max index + 1).
    * <p>
    * Time complexity: O(1)
+   * <p>
+   * Wire: {@code ARLEN key}
    * @param key the name of the key that holds the array
    * @return the array length, or {@code 0} if the key does not exist
    * @since 8.0
@@ -174,6 +237,8 @@ public interface ArrayBinaryCommands {
    * {@code null} for any index that is not set.
    * <p>
    * Time complexity: O(N) where N is the number of requested indices.
+   * <p>
+   * Wire: {@code ARMGET key index1 [index2 ...]}
    * @param key the name of the key that holds the array
    * @param indices one or more zero-based indices to retrieve
    * @return the list of values aligned with {@code indices}
@@ -187,6 +252,8 @@ public interface ArrayBinaryCommands {
    * wire order.
    * <p>
    * Time complexity: O(N) where N is the number of pairs.
+   * <p>
+   * Wire: {@code ARMSET key index1 value1 [index2 value2 ...]}
    * @param key the name of the key that holds the array
    * @param indexValueMap the index-to-value pairs to write
    * @return the number of slots that were previously empty
@@ -199,47 +266,76 @@ public interface ArrayBinaryCommands {
    * that {@code ARINSERT} would use.
    * <p>
    * Time complexity: O(1)
+   * <p>
+   * Wire: {@code ARNEXT key}
    * @param key the name of the key that holds the array
-   * @return the next insert index; {@code 0} for missing keys or when no insert has happened yet;
-   *         {@code null} when the insertion cursor is exhausted
+   * @return {@link OptionalLong#of(long) OptionalLong.of(0)} for a missing key or when no insert
+   *         has happened yet; the next insert index wrapped in {@link OptionalLong} when one is
+   *         available; {@link OptionalLong#empty()} when the insertion cursor is exhausted
    * @since 8.0
    */
-  Long arnext(byte[] key);
+  OptionalLong arnext(byte[] key);
 
   /**
-   * <b><a href="https://redis.io/commands/arop">AROP Command</a></b> Applies an aggregate operation
-   * over the non-empty elements in {@code [start, end]}. The command always scans from the lower to
-   * the higher index regardless of argument order. Use this overload for operations that take no
-   * extra argument: {@link ArrayOp#SUM}, {@link ArrayOp#MIN}, {@link ArrayOp#MAX},
-   * {@link ArrayOp#AND}, {@link ArrayOp#OR}, {@link ArrayOp#XOR}, {@link ArrayOp#USED}.
+   * <b><a href="https://redis.io/commands/arop">AROP Command</a></b> Applies a bitwise operation
+   * ({@link ArrayBitwise#AND AND}, {@link ArrayBitwise#OR OR}, {@link ArrayBitwise#XOR XOR}) over
+   * the non-empty elements in {@code range}.
    * <p>
    * Time complexity: O(N) where N is the number of elements scanned.
+   * <p>
+   * Wire: {@code AROP key range.start range.end AND|OR|XOR}
    * @param key the name of the key that holds the array
-   * @param start zero-based start index of the range
-   * @param end zero-based end index of the range (inclusive)
-   * @param op the aggregate operation to apply
-   * @return the operation's result; a byte[] for {@code SUM}, {@code MIN}, {@code MAX}; a
-   *         {@link Long} for {@code AND}, {@code OR}, {@code XOR}, {@code USED}; or {@code null}
-   *         when no matching elements are present
+   * @param range the inclusive index range
+   * @param op the bitwise operator to apply
+   * @return the operation's numeric result
    * @since 8.0
    */
-  Object arop(byte[] key, long start, long end, ArrayOp op);
+  long aropBitwise(byte[] key, LongRange range, ArrayBitwise op);
 
   /**
-   * <b><a href="https://redis.io/commands/arop">AROP Command</a></b> Counts elements equal to
-   * {@code value} within {@code [start, end]} (equivalent to
-   * {@code AROP key start end MATCH value}). The command always scans from the lower to the higher
-   * index regardless of argument order.
+   * <b><a href="https://redis.io/commands/arop">AROP Command</a></b> Applies a numeric aggregate
+   * ({@link ArrayAggregate#SUM SUM}, {@link ArrayAggregate#MIN MIN}, {@link ArrayAggregate#MAX MAX})
+   * over the non-empty elements in {@code range}.
    * <p>
    * Time complexity: O(N) where N is the number of elements scanned.
+   * <p>
+   * Wire: {@code AROP key range.start range.end SUM|MIN|MAX}
    * @param key the name of the key that holds the array
-   * @param start zero-based start index of the range
-   * @param end zero-based end index of the range (inclusive)
-   * @param value the value to match
+   * @param range the inclusive index range
+   * @param op the aggregate operator to apply
+   * @return the aggregate value as raw bytes, or {@code null} when the range is empty
+   * @since 8.0
+   */
+  byte[] aropAggregate(byte[] key, LongRange range, ArrayAggregate op);
+
+  /**
+   * <b><a href="https://redis.io/commands/arop">AROP Command</a></b> Counts the number of non-empty
+   * elements in {@code range} using the {@code USED} subcommand.
+   * <p>
+   * Time complexity: O(N) where N is the number of elements scanned.
+   * <p>
+   * Wire: {@code AROP key range.start range.end USED}
+   * @param key the name of the key that holds the array
+   * @param range the inclusive index range
+   * @return the count of non-empty elements
+   * @since 8.0
+   */
+  long aropCount(byte[] key, LongRange range);
+
+  /**
+   * <b><a href="https://redis.io/commands/arop">AROP Command</a></b> Counts elements in
+   * {@code range} whose value equals {@code match} using the {@code MATCH} subcommand.
+   * <p>
+   * Time complexity: O(N) where N is the number of elements scanned.
+   * <p>
+   * Wire: {@code AROP key range.start range.end MATCH match}
+   * @param key the name of the key that holds the array
+   * @param range the inclusive index range
+   * @param match the value to match
    * @return the count of matching elements
    * @since 8.0
    */
-  long aropMatch(byte[] key, long start, long end, byte[] value);
+  long aropCount(byte[] key, LongRange range, byte[] match);
 
   /**
    * <b><a href="https://redis.io/commands/arring">ARRING Command</a></b> Inserts one or more values
@@ -247,6 +343,8 @@ public interface ArrayBinaryCommands {
    * the cursor advances accordingly.
    * <p>
    * Time complexity: O(N) where N is the number of values inserted.
+   * <p>
+   * Wire: {@code ARRING key size value1 [value2 ...]}
    * @param key the name of the key that holds the array
    * @param size the ring buffer window size
    * @param values one or more values to insert
@@ -257,38 +355,44 @@ public interface ArrayBinaryCommands {
 
   /**
    * <b><a href="https://redis.io/commands/arscan">ARSCAN Command</a></b> Iterates existing elements
-   * in an inclusive index range and returns a flat array of alternating index/value pairs in
-   * traversal order. Empty slots are excluded.
+   * in an inclusive index range and returns the index/value pairs in traversal order. Empty slots
+   * are excluded.
    * <p>
    * Time complexity: O(N) where N is the number of populated elements.
+   * <p>
+   * Wire: {@code ARSCAN key start end}
    * @param key the name of the key that holds the array
    * @param start zero-based start index; when {@code start > end} the iteration is reversed
    * @param end zero-based end index (inclusive)
-   * @return alternating {@code [idx1, val1, idx2, val2, ...]}; empty when the key does not exist
+   * @return the populated {@code (index, value)} pairs; empty when the key does not exist
    * @since 8.0
    */
-  List<Object> arscan(byte[] key, long start, long end);
+  List<KeyValue<Long, byte[]>> arscan(byte[] key, long start, long end);
 
   /**
    * <b><a href="https://redis.io/commands/arscan">ARSCAN Command</a></b> Iterates existing elements
-   * in an inclusive index range with a cap on the number of elements returned. Empty slots are
+   * in an inclusive index range with a cap on the number of pairs returned. Empty slots are
    * excluded.
    * <p>
    * Time complexity: O(N) where N is the number of populated elements returned.
+   * <p>
+   * Wire: {@code ARSCAN key start end LIMIT limit}
    * @param key the name of the key that holds the array
    * @param start zero-based start index; when {@code start > end} the iteration is reversed
    * @param end zero-based end index (inclusive)
    * @param limit cap on the number of returned populated elements
-   * @return alternating {@code [idx1, val1, idx2, val2, ...]}
+   * @return the populated {@code (index, value)} pairs
    * @since 8.0
    */
-  List<Object> arscan(byte[] key, long start, long end, long limit);
+  List<KeyValue<Long, byte[]>> arscan(byte[] key, long start, long end, long limit);
 
   /**
    * <b><a href="https://redis.io/commands/arseek">ARSEEK Command</a></b> Sets the insert cursor of
    * an array to a specific index.
    * <p>
    * Time complexity: O(1)
+   * <p>
+   * Wire: {@code ARSEEK key index}
    * @param key the name of the key that holds the array
    * @param index the zero-based index to set as the new insert cursor
    * @return {@code 1} if the cursor was set, {@code 0} if the key does not exist
@@ -302,6 +406,8 @@ public interface ArrayBinaryCommands {
    * consecutive indices.
    * <p>
    * Time complexity: O(N) where N is the number of values written.
+   * <p>
+   * Wire: {@code ARSET key index value1 [value2 ...]}
    * @param key the name of the key that holds the array
    * @param index zero-based starting index
    * @param values one or more values to write at consecutive indices

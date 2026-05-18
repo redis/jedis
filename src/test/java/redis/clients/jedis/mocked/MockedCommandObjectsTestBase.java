@@ -2,6 +2,7 @@ package redis.clients.jedis.mocked;
 
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.Set;
 
 import org.json.JSONArray;
@@ -42,6 +43,8 @@ public abstract class MockedCommandObjectsTestBase {
 
   // @formatter:off
   @Mock protected CommandObject<AggregationResult> aggregationResultCommandObject;
+  @Mock protected CommandObject<ArrayInfo> arrayInfoCommandObject;
+  @Mock protected CommandObject<ArrayFullInfo> arrayFullInfoCommandObject;
   @Mock protected CommandObject<Boolean> booleanCommandObject;
   @Mock protected CommandObject<Class<?>> classCommandObject;
   @Mock protected CommandObject<Double> doubleCommandObject;
@@ -63,6 +66,8 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<List<GeoCoordinate>> listGeoCoordinateCommandObject;
   @Mock protected CommandObject<List<GeoRadiusResponse>> listGeoRadiusResponseCommandObject;
   @Mock protected CommandObject<List<JSONArray>> listJsonArrayCommandObject;
+  @Mock protected CommandObject<List<KeyValue<Long, String>>> listKeyValueLongStringCommandObject;
+  @Mock protected CommandObject<List<KeyValue<Long, byte[]>>> listKeyValueLongBytesCommandObject;
   @Mock protected CommandObject<List<LibraryInfo>> listLibraryInfoCommandObject;
   @Mock protected CommandObject<List<List<Object>>> listListObjectCommandObject;
   @Mock protected CommandObject<List<List<String>>> listListStringCommandObject;
@@ -99,6 +104,7 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<Map<byte[], byte[]>> mapBytesBytesCommandObject;
   @Mock protected CommandObject<MyBean> myBeanCommandObject;
   @Mock protected CommandObject<Object> objectCommandObject;
+  @Mock protected CommandObject<OptionalLong> optionalLongCommandObject;
   @Mock protected CommandObject<ScanResult<Map.Entry<String, String>>> scanResultEntryStringStringCommandObject;
   @Mock protected CommandObject<ScanResult<Map.Entry<byte[], byte[]>>> scanResultEntryBytesBytesCommandObject;
   @Mock protected CommandObject<ScanResult<String>> scanResultStringCommandObject;

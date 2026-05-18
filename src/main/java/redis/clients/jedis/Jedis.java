@@ -12,6 +12,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.OptionalLong;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.Arrays;
@@ -4583,13 +4584,19 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long ardel(final byte[] key, final long index) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.ardel(key, index));
+  }
+
+  @Override
   public long ardel(final byte[] key, final long... indices) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.ardel(key, indices));
   }
 
   @Override
-  public long ardelrange(final byte[] key, final long[]... ranges) {
+  public long ardelrange(final byte[] key, final LongRange... ranges) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.ardelrange(key, ranges));
   }
@@ -4607,21 +4614,27 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<Object> argrep(final byte[] key, final long start, final long end, final ArgrepParams params) {
+  public List<Long> argrep(final byte[] key, final long start, final long end, final ArgrepParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.argrep(key, start, end, params));
   }
 
   @Override
-  public Map<String, Object> arinfo(final byte[] key) {
+  public List<KeyValue<Long, byte[]>> argrepWithValues(final byte[] key, final long start, final long end, final ArgrepParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.argrepWithValues(key, start, end, params));
+  }
+
+  @Override
+  public ArrayInfo arinfo(final byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.arinfo(key));
   }
 
   @Override
-  public Map<String, Object> arinfo(final byte[] key, final boolean full) {
+  public ArrayFullInfo arinfoFull(final byte[] key) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.arinfo(key, full));
+    return connection.executeCommand(commandObjects.arinfoFull(key));
   }
 
   @Override
@@ -4661,21 +4674,33 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Long arnext(final byte[] key) {
+  public OptionalLong arnext(final byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.arnext(key));
   }
 
   @Override
-  public Object arop(final byte[] key, final long start, final long end, final ArrayOp op) {
+  public long aropBitwise(final byte[] key, final LongRange range, final ArrayBitwise op) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.arop(key, start, end, op));
+    return connection.executeCommand(commandObjects.aropBitwise(key, range, op));
   }
 
   @Override
-  public long aropMatch(final byte[] key, final long start, final long end, final byte[] value) {
+  public byte[] aropAggregate(final byte[] key, final LongRange range, final ArrayAggregate op) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.aropMatch(key, start, end, value));
+    return connection.executeCommand(commandObjects.aropAggregate(key, range, op));
+  }
+
+  @Override
+  public long aropCount(final byte[] key, final LongRange range) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.aropCount(key, range));
+  }
+
+  @Override
+  public long aropCount(final byte[] key, final LongRange range, final byte[] match) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.aropCount(key, range, match));
   }
 
   @Override
@@ -4685,13 +4710,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<Object> arscan(final byte[] key, final long start, final long end) {
+  public List<KeyValue<Long, byte[]>> arscan(final byte[] key, final long start, final long end) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.arscan(key, start, end));
   }
 
   @Override
-  public List<Object> arscan(final byte[] key, final long start, final long end, final long limit) {
+  public List<KeyValue<Long, byte[]>> arscan(final byte[] key, final long start, final long end, final long limit) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.arscan(key, start, end, limit));
   }
@@ -9569,13 +9594,19 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long ardel(final String key, final long index) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.ardel(key, index));
+  }
+
+  @Override
   public long ardel(final String key, final long... indices) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.ardel(key, indices));
   }
 
   @Override
-  public long ardelrange(final String key, final long[]... ranges) {
+  public long ardelrange(final String key, final LongRange... ranges) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.ardelrange(key, ranges));
   }
@@ -9593,21 +9624,27 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<Object> argrep(final String key, final long start, final long end, final ArgrepParams params) {
+  public List<Long> argrep(final String key, final long start, final long end, final ArgrepParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.argrep(key, start, end, params));
   }
 
   @Override
-  public Map<String, Object> arinfo(final String key) {
+  public List<KeyValue<Long, String>> argrepWithValues(final String key, final long start, final long end, final ArgrepParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.argrepWithValues(key, start, end, params));
+  }
+
+  @Override
+  public ArrayInfo arinfo(final String key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.arinfo(key));
   }
 
   @Override
-  public Map<String, Object> arinfo(final String key, final boolean full) {
+  public ArrayFullInfo arinfoFull(final String key) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.arinfo(key, full));
+    return connection.executeCommand(commandObjects.arinfoFull(key));
   }
 
   @Override
@@ -9647,21 +9684,33 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public Long arnext(final String key) {
+  public OptionalLong arnext(final String key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.arnext(key));
   }
 
   @Override
-  public Object arop(final String key, final long start, final long end, final ArrayOp op) {
+  public long aropBitwise(final String key, final LongRange range, final ArrayBitwise op) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.arop(key, start, end, op));
+    return connection.executeCommand(commandObjects.aropBitwise(key, range, op));
   }
 
   @Override
-  public long aropMatch(final String key, final long start, final long end, final String value) {
+  public String aropAggregate(final String key, final LongRange range, final ArrayAggregate op) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.aropMatch(key, start, end, value));
+    return connection.executeCommand(commandObjects.aropAggregate(key, range, op));
+  }
+
+  @Override
+  public long aropCount(final String key, final LongRange range) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.aropCount(key, range));
+  }
+
+  @Override
+  public long aropCount(final String key, final LongRange range, final String match) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.aropCount(key, range, match));
   }
 
   @Override
@@ -9671,13 +9720,13 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<Object> arscan(final String key, final long start, final long end) {
+  public List<KeyValue<Long, String>> arscan(final String key, final long start, final long end) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.arscan(key, start, end));
   }
 
   @Override
-  public List<Object> arscan(final String key, final long start, final long end, final long limit) {
+  public List<KeyValue<Long, String>> arscan(final String key, final long start, final long end, final long limit) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.arscan(key, start, end, limit));
   }

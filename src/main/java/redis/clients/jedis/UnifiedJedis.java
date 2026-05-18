@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.Set;
 import org.json.JSONArray;
 
@@ -3427,6 +3428,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long ardel(String key, long index) {
+    return executeCommand(commandObjects.ardel(key, index));
+  }
+
+  @Override
+  public long ardel(byte[] key, long index) {
+    return executeCommand(commandObjects.ardel(key, index));
+  }
+
+  @Override
   public long ardel(String key, long... indices) {
     return executeCommand(commandObjects.ardel(key, indices));
   }
@@ -3437,12 +3448,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long ardelrange(String key, long[]... ranges) {
+  public long ardelrange(String key, LongRange... ranges) {
     return executeCommand(commandObjects.ardelrange(key, ranges));
   }
 
   @Override
-  public long ardelrange(byte[] key, long[]... ranges) {
+  public long ardelrange(byte[] key, LongRange... ranges) {
     return executeCommand(commandObjects.ardelrange(key, ranges));
   }
 
@@ -3467,33 +3478,43 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<Object> argrep(String key, long start, long end, ArgrepParams params) {
+  public List<Long> argrep(String key, long start, long end, ArgrepParams params) {
     return executeCommand(commandObjects.argrep(key, start, end, params));
   }
 
   @Override
-  public List<Object> argrep(byte[] key, long start, long end, ArgrepParams params) {
+  public List<Long> argrep(byte[] key, long start, long end, ArgrepParams params) {
     return executeCommand(commandObjects.argrep(key, start, end, params));
   }
 
   @Override
-  public Map<String, Object> arinfo(String key) {
+  public List<KeyValue<Long, String>> argrepWithValues(String key, long start, long end, ArgrepParams params) {
+    return executeCommand(commandObjects.argrepWithValues(key, start, end, params));
+  }
+
+  @Override
+  public List<KeyValue<Long, byte[]>> argrepWithValues(byte[] key, long start, long end, ArgrepParams params) {
+    return executeCommand(commandObjects.argrepWithValues(key, start, end, params));
+  }
+
+  @Override
+  public ArrayInfo arinfo(String key) {
     return executeCommand(commandObjects.arinfo(key));
   }
 
   @Override
-  public Map<String, Object> arinfo(byte[] key) {
+  public ArrayInfo arinfo(byte[] key) {
     return executeCommand(commandObjects.arinfo(key));
   }
 
   @Override
-  public Map<String, Object> arinfo(String key, boolean full) {
-    return executeCommand(commandObjects.arinfo(key, full));
+  public ArrayFullInfo arinfoFull(String key) {
+    return executeCommand(commandObjects.arinfoFull(key));
   }
 
   @Override
-  public Map<String, Object> arinfo(byte[] key, boolean full) {
-    return executeCommand(commandObjects.arinfo(key, full));
+  public ArrayFullInfo arinfoFull(byte[] key) {
+    return executeCommand(commandObjects.arinfoFull(key));
   }
 
   @Override
@@ -3557,33 +3578,53 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public Long arnext(String key) {
+  public OptionalLong arnext(String key) {
     return executeCommand(commandObjects.arnext(key));
   }
 
   @Override
-  public Long arnext(byte[] key) {
+  public OptionalLong arnext(byte[] key) {
     return executeCommand(commandObjects.arnext(key));
   }
 
   @Override
-  public Object arop(String key, long start, long end, ArrayOp op) {
-    return executeCommand(commandObjects.arop(key, start, end, op));
+  public long aropBitwise(String key, LongRange range, ArrayBitwise op) {
+    return executeCommand(commandObjects.aropBitwise(key, range, op));
   }
 
   @Override
-  public Object arop(byte[] key, long start, long end, ArrayOp op) {
-    return executeCommand(commandObjects.arop(key, start, end, op));
+  public long aropBitwise(byte[] key, LongRange range, ArrayBitwise op) {
+    return executeCommand(commandObjects.aropBitwise(key, range, op));
   }
 
   @Override
-  public long aropMatch(String key, long start, long end, String value) {
-    return executeCommand(commandObjects.aropMatch(key, start, end, value));
+  public String aropAggregate(String key, LongRange range, ArrayAggregate op) {
+    return executeCommand(commandObjects.aropAggregate(key, range, op));
   }
 
   @Override
-  public long aropMatch(byte[] key, long start, long end, byte[] value) {
-    return executeCommand(commandObjects.aropMatch(key, start, end, value));
+  public byte[] aropAggregate(byte[] key, LongRange range, ArrayAggregate op) {
+    return executeCommand(commandObjects.aropAggregate(key, range, op));
+  }
+
+  @Override
+  public long aropCount(String key, LongRange range) {
+    return executeCommand(commandObjects.aropCount(key, range));
+  }
+
+  @Override
+  public long aropCount(byte[] key, LongRange range) {
+    return executeCommand(commandObjects.aropCount(key, range));
+  }
+
+  @Override
+  public long aropCount(String key, LongRange range, String match) {
+    return executeCommand(commandObjects.aropCount(key, range, match));
+  }
+
+  @Override
+  public long aropCount(byte[] key, LongRange range, byte[] match) {
+    return executeCommand(commandObjects.aropCount(key, range, match));
   }
 
   @Override
@@ -3597,22 +3638,22 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<Object> arscan(String key, long start, long end) {
+  public List<KeyValue<Long, String>> arscan(String key, long start, long end) {
     return executeCommand(commandObjects.arscan(key, start, end));
   }
 
   @Override
-  public List<Object> arscan(byte[] key, long start, long end) {
+  public List<KeyValue<Long, byte[]>> arscan(byte[] key, long start, long end) {
     return executeCommand(commandObjects.arscan(key, start, end));
   }
 
   @Override
-  public List<Object> arscan(String key, long start, long end, long limit) {
+  public List<KeyValue<Long, String>> arscan(String key, long start, long end, long limit) {
     return executeCommand(commandObjects.arscan(key, start, end, limit));
   }
 
   @Override
-  public List<Object> arscan(byte[] key, long start, long end, long limit) {
+  public List<KeyValue<Long, byte[]>> arscan(byte[] key, long start, long end, long limit) {
     return executeCommand(commandObjects.arscan(key, start, end, limit));
   }
 

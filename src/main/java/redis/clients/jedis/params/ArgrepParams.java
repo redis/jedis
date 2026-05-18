@@ -11,8 +11,9 @@ import redis.clients.jedis.Protocol.Keyword;
  * Optional arguments for the {@code ARGREP} command.
  * <p>
  * Predicates are added in the order their fluent setters are invoked. Logical combinator
- * ({@code AND}/{@code OR}), {@code LIMIT}, {@code WITHVALUES} and {@code NOCASE} are emitted after
- * the predicate list, matching the order required by the Redis wire protocol.
+ * ({@code AND}/{@code OR}), {@code LIMIT} and {@code NOCASE} are emitted after the predicate list,
+ * matching the order required by the Redis wire protocol. The {@code WITHVALUES} flag is not
+ * exposed here: use {@code argrepWithValues} to request index/value pairs.
  */
 public class ArgrepParams implements IParams {
 
@@ -39,7 +40,6 @@ public class ArgrepParams implements IParams {
   private final List<Predicate> predicates = new ArrayList<>();
   private Keyword combinator;
   private Long limit;
-  private boolean withValues;
   private boolean nocase;
 
   /**
@@ -162,15 +162,6 @@ public class ArgrepParams implements IParams {
   }
 
   /**
-   * Request that the reply contains alternating index/value pairs instead of indices only.
-   * @return this {@link ArgrepParams}
-   */
-  public ArgrepParams withValues() {
-    this.withValues = true;
-    return this;
-  }
-
-  /**
    * Perform all predicate comparisons case-insensitively.
    * @return this {@link ArgrepParams}
    */
@@ -190,9 +181,6 @@ public class ArgrepParams implements IParams {
     if (limit != null) {
       args.add(Keyword.LIMIT).add(limit);
     }
-    if (withValues) {
-      args.add(Keyword.WITHVALUES);
-    }
     if (nocase) {
       args.add(Keyword.NOCASE);
     }
@@ -207,13 +195,13 @@ public class ArgrepParams implements IParams {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     ArgrepParams that = (ArgrepParams) o;
-    return withValues == that.withValues && nocase == that.nocase
+    return nocase == that.nocase
         && Objects.equals(combinator, that.combinator) && Objects.equals(limit, that.limit)
         && Objects.equals(predicates.size(), that.predicates.size());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(predicates.size(), combinator, limit, withValues, nocase);
+    return Objects.hash(predicates.size(), combinator, limit, nocase);
   }
 }

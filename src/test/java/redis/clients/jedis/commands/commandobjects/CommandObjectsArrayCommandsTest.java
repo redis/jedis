@@ -5,7 +5,6 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
-import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
@@ -15,13 +14,19 @@ import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.args.ArrayOp;
+import redis.clients.jedis.args.ArrayAggregate;
+import redis.clients.jedis.args.ArrayBitwise;
+import redis.clients.jedis.args.LongRange;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.ArgrepParams;
+import redis.clients.jedis.resps.ArrayFullInfo;
+import redis.clients.jedis.resps.ArrayInfo;
+import redis.clients.jedis.util.KeyValue;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=array">Array</a> commands.
@@ -65,7 +70,7 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   public void testArdelrange() {
     String key = "ardelrange-key";
     exec(commandObjects.arinsert(key, "a", "b", "c", "d", "e"));
-    Long deleted = exec(commandObjects.ardelrange(key, new long[] { 0, 1 }, new long[] { 3, 4 }));
+    Long deleted = exec(commandObjects.ardelrange(key, LongRange.of(0L, 1L), LongRange.of(3L, 4L)));
     assertThat(deleted, greaterThanOrEqualTo(0L));
   }
 
@@ -73,7 +78,7 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   public void testArdelrangeBinary() {
     byte[] key = "ardelrange-key-b".getBytes();
     exec(commandObjects.arinsert(key, "a".getBytes(), "b".getBytes(), "c".getBytes()));
-    Long deleted = exec(commandObjects.ardelrange(key, new long[] { 0, 2 }));
+    Long deleted = exec(commandObjects.ardelrange(key, LongRange.of(0L, 2L)));
     assertThat(deleted, greaterThanOrEqualTo(0L));
   }
 
@@ -115,7 +120,7 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   public void testArgrep() {
     String key = "argrep-key";
     exec(commandObjects.arinsert(key, "foo", "foobar", "baz"));
-    List<Object> matches = exec(
+    List<Long> matches = exec(
       commandObjects.argrep(key, 0L, 10L, ArgrepParams.argrepParams().match("foo")));
     assertThat(matches, notNullValue());
   }
@@ -124,8 +129,26 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   public void testArgrepBinary() {
     byte[] key = "argrep-key-b".getBytes();
     exec(commandObjects.arinsert(key, "alpha".getBytes(), "beta".getBytes()));
-    List<Object> matches = exec(
+    List<Long> matches = exec(
       commandObjects.argrep(key, 0L, 10L, ArgrepParams.argrepParams().exact("alpha")));
+    assertThat(matches, notNullValue());
+  }
+
+  @Test
+  public void testArgrepWithValues() {
+    String key = "argrep-wv-key";
+    exec(commandObjects.arinsert(key, "foo", "foobar", "baz"));
+    List<KeyValue<Long, String>> matches = exec(
+      commandObjects.argrepWithValues(key, 0L, 10L, ArgrepParams.argrepParams().match("foo")));
+    assertThat(matches, notNullValue());
+  }
+
+  @Test
+  public void testArgrepWithValuesBinary() {
+    byte[] key = "argrep-wv-key-b".getBytes();
+    exec(commandObjects.arinsert(key, "alpha".getBytes(), "beta".getBytes()));
+    List<KeyValue<Long, byte[]>> matches = exec(
+      commandObjects.argrepWithValues(key, 0L, 10L, ArgrepParams.argrepParams().exact("alpha")));
     assertThat(matches, notNullValue());
   }
 
@@ -138,15 +161,15 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   public void testArinfo() {
     String key = "arinfo-key";
     exec(commandObjects.arinsert(key, "a"));
-    Map<String, Object> info = exec(commandObjects.arinfo(key));
-    assertThat(info, hasKey("count"));
+    ArrayInfo info = exec(commandObjects.arinfo(key));
+    assertThat(info, notNullValue());
   }
 
   @Test
-  public void testArinfoBinary() {
+  public void testArinfoFullBinary() {
     byte[] key = "arinfo-key-b".getBytes();
     exec(commandObjects.arinsert(key, "a".getBytes()));
-    Map<String, Object> info = exec(commandObjects.arinfo(key, true));
+    ArrayFullInfo info = exec(commandObjects.arinfoFull(key));
     assertThat(info, notNullValue());
   }
 
@@ -234,45 +257,69 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   public void testArnext() {
     String key = "arnext-key";
     exec(commandObjects.arinsert(key, "a", "b"));
-    Long next = exec(commandObjects.arnext(key));
-    assertThat(next, equalTo(2L));
+    OptionalLong next = exec(commandObjects.arnext(key));
+    assertThat(next, equalTo(OptionalLong.of(2L)));
   }
 
   @Test
   public void testArnextMissingBinary() {
-    Long next = exec(commandObjects.arnext("arnext-missing-b".getBytes()));
-    assertThat(next, equalTo(0L));
+    OptionalLong next = exec(commandObjects.arnext("arnext-missing-b".getBytes()));
+    assertThat(next, equalTo(OptionalLong.empty()));
   }
 
   @Test
-  public void testArop() {
-    String key = "arop-key";
+  public void testAropBitwise() {
+    String key = "arop-bitwise-key";
     exec(commandObjects.arinsert(key, "1", "2", "3"));
-    Object used = exec(commandObjects.arop(key, 0L, 10L, ArrayOp.USED));
-    assertThat(used, notNullValue());
+    Long r = exec(commandObjects.aropBitwise(key, LongRange.of(0L, 10L), ArrayBitwise.AND));
+    assertThat(r, greaterThanOrEqualTo(0L));
   }
 
   @Test
-  public void testAropBinary() {
-    byte[] key = "arop-key-b".getBytes();
+  public void testAropBitwiseBinary() {
+    byte[] key = "arop-bitwise-key-b".getBytes();
     exec(commandObjects.arinsert(key, "1".getBytes(), "2".getBytes()));
-    Object used = exec(commandObjects.arop(key, 0L, 10L, ArrayOp.USED));
-    assertThat(used, notNullValue());
+    Long r = exec(commandObjects.aropBitwise(key, LongRange.of(0L, 10L), ArrayBitwise.OR));
+    assertThat(r, greaterThanOrEqualTo(0L));
   }
 
   @Test
-  public void testAropMatch() {
-    String key = "aropmatch-key";
+  public void testAropAggregate() {
+    String key = "arop-agg-key";
+    exec(commandObjects.arinsert(key, "1", "2", "3"));
+    String r = exec(commandObjects.aropAggregate(key, LongRange.of(0L, 10L), ArrayAggregate.SUM));
+    assertThat(r, notNullValue());
+  }
+
+  @Test
+  public void testAropAggregateBinary() {
+    byte[] key = "arop-agg-key-b".getBytes();
+    exec(commandObjects.arinsert(key, "1".getBytes(), "2".getBytes()));
+    byte[] r = exec(commandObjects.aropAggregate(key, LongRange.of(0L, 10L), ArrayAggregate.MIN));
+    assertThat(r, notNullValue());
+  }
+
+  @Test
+  public void testAropCount() {
+    String key = "aropcount-key";
     exec(commandObjects.arinsert(key, "a", "a", "b"));
-    Long cnt = exec(commandObjects.aropMatch(key, 0L, 10L, "a"));
+    Long cnt = exec(commandObjects.aropCount(key, LongRange.of(0L, 10L)));
     assertThat(cnt, greaterThanOrEqualTo(0L));
   }
 
   @Test
-  public void testAropMatchBinary() {
-    byte[] key = "aropmatch-key-b".getBytes();
+  public void testAropCountMatch() {
+    String key = "aropcount-match-key";
+    exec(commandObjects.arinsert(key, "a", "a", "b"));
+    Long cnt = exec(commandObjects.aropCount(key, LongRange.of(0L, 10L), "a"));
+    assertThat(cnt, greaterThanOrEqualTo(0L));
+  }
+
+  @Test
+  public void testAropCountMatchBinary() {
+    byte[] key = "aropcount-match-key-b".getBytes();
     exec(commandObjects.arinsert(key, "a".getBytes()));
-    Long cnt = exec(commandObjects.aropMatch(key, 0L, 10L, "a".getBytes()));
+    Long cnt = exec(commandObjects.aropCount(key, LongRange.of(0L, 10L), "a".getBytes()));
     assertThat(cnt, greaterThanOrEqualTo(0L));
   }
 
@@ -292,7 +339,7 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
 
   @Test
   public void testArscanMissing() {
-    List<Object> r = exec(commandObjects.arscan("arscan-missing", 0L, 10L));
+    List<KeyValue<Long, String>> r = exec(commandObjects.arscan("arscan-missing", 0L, 10L));
     assertThat(r, is(empty()));
   }
 
@@ -300,7 +347,7 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   public void testArscanLimitBinary() {
     byte[] key = "arscan-key-b".getBytes();
     exec(commandObjects.arinsert(key, "a".getBytes(), "b".getBytes()));
-    List<Object> r = exec(commandObjects.arscan(key, 0L, 10L, 1L));
+    List<KeyValue<Long, byte[]>> r = exec(commandObjects.arscan(key, 0L, 10L, 1L));
     assertThat(r, notNullValue());
   }
 

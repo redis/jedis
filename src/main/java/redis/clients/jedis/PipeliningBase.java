@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.util.List;
 import java.util.Map;
+import java.util.OptionalLong;
 import java.util.Set;
 import org.json.JSONArray;
 
@@ -1544,12 +1545,17 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> ardel(String key, long index) {
+    return appendCommand(commandObjects.ardel(key, index));
+  }
+
+  @Override
   public Response<Long> ardel(String key, long... indices) {
     return appendCommand(commandObjects.ardel(key, indices));
   }
 
   @Override
-  public Response<Long> ardelrange(String key, long[]... ranges) {
+  public Response<Long> ardelrange(String key, LongRange... ranges) {
     return appendCommand(commandObjects.ardelrange(key, ranges));
   }
 
@@ -1564,18 +1570,23 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<List<Object>> argrep(String key, long start, long end, ArgrepParams params) {
+  public Response<List<Long>> argrep(String key, long start, long end, ArgrepParams params) {
     return appendCommand(commandObjects.argrep(key, start, end, params));
   }
 
   @Override
-  public Response<Map<String, Object>> arinfo(String key) {
+  public Response<List<KeyValue<Long, String>>> argrepWithValues(String key, long start, long end, ArgrepParams params) {
+    return appendCommand(commandObjects.argrepWithValues(key, start, end, params));
+  }
+
+  @Override
+  public Response<ArrayInfo> arinfo(String key) {
     return appendCommand(commandObjects.arinfo(key));
   }
 
   @Override
-  public Response<Map<String, Object>> arinfo(String key, boolean full) {
-    return appendCommand(commandObjects.arinfo(key, full));
+  public Response<ArrayFullInfo> arinfoFull(String key) {
+    return appendCommand(commandObjects.arinfoFull(key));
   }
 
   @Override
@@ -1609,18 +1620,28 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<Long> arnext(String key) {
+  public Response<OptionalLong> arnext(String key) {
     return appendCommand(commandObjects.arnext(key));
   }
 
   @Override
-  public Response<Object> arop(String key, long start, long end, ArrayOp op) {
-    return appendCommand(commandObjects.arop(key, start, end, op));
+  public Response<Long> aropBitwise(String key, LongRange range, ArrayBitwise op) {
+    return appendCommand(commandObjects.aropBitwise(key, range, op));
   }
 
   @Override
-  public Response<Long> aropMatch(String key, long start, long end, String value) {
-    return appendCommand(commandObjects.aropMatch(key, start, end, value));
+  public Response<String> aropAggregate(String key, LongRange range, ArrayAggregate op) {
+    return appendCommand(commandObjects.aropAggregate(key, range, op));
+  }
+
+  @Override
+  public Response<Long> aropCount(String key, LongRange range) {
+    return appendCommand(commandObjects.aropCount(key, range));
+  }
+
+  @Override
+  public Response<Long> aropCount(String key, LongRange range, String match) {
+    return appendCommand(commandObjects.aropCount(key, range, match));
   }
 
   @Override
@@ -1629,12 +1650,12 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<List<Object>> arscan(String key, long start, long end) {
+  public Response<List<KeyValue<Long, String>>> arscan(String key, long start, long end) {
     return appendCommand(commandObjects.arscan(key, start, end));
   }
 
   @Override
-  public Response<List<Object>> arscan(String key, long start, long end, long limit) {
+  public Response<List<KeyValue<Long, String>>> arscan(String key, long start, long end, long limit) {
     return appendCommand(commandObjects.arscan(key, start, end, limit));
   }
 
@@ -2470,12 +2491,17 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> ardel(byte[] key, long index) {
+    return appendCommand(commandObjects.ardel(key, index));
+  }
+
+  @Override
   public Response<Long> ardel(byte[] key, long... indices) {
     return appendCommand(commandObjects.ardel(key, indices));
   }
 
   @Override
-  public Response<Long> ardelrange(byte[] key, long[]... ranges) {
+  public Response<Long> ardelrange(byte[] key, LongRange... ranges) {
     return appendCommand(commandObjects.ardelrange(key, ranges));
   }
 
@@ -2490,18 +2516,23 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<List<Object>> argrep(byte[] key, long start, long end, ArgrepParams params) {
+  public Response<List<Long>> argrep(byte[] key, long start, long end, ArgrepParams params) {
     return appendCommand(commandObjects.argrep(key, start, end, params));
   }
 
   @Override
-  public Response<Map<String, Object>> arinfo(byte[] key) {
+  public Response<List<KeyValue<Long, byte[]>>> argrepWithValues(byte[] key, long start, long end, ArgrepParams params) {
+    return appendCommand(commandObjects.argrepWithValues(key, start, end, params));
+  }
+
+  @Override
+  public Response<ArrayInfo> arinfo(byte[] key) {
     return appendCommand(commandObjects.arinfo(key));
   }
 
   @Override
-  public Response<Map<String, Object>> arinfo(byte[] key, boolean full) {
-    return appendCommand(commandObjects.arinfo(key, full));
+  public Response<ArrayFullInfo> arinfoFull(byte[] key) {
+    return appendCommand(commandObjects.arinfoFull(key));
   }
 
   @Override
@@ -2535,18 +2566,28 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<Long> arnext(byte[] key) {
+  public Response<OptionalLong> arnext(byte[] key) {
     return appendCommand(commandObjects.arnext(key));
   }
 
   @Override
-  public Response<Object> arop(byte[] key, long start, long end, ArrayOp op) {
-    return appendCommand(commandObjects.arop(key, start, end, op));
+  public Response<Long> aropBitwise(byte[] key, LongRange range, ArrayBitwise op) {
+    return appendCommand(commandObjects.aropBitwise(key, range, op));
   }
 
   @Override
-  public Response<Long> aropMatch(byte[] key, long start, long end, byte[] value) {
-    return appendCommand(commandObjects.aropMatch(key, start, end, value));
+  public Response<byte[]> aropAggregate(byte[] key, LongRange range, ArrayAggregate op) {
+    return appendCommand(commandObjects.aropAggregate(key, range, op));
+  }
+
+  @Override
+  public Response<Long> aropCount(byte[] key, LongRange range) {
+    return appendCommand(commandObjects.aropCount(key, range));
+  }
+
+  @Override
+  public Response<Long> aropCount(byte[] key, LongRange range, byte[] match) {
+    return appendCommand(commandObjects.aropCount(key, range, match));
   }
 
   @Override
@@ -2555,12 +2596,12 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<List<Object>> arscan(byte[] key, long start, long end) {
+  public Response<List<KeyValue<Long, byte[]>>> arscan(byte[] key, long start, long end) {
     return appendCommand(commandObjects.arscan(key, start, end));
   }
 
   @Override
-  public Response<List<Object>> arscan(byte[] key, long start, long end, long limit) {
+  public Response<List<KeyValue<Long, byte[]>>> arscan(byte[] key, long start, long end, long limit) {
     return appendCommand(commandObjects.arscan(key, start, end, limit));
   }
 

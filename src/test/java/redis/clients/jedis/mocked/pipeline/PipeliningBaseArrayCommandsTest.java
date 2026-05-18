@@ -129,7 +129,8 @@ public class PipeliningBaseArrayCommandsTest extends PipeliningBaseMockedTestBas
   @Test
   public void testArgrepWithValues() {
     ArgrepParams params = ArgrepParams.argrepParams().match("x");
-    when(commandObjects.argrepWithValues("k", 0L, 10L, params)).thenReturn(listKeyValueLongStringCommandObject);
+    when(commandObjects.argrepWithValues("k", 0L, 10L, params))
+        .thenReturn(listKeyValueLongStringCommandObject);
     pipeliningBase.argrepWithValues("k", 0L, 10L, params);
     assertThat(commands, contains(listKeyValueLongStringCommandObject));
   }
@@ -138,7 +139,8 @@ public class PipeliningBaseArrayCommandsTest extends PipeliningBaseMockedTestBas
   public void testArgrepWithValuesBinary() {
     byte[] key = "k".getBytes();
     ArgrepParams params = ArgrepParams.argrepParams().exact("x");
-    when(commandObjects.argrepWithValues(key, 0L, 10L, params)).thenReturn(listKeyValueLongBytesCommandObject);
+    when(commandObjects.argrepWithValues(key, 0L, 10L, params))
+        .thenReturn(listKeyValueLongBytesCommandObject);
     pipeliningBase.argrepWithValues(key, 0L, 10L, params);
     assertThat(commands, contains(listKeyValueLongBytesCommandObject));
   }
@@ -291,7 +293,8 @@ public class PipeliningBaseArrayCommandsTest extends PipeliningBaseMockedTestBas
   @Test
   public void testAropAggregate() {
     LongRange range = LongRange.of(0L, 10L);
-    when(commandObjects.aropAggregate("k", range, ArrayAggregate.SUM)).thenReturn(stringCommandObject);
+    when(commandObjects.aropAggregate("k", range, ArrayAggregate.SUM))
+        .thenReturn(stringCommandObject);
     pipeliningBase.aropAggregate("k", range, ArrayAggregate.SUM);
     assertThat(commands, contains(stringCommandObject));
   }
@@ -300,7 +303,8 @@ public class PipeliningBaseArrayCommandsTest extends PipeliningBaseMockedTestBas
   public void testAropAggregateBinary() {
     byte[] key = "k".getBytes();
     LongRange range = LongRange.of(0L, 10L);
-    when(commandObjects.aropAggregate(key, range, ArrayAggregate.MIN)).thenReturn(bytesCommandObject);
+    when(commandObjects.aropAggregate(key, range, ArrayAggregate.MIN))
+        .thenReturn(bytesCommandObject);
     pipeliningBase.aropAggregate(key, range, ArrayAggregate.MIN);
     assertThat(commands, contains(bytesCommandObject));
   }

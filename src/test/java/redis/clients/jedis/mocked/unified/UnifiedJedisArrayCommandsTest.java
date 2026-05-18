@@ -174,7 +174,8 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   public void testArgrepWithValues() {
     String key = "k";
     ArgrepParams params = ArgrepParams.argrepParams().match("foo");
-    when(commandObjects.argrepWithValues(key, 0L, 10L, params)).thenReturn(listKeyValueLongStringCommandObject);
+    when(commandObjects.argrepWithValues(key, 0L, 10L, params))
+        .thenReturn(listKeyValueLongStringCommandObject);
     when(commandExecutor.executeCommand(listKeyValueLongStringCommandObject))
         .thenReturn(java.util.Collections.emptyList());
 
@@ -187,7 +188,8 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   public void testArgrepWithValuesBinary() {
     byte[] key = "k".getBytes();
     ArgrepParams params = ArgrepParams.argrepParams().exact("foo");
-    when(commandObjects.argrepWithValues(key, 0L, 10L, params)).thenReturn(listKeyValueLongBytesCommandObject);
+    when(commandObjects.argrepWithValues(key, 0L, 10L, params))
+        .thenReturn(listKeyValueLongBytesCommandObject);
     when(commandExecutor.executeCommand(listKeyValueLongBytesCommandObject))
         .thenReturn(java.util.Collections.emptyList());
 
@@ -408,7 +410,8 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   public void testAropAggregate() {
     String key = "k";
     LongRange range = LongRange.of(0L, 10L);
-    when(commandObjects.aropAggregate(key, range, ArrayAggregate.SUM)).thenReturn(stringCommandObject);
+    when(commandObjects.aropAggregate(key, range, ArrayAggregate.SUM))
+        .thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("42");
 
     assertThat(jedis.aropAggregate(key, range, ArrayAggregate.SUM), equalTo("42"));
@@ -421,7 +424,8 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] key = "k".getBytes();
     LongRange range = LongRange.of(0L, 10L);
     byte[] result = "42".getBytes();
-    when(commandObjects.aropAggregate(key, range, ArrayAggregate.MIN)).thenReturn(bytesCommandObject);
+    when(commandObjects.aropAggregate(key, range, ArrayAggregate.MIN))
+        .thenReturn(bytesCommandObject);
     when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(result);
 
     assertThat(jedis.aropAggregate(key, range, ArrayAggregate.MIN), equalTo(result));

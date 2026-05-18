@@ -128,7 +128,7 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
     String key = "argrepWithValues";
     jedis.arinsert(key, "foo", "foobar");
     List<KeyValue<Long, String>> r = jedis.argrepWithValues(key, 0L, 10L,
-        ArgrepParams.argrepParams().match("foo"));
+      ArgrepParams.argrepParams().match("foo"));
     assertNotNull(r);
   }
 
@@ -137,7 +137,7 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
     byte[] key = SafeEncoder.encode("argrepWithValues-b");
     jedis.arinsert(key, "abc".getBytes());
     List<KeyValue<Long, byte[]>> r = jedis.argrepWithValues(key, 0L, 10L,
-        ArgrepParams.argrepParams().exact("abc"));
+      ArgrepParams.argrepParams().exact("abc"));
     assertNotNull(r);
   }
 

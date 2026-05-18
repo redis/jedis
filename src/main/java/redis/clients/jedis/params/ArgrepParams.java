@@ -195,8 +195,8 @@ public class ArgrepParams implements IParams {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     ArgrepParams that = (ArgrepParams) o;
-    return nocase == that.nocase
-        && Objects.equals(combinator, that.combinator) && Objects.equals(limit, that.limit)
+    return nocase == that.nocase && Objects.equals(combinator, that.combinator)
+        && Objects.equals(limit, that.limit)
         && Objects.equals(predicates.size(), that.predicates.size());
   }
 

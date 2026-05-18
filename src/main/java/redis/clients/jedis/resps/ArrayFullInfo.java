@@ -5,9 +5,9 @@ import java.util.Map;
 
 /**
  * This class holds information about an array returned by {@code ARINFO key FULL}. Known top-level
- * fields can be accessed via getters; {@link #getArrayFullInfo()} returns the underlying {@link Map}
- * so that callers can read per-slice statistics and any fields that are not yet promoted to typed
- * getters or that the server may add in the future.
+ * fields can be accessed via getters; {@link #getArrayFullInfo()} returns the underlying
+ * {@link Map} so that callers can read per-slice statistics and any fields that are not yet
+ * promoted to typed getters or that the server may add in the future.
  * <p>
  * This class is intentionally a sibling of {@link ArrayInfo} (not a subclass): the two replies map
  * to two distinct command shapes.

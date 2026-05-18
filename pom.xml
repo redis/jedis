@@ -581,6 +581,23 @@
 
 						<include>**/RespProtocol.java</include>
 						<include>**/ProtocolHandshake*.java</include>
+						<include>**/ArrayAggregate.java</include>
+						<include>**/ArrayBitwise.java</include>
+						<include>**/LongRange.java</include>
+						<include>**/ArrayBinaryCommands.java</include>
+						<include>**/ArrayCommands.java</include>
+						<include>**/ArrayPipelineBinaryCommands.java</include>
+						<include>**/ArrayPipelineCommands.java</include>
+						<include>**/ArgrepParams.java</include>
+						<include>**/ArrayFullInfo.java</include>
+						<include>**/ArrayInfo.java</include>
+						<include>**/CommandObjectsArrayCommandsTest.java</include>
+						<include>**/ArrayCommandsTest.java</include>
+						<include>**/RedisClientArrayCommandsTest.java</include>
+						<include>**/ClusterArrayCommandsTest.java</include>
+						<include>**/ArrayCommandsTestBase.java</include>
+						<include>**/PipeliningBaseArrayCommandsTest.java</include>
+						<include>**/UnifiedJedisArrayCommandsTest.java</include>
 					</includes>
 				</configuration>
 				<executions>

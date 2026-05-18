@@ -140,7 +140,8 @@ public interface ArrayPipelineBinaryCommands {
    * @return a {@link Response} that resolves to the matching index/value pairs
    * @since 8.0
    */
-  Response<List<KeyValue<Long, byte[]>>> argrepWithValues(byte[] key, long start, long end, ArgrepParams params);
+  Response<List<KeyValue<Long, byte[]>>> argrepWithValues(byte[] key, long start, long end,
+      ArgrepParams params);
 
   /**
    * <b><a href="https://redis.io/commands/arinfo">ARINFO Command</a></b> Returns metadata
@@ -304,8 +305,8 @@ public interface ArrayPipelineBinaryCommands {
   Response<byte[]> aropAggregate(byte[] key, LongRange range, ArrayAggregate op);
 
   /**
-   * <b><a href="https://redis.io/commands/arop">AROP Command</a></b> Counts the number of
-   * non-empty elements in {@code range} using the {@code USED} subcommand.
+   * <b><a href="https://redis.io/commands/arop">AROP Command</a></b> Counts the number of non-empty
+   * elements in {@code range} using the {@code USED} subcommand.
    * <p>
    * Time complexity: O(N) where N is the number of elements scanned.
    * <p>

@@ -140,7 +140,8 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the matching index/value pairs
    * @since 8.0
    */
-  Response<List<KeyValue<Long, String>>> argrepWithValues(String key, long start, long end, ArgrepParams params);
+  Response<List<KeyValue<Long, String>>> argrepWithValues(String key, long start, long end,
+      ArgrepParams params);
 
   /**
    * <b><a href="https://redis.io/commands/arinfo">ARINFO Command</a></b> Returns metadata
@@ -297,15 +298,15 @@ public interface ArrayPipelineCommands {
    * @param key the name of the key that holds the array
    * @param range the inclusive index range
    * @param op the aggregate operator to apply
-   * @return a {@link Response} that resolves to the aggregate value, or {@code null} when the
-   *         range is empty
+   * @return a {@link Response} that resolves to the aggregate value, or {@code null} when the range
+   *         is empty
    * @since 8.0
    */
   Response<String> aropAggregate(String key, LongRange range, ArrayAggregate op);
 
   /**
-   * <b><a href="https://redis.io/commands/arop">AROP Command</a></b> Counts the number of
-   * non-empty elements in {@code range} using the {@code USED} subcommand.
+   * <b><a href="https://redis.io/commands/arop">AROP Command</a></b> Counts the number of non-empty
+   * elements in {@code range} using the {@code USED} subcommand.
    * <p>
    * Time complexity: O(N) where N is the number of elements scanned.
    * <p>

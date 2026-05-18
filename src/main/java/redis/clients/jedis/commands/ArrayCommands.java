@@ -110,8 +110,8 @@ public interface ArrayCommands {
    * <b><a href="https://redis.io/commands/argrep">ARGREP Command</a></b> Searches array elements
    * within an inclusive index range using one or more textual predicates and returns the matching
    * indices. Empty slots are skipped. Multiple predicates can be combined with {@code AND}/
-   * {@code OR} via {@link ArgrepParams}. Use {@link #argrepWithValues(String, long, long,
-   * ArgrepParams)} to also return the matching values.
+   * {@code OR} via {@link ArgrepParams}. Use
+   * {@link #argrepWithValues(String, long, long, ArgrepParams)} to also return the matching values.
    * <p>
    * Time complexity: O(N) where N is the number of elements scanned.
    * <p>
@@ -143,12 +143,13 @@ public interface ArrayCommands {
    * @return the matching index/value pairs in traversal order; empty when no match
    * @since 8.0
    */
-  List<KeyValue<Long, String>> argrepWithValues(String key, long start, long end, ArgrepParams params);
+  List<KeyValue<Long, String>> argrepWithValues(String key, long start, long end,
+      ArgrepParams params);
 
   /**
    * <b><a href="https://redis.io/commands/arinfo">ARINFO Command</a></b> Returns metadata
-   * describing an array (counts, length, insertion cursor). Use {@link #arinfoFull(String)} for
-   * the per-slice statistics.
+   * describing an array (counts, length, insertion cursor). Use {@link #arinfoFull(String)} for the
+   * per-slice statistics.
    * <p>
    * Time complexity: O(1)
    * <p>
@@ -294,8 +295,8 @@ public interface ArrayCommands {
 
   /**
    * <b><a href="https://redis.io/commands/arop">AROP Command</a></b> Applies a numeric aggregate
-   * ({@link ArrayAggregate#SUM SUM}, {@link ArrayAggregate#MIN MIN}, {@link ArrayAggregate#MAX MAX})
-   * over the non-empty elements in {@code range}.
+   * ({@link ArrayAggregate#SUM SUM}, {@link ArrayAggregate#MIN MIN}, {@link ArrayAggregate#MAX
+   * MAX}) over the non-empty elements in {@code range}.
    * <p>
    * Time complexity: O(N) where N is the number of elements scanned.
    * <p>

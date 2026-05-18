@@ -38,8 +38,21 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
   protected CacheConfig cacheConfig = null;
   protected CommandExecutor commandExecutor = null;
   protected ConnectionProvider connectionProvider = null;
+
+  /**
+   * @deprecated This field is deprecated and should be set on JedisClientConfig instead.
+   */
+  @Deprecated
   protected CommandKeyArgumentPreProcessor keyPreProcessor = null;
+  /**
+   * @deprecated This field is deprecated and should be set on JedisClientConfig instead.
+   */
+  @Deprecated
   protected JsonObjectMapper jsonObjectMapper = null;
+  /**
+   * @deprecated This field is deprecated and should be set on JedisClientConfig instead.
+   */
+  @Deprecated
   protected int searchDialect = SearchProtocol.DEFAULT_DIALECT;
 
   protected JedisClientConfig clientConfig = null;

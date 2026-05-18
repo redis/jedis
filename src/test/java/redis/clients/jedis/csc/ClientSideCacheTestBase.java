@@ -38,13 +38,17 @@ public abstract class ClientSideCacheTestBase {
 
   @BeforeEach
   public void setUp() throws Exception {
-    control = new Jedis(hnp, endpoint.getClientConfigBuilder().build());
+    control = new Jedis(hnp, endpoint.getClientConfigBuilder().resp2().build());
     control.flushAll();
   }
 
   @AfterEach
   public void tearDown() throws Exception {
-    control.close();
+    try {
+      control.flushAll();
+    } finally {
+      control.close();
+    }
   }
 
   protected static final Supplier<JedisClientConfig> clientConfig = () -> endpoint.getClientConfigBuilder().resp3().build();

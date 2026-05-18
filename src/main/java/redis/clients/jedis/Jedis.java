@@ -20,6 +20,9 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import redis.clients.jedis.Protocol.*;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.*;
@@ -93,6 +96,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     ControlCommands, ControlBinaryCommands, ClusterCommands, ModuleCommands, GenericControlCommands,
     SentinelCommands, CommandCommands,  Closeable {
 
+  private static final Logger logger = LoggerFactory.getLogger(Jedis.class);
+
   protected final Connection connection;
   private final CommandObjects commandObjects = new CommandObjects();
   private int db = 0;
@@ -103,6 +108,25 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   protected static final byte[][] DUMMY_ARRAY = new byte[0][];
 
   private Pool<Jedis> dataSource = null;
+
+  /**
+   * Returns a config safe to use with the legacy {@link Jedis} class. Jedis does not support
+   * RESP3 auto-negotiation the way {@link UnifiedJedis} does — if it lets the connection send
+   * {@code HELLO 3}, it will receive RESP3-encoded replies that the legacy parsers cannot
+   * decode. When the supplied config has auto-negotiation enabled and no explicit protocol, the
+   * flag is cleared so the connection stays in legacy {@code HELLO}-less mode and a warning is
+   * emitted.
+   */
+  private static JedisClientConfig sanitize(JedisClientConfig config) {
+    if (config.getRedisProtocol() != null || !config.isAutoNegotiateProtocol()) {
+      return config;
+    }
+    logger.warn("Jedis does not support RESP3 protocol auto-negotiation. "
+        + "Auto-negotiation will be disabled and the connection will assume RESP2. "
+        + "Set .autoNegotiateProtocol(false) (or use .serverDefaultProtocol()) in your config "
+        + "builder to silence this warning, or upgrade to RedisClient for RESP3 support.");
+    return DefaultJedisClientConfig.builder().from(config).autoNegotiateProtocol(false).build();
+  }
 
   public Jedis() {
     connection = new Connection();
@@ -130,8 +154,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   public Jedis(final HostAndPort hostPort, final JedisClientConfig config) {
-    connection = new Connection(hostPort, config);
-    RedisProtocol proto = config.getRedisProtocol();
+    JedisClientConfig effective = sanitize(config);
+    connection = new Connection(hostPort, effective);
+    RedisProtocol proto = effective.getRedisProtocol();
     if (proto != null) commandObjects.setProtocol(proto);
   }
 
@@ -207,7 +232,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
         "Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
     }
     connection = new Connection(new HostAndPort(uri.getHost(), uri.getPort()),
-        DefaultJedisClientConfig.builder().user(JedisURIHelper.getUser(uri))
+        DefaultJedisClientConfig.builder().autoNegotiateProtocol(false)
+            .user(JedisURIHelper.getUser(uri))
             .password(JedisURIHelper.getPassword(uri)).database(JedisURIHelper.getDBIndex(uri))
             .protocol(JedisURIHelper.getRedisProtocol(uri))
             .ssl(JedisURIHelper.isRedisSSLScheme(uri)).build());
@@ -267,18 +293,19 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       throw new InvalidURIException(String.format(
         "Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
     }
+    JedisClientConfig effective = sanitize(config);
     connection = new Connection(new HostAndPort(uri.getHost(), uri.getPort()),
-        DefaultJedisClientConfig.builder()
-            .connectionTimeoutMillis(config.getConnectionTimeoutMillis())
-            .socketTimeoutMillis(config.getSocketTimeoutMillis())
-            .blockingSocketTimeoutMillis(config.getBlockingSocketTimeoutMillis())
+        DefaultJedisClientConfig.builder().autoNegotiateProtocol(false)
+            .connectionTimeoutMillis(effective.getConnectionTimeoutMillis())
+            .socketTimeoutMillis(effective.getSocketTimeoutMillis())
+            .blockingSocketTimeoutMillis(effective.getBlockingSocketTimeoutMillis())
             .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
-            .database(JedisURIHelper.getDBIndex(uri)).clientName(config.getClientName())
+            .database(JedisURIHelper.getDBIndex(uri)).clientName(effective.getClientName())
             .protocol(JedisURIHelper.getRedisProtocol(uri))
-            .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(config.getSslSocketFactory())
-            .sslParameters(config.getSslParameters()).hostnameVerifier(config.getHostnameVerifier())
+            .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(effective.getSslSocketFactory())
+            .sslParameters(effective.getSslParameters()).hostnameVerifier(effective.getHostnameVerifier())
             .build());
-    RedisProtocol proto = config.getRedisProtocol();
+    RedisProtocol proto = effective.getRedisProtocol();
     if (proto != null) commandObjects.setProtocol(proto);
   }
 
@@ -287,8 +314,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   public Jedis(final JedisSocketFactory jedisSocketFactory, final JedisClientConfig clientConfig) {
-    connection = new Connection(jedisSocketFactory, clientConfig);
-    RedisProtocol proto = clientConfig.getRedisProtocol();
+    JedisClientConfig effective = sanitize(clientConfig);
+    connection = new Connection(jedisSocketFactory, effective);
+    RedisProtocol proto = effective.getRedisProtocol();
     if (proto != null) commandObjects.setProtocol(proto);
   }
 

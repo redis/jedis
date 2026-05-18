@@ -50,8 +50,13 @@ public final class PushConsumerChainImpl implements PushConsumerChain {
    * Dispatch on length first — tableswitch over the dense range 7..12. {@code (length, firstByte)}
    * uniquely identifies each of the 9 pub/sub types, so each bucket needs at most two intrinsified
    * {@link Arrays#equals(byte[], byte[])} calls. Zero allocation.
+   * @param t the message type byte array, may be null
+   * @return true if t is a pub/sub type, false if t is null or not a pub/sub type
    */
   static boolean isPubSubType(byte[] t) {
+    if (t == null) {
+      return false;
+    }
     switch (t.length) {
       case 7:
         return Arrays.equals(t, PushMessageTypes.MESSAGE_BYTES);

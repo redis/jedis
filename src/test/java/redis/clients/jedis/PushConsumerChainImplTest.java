@@ -302,4 +302,13 @@ public class PushConsumerChainImplTest {
     // Propagate is checked first in the implementation, so it should take precedence
     assertNotNull(result, "Message should be propagated when both propagate and drop are called");
   }
+
+  /**
+   * Test isPubSubType static method handles null input.
+   */
+  @Test
+  public void testIsPubSubTypeHandlesNull() {
+    assertFalse(PushConsumerChainImpl.isPubSubType(null),
+      "isPubSubType should return false for null input");
+  }
 }

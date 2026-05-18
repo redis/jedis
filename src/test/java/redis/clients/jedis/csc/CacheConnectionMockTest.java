@@ -57,7 +57,7 @@ public class CacheConnectionMockTest {
   }
 
   @Nested
-  class PushInvalidateConsumer {
+  class PushInvalidateConsumerTests {
 
     @Test
     public void pushInvalidateConsumerRegisteredWithConfigConstructor() {

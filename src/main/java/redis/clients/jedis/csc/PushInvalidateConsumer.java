@@ -26,8 +26,10 @@ public class PushInvalidateConsumer implements PushConsumer {
 
   @Override
   public PushConsumerContext handle(PushConsumerContext context) {
-    if (Arrays.equals(PushMessageTypes.INVALIDATE_BYTES, context.getMessage().getType())) {
-      cache.deleteByRedisKeys((List) context.getMessage().getContent().get(1));
+    List<Object> content = context.getMessage().getContent();
+    if (Arrays.equals(PushMessageTypes.INVALIDATE_BYTES, context.getMessage().getType())
+        && content != null && content.size() == 2) {
+      cache.deleteByRedisKeys((List) content.get(1));
       context.drop();
     }
     return context;

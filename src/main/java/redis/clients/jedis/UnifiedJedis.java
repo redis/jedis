@@ -75,7 +75,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   protected UnifiedJedis(Connection connection) {
     this.provider = null;
     this.executor = new SimpleCommandExecutor(connection);
-    this.commandObjects = createCommandObjects(connection.getRedisProtocol(), null);
+    this.commandObjects = newCommandObjects(connection.getRedisProtocol());
 
     if (connection instanceof CacheConnection) {
       this.cache = ((CacheConnection) connection).getCache();
@@ -122,8 +122,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * Builder-facing constructor. The client owns {@link CommandObjects} construction: it reads the
    * protocol (and the {@code CommandObjects} knobs) from {@code clientConfig}, probes the provider
    * when the protocol is left unspecified, then delegates to
-   * {@link #createCommandObjects(RedisProtocol, JedisClientConfig)} so subclasses can supply a
-   * specialized type (e.g. {@code ClusterCommandObjects}).
+   * {@link #newCommandObjects(RedisProtocol)} so subclasses can supply a specialized type (e.g.
+   * {@code ClusterCommandObjects}).
    */
   @Experimental
   protected UnifiedJedis(CommandExecutor executor, ConnectionProvider provider,
@@ -165,50 +165,42 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
       throw new IllegalArgumentException("Client-side caching is only supported with RESP3.");
     }
 
-    this.commandObjects = createCommandObjects(resolvedProtocol, clientConfig);
+    this.commandObjects = newCommandObjects(resolvedProtocol);
+    applyCommandObjectsConfiguration(commandObjects, clientConfig);
     this.cache = cache;
   }
 
   /**
    * Factory hook for the {@link CommandObjects} instance held by this client. Subclasses (e.g.
    * {@link JedisCluster}) override to return their specialized subtype. Called from the
-   * constructor — must not depend on subclass instance state.
-   * <p>
-   * The default implementation reads {@code commandKeyArgumentPreProcessor},
-   * {@code jsonObjectMapper}, and {@code searchDialect} from the supplied
-   * {@link JedisClientConfig} (when non-null) and applies them via the
-   * {@link CommandObjectsBuilder}.
+   * {@link UnifiedJedis} constructor — must not depend on subclass instance state.
    */
-  protected CommandObjects createCommandObjects(RedisProtocol protocol,
-      JedisClientConfig clientConfig) {
-    return buildCommandObjects(CommandObjects.builder(), protocol, clientConfig).build();
+  protected CommandObjects newCommandObjects(RedisProtocol protocol) {
+    return new CommandObjects(protocol);
   }
 
   /**
-   * Applies the {@code CommandObjects}-relevant knobs from {@code clientConfig} onto a fluent
-   * {@link CommandObjectsBuilder}. Shared between {@link UnifiedJedis} and subclasses that
-   * override {@link #createCommandObjects(RedisProtocol, JedisClientConfig)} to construct a
-   * specialized subtype.
+   * Applies the {@code CommandObjects}-level knobs ({@code commandKeyArgumentPreProcessor},
+   * {@code jsonObjectMapper}, {@code searchDialect}) carried by {@code clientConfig} onto the
+   * freshly constructed instance. Called once from the {@link UnifiedJedis} constructor after
+   * {@link #newCommandObjects(RedisProtocol)}.
    */
-  protected static <T extends CommandObjects> CommandObjectsBuilder<T> buildCommandObjects(
-      CommandObjectsBuilder<T> builder, RedisProtocol protocol, JedisClientConfig clientConfig) {
-    builder.protocol(protocol);
+  static void applyCommandObjectsConfiguration(CommandObjects target, JedisClientConfig clientConfig) {
     if (clientConfig == null) {
-      return builder;
+      return;
     }
     CommandKeyArgumentPreProcessor preProcessor = clientConfig.getCommandKeyArgumentPreProcessor();
     if (preProcessor != null) {
-      builder.commandKeyArgumentPreProcessor(preProcessor);
+      target.setKeyArgumentPreProcessor(preProcessor);
     }
     JsonObjectMapper mapper = clientConfig.getJsonObjectMapper();
     if (mapper != null) {
-      builder.jsonObjectMapper(mapper);
+      target.setJsonObjectMapper(mapper);
     }
     int dialect = clientConfig.getSearchDialect();
-    if (dialect != redis.clients.jedis.search.SearchProtocol.DEFAULT_DIALECT) {
-      builder.searchDialect(dialect);
+    if (dialect != SearchProtocol.DEFAULT_DIALECT) {
+      target.setDefaultSearchDialect(dialect);
     }
-    return builder;
   }
 
   @Override

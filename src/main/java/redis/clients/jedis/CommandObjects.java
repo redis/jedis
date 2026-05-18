@@ -48,14 +48,6 @@ public class CommandObjects {
     this.protocol = protocol;
   }
 
-  /**
-   * @return a fresh {@link CommandObjectsBuilder} that produces plain {@link CommandObjects}
-   *         instances. Subclasses construct their type-specific builder directly.
-   */
-  static CommandObjectsBuilder<CommandObjects> builder() {
-    return new CommandObjectsBuilder<>(CommandObjects::new);
-  }
-
   // TODO: restrict?
   public final void setProtocol(RedisProtocol proto) {
     this.protocol = proto;

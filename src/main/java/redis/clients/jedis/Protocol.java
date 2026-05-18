@@ -387,7 +387,7 @@ public final class Protocol {
     // Hotkeys keywords
     METRICS, SAMPLE, SLOTS, START, STOP, CPU, NET,
     // Array keywords
-    EXACT, GLOB, RE, AND, OR, NOCASE, SUM, MIN, MAX, XOR, USED;
+    EXACT, GLOB, RE, AND, OR, NOCASE, SUM, MIN, MAX, XOR, USED,
     // JSON keywords
     FPHA;
 

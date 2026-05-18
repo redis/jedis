@@ -13,27 +13,26 @@ import redis.clients.jedis.util.RedisInputStream;
 
 /**
  * Manual benchmark for {@link Protocol#read(RedisInputStream, PushConsumerChain)} measuring the
- * cost of processing a burst of RESP3 {@code invalidate} push messages preceding a regular
- * command response.
- *
- * <p>Each measured operation feeds a pre-built byte payload containing
- * {@value #INVALIDATIONS_PER_OP} invalidate push frames (one key each) followed by a single
- * {@code +OK\r\n} reply through a push-consumer chain. One {@code Protocol.read} call drains all
- * push frames and returns the trailing OK.
- *
- * <p>Two scenarios are measured, mirroring the default chains installed by the production code:
- *
+ * cost of processing a burst of RESP3 {@code invalidate} push messages preceding a regular command
+ * response.
+ * <p>
+ * Each measured operation feeds a pre-built byte payload containing {@value #INVALIDATIONS_PER_OP}
+ * invalidate push frames (one key each) followed by a single {@code +OK\r\n} reply through a
+ * push-consumer chain. One {@code Protocol.read} call drains all push frames and returns the
+ * trailing OK.
+ * <p>
+ * Two scenarios are measured, mirroring the default chains installed by the production code:
  * <ul>
  * <li>{@code Connection} defaults: {@link PushConsumerChainImpl#PUBSUB_CONSUMER} only. The
  * invalidate type is not in the pub/sub set, so it falls through to end-of-chain and is silently
  * dropped — this measures RESP parsing + minimal chain traversal.
  * <li>{@code CacheConnection} defaults: {@code PUBSUB_CONSUMER} + {@link PushInvalidateConsumer}.
- * The invalidate consumer matches, evicts the referenced keys from the cache and drops the
- * message — this measures the production CSC dispatch path.
+ * The invalidate consumer matches, evicts the referenced keys from the cache and drops the message
+ * — this measures the production CSC dispatch path.
  * </ul>
- *
- * <p>The cache is empty, so each invalidation resolves to a fast hash-map miss; the delta between
- * the two scenarios is the cost of one {@code PushInvalidateConsumer} invocation per push.
+ * <p>
+ * The cache is empty, so each invalidation resolves to a fast hash-map miss; the delta between the
+ * two scenarios is the cost of one {@code PushInvalidateConsumer} invocation per push.
  */
 public class ProtocolReadPushConsumerBenchmark {
 

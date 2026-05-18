@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.StreamDeletionPolicy;
+import redis.clients.jedis.args.XNackMode;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XCfgSetParams;
@@ -368,6 +369,86 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
 
     // Verify two messages are deleted
     assertEquals(1L, jedis.xlen(STREAM_KEY_1));
+  }
+
+  // ========== XNACK Command Tests ==========
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackBasicSilent() {
+    setUpTestStream();
+
+    // Add and read a message
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
+    Map<byte[], StreamEntryID> streams = offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY);
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> messages = jedis.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(1), streams);
+
+    byte[] readMessageId = messages.get(0).getValue().get(0).getID().toString().getBytes();
+
+    // XNACK with SILENT mode
+    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.SILENT, readMessageId);
+    assertEquals(1L, nacked);
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackBasicFail() {
+    setUpTestStream();
+
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
+    Map<byte[], StreamEntryID> streams = offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY);
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> messages = jedis.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(1), streams);
+
+    byte[] readMessageId = messages.get(0).getValue().get(0).getID().toString().getBytes();
+
+    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.FAIL, readMessageId);
+    assertEquals(1L, nacked);
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackBasicFatal() {
+    setUpTestStream();
+
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
+    Map<byte[], StreamEntryID> streams = offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY);
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> messages = jedis.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(1), streams);
+
+    byte[] readMessageId = messages.get(0).getValue().get(0).getID().toString().getBytes();
+
+    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.FATAL, readMessageId);
+    assertEquals(1L, nacked);
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackMultipleMessages() {
+    setUpTestStream();
+
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
+    Map<byte[], StreamEntryID> streams = offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY);
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> messages = jedis.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(2), streams);
+
+    byte[] readId1 = messages.get(0).getValue().get(0).getID().toString().getBytes();
+    byte[] readId2 = messages.get(0).getValue().get(1).getID().toString().getBytes();
+
+    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.FAIL, readId1, readId2);
+    assertEquals(2L, nacked);
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackNonExistentMessage() {
+    setUpTestStream();
+
+    byte[] nonExistentId = "999-0".getBytes();
+    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.SILENT, nonExistentId);
+    assertEquals(0L, nacked);
   }
 
   // ========== XDELEX Command Tests ==========

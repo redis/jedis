@@ -38,7 +38,7 @@ public abstract class ClientSideCacheTestBase {
 
   @BeforeEach
   public void setUp() throws Exception {
-    control = new Jedis(hnp, endpoint.getClientConfigBuilder().build());
+    control = new Jedis(hnp, endpoint.getClientConfigBuilder().resp2().build());
     control.flushAll();
   }
 

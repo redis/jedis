@@ -1,5 +1,6 @@
 package redis.clients.jedis.csc;
 
+import java.util.Arrays;
 import java.util.List;
 
 import redis.clients.jedis.PushConsumer;
@@ -25,7 +26,7 @@ public class PushInvalidateConsumer implements PushConsumer {
 
   @Override
   public PushConsumerContext handle(PushConsumerContext context) {
-    if (PushMessageTypes.INVALIDATE.equals(context.getMessage().getType())) {
+    if (Arrays.equals(PushMessageTypes.INVALIDATE_BYTES, context.getMessage().getType())) {
       cache.deleteByRedisKeys((List) context.getMessage().getContent().get(1));
       context.drop();
     }

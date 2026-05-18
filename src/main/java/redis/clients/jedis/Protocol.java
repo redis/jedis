@@ -283,7 +283,6 @@ public final class Protocol {
     return read(is, PushConsumerChainImpl.PROPAGATE_ALL_CONSUMER_CHAIN);
   }
 
-  @Experimental
   /**
    * Read a reply from the server.
    * <p>
@@ -294,6 +293,7 @@ public final class Protocol {
    * @param pushConsumer The chain of push consumers to process push messages
    * @return The reply read from the server
    */
+  @Experimental
   public static Object read(final RedisInputStream is, PushConsumerChain pushConsumer) {
     return process(is, pushConsumer);
   }

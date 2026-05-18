@@ -5,9 +5,7 @@ import redis.clients.jedis.annots.Experimental;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 /**
  * A chain of PushConsumers that processes events in order.
@@ -32,38 +30,48 @@ public final class PushConsumerChainImpl implements PushConsumerChain {
   static final PushConsumerChain PROPAGATE_ALL_CONSUMER_CHAIN = of(PROPAGATE_ALL_CONSUMER);
 
   /**
-   * PushConsumer that marks pub/sub related events to be propagated to the caller
+   * PushConsumer that marks pub/sub related events to be propagated to the caller.
+   * <p>
+   * NOTE: If a new pub/sub push type is added to {@link PushMessageTypes}, the {@code switch} in
+   * {@link #isPubSubType(byte[])} must be updated. {@code PushConsumerChainImplTest} discovers
+   * pub/sub constants reflectively and will fail until the new type is handled here.
    */
-  public static final PushConsumer PUBSUB_CONSUMER = new PushConsumer() {
-    final Set<String> pubSubCommands = new HashSet<>();
-
-    {
-      // Pub/Sub message types
-      pubSubCommands.add(PushMessageTypes.MESSAGE);
-      pubSubCommands.add(PushMessageTypes.PMESSAGE);
-      pubSubCommands.add(PushMessageTypes.SMESSAGE);
-
-      // Pub/Sub subscription confirmations
-      pubSubCommands.add(PushMessageTypes.SUBSCRIBE);
-      pubSubCommands.add(PushMessageTypes.PSUBSCRIBE);
-      pubSubCommands.add(PushMessageTypes.SSUBSCRIBE);
-
-      // Pub/Sub unsubscription confirmations
-      pubSubCommands.add(PushMessageTypes.UNSUBSCRIBE);
-      pubSubCommands.add(PushMessageTypes.PUNSUBSCRIBE);
-      pubSubCommands.add(PushMessageTypes.SUNSUBSCRIBE);
+  public static final PushConsumer PUBSUB_CONSUMER = context -> {
+    if (isPubSubType(context.getMessage().getType())) {
+      context.propagate();
     }
-
-    @Override
-    public PushConsumerContext handle(PushConsumerContext context) {
-      if (pubSubCommands.contains(context.getMessage().getType())) {
-        // Ensure pub/sub events are propagated to application
-        context.propagate();
-      }
-
-      return context;
-    }
+    return context;
   };
+
+  /**
+   * Returns {@code true} iff {@code t} is one of the pub/sub push message types declared in
+   * {@link PushMessageTypes}.
+   * <p>
+   * Dispatch on length first — tableswitch over the dense range 7..12. {@code (length, firstByte)}
+   * uniquely identifies each of the 9 pub/sub types, so each bucket needs at most two intrinsified
+   * {@link Arrays#equals(byte[], byte[])} calls. Zero allocation.
+   */
+  static boolean isPubSubType(byte[] t) {
+    switch (t.length) {
+      case 7:
+        return Arrays.equals(t, PushMessageTypes.MESSAGE_BYTES);
+      case 8:
+        return Arrays.equals(t, PushMessageTypes.PMESSAGE_BYTES)
+            || Arrays.equals(t, PushMessageTypes.SMESSAGE_BYTES);
+      case 9:
+        return Arrays.equals(t, PushMessageTypes.SUBSCRIBE_BYTES);
+      case 10:
+        return Arrays.equals(t, PushMessageTypes.PSUBSCRIBE_BYTES)
+            || Arrays.equals(t, PushMessageTypes.SSUBSCRIBE_BYTES);
+      case 11:
+        return Arrays.equals(t, PushMessageTypes.UNSUBSCRIBE_BYTES);
+      case 12:
+        return Arrays.equals(t, PushMessageTypes.PUNSUBSCRIBE_BYTES)
+            || Arrays.equals(t, PushMessageTypes.SUNSUBSCRIBE_BYTES);
+      default:
+        return false;
+    }
+  }
 
   private final List<PushConsumer> consumers;
 

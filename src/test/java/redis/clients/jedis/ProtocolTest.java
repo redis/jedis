@@ -257,7 +257,7 @@ public class ProtocolTest {
     assertEquals(1, receivedMessages.size());
     PushMessage pushMessage = receivedMessages.get(0);
     assertEquals(2, pushMessage.getContent().size());
-    assertEquals(PushMessageTypes.INVALIDATE, pushMessage.getType());
+    assertArrayEquals(PushMessageTypes.INVALIDATE_BYTES, pushMessage.getType());
     assertArrayEquals(SafeEncoder.encode(PushMessageTypes.INVALIDATE),
         (byte[]) pushMessage.getContent().get(0));
 
@@ -353,7 +353,7 @@ public class ProtocolTest {
     assertEquals(1, receivedMessages.size());
     PushMessage push = receivedMessages.get(0);
     assertEquals(2, push.getContent().size());
-    assertEquals("invalidate", push.getType());
+    assertArrayEquals(SafeEncoder.encode("invalidate"), push.getType());
     assertArrayEquals(SafeEncoder.encode("invalidate"), (byte[]) push.getContent().get(0));
 
 

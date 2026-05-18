@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -160,7 +161,7 @@ public class PushMessageNotificationTest {
     // Verify the message is an invalidation message
     PushMessage pushMessage = receivedMessages.get(0);
     assertNotNull(pushMessage);
-    assertEquals(PushMessageTypes.INVALIDATE, pushMessage.getType());
+    assertArrayEquals(PushMessageTypes.INVALIDATE_BYTES, pushMessage.getType());
   }
 
 }

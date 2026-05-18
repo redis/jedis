@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.annots.Internal;
+import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * Known push message types sent by Redis server.
@@ -28,6 +29,7 @@ public final class PushMessageTypes {
    * Format: ["invalidate", [key1, key2, ...]]
    */
   public static final String INVALIDATE = "invalidate";
+  public static final byte[] INVALIDATE_BYTES = SafeEncoder.encode(INVALIDATE);
 
   // ==================== Pub/Sub Messages ====================
 
@@ -37,6 +39,7 @@ public final class PushMessageTypes {
    * Format: ["message", channel, message]
    */
   public static final String MESSAGE = "message";
+  public static final byte[] MESSAGE_BYTES = SafeEncoder.encode(MESSAGE);
 
   /**
    * Pattern message.
@@ -44,6 +47,7 @@ public final class PushMessageTypes {
    * Format: ["pmessage", pattern, channel, message]
    */
   public static final String PMESSAGE = "pmessage";
+  public static final byte[] PMESSAGE_BYTES = SafeEncoder.encode(PMESSAGE);
 
   /**
    * Shard channel message.
@@ -51,6 +55,7 @@ public final class PushMessageTypes {
    * Format: ["smessage", channel, message]
    */
   public static final String SMESSAGE = "smessage";
+  public static final byte[] SMESSAGE_BYTES = SafeEncoder.encode(SMESSAGE);
 
   // ==================== Pub/Sub Subscriptions ====================
 
@@ -60,6 +65,7 @@ public final class PushMessageTypes {
    * Format: ["subscribe", channel, count]
    */
   public static final String SUBSCRIBE = "subscribe";
+  public static final byte[] SUBSCRIBE_BYTES = SafeEncoder.encode(SUBSCRIBE);
 
   /**
    * Pattern subscription confirmation.
@@ -67,6 +73,7 @@ public final class PushMessageTypes {
    * Format: ["psubscribe", pattern, count]
    */
   public static final String PSUBSCRIBE = "psubscribe";
+  public static final byte[] PSUBSCRIBE_BYTES = SafeEncoder.encode(PSUBSCRIBE);
 
   /**
    * Shard channel subscription confirmation.
@@ -74,6 +81,7 @@ public final class PushMessageTypes {
    * Format: ["ssubscribe", channel, count]
    */
   public static final String SSUBSCRIBE = "ssubscribe";
+  public static final byte[] SSUBSCRIBE_BYTES = SafeEncoder.encode(SSUBSCRIBE);
 
   // ==================== Pub/Sub Unsubscriptions ====================
 
@@ -83,6 +91,7 @@ public final class PushMessageTypes {
    * Format: ["unsubscribe", channel, count]
    */
   public static final String UNSUBSCRIBE = "unsubscribe";
+  public static final byte[] UNSUBSCRIBE_BYTES = SafeEncoder.encode(UNSUBSCRIBE);
 
   /**
    * Pattern unsubscription confirmation.
@@ -90,6 +99,7 @@ public final class PushMessageTypes {
    * Format: ["punsubscribe", pattern, count]
    */
   public static final String PUNSUBSCRIBE = "punsubscribe";
+  public static final byte[] PUNSUBSCRIBE_BYTES = SafeEncoder.encode(PUNSUBSCRIBE);
 
   /**
    * Shard channel unsubscription confirmation.
@@ -97,4 +107,5 @@ public final class PushMessageTypes {
    * Format: ["sunsubscribe", channel, count]
    */
   public static final String SUNSUBSCRIBE = "sunsubscribe";
+  public static final byte[] SUNSUBSCRIBE_BYTES = SafeEncoder.encode(SUNSUBSCRIBE);
 }

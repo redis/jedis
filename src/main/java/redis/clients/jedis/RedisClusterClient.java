@@ -67,10 +67,8 @@ public class RedisClusterClient extends UnifiedJedis {
   }
 
   @Override
-  protected CommandObjects createCommandObjects(RedisProtocol protocol,
-      JedisClientConfig clientConfig) {
-    return buildCommandObjects(new CommandObjectsBuilder<>(ClusterCommandObjects::new), protocol,
-        clientConfig).build();
+  protected CommandObjects newCommandObjects(RedisProtocol protocol) {
+    return new ClusterCommandObjects(protocol);
   }
 
   /**

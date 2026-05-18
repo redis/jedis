@@ -388,6 +388,8 @@ public final class Protocol {
     METRICS, SAMPLE, SLOTS, START, STOP, CPU, NET,
     // Array keywords
     EXACT, GLOB, RE, AND, OR, NOCASE, SUM, MIN, MAX, XOR, USED;
+    // JSON keywords
+    FPHA;
 
     private final byte[] raw;
 

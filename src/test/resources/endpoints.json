@@ -53,6 +53,12 @@
       "redis://127.0.0.1:29380"
     ]
   },
+  "redis-unavailable": {
+    "tls": false,
+    "endpoints": [
+      "redis://127.0.0.1:26400"
+    ]
+  },
   "standalone0": {
     "password": "foobared",
     "tls": false,

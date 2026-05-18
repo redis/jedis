@@ -295,15 +295,14 @@ public class JedisCluster extends UnifiedJedis {
   public JedisCluster(ClusterConnectionProvider provider, int maxAttempts,
       Duration maxTotalRetriesDuration) {
     super(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration,
-        StaticCommandFlagsRegistry.registry()), provider, new ClusterCommandObjects());
+        StaticCommandFlagsRegistry.registry()), provider, (RedisProtocol) null, null);
     this.commandFlagsRegistry = StaticCommandFlagsRegistry.registry();
   }
 
   private JedisCluster(ClusterConnectionProvider provider, int maxAttempts,
       Duration maxTotalRetriesDuration, RedisProtocol protocol) {
     super(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration,
-            StaticCommandFlagsRegistry.registry()), provider, new ClusterCommandObjects(), protocol,
-        null);
+            StaticCommandFlagsRegistry.registry()), provider, protocol, null);
     this.commandFlagsRegistry = StaticCommandFlagsRegistry.registry();
   }
 
@@ -352,16 +351,19 @@ public class JedisCluster extends UnifiedJedis {
   private JedisCluster(ClusterConnectionProvider provider, int maxAttempts,
       Duration maxTotalRetriesDuration, RedisProtocol protocol, Cache clientSideCache) {
     super(new ClusterCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration,
-            StaticCommandFlagsRegistry.registry()), provider, new ClusterCommandObjects(), protocol,
-        clientSideCache);
+            StaticCommandFlagsRegistry.registry()), provider, protocol, clientSideCache);
     this.commandFlagsRegistry = StaticCommandFlagsRegistry.registry();
   }
 
   private JedisCluster(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
-      CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache,
-      CommandFlagsRegistry commandFlagsRegistry) {
-    super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+      JedisClientConfig clientConfig, Cache cache, CommandFlagsRegistry commandFlagsRegistry) {
+    super(commandExecutor, connectionProvider, clientConfig, cache);
     this.commandFlagsRegistry = commandFlagsRegistry;
+  }
+
+  @Override
+  protected CommandObjects newCommandObjects(RedisProtocol protocol) {
+    return new ClusterCommandObjects(protocol);
   }
 
   /**
@@ -374,8 +376,8 @@ public class JedisCluster extends UnifiedJedis {
 
     @Override
     protected JedisCluster createClient() {
-      return new JedisCluster(commandExecutor, connectionProvider, commandObjects,
-          clientConfig.getRedisProtocol(), cache, getCommandFlags());
+      return new JedisCluster(commandExecutor, connectionProvider, clientConfig, cache,
+          getCommandFlags());
     }
   }
 

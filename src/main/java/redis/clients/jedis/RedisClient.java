@@ -39,8 +39,8 @@ import redis.clients.jedis.util.Pool;
 public class RedisClient extends UnifiedJedis {
 
   private RedisClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
-      CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
-    super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+      JedisClientConfig clientConfig, Cache cache) {
+    super(commandExecutor, connectionProvider, clientConfig, cache);
   }
 
   /**
@@ -146,8 +146,7 @@ public class RedisClient extends UnifiedJedis {
 
     @Override
     protected RedisClient createClient() {
-      return new RedisClient(commandExecutor, connectionProvider, commandObjects,
-          clientConfig.getRedisProtocol(), cache);
+      return new RedisClient(commandExecutor, connectionProvider, clientConfig, cache);
     }
   }
 

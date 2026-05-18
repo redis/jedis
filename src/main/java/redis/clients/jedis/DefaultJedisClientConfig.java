@@ -7,6 +7,8 @@ import javax.net.ssl.SSLParameters;
 import javax.net.ssl.SSLSocketFactory;
 
 import redis.clients.jedis.authentication.AuthXManager;
+import redis.clients.jedis.json.JsonObjectMapper;
+import redis.clients.jedis.search.SearchProtocol;
 import redis.clients.jedis.util.JedisAsserts;
 import redis.clients.jedis.util.JedisURIHelper;
 
@@ -37,6 +39,10 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
   private final AuthXManager authXManager;
 
+  private final CommandKeyArgumentPreProcessor commandKeyArgumentPreProcessor;
+  private final JsonObjectMapper jsonObjectMapper;
+  private final int searchDialect;
+
   private DefaultJedisClientConfig(DefaultJedisClientConfig.Builder builder) {
     this.redisProtocol = builder.redisProtocol;
     this.autoNegotiateProtocol = builder.autoNegotiateProtocol;
@@ -55,6 +61,9 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.clientSetInfoConfig = builder.clientSetInfoConfig;
     this.readOnlyForRedisClusterReplicas = builder.readOnlyForRedisClusterReplicas;
     this.authXManager = builder.authXManager;
+    this.commandKeyArgumentPreProcessor = builder.commandKeyArgumentPreProcessor;
+    this.jsonObjectMapper = builder.jsonObjectMapper;
+    this.searchDialect = builder.searchDialect;
   }
 
   @Override
@@ -161,6 +170,21 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return readOnlyForRedisClusterReplicas;
   }
 
+  @Override
+  public CommandKeyArgumentPreProcessor getCommandKeyArgumentPreProcessor() {
+    return commandKeyArgumentPreProcessor;
+  }
+
+  @Override
+  public JsonObjectMapper getJsonObjectMapper() {
+    return jsonObjectMapper;
+  }
+
+  @Override
+  public int getSearchDialect() {
+    return searchDialect;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -243,6 +267,10 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     private boolean readOnlyForRedisClusterReplicas = false;
 
     private AuthXManager authXManager = null;
+
+    private CommandKeyArgumentPreProcessor commandKeyArgumentPreProcessor = null;
+    private JsonObjectMapper jsonObjectMapper = null;
+    private int searchDialect = SearchProtocol.DEFAULT_DIALECT;
 
     private Builder() {
     }
@@ -429,6 +457,53 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
+    /**
+     * Sets a key argument pre-processor applied to every command before it is sent. Useful for
+     * implementing key prefixing or other key rewriting strategies.
+     * <p>
+     * <b>Not honored by the legacy {@link Jedis} class</b> — only the {@link UnifiedJedis} family
+     * reads this value when constructing its command pipeline.
+     * @param commandKeyArgumentPreProcessor the pre-processor (or {@code null} to disable)
+     * @return this
+     */
+    public Builder commandKeyArgumentPreProcessor(
+        CommandKeyArgumentPreProcessor commandKeyArgumentPreProcessor) {
+      this.commandKeyArgumentPreProcessor = commandKeyArgumentPreProcessor;
+      return this;
+    }
+
+    /**
+     * Sets a custom JSON object mapper used by RedisJSON commands. When unset, the default
+     * Gson-based mapper is used.
+     * <p>
+     * <b>Not honored by the legacy {@link Jedis} class</b> — only the {@link UnifiedJedis} family
+     * reads this value when constructing its command pipeline.
+     * @param jsonObjectMapper the mapper (or {@code null} to fall back to the default)
+     * @return this
+     */
+    public Builder jsonObjectMapper(JsonObjectMapper jsonObjectMapper) {
+      this.jsonObjectMapper = jsonObjectMapper;
+      return this;
+    }
+
+    /**
+     * Sets the default search dialect for RediSearch commands. Defaults to
+     * {@link SearchProtocol#DEFAULT_DIALECT}.
+     * <p>
+     * <b>Not honored by the legacy {@link Jedis} class</b> — only the {@link UnifiedJedis} family
+     * reads this value when constructing its command pipeline.
+     * @param searchDialect the dialect version (must not be 0)
+     * @return this
+     * @throws IllegalArgumentException if {@code searchDialect == 0}
+     */
+    public Builder searchDialect(int searchDialect) {
+      if (searchDialect == 0) {
+        throw new IllegalArgumentException("DIALECT=0 cannot be set.");
+      }
+      this.searchDialect = searchDialect;
+      return this;
+    }
+
     public Builder from(JedisClientConfig instance) {
       this.redisProtocol = instance.getRedisProtocol();
       this.autoNegotiateProtocol = instance.isAutoNegotiateProtocol();
@@ -447,6 +522,9 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.clientSetInfoConfig = instance.getClientSetInfoConfig();
       this.readOnlyForRedisClusterReplicas = instance.isReadOnlyForRedisClusterReplicas();
       this.authXManager = instance.getAuthXManager();
+      this.commandKeyArgumentPreProcessor = instance.getCommandKeyArgumentPreProcessor();
+      this.jsonObjectMapper = instance.getJsonObjectMapper();
+      this.searchDialect = instance.getSearchDialect();
       return this;
     }
   }

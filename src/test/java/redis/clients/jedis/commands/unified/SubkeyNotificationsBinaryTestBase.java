@@ -39,7 +39,7 @@ public abstract class SubkeyNotificationsBinaryTestBase extends UnifiedJedisComm
   @BeforeEach
   public void enableSubkeyNotifications() {
     try (Jedis control = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().build())) {
+        endpoint.getClientConfigBuilder().autoNegotiateProtocol(false).build())) {
       Map<String, String> current = control.configGet("notify-keyspace-events");
       originalNotifyConfig = current.getOrDefault("notify-keyspace-events", "");
     }

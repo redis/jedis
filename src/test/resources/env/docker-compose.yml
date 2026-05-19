@@ -10,6 +10,7 @@ services:
       - "8474:8474"   # Admin API
       - "29379:29379" # redis-failover-1 proxy
       - "29380:29380" # redis-failover-2 proxy
+      - "26400:26400" # redis-unavailable proxy
   redis-failover-1:
     <<: *client-libs-image
     container_name: redis-failover-1

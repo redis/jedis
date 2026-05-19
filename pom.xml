@@ -583,6 +583,7 @@
 						<include>**/RespProtocol.java</include>
 						<include>**/ProtocolHandshake*.java</include>
 						<include>src/test/java/redis/clients/jedis/**/timeseries/*.java</include>
+						<include>**/benchmark/ProtocolReadPushConsumerBenchmark.java</include>
 					</includes>
 				</configuration>
 				<executions>

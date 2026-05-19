@@ -8,7 +8,6 @@ import redis.clients.jedis.params.MSetExParams;
 
 import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.LCSParams;
-import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.resps.IncrexResponse;
 import redis.clients.jedis.resps.LCSMatchResult;
 
@@ -303,31 +302,56 @@ public interface StringCommands extends BitCommands {
   double incrByFloat(String key, double increment);
 
   /**
-   * Increment the number stored at key by 1 using INCREX.
+   * <b><a href="http://redis.io/commands/increx">INCREX Command</a></b>
+   * Increment the integer number stored at key by 1. If the key does not exist, it is set to 0
+   * before performing the operation. Returns both the new value and the applied increment.
+   * <p>
+   * Time complexity: O(1)
    * @param key the key
-   * @return IncrexResponse containing the new value and actual increment
+   * @return {@link IncrexResponse} containing the new value and the applied increment
+   * @since 8.0
    */
-  @Experimental
   IncrexResponse<Long> increx(String key);
 
   /**
-   * Increment the integer number stored at key with extended options.
+   * <b><a href="http://redis.io/commands/increx">INCREX Command</a></b>
+   * Increment the integer number stored at key by {@code increment}, with optional lower/upper
+   * bounds, overflow handling, and expiration control. If the key does not exist, it is initialized
+   * to 0. Returns both the new value and the actual increment applied (which may differ from the
+   * requested increment under {@code OVERFLOW SAT}).
+   * <p>
+   * Time complexity: O(1)
    * @param key the key
-   * @param increment the integer amount to increment by
-   * @param params bounds, overflow, and expiration options
-   * @return IncrexResponse containing the new value and actual increment
+   * @param increment the integer amount to increment by (may be negative)
+   * @param params optional bounds ({@code LBOUND}/{@code UBOUND}), overflow mode
+   *        ({@code OVERFLOW FAIL|SAT|REJECT}), and expiration ({@code EX}/{@code PX}/
+   *        {@code EXAT}/{@code PXAT}/{@code PERSIST}/{@code ENX})
+   * @return {@link IncrexResponse} containing the new value and the applied increment
+   * @since 8.0
    */
-  @Experimental
   IncrexResponse<Long> increx(String key, long increment, IncrexParams params);
 
   /**
-   * Increment the floating-point number stored at key with extended options.
+   * <b><a href="http://redis.io/commands/increx">INCREX Command</a></b>
+   * Increment the floating-point number stored at key by {@code increment}, with optional
+   * lower/upper bounds, overflow handling, and expiration control. If the key does not exist, it is
+   * initialized to 0. Returns both the new value and the actual increment applied (which may differ
+   * from the requested increment under {@code OVERFLOW SAT}).
+   * <p>
+   * Note: the key value must be a valid floating-point number. Attempting to use this method on a
+   * key holding an integer-only value such as {@code "1"} is valid, but using it on a value like
+   * {@code "1.5"} with the integer variant ({@link #increx(String, long, IncrexParams)}) will
+   * return an error.
+   * <p>
+   * Time complexity: O(1)
    * @param key the key
-   * @param increment the floating-point amount to increment by
-   * @param params bounds, overflow, and expiration options
-   * @return IncrexResponse containing the new value and actual increment
+   * @param increment the floating-point amount to increment by (may be negative)
+   * @param params optional bounds ({@code LBOUND}/{@code UBOUND}), overflow mode
+   *        ({@code OVERFLOW FAIL|SAT|REJECT}), and expiration ({@code EX}/{@code PX}/
+   *        {@code EXAT}/{@code PXAT}/{@code PERSIST}/{@code ENX})
+   * @return {@link IncrexResponse} containing the new value and the applied increment
+   * @since 8.0
    */
-  @Experimental
   IncrexResponse<Double> increxFloat(String key, double increment, IncrexParams params);
 
   /**

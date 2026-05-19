@@ -8,7 +8,6 @@ import redis.clients.jedis.params.MSetExParams;
 
 import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.LCSParams;
-import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.resps.IncrexResponse;
 import redis.clients.jedis.resps.LCSMatchResult;
 
@@ -103,13 +102,38 @@ public interface StringBinaryCommands extends BitBinaryCommands {
 
   double incrByFloat(byte[] key, double increment);
 
-  @Experimental
+  /**
+   * Increment the integer number stored at key by 1. If the key does not exist, it is set to 0
+   * before performing the operation.
+   * @param key the key
+   * @return {@link IncrexResponse} containing the new value and the applied increment
+   * @see StringCommands#increx(String)
+   * @since 8.0
+   */
   IncrexResponse<Long> increx(byte[] key);
 
-  @Experimental
+  /**
+   * Increment the integer number stored at key by {@code increment}, with optional bounds,
+   * overflow handling, and expiration control.
+   * @param key the key
+   * @param increment the integer amount to increment by (may be negative)
+   * @param params optional bounds, overflow mode, and expiration options
+   * @return {@link IncrexResponse} containing the new value and the applied increment
+   * @see StringCommands#increx(String, long, IncrexParams)
+   * @since 8.0
+   */
   IncrexResponse<Long> increx(byte[] key, long increment, IncrexParams params);
 
-  @Experimental
+  /**
+   * Increment the floating-point number stored at key by {@code increment}, with optional bounds,
+   * overflow handling, and expiration control.
+   * @param key the key
+   * @param increment the floating-point amount to increment by (may be negative)
+   * @param params optional bounds, overflow mode, and expiration options
+   * @return {@link IncrexResponse} containing the new value and the applied increment
+   * @see StringCommands#increxFloat(String, double, IncrexParams)
+   * @since 8.0
+   */
   IncrexResponse<Double> increxFloat(byte[] key, double increment, IncrexParams params);
 
   long decr(byte[] key);

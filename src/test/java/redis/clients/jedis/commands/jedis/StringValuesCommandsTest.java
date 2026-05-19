@@ -494,4 +494,12 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
     assertEquals(Long.valueOf(3), res.getIncrement());
   }
 
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxFloatThenIntFails() {
+    jedis.set("foo", "1.5");
+    IncrexParams params = new IncrexParams();
+    assertThrows(JedisDataException.class, () -> jedis.increx("foo", 1, params));
+  }
+
 }

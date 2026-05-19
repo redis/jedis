@@ -3,20 +3,20 @@ package redis.clients.jedis.params;
 import java.util.Objects;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.jedis.annots.Experimental;
 
 /**
  * Parameters for the {@code INCREX} command.
  * <p>
  * Usage examples:
- * 
+ *
  * <pre>
  *   new IncrexParams().ubound(100).overflow(Overflow.SAT).ex(60)
  *   new IncrexParams().lbound(0).ubound(100).overflow(Overflow.REJECT)
  *   IncrexParams.increxParams().ex(30).enx()
  * </pre>
+ *
+ * @since 8.0
  */
-@Experimental
 public class IncrexParams extends BaseGetExParams<IncrexParams> {
 
   public enum Overflow {

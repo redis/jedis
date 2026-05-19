@@ -673,31 +673,31 @@ public class CommandObjects {
   // ── INCREX ─────────────────────────────────────────────
 
   public final CommandObject<IncrexResponse<Long>> increx(String key) {
-    return new CommandObject<>(commandArguments(INCREX).key(key), BuilderFactory.INCREX_LONG);
+    return new CommandObject<>(commandArguments(INCREX).key(key), IncrexResponse.INCREX_RESPONSE_LONG);
   }
 
   public final CommandObject<IncrexResponse<Long>> increx(String key, long increment, IncrexParams params) {
     return new CommandObject<>(commandArguments(INCREX).key(key).add(BYINT).add(increment).addParams(params),
-        BuilderFactory.INCREX_LONG);
+        IncrexResponse.INCREX_RESPONSE_LONG);
   }
 
   public final CommandObject<IncrexResponse<Double>> increxFloat(String key, double increment, IncrexParams params) {
     return new CommandObject<>(commandArguments(INCREX).key(key).add(BYFLOAT).add(increment).addParams(params),
-        BuilderFactory.INCREX_DOUBLE);
+        IncrexResponse.INCREX_RESPONSE_DOUBLE);
   }
 
   public final CommandObject<IncrexResponse<Long>> increx(byte[] key) {
-    return new CommandObject<>(commandArguments(INCREX).key(key), BuilderFactory.INCREX_LONG);
+    return new CommandObject<>(commandArguments(INCREX).key(key), IncrexResponse.INCREX_RESPONSE_LONG);
   }
 
   public final CommandObject<IncrexResponse<Long>> increx(byte[] key, long increment, IncrexParams params) {
     return new CommandObject<>(commandArguments(INCREX).key(key).add(BYINT).add(increment).addParams(params),
-        BuilderFactory.INCREX_LONG);
+        IncrexResponse.INCREX_RESPONSE_LONG);
   }
 
   public final CommandObject<IncrexResponse<Double>> increxFloat(byte[] key, double increment, IncrexParams params) {
     return new CommandObject<>(commandArguments(INCREX).key(key).add(BYFLOAT).add(increment).addParams(params),
-        BuilderFactory.INCREX_DOUBLE);
+        IncrexResponse.INCREX_RESPONSE_DOUBLE);
   }
 
   public final CommandObject<Long> decr(String key) {

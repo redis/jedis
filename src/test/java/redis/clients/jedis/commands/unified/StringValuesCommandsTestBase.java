@@ -496,4 +496,12 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
     assertEquals(5.0, res.getValue(), 0.0);
     assertEquals(5.0, res.getIncrement(), 0.0);
   }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxFloatThenIntFails() {
+    jedis.set("foo", "1.5");
+    IncrexParams params = new IncrexParams();
+    assertThrows(JedisDataException.class, () -> jedis.increx("foo", 1, params));
+  }
 }

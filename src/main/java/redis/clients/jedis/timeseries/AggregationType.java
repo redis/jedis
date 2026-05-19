@@ -44,4 +44,34 @@ public enum AggregationType implements Rawable {
       return null;
     }
   }
+
+  /**
+   * Convenience factory to build an aggregator array for
+   * {@link TSRangeParams#aggregation(AggregationType[], long)} and
+   * {@link TSMRangeParams#aggregation(AggregationType[], long)}.
+   *
+   * @param types one or more aggregation types, in the desired wire order
+   * @return {@code types} as an array
+   */
+  public static AggregationType[] of(AggregationType... types) {
+    return types;
+  }
+
+  /**
+   * Comma-joined raw bytes of {@code aggregators} for the AGGREGATION wire format.
+   */
+  static byte[] joinRaw(AggregationType[] aggregators) {
+    int total = aggregators.length - 1;
+    for (AggregationType a : aggregators)
+      total += a.getRaw().length;
+    byte[] out = new byte[total];
+    int pos = 0;
+    for (int i = 0; i < aggregators.length; i++) {
+      if (i > 0) out[pos++] = ',';
+      byte[] raw = aggregators[i].getRaw();
+      System.arraycopy(raw, 0, out, pos, raw.length);
+      pos += raw.length;
+    }
+    return out;
+  }
 }

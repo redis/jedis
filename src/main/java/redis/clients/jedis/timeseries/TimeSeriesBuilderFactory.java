@@ -24,10 +24,16 @@ public final class TimeSeriesBuilderFactory {
   public static final Builder<List<TSElement>> TIMESERIES_ELEMENT_LIST = new Builder<List<TSElement>>() {
     @Override
     public List<TSElement> build(Object data) {
-      return ((List<Object>) data).stream().map((pairObject) -> (List<Object>) pairObject)
-          .map((pairList) -> new TSElement(BuilderFactory.LONG.build(pairList.get(0)),
-              BuilderFactory.DOUBLE.build(pairList.get(1))))
-          .collect(Collectors.toList());
+      return ((List<Object>) data).stream().map((sampleObject) -> (List<Object>) sampleObject)
+          .map((sampleList) -> {
+            long timestamp = BuilderFactory.LONG.build(sampleList.get(0));
+            if (sampleList.size() == 2) {
+              return new TSElement(timestamp, BuilderFactory.DOUBLE.build(sampleList.get(1)));
+            }
+            List<Double> values = sampleList.subList(1, sampleList.size()).stream()
+                .map(BuilderFactory.DOUBLE::build).collect(Collectors.toList());
+            return new TSElement(timestamp, values);
+          }).collect(Collectors.toList());
     }
   };
 

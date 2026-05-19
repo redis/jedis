@@ -98,13 +98,13 @@ public class MultiDbClient extends UnifiedJedis {
    * </p>
    * @param commandExecutor the command executor (typically MultiDbCommandExecutor)
    * @param connectionProvider the connection provider (typically MultiDbConnectionProvider)
-   * @param commandObjects the command objects
-   * @param redisProtocol the Redis protocol version
+   * @param clientConfig the {@link JedisClientConfig} used to derive the protocol and
+   *          command-object knobs (may be null)
    * @param cache the client-side cache (may be null)
    */
   MultiDbClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
-      CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache) {
-    super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+      JedisClientConfig clientConfig, Cache cache) {
+    super(commandExecutor, connectionProvider, clientConfig, cache);
   }
 
   /**
@@ -317,8 +317,7 @@ public class MultiDbClient extends UnifiedJedis {
 
     @Override
     protected MultiDbClient createClient() {
-      return new MultiDbClient(commandExecutor, connectionProvider, commandObjects,
-          clientConfig.getRedisProtocol(), cache);
+      return new MultiDbClient(commandExecutor, connectionProvider, clientConfig, cache);
     }
   }
 

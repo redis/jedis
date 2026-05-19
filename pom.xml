@@ -580,6 +580,7 @@
 
 						<include>**/RespProtocol.java</include>
 						<include>**/ProtocolHandshake*.java</include>
+						<include>**/benchmark/ProtocolReadPushConsumerBenchmark.java</include>
 					</includes>
 				</configuration>
 				<executions>
@@ -696,6 +697,7 @@
 				<skipIntegrationTests>true</skipIntegrationTests>
 				<skipScenarioTests>false</skipScenarioTests>
 			</properties>
+
 		</profile>
 
 	</profiles>

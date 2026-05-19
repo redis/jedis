@@ -13,14 +13,12 @@ import java.util.Arrays;
  * Manual benchmark for {@link Protocol#read(RedisInputStream)} and
  * {@link Protocol#read(RedisInputStream, Cache)} measuring the cost of processing a burst of RESP3
  * {@code invalidate} push messages preceding a regular command response.
- *
- * <p>Each measured operation feeds a pre-built byte payload containing
- * {@value #INVALIDATIONS_PER_OP} invalidate push frames (one key each) followed by a single
- * {@code +OK\r\n} reply. One {@code Protocol.read} call drains all push frames and returns the
- * trailing OK.
- *
- * <p>Two scenarios are measured, mirroring the read paths used by the production code:
- *
+ * <p>
+ * Each measured operation feeds a pre-built byte payload containing {@value #INVALIDATIONS_PER_OP}
+ * invalidate push frames (one key each) followed by a single {@code +OK\r\n} reply. One
+ * {@code Protocol.read} call drains all push frames and returns the trailing OK.
+ * <p>
+ * Two scenarios are measured, mirroring the read paths used by the production code:
  * <ul>
  * <li>{@code Connection} defaults: {@link Protocol#read(RedisInputStream)} — no cache argument.
  * Push frames are parsed and discarded by the protocol layer — this measures RESP parsing only.
@@ -28,9 +26,9 @@ import java.util.Arrays;
  * invalidate frames are dispatched to the cache and the referenced keys are evicted before the
  * trailing reply is returned. This measures the production CSC dispatch path.
  * </ul>
- *
- * <p>The cache is empty, so each invalidation resolves to a fast hash-map miss; the delta between
- * the two scenarios is the cost of the cache-invalidation dispatch per push.
+ * <p>
+ * The cache is empty, so each invalidation resolves to a fast hash-map miss; the delta between the
+ * two scenarios is the cost of the cache-invalidation dispatch per push.
  */
 public class ProtocolReadPushConsumerBenchmark {
 
@@ -65,7 +63,7 @@ public class ProtocolReadPushConsumerBenchmark {
       RedisInputStream in = new RedisInputStream(new ByteArrayInputStream(payload));
       long start = System.nanoTime();
       Object reply = Protocol.read(in, cache);
-      if  (!Arrays.equals("OK".getBytes(), (byte[]) reply)) {
+      if (!Arrays.equals("OK".getBytes(), (byte[]) reply)) {
         throw new AssertionError("Expected OK, got " + reply);
       }
       duration += System.nanoTime() - start;

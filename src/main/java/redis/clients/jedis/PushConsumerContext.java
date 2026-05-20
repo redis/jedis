@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.annots.Internal;
 
 /**
  * Context object for push message processing.
@@ -27,6 +26,9 @@ public class PushConsumerContext {
   private boolean drop = false;
 
   public PushConsumerContext(PushMessage message) {
+    if (message == null) {
+      throw new IllegalArgumentException("Message cannot be null");
+    }
     this.message = message;
   }
 

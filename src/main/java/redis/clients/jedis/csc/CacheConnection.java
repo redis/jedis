@@ -1,6 +1,5 @@
 package redis.clients.jedis.csc;
 
-import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -9,9 +8,7 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisSocketFactory;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.PushConsumer;
 import redis.clients.jedis.PushConsumerChain;
-import redis.clients.jedis.PushConsumerContext;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.JedisException;
@@ -66,24 +63,6 @@ public class CacheConnection extends Connection {
   private ReentrantLock lock;
   private static final String REDIS = "redis";
   private static final String MIN_REDIS_VERSION = "7.4";
-
-  static class PushInvalidateConsumer implements PushConsumer {
-    private final Cache cache;
-    public PushInvalidateConsumer(Cache cache) {
-      this.cache = cache;
-    }
-
-    @Override
-    public PushConsumerContext handle(PushConsumerContext context) {
-      if (context.getMessage() != null &&
-              "invalidate".equals(context.getMessage().getType())) {
-        cache.deleteByRedisKeys((List) context.getMessage().getContent().get(1));
-        context.drop();
-      }
-
-      return context;
-    }
-  }
 
   public CacheConnection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig, Cache cache) {
     super(socketFactory, clientConfig);
@@ -167,7 +146,7 @@ public class CacheConnection extends Connection {
   }
 
   private void initializeClientSideCache() {
-    if (protocol != RedisProtocol.RESP3) {
+    if (getRedisProtocol() != RedisProtocol.RESP3) {
       throw new JedisException("Client side caching is only supported with RESP3.");
     }
     Objects.requireNonNull(cache);

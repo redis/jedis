@@ -737,10 +737,8 @@ public class HealthCheckTest {
     AtomicInteger callCount = new AtomicInteger(0);
     CountDownLatch unhealthyLatch = new CountDownLatch(1);
 
-    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(
-        HealthCheckStrategy.Config.builder().interval(5).timeout(200).numProbes(3)
-            .policy(BuiltIn.ALL_SUCCESS).delayInBetweenProbes(5).build(),
-        e -> {
+    TestHealthCheckStrategy strategy = new TestHealthCheckStrategy(HealthCheckStrategy.Config
+        .builder().numProbes(3).policy(BuiltIn.ALL_SUCCESS).delayInBetweenProbes(5).build(), e -> {
           int c = callCount.incrementAndGet();
           return c == 1 ? HealthStatus.UNHEALTHY : HealthStatus.HEALTHY;
         });

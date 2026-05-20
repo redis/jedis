@@ -33,7 +33,7 @@ import static redis.clients.jedis.util.VectorTestUtils.floatArrayToFP32Bytes;
  * </p>
  */
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 @Tag("integration")
 @Tag("vector-set")
 public class VectorSetCommandsTest extends JedisCommandsTestBase {

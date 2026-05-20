@@ -309,7 +309,71 @@ RedisClusterClient jedisCluster = RedisClusterClient.builder()
         .build();
 ```
 
-## Miscellaneous 
+## Unix Domain Sockets
+
+Jedis supports connecting to Redis via Unix Domain Sockets (UDS) instead of TCP. This can provide lower latency and higher throughput when the client and server are on the same machine, as it bypasses the TCP/IP stack.
+
+To use UDS, implement the `JedisSocketFactory` interface with your preferred Unix socket library (e.g., [junixsocket](https://github.com/kohlschutter/junixsocket)) and pass it to `RedisClient` via a custom `ConnectionProvider`.
+
+### Dependency
+
+Add the junixsocket dependency to your project:
+
+```xml
+<dependency>
+    <groupId>com.kohlschutter.junixsocket</groupId>
+    <artifactId>junixsocket-core</artifactId>
+    <version>2.10.1</version>
+</dependency>
+```
+
+### Creating a UDS Socket Factory
+
+```java
+import org.newsclub.net.unix.AFUNIXSocket;
+import org.newsclub.net.unix.AFUNIXSocketAddress;
+
+public class UdsSocketFactory implements JedisSocketFactory {
+
+    private final File socketFile;
+
+    public UdsSocketFactory(String socketPath) {
+        this.socketFile = new File(socketPath);
+    }
+
+    @Override
+    public Socket createSocket() throws JedisConnectionException {
+        try {
+            Socket socket = AFUNIXSocket.newStrictInstance();
+            socket.connect(new AFUNIXSocketAddress(socketFile), Protocol.DEFAULT_TIMEOUT);
+            return socket;
+        } catch (IOException e) {
+            throw new JedisConnectionException("Failed to create UDS connection.", e);
+        }
+    }
+}
+```
+
+### Connecting with RedisClient
+
+Create a `ConnectionFactory` with your UDS socket factory and wrap it in a `PooledConnectionProvider`:
+
+```java
+JedisSocketFactory socketFactory = new UdsSocketFactory("/tmp/redis.sock");
+JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().build();
+
+ConnectionFactory connectionFactory = new ConnectionFactory(socketFactory, clientConfig);
+PooledConnectionProvider provider = new PooledConnectionProvider(connectionFactory);
+
+RedisClient client = RedisClient.builder()
+    .connectionProvider(provider)
+    .clientConfig(clientConfig)
+    .build();
+```
+
+All `RedisClient` features work the same way over UDS, including connection pooling, RESP3, and client-side caching.
+
+## Miscellaneous
 
 ### A note about String and Binary - what is native?
 

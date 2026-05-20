@@ -1,7 +1,5 @@
 package redis.clients.jedis.mcf;
 
-import org.awaitility.Durations;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -87,10 +85,10 @@ public class MultiDbConnectionProviderFailoverAttemptsConfigTest {
   void delayBetweenFailoverAttempts_permanentExceptionAfterAttemptsExhausted() throws Exception {
     // Configure: small max (2) with a large non-zero delay window to ensure rapid calls stay within
     // window
-    setProviderFailoverConfig(/* maxAttempts */ 2, /* delayMs */ 20);
+    setProviderFailoverConfig(/* maxAttempts */ 2, /* delayMs */ 200);
 
     assertEquals(2, getProviderMaxAttempts());
-    assertEquals(20, getProviderDelayMs());
+    assertEquals(200, getProviderDelayMs());
     assertEquals(0, getProviderAttemptCount());
 
     // First call: should throw temporary and start the freeze window, incrementing attempt count to
@@ -108,12 +106,11 @@ public class MultiDbConnectionProviderFailoverAttemptsConfigTest {
       assertEquals(1, getProviderAttemptCount());
     }
 
-    await().atMost(Durations.TWO_HUNDRED_MILLISECONDS).pollInterval(Duration.ofMillis(10))
-        .until(() -> {
-          Exception e = assertThrows(JedisFailoverException.class, () -> provider
-              .switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, provider.getDatabase()));
-          return e instanceof JedisPermanentlyNotAvailableException;
-        });
+    await().atMost(Duration.ofSeconds(2)).pollInterval(Duration.ofMillis(50)).until(() -> {
+      Exception e = assertThrows(JedisFailoverException.class,
+        () -> provider.switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, provider.getDatabase()));
+      return e instanceof JedisPermanentlyNotAvailableException;
+    });
   }
 
   @Test

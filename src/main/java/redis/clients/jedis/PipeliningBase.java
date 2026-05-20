@@ -1609,6 +1609,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> xnack(String key, String group, XNackMode mode, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xnack(key, group, mode, ids));
+  }
+
+  @Override
   public Response<String> xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
     return appendCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
@@ -3383,6 +3388,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> xnack(byte[] key, byte[] group, XNackMode mode, byte[]... ids) {
+    return appendCommand(commandObjects.xnack(key, group, mode, ids));
+  }
+
+  @Override
   public Response<String> xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream) {
     return appendCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
@@ -4121,7 +4131,7 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<Object> jsonNumIncrBy(String key, Path2 path, double value) {
+  public Response<Object> jsonNumIncrBy(String key, Path2 path, Number value) {
     return appendCommand(commandObjects.jsonNumIncrBy(key, path, value));
   }
 

@@ -1,13 +1,16 @@
 package redis.clients.jedis.tls;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.SslOptions;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 
 /**
  * SSL/TLS tests for {@link RedisClient} using SslOptions builder pattern.
@@ -42,4 +45,46 @@ public class SSLOptionsRedisClientIT extends RedisClientTlsTestBase {
       assertEquals("PONG", client.ping());
     }
   }
+
+  @Test
+  public void connectWithSslOptionsDefaults() {
+    SslOptions sslOptions = SslOptions.defaults();
+
+    DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
+        .sslOptions(sslOptions).password(endpoint.getPassword()).build();
+
+    try (RedisClient client = RedisClient.builder()
+        .hostAndPort(endpoint.getHost(), endpoint.getPort()).clientConfig(clientConfig).build()) {
+      assertEquals("PONG", client.ping());
+    }
+  }
+
+  @Test
+  public void connectWithSslOptionsDefaultsWrongHost() {
+    SslOptions sslOptions = SslOptions.defaults();
+
+    DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
+        .sslOptions(sslOptions).password(wrongHostEndpoint.getPassword()).build();
+
+    try (RedisClient client = RedisClient.builder()
+        .hostAndPort(wrongHostEndpoint.getHost(), wrongHostEndpoint.getPort())
+        .clientConfig(clientConfig).build()) {
+      assertThrows(JedisConnectionException.class, client::ping);
+    }
+  }
+
+  @Test
+  public void connectWithSslOptionsCustomTrustStore() {
+    SslOptions sslOptions = SslOptions.builder().truststore(trustStorePath.toFile())
+        .trustStoreType("jceks").build();
+
+    DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
+        .sslOptions(sslOptions).password(endpoint.getPassword()).build();
+
+    try (RedisClient client = RedisClient.builder()
+        .hostAndPort(endpoint.getHost(), endpoint.getPort()).clientConfig(clientConfig).build()) {
+      assertEquals("PONG", client.ping());
+    }
+  }
+
 }

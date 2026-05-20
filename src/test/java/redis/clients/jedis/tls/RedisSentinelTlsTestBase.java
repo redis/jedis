@@ -31,7 +31,9 @@ public abstract class RedisSentinelTlsTestBase {
   private static final String TRUSTSTORE_TYPE = "jceks";
 
   protected static EndpointConfig sentinel;
+  protected static EndpointConfig sentinelWrongHost;
   protected static Set<HostAndPort> sentinels = new HashSet<>();
+  protected static Set<HostAndPort> sentinelsWrongHost = new HashSet<>();
   protected static Path trustStorePath;
   protected static SslOptions sslOptions;
 
@@ -44,7 +46,9 @@ public abstract class RedisSentinelTlsTestBase {
   @BeforeAll
   public static void setupSentinelTls() {
     sentinel = Endpoints.getRedisEndpoint("sentinel-standalone0");
+    sentinelWrongHost = Endpoints.getRedisEndpoint("sentinel-standalone0-tls-wronghost");
     sentinels.add(sentinel.getHostAndPort());
+    sentinelsWrongHost.add(sentinelWrongHost.getHostAndPort());
 
     List<Path> trustedCertLocation = Collections
         .singletonList(Paths.get("redis1-2-5-8-sentinel/work/tls"));

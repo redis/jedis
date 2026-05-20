@@ -27,8 +27,65 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Options to configure SSL options for the connections kept to Redis servers.
+ * TLS/SSL configuration for connections to Redis.
+ * <p>
+ * Recommended entry point for enabling TLS.
  *
+ * <h2>Verification modes</h2>
+ *
+ * Controlled via {@link SslVerifyMode}:
+ * <ul>
+ * <li>{@link SslVerifyMode#FULL} (default) - verifies the certificate chain against the truststore
+ * <b>and</b> verifies that the server hostname matches the certificate (HTTPS endpoint
+ * identification). Recommended for production.</li>
+ * <li>{@link SslVerifyMode#CA} - verifies the certificate chain against the truststore but
+ * <b>skips</b> hostname verification. Useful when connecting via IP or a name not listed in the
+ * certificate's SAN/CN.</li>
+ * <li>{@link SslVerifyMode#INSECURE} - disables all certificate and hostname verification. Do NOT
+ * use in production.</li>
+ * </ul>
+ *
+ * <h2>Truststore and keystore</h2>
+ *
+ * If no truststore is configured, the default JVM truststore ({@code cacerts}) is used. Custom
+ * truststores can be provided .
+ *
+ * <h2>Examples</h2>
+ *
+ * Default (uses JVM truststore, full verification):
+ * <pre>{@code
+ * SslOptions sslOptions = SslOptions.defaults();
+ * }</pre>
+ *
+ * Custom truststore:
+ * <pre>{@code
+ * SslOptions sslOptions = SslOptions.builder()
+ *     .truststore(new File("/path/to/truststore.p12"), "changeit".toCharArray())
+ *     .build();
+ * }</pre>
+ *
+ * Mutual TLS (client certificate):
+ * <pre>{@code
+ * SslOptions sslOptions = SslOptions.builder()
+ *     .keystore(new File("/path/to/keystore.p12"), "changeit".toCharArray())
+ *     .truststore(new File("/path/to/truststore.p12"), "changeit".toCharArray())
+ *     .build();
+ * }</pre>
+ *
+ * Use with a client:
+ * <pre>{@code
+ * JedisClientConfig config = DefaultJedisClientConfig.builder()
+ *     .sslOptions(sslOptions)
+ *     .build();
+ *
+ * RedisClient client = RedisClient.builder()
+ *     .hostAndPort("redis.example.com", 6379)
+ *     .clientConfig(config)
+ *     .build();
+ * }</pre>
+ *
+ * @see SslVerifyMode
+ * @see JedisClientConfig#getSslOptions()
  * @author Mark Paluch
  */
 public class SslOptions {
@@ -79,6 +136,17 @@ public class SslOptions {
     }
 
     /**
+     * Returns {@link SslOptions} with default settings: JVM truststore, TLS protocol and full
+     * certificate and hostname verification ({@link SslVerifyMode#FULL}). Equivalent to
+     * {@code SslOptions.builder().build()}.
+     *
+     * @return a new {@link SslOptions} instance with default settings.
+     */
+    public static SslOptions defaults() {
+        return builder().build();
+    }
+
+    /**
      * Builder for {@link SslOptions}.
      */
     public static class Builder {
@@ -116,9 +184,9 @@ public class SslOptions {
         }
 
         /**
-         * Sets the KeyStore type. Defaults to {@link KeyStore#getDefaultType()} if not set.
+         * Sets the TrustStore type. Defaults to {@link KeyStore#getDefaultType()} if not set.
          *
-         * @param trustStoreType the keystore type to use, must not be {@code null}.
+         * @param trustStoreType the truststore type to use, must not be {@code null}.
          * @return {@code this}
          */
         public Builder trustStoreType(String trustStoreType) {
@@ -173,7 +241,7 @@ public class SslOptions {
          * each connection attempt that allows to replace certificates during runtime.
          *
          * @param keystore the keystore file, must not be {@code null}.
-         * @param keystorePassword
+         * @param keystorePassword the keystore password. May be empty to omit password and the keystore integrity check.
          * @return {@code this}
          */
         public Builder keystore(URL keystore, char[] keystorePassword) {
@@ -277,7 +345,10 @@ public class SslOptions {
         }
 
         /**
-         * Sets a configured {@link SSLParameters}.
+         * Sets custom {@link SSLParameters}.
+         * <p>
+         * The endpoint identification algorithm is managed by {@link #sslVerifyMode(SslVerifyMode)}:
+         * {@link SslVerifyMode#FULL} sets it to {@code "HTTPS"}, {@link SslVerifyMode#CA} clears it.
          *
          * @param sslParameters a {@link SSLParameters} object.
          * @return {@code this}
@@ -288,7 +359,7 @@ public class SslOptions {
         }
 
         /**
-         * Sets the {@link SslVerifyMode}.
+         * Sets the {@link SslVerifyMode}. Defaults to {@link SslVerifyMode#FULL}.
          *
          * @param sslVerifyMode the {@link SslVerifyMode}.
          * @return {@code this}
@@ -299,8 +370,8 @@ public class SslOptions {
         }
 
         /**
-         * The SSL/TLS protocol to be used to initialize {@link SSLContext}.
-         * @param protocol the ssl/tls protocol
+         * The SSL/TLS protocol to use when initializing {@link SSLContext}. Defaults to {@code "TLS"}.
+         * @param protocol the ssl/tls protocol (e.g. {@code "TLS"}, {@code "TLSv1.3"})
          * @return {@code this}
          */
         public Builder sslProtocol(String protocol) {

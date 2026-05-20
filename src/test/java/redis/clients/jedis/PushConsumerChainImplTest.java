@@ -1,8 +1,11 @@
 package redis.clients.jedis;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -64,7 +67,8 @@ public class PushConsumerChainImplTest {
 
     // Verify the message was propagated (returned, not null)
     assertNotNull(result, "Message should be propagated (not null)");
-    assertEquals("test-type", result.getType(), "Propagated message should have correct type");
+    assertArrayEquals(SafeEncoder.encode("test-type"), result.getType(),
+      "Propagated message should have correct type");
 
     // Verify only consumer1 and consumer2 were invoked, consumer3 was skipped
     assertEquals(2, invocations.size(), "Only first two consumers should be invoked");
@@ -182,8 +186,10 @@ public class PushConsumerChainImplTest {
     PushConsumerChainImpl chain = PushConsumerChainImpl.of(PushConsumerChainImpl.PUBSUB_CONSUMER);
 
     // Test pub/sub message types that should be propagated
-    String[] pubSubTypes = { "message", "pmessage", "smessage", "subscribe", "psubscribe",
-        "ssubscribe", "unsubscribe", "punsubscribe", "sunsubscribe" };
+    String[] pubSubTypes = { PushMessageTypes.MESSAGE, PushMessageTypes.PMESSAGE,
+        PushMessageTypes.SMESSAGE, PushMessageTypes.SUBSCRIBE, PushMessageTypes.PSUBSCRIBE,
+        PushMessageTypes.SSUBSCRIBE, PushMessageTypes.UNSUBSCRIBE, PushMessageTypes.PUNSUBSCRIBE,
+        PushMessageTypes.SUNSUBSCRIBE };
 
     for (String type : pubSubTypes) {
       List<Object> content = new ArrayList<>();
@@ -194,8 +200,35 @@ public class PushConsumerChainImplTest {
       PushMessage result = chain.process(message);
 
       assertNotNull(result, "Pub/sub message type '" + type + "' should be propagated");
-      assertEquals(type, result.getType());
+      assertArrayEquals(SafeEncoder.encode(type), result.getType());
     }
+  }
+
+  /**
+   * Direct unit test of {@link PushConsumerChainImpl#isPubSubType(byte[])}.
+   * <p>
+   * IMPORTANT: When a new pub/sub type is added to {@link PushMessageTypes}, add it to the
+   * {@code pubSubTypes} array below AND to the {@code switch} in {@code isPubSubType}.
+   */
+  @Test
+  public void testIsPubSubTypeReturnsTrueForAllKnownPubSubTypes() {
+    byte[][] pubSubTypes = { PushMessageTypes.MESSAGE_BYTES, PushMessageTypes.PMESSAGE_BYTES,
+        PushMessageTypes.SMESSAGE_BYTES, PushMessageTypes.SUBSCRIBE_BYTES,
+        PushMessageTypes.PSUBSCRIBE_BYTES, PushMessageTypes.SSUBSCRIBE_BYTES,
+        PushMessageTypes.UNSUBSCRIBE_BYTES, PushMessageTypes.PUNSUBSCRIBE_BYTES,
+        PushMessageTypes.SUNSUBSCRIBE_BYTES };
+
+    for (byte[] t : pubSubTypes) {
+      assertTrue(PushConsumerChainImpl.isPubSubType(t),
+        "isPubSubType should return true for '" + SafeEncoder.encode(t) + "'");
+    }
+
+    assertFalse(PushConsumerChainImpl.isPubSubType(PushMessageTypes.INVALIDATE_BYTES),
+      "isPubSubType should return false for INVALIDATE");
+    assertFalse(PushConsumerChainImpl.isPubSubType(new byte[0]),
+      "isPubSubType should return false for empty array");
+    assertFalse(PushConsumerChainImpl.isPubSubType(SafeEncoder.encode("arbitrary")),
+      "isPubSubType should return false for unknown type");
   }
 
   /**
@@ -207,7 +240,7 @@ public class PushConsumerChainImplTest {
     PushConsumerChainImpl chain = PushConsumerChainImpl.of(PushConsumerChainImpl.PUBSUB_CONSUMER);
 
     // Test non-pub/sub message types that should NOT be propagated
-    String[] nonPubSubTypes = { "invalidate", "arbitrary", "some-other-type" };
+    String[] nonPubSubTypes = { PushMessageTypes.INVALIDATE, "arbitrary", "some-other-type" };
 
     for (String type : nonPubSubTypes) {
       List<Object> content = new ArrayList<>();
@@ -230,7 +263,8 @@ public class PushConsumerChainImplTest {
     PushConsumerChain chain = PushConsumerChainImpl.PROPAGATE_ALL_CONSUMER_CHAIN;
 
     // Test various message types - all should be propagated
-    String[] types = { "invalidate", "message", "arbitrary", "custom-type" };
+    String[] types = { PushMessageTypes.INVALIDATE, PushMessageTypes.MESSAGE, "arbitrary",
+        "custom-type" };
 
     for (String type : types) {
       List<Object> content = new ArrayList<>();
@@ -241,7 +275,7 @@ public class PushConsumerChainImplTest {
       PushMessage result = chain.process(message);
 
       assertNotNull(result, "PROPAGATE_ALL_CONSUMER should propagate message type '" + type + "'");
-      assertEquals(type, result.getType());
+      assertArrayEquals(SafeEncoder.encode(type), result.getType());
     }
   }
 
@@ -267,5 +301,14 @@ public class PushConsumerChainImplTest {
 
     // Propagate is checked first in the implementation, so it should take precedence
     assertNotNull(result, "Message should be propagated when both propagate and drop are called");
+  }
+
+  /**
+   * Test isPubSubType static method handles null input.
+   */
+  @Test
+  public void testIsPubSubTypeHandlesNull() {
+    assertFalse(PushConsumerChainImpl.isPubSubType(null),
+      "isPubSubType should return false for null input");
   }
 }

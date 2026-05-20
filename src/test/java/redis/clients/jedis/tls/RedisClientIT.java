@@ -1,11 +1,16 @@
 package redis.clients.jedis.tls;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.RedisClient;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+
+import javax.net.ssl.SSLParameters;
 
 /**
  * SSL/TLS tests for {@link RedisClient} with basic authentication (password-only, no ACL).
@@ -57,6 +62,46 @@ public class RedisClientIT extends RedisClientTlsTestBase {
     // URI includes credentials via defaultCredentials()
     try (RedisClient client = RedisClient
         .create(endpoint.getURIBuilder().defaultCredentials().build())) {
+      assertEquals("PONG", client.ping());
+    }
+  }
+
+  /**
+   * Verifies that hostname verification is enabled by default when using ssl(true). Connection
+   * should fail when hostname doesn't match the certificate CN/SAN.
+   */
+  @Test
+  public void connectWithWrongHost() {
+    // Connection with hostname mismatch should fail with default hostname verification
+    DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().ssl(true)
+        .password(wrongHostEndpoint.getPassword()).build();
+    try (RedisClient client = RedisClient.builder()
+        .hostAndPort(wrongHostEndpoint.getHost(), wrongHostEndpoint.getPort()).clientConfig(config)
+        .build()) {
+      assertThrows(JedisConnectionException.class, client::ping);
+    }
+
+    // Same test using URI
+    try (RedisClient client = RedisClient
+        .create(wrongHostEndpoint.getURIBuilder().defaultCredentials().build())) {
+      assertThrows(JedisConnectionException.class, client::ping);
+    }
+  }
+
+  /**
+   * Verifies that hostname verification can be disabled by providing custom SSLParameters without
+   * endpoint identification algorithm set.
+   */
+  @Test
+  public void connectWrongHostWithSslParameters() {
+    // Custom SSLParameters without endpoint identification allows connection despite hostname
+    // mismatch
+    JedisClientConfig config = DefaultJedisClientConfig.builder().ssl(true)
+        .sslParameters(new SSLParameters()).user(wrongHostEndpoint.getUsername())
+        .password(wrongHostEndpoint.getPassword()).build();
+    try (RedisClient client = RedisClient.builder()
+        .hostAndPort(wrongHostEndpoint.getHost(), wrongHostEndpoint.getPort()).clientConfig(config)
+        .build()) {
       assertEquals("PONG", client.ping());
     }
   }

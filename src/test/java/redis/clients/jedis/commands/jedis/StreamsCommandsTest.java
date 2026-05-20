@@ -42,12 +42,13 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.args.StreamDeletionPolicy;
+import redis.clients.jedis.args.XNackMode;
 import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 @Tag("integration")
 public class StreamsCommandsTest extends JedisCommandsTestBase {
 
@@ -952,6 +953,99 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(1L,
       jedis.xack("xack-stream", "xack-group", range.get(0).getValue().get(0).getID()));
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnack() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    jedis.xadd("xnack-stream", (StreamEntryID) null, map);
+
+    jedis.xgroupCreate("xnack-stream", "xnack-group", null, false);
+
+    Map<String, StreamEntryID> streamQuery = singletonMap("xnack-stream", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xnack-group", "xnack-consumer",
+        XReadGroupParams.xReadGroupParams().count(1).block(1), streamQuery);
+    assertEquals(1, range.size());
+
+    assertEquals(1L,
+      jedis.xnack("xnack-stream", "xnack-group", XNackMode.FAIL, range.get(0).getValue().get(0).getID()));
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackSilent() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    jedis.xadd("xnack-silent-stream", (StreamEntryID) null, map);
+
+    jedis.xgroupCreate("xnack-silent-stream", "xnack-group", null, false);
+
+    Map<String, StreamEntryID> streamQuery = singletonMap("xnack-silent-stream",
+        StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xnack-group", "xnack-consumer",
+        XReadGroupParams.xReadGroupParams().count(1).block(1), streamQuery);
+    assertEquals(1, range.size());
+
+    assertEquals(1L,
+      jedis.xnack("xnack-silent-stream", "xnack-group", XNackMode.SILENT, range.get(0).getValue().get(0).getID()));
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackFatal() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    jedis.xadd("xnack-fatal-stream", (StreamEntryID) null, map);
+
+    jedis.xgroupCreate("xnack-fatal-stream", "xnack-group", null, false);
+
+    Map<String, StreamEntryID> streamQuery = singletonMap("xnack-fatal-stream",
+        StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xnack-group", "xnack-consumer",
+        XReadGroupParams.xReadGroupParams().count(1).block(1), streamQuery);
+    assertEquals(1, range.size());
+
+    assertEquals(1L,
+      jedis.xnack("xnack-fatal-stream", "xnack-group", XNackMode.FATAL, range.get(0).getValue().get(0).getID()));
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackMultipleMessages() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    jedis.xadd("xnack-multi-stream", (StreamEntryID) null, map);
+    jedis.xadd("xnack-multi-stream", (StreamEntryID) null, map);
+
+    jedis.xgroupCreate("xnack-multi-stream", "xnack-group", null, false);
+
+    Map<String, StreamEntryID> streamQuery = singletonMap("xnack-multi-stream",
+        StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xnack-group", "xnack-consumer",
+        XReadGroupParams.xReadGroupParams().count(2).block(1), streamQuery);
+    assertEquals(1, range.size());
+    assertEquals(2, range.get(0).getValue().size());
+
+    StreamEntryID id1 = range.get(0).getValue().get(0).getID();
+    StreamEntryID id2 = range.get(0).getValue().get(1).getID();
+
+    assertEquals(2L,
+      jedis.xnack("xnack-multi-stream", "xnack-group", XNackMode.FAIL, id1, id2));
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackNonExistentMessage() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    jedis.xadd("xnack-missing-stream", (StreamEntryID) null, map);
+
+    jedis.xgroupCreate("xnack-missing-stream", "xnack-group", null, false);
+
+    assertEquals(0L,
+      jedis.xnack("xnack-missing-stream", "xnack-group", XNackMode.SILENT, new StreamEntryID("999-0")));
   }
 
   @Test

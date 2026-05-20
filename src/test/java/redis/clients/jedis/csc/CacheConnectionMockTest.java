@@ -57,7 +57,7 @@ public class CacheConnectionMockTest {
   }
 
   @Nested
-  class PushInvalidateConsumer {
+  class PushInvalidateConsumerTests {
 
     @Test
     public void pushInvalidateConsumerRegisteredWithConfigConstructor() {
@@ -72,7 +72,7 @@ public class CacheConnectionMockTest {
 
       // Verify PushInvalidateConsumer is registered
       assertThat(consumers, contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER),
-        instanceOf(CacheConnection.PushInvalidateConsumer.class)));
+        instanceOf(PushInvalidateConsumer.class)));
     }
 
     @Test
@@ -89,7 +89,7 @@ public class CacheConnectionMockTest {
 
       // Verify PushInvalidateConsumer is registered
       assertThat(consumers, contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER),
-        instanceOf(CacheConnection.PushInvalidateConsumer.class)));
+        instanceOf(PushInvalidateConsumer.class)));
     }
 
     @Test

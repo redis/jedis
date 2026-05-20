@@ -1,6 +1,9 @@
 package redis.clients.jedis.commands.unified.search;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -43,6 +46,7 @@ import redis.clients.jedis.search.RediSearchUtil;
 import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.search.schemafields.GeoShapeField.CoordinateSystem;
 import redis.clients.jedis.search.schemafields.VectorField.VectorAlgorithm;
+import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.RedisConditions;
 import redis.clients.jedis.util.RedisVersionUtil;
 
@@ -214,11 +218,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     assertEquals(99, result.getTotalResults());
 
     assertEquals("OK", jedis.ftDropIndex(INDEX));
-    try {
-      jedis.ftSearch(INDEX, "hello world");
-      fail();
-    } catch (JedisDataException e) {
-    }
+    assertThrows(JedisDataException.class, () -> jedis.ftSearch(INDEX, "hello world"));
   }
 
   @Test
@@ -323,10 +323,13 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     assertEquals("OK", jedis.ftDropIndex(INDEX));
 
     try {
-      jedis.ftSearch(INDEX, "hello world");
+      jedis.ftSearch(INDEX, new Query("hello world"));
       fail("Index should not exist.");
     } catch (JedisDataException de) {
-      assertTrue(de.getMessage().toLowerCase().contains("no such index"));
+      assertThat(de.getMessage(), anyOf(containsStringIgnoringCase("no such index"), // Redis Search
+        // <v8.7.90
+        containsString("SEARCH_INDEX_NOT_FOUND") // Redis Search v8.7.90+
+      ));
     }
     assertEquals(100, jedis.dbSize());
   }
@@ -688,13 +691,8 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     res = jedis.ftSearch(INDEX, "hello", FTSearchParams.searchParams().noContent());
     for (Document d : res.getDocuments()) {
       assertTrue(d.getId().startsWith("doc"));
-      if (protocol != RedisProtocol.RESP3) {
-        assertEquals(1.0, d.getScore(), 0);
-        assertNull(d.get("title"));
-      } else {
-        assertNull(d.getScore());
-        assertThrows(NullPointerException.class, () -> d.get("title"));
-      }
+      assertEquals(0.0, d.getScore(), 0);
+      assertNull(d.get("title"));
     }
 
     // test verbatim vs. stemming
@@ -858,11 +856,11 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     Map<String, Object> info = jedis.ftInfo(INDEX);
     assertEquals(INDEX, info.get("index_name"));
     assertEquals(6, ((List) info.get("attributes")).size());
-    if (protocol != RedisProtocol.RESP3) {
+    if (AssertUtil.expectsResp3OnWire(protocol)) {
+      assertEquals(0L, ((Map) info.get("cursor_stats")).get("global_idle"));
+    } else {
       assertEquals("global_idle", ((List) info.get("cursor_stats")).get(0));
       assertEquals(0L, ((List) info.get("cursor_stats")).get(1));
-    } else {
-      assertEquals(0L, ((Map) info.get("cursor_stats")).get("global_idle"));
     }
   }
 
@@ -1351,16 +1349,16 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
 
     // profile
     Object profileObject = reply.getValue().getProfilingInfo();
-    if (protocol != RedisProtocol.RESP3) {
-      assertThat(profileObject, Matchers.isA(List.class));
-      if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
-        assertThat((List<Object>) profileObject, Matchers.hasItems("Shards", "Coordinator"));
-      }
-    } else {
+    if (AssertUtil.expectsResp3OnWire(protocol)) {
       assertThat(profileObject, Matchers.isA(Map.class));
       if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
         assertThat(((Map<String, Object>) profileObject).keySet(),
           Matchers.hasItems("Shards", "Coordinator"));
+      }
+    } else {
+      assertThat(profileObject, Matchers.isA(List.class));
+      if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
+        assertThat((List<Object>) profileObject, Matchers.hasItems("Shards", "Coordinator"));
       }
     }
   }
@@ -1390,16 +1388,16 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
 
     // profile
     Object profileObject = reply.getValue().getProfilingInfo();
-    if (protocol != RedisProtocol.RESP3) {
-      assertThat(profileObject, Matchers.isA(List.class));
-      if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
-        assertThat((List<Object>) profileObject, Matchers.hasItems("Shards", "Coordinator"));
-      }
-    } else {
+    if (AssertUtil.expectsResp3OnWire(protocol)) {
       assertThat(profileObject, Matchers.isA(Map.class));
       if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
         assertThat(((Map<String, Object>) profileObject).keySet(),
           Matchers.hasItems("Shards", "Coordinator"));
+      }
+    } else {
+      assertThat(profileObject, Matchers.isA(List.class));
+      if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
+        assertThat((List<Object>) profileObject, Matchers.hasItems("Shards", "Coordinator"));
       }
     }
   }
@@ -1418,16 +1416,16 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
 
     // profile
     Object profileObject = reply.getValue().getProfilingInfo();
-    if (protocol != RedisProtocol.RESP3) {
-      assertThat(profileObject, Matchers.isA(List.class));
-      if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
-        assertThat((List<Object>) profileObject, Matchers.hasItems("Shards", "Coordinator"));
-      }
-    } else {
+    if (AssertUtil.expectsResp3OnWire(protocol)) {
       assertThat(profileObject, Matchers.isA(Map.class));
       if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
         assertThat(((Map<String, Object>) profileObject).keySet(),
           Matchers.hasItems("Shards", "Coordinator"));
+      }
+    } else {
+      assertThat(profileObject, Matchers.isA(List.class));
+      if (RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V8_0_0)) {
+        assertThat((List<Object>) profileObject, Matchers.hasItems("Shards", "Coordinator"));
       }
     }
   }

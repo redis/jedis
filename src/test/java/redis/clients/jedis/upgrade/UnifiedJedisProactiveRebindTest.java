@@ -35,9 +35,14 @@ public class UnifiedJedisProactiveRebindTest {
 
   DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
       .socketTimeoutMillis(socketTimeoutMs).protocol(RedisProtocol.RESP3)
-      .maintNotificationsConfig(MaintenanceNotificationsConfig.builder()
-          .mode(MaintenanceNotificationsConfig.Mode.AUTO) // Enable maintenance notifications (includes proactive rebind)
-          .build())
+      .maintNotificationsConfig(
+        MaintenanceNotificationsConfig.builder().mode(MaintenanceNotificationsConfig.Mode.AUTO) // Enable
+                                                                                                // maintenance
+                                                                                                // notifications
+                                                                                                // (includes
+                                                                                                // proactive
+                                                                                                // rebind)
+            .build())
       .build();
 
   HostAndPort server1Address;

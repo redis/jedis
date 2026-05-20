@@ -7,7 +7,6 @@ import java.util.Set;
 import org.json.JSONArray;
 
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.JedisCommands;
@@ -91,31 +90,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
         (RedisProtocol) null, null);
-  }
-
-  /**
-   * Test-only ctor that accepts a pre-built {@link CommandObjects}. The protocol stored on the
-   * supplied object is overridden by probing the provider.
-   * @deprecated
-   */
-  @VisibleForTesting
-  @Deprecated
-  protected UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
-    this.provider = provider;
-    this.executor = executor;
-    this.commandObjects = commandObjects;
-    this.cache = null;
-    if (this.provider != null) {
-      try (Connection conn = this.provider.getConnection()) {
-        if (conn != null) {
-          RedisProtocol resolved = conn.getRedisProtocol();
-          if (resolved != null) {
-            this.commandObjects.setProtocol(resolved);
-          }
-        }
-      } catch (JedisException je) {
-      }
-    }
   }
 
   /**

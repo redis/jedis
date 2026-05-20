@@ -38,19 +38,10 @@ import redis.clients.jedis.util.CompareCondition;
 
 public class CommandObjects {
 
-  private RedisProtocol protocol;
-
-  // TODO: Remove together with setProtocol
-  public CommandObjects() {
-  }
+  private final RedisProtocol protocol;
 
   public CommandObjects(RedisProtocol protocol) {
     this.protocol = protocol;
-  }
-
-  // TODO: restrict?
-  public final void setProtocol(RedisProtocol proto) {
-    this.protocol = proto;
   }
 
   // TODO: remove?

@@ -30,6 +30,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.CommandObjects;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisClient;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.util.TestEnvUtil;
 
@@ -423,7 +424,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       Set<String> members1 = jedis.smembers("foo");
       Set<String> members2 = jedis.smembers("foo");
 
-      Set<String> fromMap = (Set<String>) cache.get(new CacheKey<>(new CommandObjects().smembers("foo"))).getValue();
+      Set<String> fromMap = (Set<String>) cache.get(new CacheKey<>(new CommandObjects(RedisProtocol.RESP3).smembers("foo"))).getValue();
       assertEquals(expected, members1);
       assertEquals(expected, members2);
       assertEquals(expected, fromMap);
@@ -602,17 +603,17 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
       // check touched keys not evicted
       for (int i = touchOffset; i < touchOffset + expectedEvictions; i++) {
-        assertTrue(cache.hasCacheKey(new CacheKey(new CommandObjects().get("foo" + i))));
+        assertTrue(cache.hasCacheKey(new CacheKey(new CommandObjects(RedisProtocol.RESP3).get("foo" + i))));
       }
 
       // check expected evictions are done till the offset
       for (int i = 0; i < touchOffset; i++) {
-        assertTrue(!cache.hasCacheKey(new CacheKey(new CommandObjects().get("foo" + i))));
+        assertTrue(!cache.hasCacheKey(new CacheKey(new CommandObjects(RedisProtocol.RESP3).get("foo" + i))));
       }
 
       // check expected evictions are done after the touched keys
       for (int i = touchOffset + expectedEvictions; i < (2 * expectedEvictions); i++) {
-        assertFalse(cache.hasCacheKey(new CacheKey(new CommandObjects().get("foo" + i))));
+        assertFalse(cache.hasCacheKey(new CacheKey(new CommandObjects(RedisProtocol.RESP3).get("foo" + i))));
       }
 
       assertEquals(maxSize, cache.getSize());

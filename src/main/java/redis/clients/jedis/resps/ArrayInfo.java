@@ -14,10 +14,18 @@ public class ArrayInfo implements Serializable {
   public static final String COUNT = "count";
   public static final String LEN = "len";
   public static final String NEXT_INSERT_INDEX = "next-insert-index";
+  public static final String SLICES = "slices";
+  public static final String DIRECTORY_SIZE = "directory-size";
+  public static final String SUPER_DIR_ENTRIES = "super-dir-entries";
+  public static final String SLICE_SIZE = "slice-size";
 
   private final Long count;
   private final Long length;
   private final Long next;
+  private final Long slices;
+  private final Long directorySize;
+  private final Long superDirEntries;
+  private final Long sliceSize;
   private final Map<String, Object> arrayInfo;
 
   /**
@@ -28,6 +36,10 @@ public class ArrayInfo implements Serializable {
     count = (Long) map.get(COUNT);
     length = (Long) map.get(LEN);
     next = (Long) map.get(NEXT_INSERT_INDEX);
+    slices = (Long) map.get(SLICES);
+    directorySize = (Long) map.get(DIRECTORY_SIZE);
+    superDirEntries = (Long) map.get(SUPER_DIR_ENTRIES);
+    sliceSize = (Long) map.get(SLICE_SIZE);
   }
 
   /**
@@ -49,6 +61,34 @@ public class ArrayInfo implements Serializable {
    */
   public Long getNext() {
     return next;
+  }
+
+  /**
+   * @return the total number of slices backing the array, or {@code null} if not reported
+   */
+  public Long getSlices() {
+    return slices;
+  }
+
+  /**
+   * @return the directory size, or {@code null} if not reported
+   */
+  public Long getDirectorySize() {
+    return directorySize;
+  }
+
+  /**
+   * @return the number of super-directory entries, or {@code null} if not reported
+   */
+  public Long getSuperDirEntries() {
+    return superDirEntries;
+  }
+
+  /**
+   * @return the slice size, or {@code null} if not reported
+   */
+  public Long getSliceSize() {
+    return sliceSize;
   }
 
   /**

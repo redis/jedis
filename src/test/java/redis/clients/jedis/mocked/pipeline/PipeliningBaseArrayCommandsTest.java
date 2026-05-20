@@ -275,72 +275,64 @@ public class PipeliningBaseArrayCommandsTest extends PipeliningBaseMockedTestBas
 
   @Test
   public void testAropBitwise() {
-    LongRange range = LongRange.of(0L, 10L);
-    when(commandObjects.aropBitwise("k", range, ArrayBitwise.AND)).thenReturn(longCommandObject);
-    pipeliningBase.aropBitwise("k", range, ArrayBitwise.AND);
+    when(commandObjects.aropBitwise("k", 0L, 10L, ArrayBitwise.AND)).thenReturn(longCommandObject);
+    pipeliningBase.aropBitwise("k", 0L, 10L, ArrayBitwise.AND);
     assertThat(commands, contains(longCommandObject));
   }
 
   @Test
   public void testAropBitwiseBinary() {
     byte[] key = "k".getBytes();
-    LongRange range = LongRange.of(0L, 10L);
-    when(commandObjects.aropBitwise(key, range, ArrayBitwise.OR)).thenReturn(longCommandObject);
-    pipeliningBase.aropBitwise(key, range, ArrayBitwise.OR);
+    when(commandObjects.aropBitwise(key, 0L, 10L, ArrayBitwise.OR)).thenReturn(longCommandObject);
+    pipeliningBase.aropBitwise(key, 0L, 10L, ArrayBitwise.OR);
     assertThat(commands, contains(longCommandObject));
   }
 
   @Test
   public void testAropAggregate() {
-    LongRange range = LongRange.of(0L, 10L);
-    when(commandObjects.aropAggregate("k", range, ArrayAggregate.SUM))
+    when(commandObjects.aropAggregate("k", 0L, 10L, ArrayAggregate.SUM))
         .thenReturn(stringCommandObject);
-    pipeliningBase.aropAggregate("k", range, ArrayAggregate.SUM);
+    pipeliningBase.aropAggregate("k", 0L, 10L, ArrayAggregate.SUM);
     assertThat(commands, contains(stringCommandObject));
   }
 
   @Test
   public void testAropAggregateBinary() {
     byte[] key = "k".getBytes();
-    LongRange range = LongRange.of(0L, 10L);
-    when(commandObjects.aropAggregate(key, range, ArrayAggregate.MIN))
+    when(commandObjects.aropAggregate(key, 0L, 10L, ArrayAggregate.MIN))
         .thenReturn(bytesCommandObject);
-    pipeliningBase.aropAggregate(key, range, ArrayAggregate.MIN);
+    pipeliningBase.aropAggregate(key, 0L, 10L, ArrayAggregate.MIN);
     assertThat(commands, contains(bytesCommandObject));
   }
 
   @Test
   public void testAropCount() {
-    LongRange range = LongRange.of(0L, 10L);
-    when(commandObjects.aropCount("k", range)).thenReturn(longCommandObject);
-    pipeliningBase.aropCount("k", range);
+    when(commandObjects.aropCount("k", 0L, 10L)).thenReturn(longCommandObject);
+    pipeliningBase.aropCount("k", 0L, 10L);
     assertThat(commands, contains(longCommandObject));
   }
 
   @Test
   public void testAropCountBinary() {
     byte[] key = "k".getBytes();
-    LongRange range = LongRange.of(0L, 10L);
-    when(commandObjects.aropCount(key, range)).thenReturn(longCommandObject);
-    pipeliningBase.aropCount(key, range);
+    when(commandObjects.aropCount(key, 0L, 10L)).thenReturn(longCommandObject);
+    pipeliningBase.aropCount(key, 0L, 10L);
     assertThat(commands, contains(longCommandObject));
   }
 
   @Test
   public void testAropCountMatch() {
-    LongRange range = LongRange.of(0L, 10L);
-    when(commandObjects.aropCount("k", range, "v")).thenReturn(longCommandObject);
-    pipeliningBase.aropCount("k", range, "v");
+    when(commandObjects.aropCount("k", 0L, 10L, "v")).thenReturn(longCommandObject);
+    pipeliningBase.aropCount("k", 0L, 10L, "v");
     assertThat(commands, contains(longCommandObject));
   }
 
   @Test
   public void testAropCountMatchBinary() {
     byte[] key = "k".getBytes();
-    LongRange range = LongRange.of(0L, 10L);
     byte[] val = "v".getBytes();
-    when(commandObjects.aropCount(key, range, val)).thenReturn(longCommandObject);
-    pipeliningBase.aropCount(key, range, val);
+    when(commandObjects.aropCount(key, 0L, 10L, val)).thenReturn(longCommandObject);
+    pipeliningBase.aropCount(key, 0L, 10L, val);
     assertThat(commands, contains(longCommandObject));
   }
 

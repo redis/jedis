@@ -3506,6 +3506,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long ardelrange(String key, long start, long end) {
+    return executeCommand(commandObjects.ardelrange(key, start, end));
+  }
+
+  @Override
+  public long ardelrange(byte[] key, long start, long end) {
+    return executeCommand(commandObjects.ardelrange(key, start, end));
+  }
+
+  @Override
   public String arget(String key, long index) {
     return executeCommand(commandObjects.arget(key, index));
   }
@@ -3576,6 +3586,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long arinsert(String key, String value) {
+    return executeCommand(commandObjects.arinsert(key, value));
+  }
+
+  @Override
+  public long arinsert(byte[] key, byte[] value) {
+    return executeCommand(commandObjects.arinsert(key, value));
+  }
+
+  @Override
   public List<String> arlastitems(String key, long count) {
     return executeCommand(commandObjects.arlastitems(key, count));
   }
@@ -3636,43 +3656,43 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public long aropBitwise(String key, LongRange range, ArrayBitwise op) {
-    return executeCommand(commandObjects.aropBitwise(key, range, op));
+  public long aropBitwise(String key, long start, long end, ArrayBitwise op) {
+    return executeCommand(commandObjects.aropBitwise(key, start, end, op));
   }
 
   @Override
-  public long aropBitwise(byte[] key, LongRange range, ArrayBitwise op) {
-    return executeCommand(commandObjects.aropBitwise(key, range, op));
+  public long aropBitwise(byte[] key, long start, long end, ArrayBitwise op) {
+    return executeCommand(commandObjects.aropBitwise(key, start, end, op));
   }
 
   @Override
-  public String aropAggregate(String key, LongRange range, ArrayAggregate op) {
-    return executeCommand(commandObjects.aropAggregate(key, range, op));
+  public String aropAggregate(String key, long start, long end, ArrayAggregate op) {
+    return executeCommand(commandObjects.aropAggregate(key, start, end, op));
   }
 
   @Override
-  public byte[] aropAggregate(byte[] key, LongRange range, ArrayAggregate op) {
-    return executeCommand(commandObjects.aropAggregate(key, range, op));
+  public byte[] aropAggregate(byte[] key, long start, long end, ArrayAggregate op) {
+    return executeCommand(commandObjects.aropAggregate(key, start, end, op));
   }
 
   @Override
-  public long aropCount(String key, LongRange range) {
-    return executeCommand(commandObjects.aropCount(key, range));
+  public long aropCount(String key, long start, long end) {
+    return executeCommand(commandObjects.aropCount(key, start, end));
   }
 
   @Override
-  public long aropCount(byte[] key, LongRange range) {
-    return executeCommand(commandObjects.aropCount(key, range));
+  public long aropCount(byte[] key, long start, long end) {
+    return executeCommand(commandObjects.aropCount(key, start, end));
   }
 
   @Override
-  public long aropCount(String key, LongRange range, String match) {
-    return executeCommand(commandObjects.aropCount(key, range, match));
+  public long aropCount(String key, long start, long end, String match) {
+    return executeCommand(commandObjects.aropCount(key, start, end, match));
   }
 
   @Override
-  public long aropCount(byte[] key, LongRange range, byte[] match) {
-    return executeCommand(commandObjects.aropCount(key, range, match));
+  public long aropCount(byte[] key, long start, long end, byte[] match) {
+    return executeCommand(commandObjects.aropCount(key, start, end, match));
   }
 
   @Override
@@ -3683,6 +3703,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long arring(byte[] key, long size, byte[]... values) {
     return executeCommand(commandObjects.arring(key, size, values));
+  }
+
+  @Override
+  public long arring(String key, long size, String value) {
+    return executeCommand(commandObjects.arring(key, size, value));
+  }
+
+  @Override
+  public long arring(byte[] key, long size, byte[] value) {
+    return executeCommand(commandObjects.arring(key, size, value));
   }
 
   @Override
@@ -3723,6 +3753,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long arset(byte[] key, long index, byte[]... values) {
     return executeCommand(commandObjects.arset(key, index, values));
+  }
+
+  @Override
+  public long arset(String key, long index, String value) {
+    return executeCommand(commandObjects.arset(key, index, value));
+  }
+
+  @Override
+  public long arset(byte[] key, long index, byte[] value) {
+    return executeCommand(commandObjects.arset(key, index, value));
   }
   // Array commands
 

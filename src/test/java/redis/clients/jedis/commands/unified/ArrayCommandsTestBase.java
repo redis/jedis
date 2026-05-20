@@ -252,7 +252,7 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
   public void aropAggregate() {
     String key = "arop";
     jedis.arinsert(key, "1", "2");
-    String r = jedis.aropAggregate(key, LongRange.of(0L, 10L), ArrayAggregate.SUM);
+    String r = jedis.aropAggregate(key, 0L, 10L, ArrayAggregate.SUM);
     assertNotNull(r);
   }
 
@@ -260,7 +260,7 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
   public void aropBitwiseBinary() {
     byte[] key = SafeEncoder.encode("arop-b");
     jedis.arinsert(key, "1".getBytes());
-    long r = jedis.aropBitwise(key, LongRange.of(0L, 10L), ArrayBitwise.AND);
+    long r = jedis.aropBitwise(key, 0L, 10L, ArrayBitwise.AND);
     assertTrue(r >= 0);
   }
 
@@ -268,7 +268,7 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
   public void aropCount() {
     String key = "aropCount";
     jedis.arinsert(key, "1", "2");
-    long r = jedis.aropCount(key, LongRange.of(0L, 10L));
+    long r = jedis.aropCount(key, 0L, 10L);
     assertTrue(r >= 0);
   }
 
@@ -276,7 +276,7 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
   public void aropCountMatch() {
     String key = "aropCountMatch";
     jedis.arinsert(key, "a", "a", "b");
-    long r = jedis.aropCount(key, LongRange.of(0L, 10L), "a");
+    long r = jedis.aropCount(key, 0L, 10L, "a");
     assertTrue(r >= 0);
   }
 
@@ -284,7 +284,7 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
   public void aropCountMatchBinary() {
     byte[] key = SafeEncoder.encode("aropCountMatch-b");
     jedis.arinsert(key, "a".getBytes());
-    long r = jedis.aropCount(key, LongRange.of(0L, 10L), "a".getBytes());
+    long r = jedis.aropCount(key, 0L, 10L, "a".getBytes());
     assertTrue(r >= 0);
   }
 

@@ -77,6 +77,19 @@ public interface ArrayPipelineCommands {
   Response<Long> ardelrange(String key, LongRange... ranges);
 
   /**
+   * <b><a href="https://redis.io/commands/ardelrange">ARDELRANGE Command</a></b> Convenience
+   * single-range overload of {@link #ardelrange(String, LongRange...)}.
+   * <p>
+   * Wire: {@code ARDELRANGE key start end}
+   * @param key the name of the key that holds the array
+   * @param start zero-based start index (inclusive)
+   * @param end zero-based end index (inclusive)
+   * @return a {@link Response} that resolves to the number of elements deleted
+   * @since 8.0
+   */
+  Response<Long> ardelrange(String key, long start, long end);
+
+  /**
    * <b><a href="https://redis.io/commands/arget">ARGET Command</a></b> Returns the value stored at
    * a single index in an array.
    * <p>
@@ -186,6 +199,18 @@ public interface ArrayPipelineCommands {
   Response<Long> arinsert(String key, String... values);
 
   /**
+   * <b><a href="https://redis.io/commands/arinsert">ARINSERT Command</a></b> Convenience
+   * single-value overload of {@link #arinsert(String, String...)}.
+   * <p>
+   * Wire: {@code ARINSERT key value}
+   * @param key the name of the key that holds the array
+   * @param value the value to insert
+   * @return a {@link Response} that resolves to the index at which the value was inserted
+   * @since 8.0
+   */
+  Response<Long> arinsert(String key, String value);
+
+  /**
    * <b><a href="https://redis.io/commands/arlastitems">ARLASTITEMS Command</a></b> Returns the most
    * recently inserted elements in oldest-first order.
    * <p>
@@ -275,63 +300,68 @@ public interface ArrayPipelineCommands {
 
   /**
    * <b><a href="https://redis.io/commands/arop">AROP Command</a></b> Applies a bitwise operation
-   * over the non-empty elements in {@code range}.
+   * over the non-empty elements in the inclusive {@code [start, end]} range.
    * <p>
    * Time complexity: O(N) where N is the number of elements scanned.
    * <p>
-   * Wire: {@code AROP key range.start range.end AND|OR|XOR}
+   * Wire: {@code AROP key start end AND|OR|XOR}
    * @param key the name of the key that holds the array
-   * @param range the inclusive index range
+   * @param start zero-based start index (inclusive)
+   * @param end zero-based end index (inclusive)
    * @param op the bitwise operator to apply
    * @return a {@link Response} that resolves to the operation's numeric result
    * @since 8.0
    */
-  Response<Long> aropBitwise(String key, LongRange range, ArrayBitwise op);
+  Response<Long> aropBitwise(String key, long start, long end, ArrayBitwise op);
 
   /**
    * <b><a href="https://redis.io/commands/arop">AROP Command</a></b> Applies a numeric aggregate
-   * over the non-empty elements in {@code range}.
+   * over the non-empty elements in the inclusive {@code [start, end]} range.
    * <p>
    * Time complexity: O(N) where N is the number of elements scanned.
    * <p>
-   * Wire: {@code AROP key range.start range.end SUM|MIN|MAX}
+   * Wire: {@code AROP key start end SUM|MIN|MAX}
    * @param key the name of the key that holds the array
-   * @param range the inclusive index range
+   * @param start zero-based start index (inclusive)
+   * @param end zero-based end index (inclusive)
    * @param op the aggregate operator to apply
    * @return a {@link Response} that resolves to the aggregate value, or {@code null} when the range
    *         is empty
    * @since 8.0
    */
-  Response<String> aropAggregate(String key, LongRange range, ArrayAggregate op);
+  Response<String> aropAggregate(String key, long start, long end, ArrayAggregate op);
 
   /**
    * <b><a href="https://redis.io/commands/arop">AROP Command</a></b> Counts the number of non-empty
-   * elements in {@code range} using the {@code USED} subcommand.
+   * elements in the inclusive {@code [start, end]} range using the {@code USED} subcommand.
    * <p>
    * Time complexity: O(N) where N is the number of elements scanned.
    * <p>
-   * Wire: {@code AROP key range.start range.end USED}
+   * Wire: {@code AROP key start end USED}
    * @param key the name of the key that holds the array
-   * @param range the inclusive index range
+   * @param start zero-based start index (inclusive)
+   * @param end zero-based end index (inclusive)
    * @return a {@link Response} that resolves to the count of non-empty elements
    * @since 8.0
    */
-  Response<Long> aropCount(String key, LongRange range);
+  Response<Long> aropCount(String key, long start, long end);
 
   /**
-   * <b><a href="https://redis.io/commands/arop">AROP Command</a></b> Counts elements in
-   * {@code range} whose value equals {@code match} using the {@code MATCH} subcommand.
+   * <b><a href="https://redis.io/commands/arop">AROP Command</a></b> Counts elements in the
+   * inclusive {@code [start, end]} range whose value equals {@code match} using the {@code MATCH}
+   * subcommand.
    * <p>
    * Time complexity: O(N) where N is the number of elements scanned.
    * <p>
-   * Wire: {@code AROP key range.start range.end MATCH match}
+   * Wire: {@code AROP key start end MATCH match}
    * @param key the name of the key that holds the array
-   * @param range the inclusive index range
+   * @param start zero-based start index (inclusive)
+   * @param end zero-based end index (inclusive)
    * @param match the value to match
    * @return a {@link Response} that resolves to the count of matching elements
    * @since 8.0
    */
-  Response<Long> aropCount(String key, LongRange range, String match);
+  Response<Long> aropCount(String key, long start, long end, String match);
 
   /**
    * <b><a href="https://redis.io/commands/arring">ARRING Command</a></b> Inserts one or more values
@@ -347,6 +377,19 @@ public interface ArrayPipelineCommands {
    * @since 8.0
    */
   Response<Long> arring(String key, long size, String... values);
+
+  /**
+   * <b><a href="https://redis.io/commands/arring">ARRING Command</a></b> Convenience single-value
+   * overload of {@link #arring(String, long, String...)}.
+   * <p>
+   * Wire: {@code ARRING key size value}
+   * @param key the name of the key that holds the array
+   * @param size the ring buffer window size
+   * @param value the value to insert
+   * @return a {@link Response} that resolves to the index at which the value was inserted
+   * @since 8.0
+   */
+  Response<Long> arring(String key, long size, String value);
 
   /**
    * <b><a href="https://redis.io/commands/arscan">ARSCAN Command</a></b> Iterates existing elements
@@ -408,5 +451,18 @@ public interface ArrayPipelineCommands {
    * @since 8.0
    */
   Response<Long> arset(String key, long index, String... values);
+
+  /**
+   * <b><a href="https://redis.io/commands/arset">ARSET Command</a></b> Convenience single-value
+   * overload of {@link #arset(String, long, String...)}.
+   * <p>
+   * Wire: {@code ARSET key index value}
+   * @param key the name of the key that holds the array
+   * @param index zero-based index at which to store the value
+   * @param value the value to write
+   * @return a {@link Response} that resolves to the number of slots that were previously empty
+   * @since 8.0
+   */
+  Response<Long> arset(String key, long index, String value);
 
 }

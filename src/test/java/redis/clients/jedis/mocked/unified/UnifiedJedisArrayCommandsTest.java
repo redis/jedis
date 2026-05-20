@@ -385,101 +385,93 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testAropBitwise() {
     String key = "k";
-    LongRange range = LongRange.of(0L, 10L);
-    when(commandObjects.aropBitwise(key, range, ArrayBitwise.AND)).thenReturn(longCommandObject);
+    when(commandObjects.aropBitwise(key, 0L, 10L, ArrayBitwise.AND)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(3L);
 
-    assertThat(jedis.aropBitwise(key, range, ArrayBitwise.AND), equalTo(3L));
+    assertThat(jedis.aropBitwise(key, 0L, 10L, ArrayBitwise.AND), equalTo(3L));
     verify(commandExecutor).executeCommand(longCommandObject);
-    verify(commandObjects).aropBitwise(key, range, ArrayBitwise.AND);
+    verify(commandObjects).aropBitwise(key, 0L, 10L, ArrayBitwise.AND);
   }
 
   @Test
   public void testAropBitwiseBinary() {
     byte[] key = "k".getBytes();
-    LongRange range = LongRange.of(0L, 10L);
-    when(commandObjects.aropBitwise(key, range, ArrayBitwise.OR)).thenReturn(longCommandObject);
+    when(commandObjects.aropBitwise(key, 0L, 10L, ArrayBitwise.OR)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(7L);
 
-    assertThat(jedis.aropBitwise(key, range, ArrayBitwise.OR), equalTo(7L));
+    assertThat(jedis.aropBitwise(key, 0L, 10L, ArrayBitwise.OR), equalTo(7L));
     verify(commandExecutor).executeCommand(longCommandObject);
-    verify(commandObjects).aropBitwise(key, range, ArrayBitwise.OR);
+    verify(commandObjects).aropBitwise(key, 0L, 10L, ArrayBitwise.OR);
   }
 
   @Test
   public void testAropAggregate() {
     String key = "k";
-    LongRange range = LongRange.of(0L, 10L);
-    when(commandObjects.aropAggregate(key, range, ArrayAggregate.SUM))
+    when(commandObjects.aropAggregate(key, 0L, 10L, ArrayAggregate.SUM))
         .thenReturn(stringCommandObject);
     when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("42");
 
-    assertThat(jedis.aropAggregate(key, range, ArrayAggregate.SUM), equalTo("42"));
+    assertThat(jedis.aropAggregate(key, 0L, 10L, ArrayAggregate.SUM), equalTo("42"));
     verify(commandExecutor).executeCommand(stringCommandObject);
-    verify(commandObjects).aropAggregate(key, range, ArrayAggregate.SUM);
+    verify(commandObjects).aropAggregate(key, 0L, 10L, ArrayAggregate.SUM);
   }
 
   @Test
   public void testAropAggregateBinary() {
     byte[] key = "k".getBytes();
-    LongRange range = LongRange.of(0L, 10L);
     byte[] result = "42".getBytes();
-    when(commandObjects.aropAggregate(key, range, ArrayAggregate.MIN))
+    when(commandObjects.aropAggregate(key, 0L, 10L, ArrayAggregate.MIN))
         .thenReturn(bytesCommandObject);
     when(commandExecutor.executeCommand(bytesCommandObject)).thenReturn(result);
 
-    assertThat(jedis.aropAggregate(key, range, ArrayAggregate.MIN), equalTo(result));
+    assertThat(jedis.aropAggregate(key, 0L, 10L, ArrayAggregate.MIN), equalTo(result));
     verify(commandExecutor).executeCommand(bytesCommandObject);
-    verify(commandObjects).aropAggregate(key, range, ArrayAggregate.MIN);
+    verify(commandObjects).aropAggregate(key, 0L, 10L, ArrayAggregate.MIN);
   }
 
   @Test
   public void testAropCount() {
     String key = "k";
-    LongRange range = LongRange.of(0L, 10L);
-    when(commandObjects.aropCount(key, range)).thenReturn(longCommandObject);
+    when(commandObjects.aropCount(key, 0L, 10L)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(2L);
 
-    assertThat(jedis.aropCount(key, range), equalTo(2L));
+    assertThat(jedis.aropCount(key, 0L, 10L), equalTo(2L));
     verify(commandExecutor).executeCommand(longCommandObject);
-    verify(commandObjects).aropCount(key, range);
+    verify(commandObjects).aropCount(key, 0L, 10L);
   }
 
   @Test
   public void testAropCountBinary() {
     byte[] key = "k".getBytes();
-    LongRange range = LongRange.of(0L, 10L);
-    when(commandObjects.aropCount(key, range)).thenReturn(longCommandObject);
+    when(commandObjects.aropCount(key, 0L, 10L)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(2L);
 
-    assertThat(jedis.aropCount(key, range), equalTo(2L));
+    assertThat(jedis.aropCount(key, 0L, 10L), equalTo(2L));
     verify(commandExecutor).executeCommand(longCommandObject);
-    verify(commandObjects).aropCount(key, range);
+    verify(commandObjects).aropCount(key, 0L, 10L);
   }
 
   @Test
   public void testAropCountMatch() {
     String key = "k";
-    LongRange range = LongRange.of(0L, 10L);
-    when(commandObjects.aropCount(key, range, "v")).thenReturn(longCommandObject);
+    when(commandObjects.aropCount(key, 0L, 10L, "v")).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(1L);
 
-    assertThat(jedis.aropCount(key, range, "v"), equalTo(1L));
+    assertThat(jedis.aropCount(key, 0L, 10L, "v"), equalTo(1L));
     verify(commandExecutor).executeCommand(longCommandObject);
-    verify(commandObjects).aropCount(key, range, "v");
+    verify(commandObjects).aropCount(key, 0L, 10L, "v");
   }
 
   @Test
   public void testAropCountMatchBinary() {
     byte[] key = "k".getBytes();
-    LongRange range = LongRange.of(0L, 10L);
     byte[] val = "v".getBytes();
-    when(commandObjects.aropCount(key, range, val)).thenReturn(longCommandObject);
+    when(commandObjects.aropCount(key, 0L, 10L, val)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(1L);
 
-    assertThat(jedis.aropCount(key, range, val), equalTo(1L));
+    assertThat(jedis.aropCount(key, 0L, 10L, val), equalTo(1L));
     verify(commandExecutor).executeCommand(longCommandObject);
-    verify(commandObjects).aropCount(key, range, val);
+    verify(commandObjects).aropCount(key, 0L, 10L, val);
   }
 
   @Test

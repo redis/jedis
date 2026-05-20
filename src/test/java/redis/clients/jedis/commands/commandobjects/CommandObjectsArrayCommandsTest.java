@@ -271,7 +271,7 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   public void testAropBitwise() {
     String key = "arop-bitwise-key";
     exec(commandObjects.arinsert(key, "1", "2", "3"));
-    Long r = exec(commandObjects.aropBitwise(key, LongRange.of(0L, 10L), ArrayBitwise.AND));
+    Long r = exec(commandObjects.aropBitwise(key, 0L, 10L, ArrayBitwise.AND));
     assertThat(r, greaterThanOrEqualTo(0L));
   }
 
@@ -279,7 +279,7 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   public void testAropBitwiseBinary() {
     byte[] key = "arop-bitwise-key-b".getBytes();
     exec(commandObjects.arinsert(key, "1".getBytes(), "2".getBytes()));
-    Long r = exec(commandObjects.aropBitwise(key, LongRange.of(0L, 10L), ArrayBitwise.OR));
+    Long r = exec(commandObjects.aropBitwise(key, 0L, 10L, ArrayBitwise.OR));
     assertThat(r, greaterThanOrEqualTo(0L));
   }
 
@@ -287,7 +287,7 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   public void testAropAggregate() {
     String key = "arop-agg-key";
     exec(commandObjects.arinsert(key, "1", "2", "3"));
-    String r = exec(commandObjects.aropAggregate(key, LongRange.of(0L, 10L), ArrayAggregate.SUM));
+    String r = exec(commandObjects.aropAggregate(key, 0L, 10L, ArrayAggregate.SUM));
     assertThat(r, notNullValue());
   }
 
@@ -295,7 +295,7 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   public void testAropAggregateBinary() {
     byte[] key = "arop-agg-key-b".getBytes();
     exec(commandObjects.arinsert(key, "1".getBytes(), "2".getBytes()));
-    byte[] r = exec(commandObjects.aropAggregate(key, LongRange.of(0L, 10L), ArrayAggregate.MIN));
+    byte[] r = exec(commandObjects.aropAggregate(key, 0L, 10L, ArrayAggregate.MIN));
     assertThat(r, notNullValue());
   }
 
@@ -303,7 +303,7 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   public void testAropCount() {
     String key = "aropcount-key";
     exec(commandObjects.arinsert(key, "a", "a", "b"));
-    Long cnt = exec(commandObjects.aropCount(key, LongRange.of(0L, 10L)));
+    Long cnt = exec(commandObjects.aropCount(key, 0L, 10L));
     assertThat(cnt, greaterThanOrEqualTo(0L));
   }
 
@@ -311,7 +311,7 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   public void testAropCountMatch() {
     String key = "aropcount-match-key";
     exec(commandObjects.arinsert(key, "a", "a", "b"));
-    Long cnt = exec(commandObjects.aropCount(key, LongRange.of(0L, 10L), "a"));
+    Long cnt = exec(commandObjects.aropCount(key, 0L, 10L, "a"));
     assertThat(cnt, greaterThanOrEqualTo(0L));
   }
 
@@ -319,7 +319,7 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   public void testAropCountMatchBinary() {
     byte[] key = "aropcount-match-key-b".getBytes();
     exec(commandObjects.arinsert(key, "a".getBytes()));
-    Long cnt = exec(commandObjects.aropCount(key, LongRange.of(0L, 10L), "a".getBytes()));
+    Long cnt = exec(commandObjects.aropCount(key, 0L, 10L, "a".getBytes()));
     assertThat(cnt, greaterThanOrEqualTo(0L));
   }
 

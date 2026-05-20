@@ -1,66 +1,72 @@
 package redis.clients.jedis.resps;
 
-import java.io.Serializable;
 import java.util.Map;
 
 /**
- * This class holds information about an array returned by {@code ARINFO key FULL}. Known top-level
- * fields can be accessed via getters; {@link #getArrayFullInfo()} returns the underlying
- * {@link Map} so that callers can read additional aggregate fields that are not yet promoted to
- * typed getters or that the server may add in the future.
- * <p>
- * This class is intentionally a sibling of {@link ArrayInfo} (not a subclass): the two replies map
- * to two distinct command shapes.
+ * This class holds information about an array returned by {@code ARINFO key FULL}. It extends
+ * {@link ArrayInfo} with the additional per-slice aggregate fields reported only when the
+ * {@code FULL} flag is present. The underlying {@link Map} accessible via {@link #getArrayInfo()}
+ * contains every field returned by the server.
  */
-public class ArrayFullInfo implements Serializable {
+public class ArrayFullInfo extends ArrayInfo {
 
-  public static final String COUNT = "count";
-  public static final String LEN = "len";
-  public static final String NEXT_INSERT_INDEX = "next-insert-index";
-  public static final String SLICES = "slices";
+  public static final String DENSE_SLICES = "dense-slices";
+  public static final String SPARSE_SLICES = "sparse-slices";
+  public static final String AVG_DENSE_SIZE = "avg-dense-size";
+  public static final String AVG_DENSE_FILL = "avg-dense-fill";
+  public static final String AVG_SPARSE_SIZE = "avg-sparse-size";
 
-  private final Long count;
-  private final Long length;
-  private final Long next;
-  private final Map<String, Object> arrayFullInfo;
+  private final Long denseSlices;
+  private final Long sparseSlices;
+  private final Long avgDenseSize;
+  private final Long avgDenseFill;
+  private final Long avgSparseSize;
 
   /**
    * @param map contains key-value pairs with array info (including the additional aggregate fields
    *          reported by {@code ARINFO key FULL})
    */
   public ArrayFullInfo(Map<String, Object> map) {
-    arrayFullInfo = map;
-    count = (Long) map.get(COUNT);
-    length = (Long) map.get(LEN);
-    next = (Long) map.get(NEXT_INSERT_INDEX);
+    super(map);
+    denseSlices = (Long) map.get(DENSE_SLICES);
+    sparseSlices = (Long) map.get(SPARSE_SLICES);
+    avgDenseSize = (Long) map.get(AVG_DENSE_SIZE);
+    avgDenseFill = (Long) map.get(AVG_DENSE_FILL);
+    avgSparseSize = (Long) map.get(AVG_SPARSE_SIZE);
   }
 
   /**
-   * @return the number of non-empty elements in the array, or {@code null} if not reported
+   * @return the number of dense slices, or {@code null} if not reported
    */
-  public Long getCount() {
-    return count;
+  public Long getDenseSlices() {
+    return denseSlices;
   }
 
   /**
-   * @return the array length (max index + 1), or {@code null} if not reported
+   * @return the number of sparse slices, or {@code null} if not reported
    */
-  public Long getLength() {
-    return length;
+  public Long getSparseSlices() {
+    return sparseSlices;
   }
 
   /**
-   * @return the next index that {@code ARINSERT} would use, or {@code null} if not reported
+   * @return the average size of dense slices, or {@code null} if not reported
    */
-  public Long getNext() {
-    return next;
+  public Long getAvgDenseSize() {
+    return avgDenseSize;
   }
 
   /**
-   * @return the raw map containing all key-value pairs returned by the server, including any
-   *         additional aggregate fields reported only by {@code ARINFO key FULL}
+   * @return the average fill rate of dense slices, or {@code null} if not reported
    */
-  public Map<String, Object> getArrayFullInfo() {
-    return arrayFullInfo;
+  public Long getAvgDenseFill() {
+    return avgDenseFill;
+  }
+
+  /**
+   * @return the average size of sparse slices, or {@code null} if not reported
+   */
+  public Long getAvgSparseSize() {
+    return avgSparseSize;
   }
 }

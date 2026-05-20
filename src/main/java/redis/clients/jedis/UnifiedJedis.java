@@ -211,11 +211,37 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.flushAll());
   }
 
+  /**
+   * Returns configuration parameters matching the given pattern.
+   * <p>
+   * CONFIG GET is a keyless command with the {@code DEFAULT} request policy. In a Redis OSS Cluster
+   * deployment, keyless commands with the default request policy are executed on an arbitrary
+   * (random) shard, so the result reflects the configuration of that single node only and may
+   * differ across shards.
+   *
+   * @param pattern glob-style pattern to match configuration parameter names
+   * @return a map of matching parameter names to their values from a single, arbitrary shard
+   * @see <a href="https://redis.io/docs/latest/develop/reference/command-tips/#request_policy">Request
+   *     policy</a>
+   */
   @Experimental
   public Map<String, String> configGet(String pattern) {
     return executeCommand(commandObjects.configGet(pattern));
   }
 
+  /**
+   * Returns configuration parameters matching the given pattern.
+   * <p>
+   * CONFIG GET is a keyless command with the {@code DEFAULT} request policy. In a Redis OSS Cluster
+   * deployment, keyless commands with the default request policy are executed on an arbitrary
+   * (random) shard, so the result reflects the configuration of that single node only and may
+   * differ across shards.
+   *
+   * @param patterns glob-style patterns to match configuration parameter names
+   * @return a map of matching parameter names to their values from a single, arbitrary shard
+   * @see <a href="https://redis.io/docs/latest/develop/reference/command-tips/#request_policy">Request
+   *     policy</a>
+   */
   @Experimental
   public Map<String, String> configGet(String... patterns) {
     return executeCommand(commandObjects.configGet(patterns));

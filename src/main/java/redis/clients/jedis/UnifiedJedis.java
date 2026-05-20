@@ -218,6 +218,10 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.configSet(parameter, value));
   }
 
+  public String configSet(Map<String, String> parameterValues) {
+    return executeCommand(commandObjects.configSet(parameterValues));
+  }
+
   public String info() {
     return executeCommand(commandObjects.info());
   }

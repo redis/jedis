@@ -63,6 +63,23 @@ public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisMocked
   }
 
   @Test
+  public void testConfigSetMap() {
+    Map<String, String> parameterValues = new HashMap<>();
+    parameterValues.put("slowlog-max-len", "200");
+    parameterValues.put("slowlog-log-slower-than", "20000");
+
+    when(commandObjects.configSet(parameterValues)).thenReturn(stringCommandObject);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("OK");
+
+    String result = jedis.configSet(parameterValues);
+
+    assertThat(result, equalTo("OK"));
+
+    verify(commandExecutor).executeCommand(stringCommandObject);
+    verify(commandObjects).configSet(parameterValues);
+  }
+
+  @Test
   public void testDbSize() {
     long expectedSize = 42L;
 

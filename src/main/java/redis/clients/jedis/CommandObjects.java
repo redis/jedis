@@ -101,6 +101,12 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.SET).add(parameter).add(value), BuilderFactory.STRING);
   }
 
+  public final CommandObject<String> configSet(Map<String, String> parameterValues) {
+    CommandArguments args = commandArguments(Command.CONFIG).add(Keyword.SET);
+    parameterValues.forEach((k, v) -> args.add(k).add(v));
+    return new CommandObject<>(args, BuilderFactory.STRING);
+  }
+
   private final CommandObject<String> INFO_COMMAND_OBJECT = new CommandObject<>(commandArguments(Command.INFO),
       BuilderFactory.STRING);
 

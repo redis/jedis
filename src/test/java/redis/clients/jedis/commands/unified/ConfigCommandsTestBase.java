@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasKey;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -65,7 +66,7 @@ public abstract class ConfigCommandsTestBase extends UnifiedJedisCommandsTestBas
   public void configGetUnknownParameterReturnsEmpty() {
     Map<String, String> reply = jedis.configGet("definitely-not-a-real-config-name-xyz");
 
-    assertThat(reply, equalTo(java.util.Collections.<String, String> emptyMap()));
+    assertThat(reply, equalTo(Collections.<String, String> emptyMap()));
   }
 
   @Test

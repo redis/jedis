@@ -211,10 +211,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.flushAll());
   }
 
+  @Experimental
   public Map<String, String> configGet(String pattern) {
     return executeCommand(commandObjects.configGet(pattern));
   }
 
+  @Experimental
   public Map<String, String> configGet(String... patterns) {
     return executeCommand(commandObjects.configGet(patterns));
   }

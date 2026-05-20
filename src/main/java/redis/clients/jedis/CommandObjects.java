@@ -41,10 +41,6 @@ public class CommandObjects {
   private final RedisProtocol protocol;
 
   public CommandObjects(RedisProtocol protocol) {
-    this(protocol, null);
-  }
-
-  public CommandObjects(RedisProtocol protocol, CommandObjectsConfig config) {
     if (protocol == null) {
       throw new IllegalArgumentException("protocol must not be null");
     }

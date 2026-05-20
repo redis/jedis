@@ -2601,15 +2601,6 @@ public final class BuilderFactory {
     }
   };
 
-  private static Long buildIndex(Object data) {
-    if (data == null) return null;
-    if (data instanceof Long) return (Long) data;
-    if (data instanceof Number) return ((Number) data).longValue();
-    if (data instanceof byte[]) return Long.parseLong(SafeEncoder.encode((byte[]) data));
-    if (data instanceof String) return Long.parseLong((String) data);
-    throw new JedisDataException("Unexpected index type: " + data.getClass());
-  }
-
   public static final Builder<List<KeyValue<Long, String>>> STRING_INDEXED_VALUE_LIST
       = new Builder<List<KeyValue<Long, String>>>() {
     @Override
@@ -2619,18 +2610,10 @@ public final class BuilderFactory {
       final List<Object> list = (List<Object>) data;
       if (list.isEmpty()) return Collections.emptyList();
 
-      if (list.get(0) instanceof KeyValue) {
-        final List<KeyValue<Long, String>> result = new ArrayList<>(list.size());
-        for (KeyValue kv : (List<KeyValue>) (List<?>) list) {
-          result.add(KeyValue.of(buildIndex(kv.getKey()), STRING.build(kv.getValue())));
-        }
-        return result;
-      }
-
-      final List<KeyValue<Long, String>> result = new ArrayList<>(list.size() / 2);
-      final Iterator<Object> iterator = list.iterator();
-      while (iterator.hasNext()) {
-        result.add(KeyValue.of(buildIndex(iterator.next()), STRING.build(iterator.next())));
+      final List<KeyValue<Long, String>> result = new ArrayList<>(list.size());
+      for (Object pair : list) {
+        List<Object> entry = (List<Object>) pair;
+        result.add(KeyValue.of(LONG.build(entry.get(0)), STRING.build(entry.get(1))));
       }
       return result;
     }
@@ -2650,18 +2633,10 @@ public final class BuilderFactory {
       final List<Object> list = (List<Object>) data;
       if (list.isEmpty()) return Collections.emptyList();
 
-      if (list.get(0) instanceof KeyValue) {
-        final List<KeyValue<Long, byte[]>> result = new ArrayList<>(list.size());
-        for (KeyValue kv : (List<KeyValue>) (List<?>) list) {
-          result.add(KeyValue.of(buildIndex(kv.getKey()), BINARY.build(kv.getValue())));
-        }
-        return result;
-      }
-
-      final List<KeyValue<Long, byte[]>> result = new ArrayList<>(list.size() / 2);
-      final Iterator<Object> iterator = list.iterator();
-      while (iterator.hasNext()) {
-        result.add(KeyValue.of(buildIndex(iterator.next()), BINARY.build(iterator.next())));
+      final List<KeyValue<Long, byte[]>> result = new ArrayList<>(list.size());
+      for (Object pair : list) {
+        List<Object> entry = (List<Object>) pair;
+        result.add(KeyValue.of(LONG.build(entry.get(0)), BINARY.build(entry.get(1))));
       }
       return result;
     }

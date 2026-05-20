@@ -12,8 +12,8 @@ import java.util.Map;
 public class ArrayInfo implements Serializable {
 
   public static final String COUNT = "count";
-  public static final String LENGTH = "length";
-  public static final String NEXT = "next";
+  public static final String LEN = "len";
+  public static final String NEXT_INSERT_INDEX = "next-insert-index";
 
   private final Long count;
   private final Long length;
@@ -26,8 +26,8 @@ public class ArrayInfo implements Serializable {
   public ArrayInfo(Map<String, Object> map) {
     arrayInfo = map;
     count = (Long) map.get(COUNT);
-    length = (Long) map.get(LENGTH);
-    next = (Long) map.get(NEXT);
+    length = (Long) map.get(LEN);
+    next = (Long) map.get(NEXT_INSERT_INDEX);
   }
 
   /**

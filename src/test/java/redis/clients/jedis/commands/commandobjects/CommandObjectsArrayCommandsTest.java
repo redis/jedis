@@ -264,7 +264,7 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   @Test
   public void testArnextMissingBinary() {
     OptionalLong next = exec(commandObjects.arnext("arnext-missing-b".getBytes()));
-    assertThat(next, equalTo(OptionalLong.empty()));
+    assertThat(next, equalTo(OptionalLong.of(0L)));
   }
 
   @Test

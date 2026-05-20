@@ -245,7 +245,7 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
 
   @Test
   public void arnextMissingBinary() {
-    assertEquals(OptionalLong.empty(), jedis.arnext(SafeEncoder.encode("arnext-missing-b")));
+    assertEquals(OptionalLong.of(0L), jedis.arnext(SafeEncoder.encode("arnext-missing-b")));
   }
 
   @Test

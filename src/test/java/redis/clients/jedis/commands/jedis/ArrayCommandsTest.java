@@ -43,7 +43,7 @@ public class ArrayCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void arnextMissingKey() {
-    assertEquals(OptionalLong.empty(), jedis.arnext("missing-arnext"));
+    assertEquals(OptionalLong.of(0L), jedis.arnext("missing-arnext"));
   }
 
   @Test

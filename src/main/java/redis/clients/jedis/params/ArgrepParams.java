@@ -1,6 +1,7 @@
 package redis.clients.jedis.params;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
 
@@ -34,6 +35,19 @@ public class ArgrepParams implements IParams {
     Predicate(PredicateType type, byte[] value) {
       this.type = type;
       this.value = value;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) return true;
+      if (o == null || getClass() != o.getClass()) return false;
+      Predicate that = (Predicate) o;
+      return type == that.type && Arrays.equals(value, that.value);
+    }
+
+    @Override
+    public int hashCode() {
+      return 31 * Objects.hashCode(type) + Arrays.hashCode(value);
     }
   }
 
@@ -196,12 +210,11 @@ public class ArgrepParams implements IParams {
     if (o == null || getClass() != o.getClass()) return false;
     ArgrepParams that = (ArgrepParams) o;
     return nocase == that.nocase && Objects.equals(combinator, that.combinator)
-        && Objects.equals(limit, that.limit)
-        && Objects.equals(predicates.size(), that.predicates.size());
+        && Objects.equals(limit, that.limit) && Objects.equals(predicates, that.predicates);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(predicates.size(), combinator, limit, nocase);
+    return Objects.hash(predicates, combinator, limit, nocase);
   }
 }

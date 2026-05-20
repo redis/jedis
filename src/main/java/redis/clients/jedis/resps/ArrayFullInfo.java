@@ -6,8 +6,8 @@ import java.util.Map;
 /**
  * This class holds information about an array returned by {@code ARINFO key FULL}. Known top-level
  * fields can be accessed via getters; {@link #getArrayFullInfo()} returns the underlying
- * {@link Map} so that callers can read per-slice statistics and any fields that are not yet
- * promoted to typed getters or that the server may add in the future.
+ * {@link Map} so that callers can read additional aggregate fields that are not yet promoted to
+ * typed getters or that the server may add in the future.
  * <p>
  * This class is intentionally a sibling of {@link ArrayInfo} (not a subclass): the two replies map
  * to two distinct command shapes.
@@ -15,8 +15,8 @@ import java.util.Map;
 public class ArrayFullInfo implements Serializable {
 
   public static final String COUNT = "count";
-  public static final String LENGTH = "length";
-  public static final String NEXT = "next";
+  public static final String LEN = "len";
+  public static final String NEXT_INSERT_INDEX = "next-insert-index";
   public static final String SLICES = "slices";
 
   private final Long count;
@@ -25,13 +25,14 @@ public class ArrayFullInfo implements Serializable {
   private final Map<String, Object> arrayFullInfo;
 
   /**
-   * @param map contains key-value pairs with array info (including the per-slice block)
+   * @param map contains key-value pairs with array info (including the additional aggregate fields
+   *          reported by {@code ARINFO key FULL})
    */
   public ArrayFullInfo(Map<String, Object> map) {
     arrayFullInfo = map;
     count = (Long) map.get(COUNT);
-    length = (Long) map.get(LENGTH);
-    next = (Long) map.get(NEXT);
+    length = (Long) map.get(LEN);
+    next = (Long) map.get(NEXT_INSERT_INDEX);
   }
 
   /**
@@ -57,7 +58,7 @@ public class ArrayFullInfo implements Serializable {
 
   /**
    * @return the raw map containing all key-value pairs returned by the server, including any
-   *         per-slice statistics block under the {@link #SLICES} key
+   *         additional aggregate fields reported only by {@code ARINFO key FULL}
    */
   public Map<String, Object> getArrayFullInfo() {
     return arrayFullInfo;

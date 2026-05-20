@@ -123,7 +123,7 @@ public class ClusterPipeline extends MultiNodePipelineBase {
           // Protocol negotiation failed; fall back to RESP2 below.
         }
       }
-      return new ClusterCommandObjects(effective != null ? effective : RedisProtocol.RESP2);
+      return new ClusterCommandObjects(RedisProtocol.orServerDefault(effective));
     };
   }
 

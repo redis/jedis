@@ -89,4 +89,24 @@ public class TimeSeriesClusterCommandsIT extends TimeSeriesCommandsTestBase {
   public void countNanAndCountAll() {
   }
 
+  @Disabled("Label-based queries not compatible with cluster mode")
+  @Override
+  public void mRangeMultipleAggregators() {
+  }
+
+  @Disabled("Label-based queries not compatible with cluster mode")
+  @Override
+  public void mRevRangeMultipleAggregators() {
+  }
+
+  @Disabled("Label-based queries not compatible with cluster mode")
+  @Override
+  public void mRangeMultipleAggregatorsEmptyResult() {
+  }
+
+  @Disabled("Label-based queries not compatible with cluster mode")
+  @Override
+  public void mRevRangeMultipleAggregatorsEmptyResult() {
+  }
+
 }

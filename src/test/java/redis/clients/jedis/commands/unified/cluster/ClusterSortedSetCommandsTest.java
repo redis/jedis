@@ -158,6 +158,49 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
 
   @Test
   @Override
+  @SinceRedisVersion(value = "8.7.225")
+  public void zunionInterAggregateCount() {
+    jedis.zadd("s1{:}", 1, "foo");
+    jedis.zadd("s1{:}", 1, "bar");
+    jedis.zadd("s2{:}", 2, "foo");
+    jedis.zadd("s2{:}", 2, "bar");
+    jedis.zadd("s3{:}", 3, "foo");
+
+    ZParams params = new ZParams().aggregate(ZParams.Aggregate.COUNT);
+
+    assertEquals(2, jedis.zunionstore("dst{:}", params, "s1{:}", "s2{:}", "s3{:}"));
+    List<Tuple> expectedUnion = new ArrayList<>();
+    expectedUnion.add(new Tuple("bar", 2d));
+    expectedUnion.add(new Tuple("foo", 3d));
+    assertEquals(expectedUnion, jedis.zrangeWithScores("dst{:}", 0, -1));
+
+    assertEquals(1, jedis.zinterstore("dst{:}", params, "s1{:}", "s2{:}", "s3{:}"));
+    assertEquals(Collections.singletonList(new Tuple("foo", 3d)),
+        jedis.zrangeWithScores("dst{:}", 0, -1));
+
+    assertEquals(expectedUnion, jedis.zunionWithScores(params, "s1{:}", "s2{:}", "s3{:}"));
+    assertEquals(Collections.singletonList(new Tuple("foo", 3d)),
+        jedis.zinterWithScores(params, "s1{:}", "s2{:}", "s3{:}"));
+
+    ZParams paramsW = new ZParams().weights(10, 5, 3).aggregate(ZParams.Aggregate.COUNT);
+
+    assertEquals(2, jedis.zunionstore("dst{:}", paramsW, "s1{:}", "s2{:}", "s3{:}"));
+    List<Tuple> expectedUnionW = new ArrayList<>();
+    expectedUnionW.add(new Tuple("bar", 15d));
+    expectedUnionW.add(new Tuple("foo", 18d));
+    assertEquals(expectedUnionW, jedis.zrangeWithScores("dst{:}", 0, -1));
+
+    assertEquals(1, jedis.zinterstore("dst{:}", paramsW, "s1{:}", "s2{:}", "s3{:}"));
+    assertEquals(Collections.singletonList(new Tuple("foo", 18d)),
+        jedis.zrangeWithScores("dst{:}", 0, -1));
+
+    assertEquals(expectedUnionW, jedis.zunionWithScores(paramsW, "s1{:}", "s2{:}", "s3{:}"));
+    assertEquals(Collections.singletonList(new Tuple("foo", 18d)),
+        jedis.zinterWithScores(paramsW, "s1{:}", "s2{:}", "s3{:}"));
+  }
+
+  @Test
+  @Override
   public void bzpopmax() {
     assertNull(jedis.bzpopmax(1, "f{:}oo", "b{:}ar"));
 

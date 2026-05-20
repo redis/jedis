@@ -1740,6 +1740,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> xnack(String key, String group, XNackMode mode, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xnack(key, group, mode, ids));
+  }
+
+  @Override
   public Response<String> xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
     return appendCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
@@ -3641,6 +3646,11 @@ public abstract class PipeliningBase
   @Override
   public Response<List<StreamEntryDeletionResult>> xackdel(byte[] key, byte[] group, StreamDeletionPolicy trimMode, byte[]... ids) {
     return appendCommand(commandObjects.xackdel(key, group, trimMode, ids));
+  }
+
+  @Override
+  public Response<Long> xnack(byte[] key, byte[] group, XNackMode mode, byte[]... ids) {
+    return appendCommand(commandObjects.xnack(key, group, mode, ids));
   }
 
   @Override

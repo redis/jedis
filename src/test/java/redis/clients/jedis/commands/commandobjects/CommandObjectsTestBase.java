@@ -27,13 +27,13 @@ import redis.clients.jedis.providers.PooledConnectionProvider;
  * on if a Redis Stack server is needed, or a standalone suffices.
  * <p>
  * In principle all subclasses of this class should be parameterized tests,
- * to run with several versions of RESP. {@link CommandsTestsParameters#jedisRespVersions}
- * The strict (non-{@code null}) RESP versions are the right fit here: CommandObjects receive a
- * specific protocol after auto-negotiation has already happened.
+ * to run with several versions of RESP. {@link CommandsTestsParameters#commandObjectsRespVersions}
+ * provides the strict (non-{@code null}) RESP versions, which are the right fit here:
+ * CommandObjects receive a specific protocol after auto-negotiation has already happened.
  */
 @Tag("integration")
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#commandObjectsRespVersions")
 public abstract class CommandObjectsTestBase {
 
   /**

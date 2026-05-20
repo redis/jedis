@@ -39,6 +39,11 @@ public class RedisClientTest {
   public static void prepareEndpoints() {
     endpointStandalone7 = Endpoints.getRedisEndpoint("standalone7-with-lfu-policy");
     endpointStandalone1 = Endpoints.getRedisEndpoint("standalone1");
+
+    try (Jedis control = new Jedis(endpointStandalone1.getHostAndPort(),
+        endpointStandalone1.getClientConfigBuilder().build())) {
+      control.flushAll();
+    }
   }
 
   @Test

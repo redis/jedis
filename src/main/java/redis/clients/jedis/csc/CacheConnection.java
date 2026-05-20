@@ -8,6 +8,7 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisSocketFactory;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.PushConsumerChain;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.exceptions.JedisException;
@@ -86,20 +87,20 @@ public class CacheConnection extends Connection {
   }
 
   @Override
-  protected Object protocolRead(RedisInputStream inputStream) {
+  protected Object protocolRead(RedisInputStream inputStream, PushConsumerChain consumer) {
     lock.lock();
     try {
-      return Protocol.read(inputStream, cache);
+      return Protocol.read(inputStream, consumer);
     } finally {
       lock.unlock();
     }
   }
 
   @Override
-  protected void protocolReadPushes(RedisInputStream inputStream) {
+  protected void protocolReadPushes(RedisInputStream inputStream, PushConsumerChain consumer) {
     if (lock.tryLock()) {
       try {
-        Protocol.readPushes(inputStream, cache, true);
+        Protocol.readPushes(inputStream, consumer);
       } finally {
         lock.unlock();
       }
@@ -157,7 +158,7 @@ public class CacheConnection extends Connection {
           String.format("Client side caching is only supported with 'Redis %s' or later.", MIN_REDIS_VERSION));
       }
     }
-
+    addPushConsumer(new PushInvalidateConsumer(cache));
     sendCommand(Protocol.Command.CLIENT, "TRACKING", "ON");
     String reply = getStatusCodeReply();
     if (!"OK".equals(reply)) {

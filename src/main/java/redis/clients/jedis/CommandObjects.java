@@ -38,19 +38,10 @@ import redis.clients.jedis.util.CompareCondition;
 
 public class CommandObjects {
 
-  private RedisProtocol protocol;
-
-  // TODO: Remove together with setProtocol
-  public CommandObjects() {
-  }
+  private final RedisProtocol protocol;
 
   public CommandObjects(RedisProtocol protocol) {
     this.protocol = protocol;
-  }
-
-  // TODO: restrict?
-  public final void setProtocol(RedisProtocol proto) {
-    this.protocol = proto;
   }
 
   // TODO: remove?
@@ -2698,6 +2689,16 @@ public class CommandObjects {
 
   public final CommandObject<List<StreamEntryDeletionResult>> xackdel(byte[] key, byte[] group, StreamDeletionPolicy trimMode, byte[]... ids) {
     return new CommandObject<>(commandArguments(XACKDEL).key(key).add(group).add(trimMode).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
+  }
+
+  public final CommandObject<Long> xnack(String key, String group, XNackMode mode, StreamEntryID... ids) {
+    return new CommandObject<>(commandArguments(XNACK).key(key).add(group).add(mode)
+        .add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> xnack(byte[] key, byte[] group, XNackMode mode, byte[]... ids) {
+    return new CommandObject<>(commandArguments(XNACK).key(key).add(group).add(mode)
+        .add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.LONG);
   }
 
   public final CommandObject<String> xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {

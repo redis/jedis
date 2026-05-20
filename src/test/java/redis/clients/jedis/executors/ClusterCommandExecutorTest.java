@@ -1241,7 +1241,7 @@ public class ClusterCommandExecutorTest {
     when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class)))
         .thenReturn(connection);
 
-    ClusterCommandObjects commandObjects = new ClusterCommandObjects();
+    ClusterCommandObjects commandObjects = new ClusterCommandObjects(RedisProtocol.RESP2);
 
     // Try many different key combinations including ones where keys hash to different slots
     for (int i = 0; i < 100; i++) {
@@ -1336,7 +1336,7 @@ public class ClusterCommandExecutorTest {
       mockedStatic.when(() -> JedisClusterCRC16.getSlot(key2)).thenReturn(200);
       mockedStatic.when(() -> JedisClusterCRC16.getSlot(key3)).thenReturn(100);
 
-      ClusterCommandObjects commandObjects = new ClusterCommandObjects();
+      ClusterCommandObjects commandObjects = new ClusterCommandObjects(RedisProtocol.RESP2);
 
       // The fix should create 3 separate commands (not 2) to preserve order
       List<CommandObject<List<String>>> mgetCommands = commandObjects.mgetMultiShard(key1, key2,
@@ -1410,7 +1410,7 @@ public class ClusterCommandExecutorTest {
       mockedStatic.when(() -> JedisClusterCRC16.getSlot(key3)).thenReturn(200);
       mockedStatic.when(() -> JedisClusterCRC16.getSlot(key4)).thenReturn(200);
 
-      ClusterCommandObjects commandObjects = new ClusterCommandObjects();
+      ClusterCommandObjects commandObjects = new ClusterCommandObjects(RedisProtocol.RESP2);
 
       // Consecutive keys with the same slot should be combined into one command
       List<CommandObject<List<String>>> mgetCommands = commandObjects.mgetMultiShard(key1, key2,

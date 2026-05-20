@@ -18,9 +18,9 @@ public class ArrayFullInfo extends ArrayInfo {
 
   private final Long denseSlices;
   private final Long sparseSlices;
-  private final Long avgDenseSize;
-  private final Long avgDenseFill;
-  private final Long avgSparseSize;
+  private final Double avgDenseSize;
+  private final Double avgDenseFill;
+  private final Double avgSparseSize;
 
   /**
    * @param map contains key-value pairs with array info (including the additional aggregate fields
@@ -30,9 +30,15 @@ public class ArrayFullInfo extends ArrayInfo {
     super(map);
     denseSlices = (Long) map.get(DENSE_SLICES);
     sparseSlices = (Long) map.get(SPARSE_SLICES);
-    avgDenseSize = (Long) map.get(AVG_DENSE_SIZE);
-    avgDenseFill = (Long) map.get(AVG_DENSE_FILL);
-    avgSparseSize = (Long) map.get(AVG_SPARSE_SIZE);
+    avgDenseSize = parseDouble(map.get(AVG_DENSE_SIZE));
+    avgDenseFill = parseDouble(map.get(AVG_DENSE_FILL));
+    avgSparseSize = parseDouble(map.get(AVG_SPARSE_SIZE));
+  }
+
+  private static Double parseDouble(Object value) {
+    if (value == null) return null;
+    if (value instanceof Number) return ((Number) value).doubleValue();
+    return Double.valueOf(value.toString());
   }
 
   /**
@@ -52,21 +58,21 @@ public class ArrayFullInfo extends ArrayInfo {
   /**
    * @return the average size of dense slices, or {@code null} if not reported
    */
-  public Long getAvgDenseSize() {
+  public Double getAvgDenseSize() {
     return avgDenseSize;
   }
 
   /**
    * @return the average fill rate of dense slices, or {@code null} if not reported
    */
-  public Long getAvgDenseFill() {
+  public Double getAvgDenseFill() {
     return avgDenseFill;
   }
 
   /**
    * @return the average size of sparse slices, or {@code null} if not reported
    */
-  public Long getAvgSparseSize() {
+  public Double getAvgSparseSize() {
     return avgSparseSize;
   }
 }

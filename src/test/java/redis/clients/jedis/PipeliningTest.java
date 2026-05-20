@@ -700,7 +700,7 @@ public class PipeliningTest extends JedisCommandsTestBase {
   @Test
   public void errorInTheMiddle() {
     CommandObject<String> invalidCommand =
-        new CommandObject<>(new CommandObjects().commandArguments(Foo.FOO), BuilderFactory.STRING);
+        new CommandObject<>(new CommandObjects(RedisProtocol.RESP2).commandArguments(Foo.FOO), BuilderFactory.STRING);
 
     Pipeline p = jedis.pipelined();
 

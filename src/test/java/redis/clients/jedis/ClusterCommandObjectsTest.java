@@ -27,7 +27,7 @@ public class ClusterCommandObjectsTest {
 
   @BeforeEach
   public void setUp() {
-    clusterCommandObjects = new ClusterCommandObjects();
+    clusterCommandObjects = new ClusterCommandObjects(RedisProtocol.RESP2);
   }
 
   @Test
@@ -472,7 +472,7 @@ public class ClusterCommandObjectsTest {
   @Test
   public void testGroupArgumentsByKeyHashSlot_withKeyPreProcessor_usesPreprocessedSlot() {
     // Create ClusterCommandObjects with a key preprocessor that adds a hash tag prefix
-    ClusterCommandObjects clusterCmdObjects = new ClusterCommandObjects();
+    ClusterCommandObjects clusterCmdObjects = new ClusterCommandObjects(RedisProtocol.RESP2);
     // The prefix "{sameSlot}:" ensures all keys hash to the same slot
     clusterCmdObjects.setKeyArgumentPreProcessor(
       new redis.clients.jedis.util.PrefixedKeyArgumentPreProcessor("{sameSlot}:"));
@@ -519,7 +519,7 @@ public class ClusterCommandObjectsTest {
    */
   @Test
   public void testGroupArgumentsByKeyValueHashSlot_withKeyPreProcessor_usesPreprocessedSlot() {
-    ClusterCommandObjects clusterCmdObjects = new ClusterCommandObjects();
+    ClusterCommandObjects clusterCmdObjects = new ClusterCommandObjects(RedisProtocol.RESP2);
     clusterCmdObjects.setKeyArgumentPreProcessor(
       new redis.clients.jedis.util.PrefixedKeyArgumentPreProcessor("{sameSlot}:"));
 
@@ -557,7 +557,7 @@ public class ClusterCommandObjectsTest {
    */
   @Test
   public void testGroupArgumentsByKeyHashSlot_withKeyPreProcessor_differentSlotsAfterPreprocess() {
-    ClusterCommandObjects clusterCmdObjects = new ClusterCommandObjects();
+    ClusterCommandObjects clusterCmdObjects = new ClusterCommandObjects(RedisProtocol.RESP2);
     // This preprocessor changes the hash tag, causing keys to hash to different slots
     clusterCmdObjects.setKeyArgumentPreProcessor(key -> {
       String keyStr = (String) key;
@@ -594,7 +594,7 @@ public class ClusterCommandObjectsTest {
    */
   @Test
   public void testGroupArgumentsByKeyHashSlot_withKeyPreProcessor_binaryKeys() {
-    ClusterCommandObjects clusterCmdObjects = new ClusterCommandObjects();
+    ClusterCommandObjects clusterCmdObjects = new ClusterCommandObjects(RedisProtocol.RESP2);
     clusterCmdObjects.setKeyArgumentPreProcessor(
       new redis.clients.jedis.util.PrefixedKeyArgumentPreProcessor("{sameSlot}:"));
 

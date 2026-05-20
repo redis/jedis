@@ -22,10 +22,6 @@ public class ClusterCommandObjects extends CommandObjects {
 
   private static final String CLUSTER_UNSUPPORTED_MESSAGE = "Not supported in cluster mode.";
 
- // TODO: Remove together with setProtocol
-  public ClusterCommandObjects() {
-  }
-
   public ClusterCommandObjects(RedisProtocol protocol) {
     super(protocol);
   }

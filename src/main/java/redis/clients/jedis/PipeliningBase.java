@@ -1575,13 +1575,13 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<List<Long>> argrep(String key, long start, long end, ArgrepParams params) {
-    return appendCommand(commandObjects.argrep(key, start, end, params));
+  public Response<List<Long>> argrep(String key, ArgrepParams params) {
+    return appendCommand(commandObjects.argrep(key, params));
   }
 
   @Override
-  public Response<List<KeyValue<Long, String>>> argrepWithValues(String key, long start, long end, ArgrepParams params) {
-    return appendCommand(commandObjects.argrepWithValues(key, start, end, params));
+  public Response<List<KeyValue<Long, String>>> argrepWithValues(String key, ArgrepParams params) {
+    return appendCommand(commandObjects.argrepWithValues(key, params));
   }
 
   @Override
@@ -2546,13 +2546,13 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<List<Long>> argrep(byte[] key, long start, long end, ArgrepParams params) {
-    return appendCommand(commandObjects.argrep(key, start, end, params));
+  public Response<List<Long>> argrep(byte[] key, ArgrepParams params) {
+    return appendCommand(commandObjects.argrep(key, params));
   }
 
   @Override
-  public Response<List<KeyValue<Long, byte[]>>> argrepWithValues(byte[] key, long start, long end, ArgrepParams params) {
-    return appendCommand(commandObjects.argrepWithValues(key, start, end, params));
+  public Response<List<KeyValue<Long, byte[]>>> argrepWithValues(byte[] key, ArgrepParams params) {
+    return appendCommand(commandObjects.argrepWithValues(key, params));
   }
 
   @Override

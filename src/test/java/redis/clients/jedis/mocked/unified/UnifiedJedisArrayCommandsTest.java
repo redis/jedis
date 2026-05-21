@@ -147,55 +147,55 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testArgrep() {
     String key = "k";
-    ArgrepParams params = ArgrepParams.argrepParams().match("foo");
-    when(commandObjects.argrep(key, 0L, 10L, params)).thenReturn(listLongCommandObject);
+    ArgrepParams params = ArgrepParams.range(0L, 10L).match("foo");
+    when(commandObjects.argrep(key, params)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject))
         .thenReturn(java.util.Collections.emptyList());
 
-    jedis.argrep(key, 0L, 10L, params);
+    jedis.argrep(key, params);
     verify(commandExecutor).executeCommand(listLongCommandObject);
-    verify(commandObjects).argrep(key, 0L, 10L, params);
+    verify(commandObjects).argrep(key, params);
   }
 
   @Test
   public void testArgrepBinary() {
     byte[] key = "k".getBytes();
-    ArgrepParams params = ArgrepParams.argrepParams().exact("foo");
-    when(commandObjects.argrep(key, 0L, 10L, params)).thenReturn(listLongCommandObject);
+    ArgrepParams params = ArgrepParams.range(0L, 10L).exact("foo");
+    when(commandObjects.argrep(key, params)).thenReturn(listLongCommandObject);
     when(commandExecutor.executeCommand(listLongCommandObject))
         .thenReturn(java.util.Collections.emptyList());
 
-    jedis.argrep(key, 0L, 10L, params);
+    jedis.argrep(key, params);
     verify(commandExecutor).executeCommand(listLongCommandObject);
-    verify(commandObjects).argrep(key, 0L, 10L, params);
+    verify(commandObjects).argrep(key, params);
   }
 
   @Test
   public void testArgrepWithValues() {
     String key = "k";
-    ArgrepParams params = ArgrepParams.argrepParams().match("foo");
-    when(commandObjects.argrepWithValues(key, 0L, 10L, params))
+    ArgrepParams params = ArgrepParams.range(0L, 10L).match("foo");
+    when(commandObjects.argrepWithValues(key, params))
         .thenReturn(listKeyValueLongStringCommandObject);
     when(commandExecutor.executeCommand(listKeyValueLongStringCommandObject))
         .thenReturn(java.util.Collections.emptyList());
 
-    jedis.argrepWithValues(key, 0L, 10L, params);
+    jedis.argrepWithValues(key, params);
     verify(commandExecutor).executeCommand(listKeyValueLongStringCommandObject);
-    verify(commandObjects).argrepWithValues(key, 0L, 10L, params);
+    verify(commandObjects).argrepWithValues(key, params);
   }
 
   @Test
   public void testArgrepWithValuesBinary() {
     byte[] key = "k".getBytes();
-    ArgrepParams params = ArgrepParams.argrepParams().exact("foo");
-    when(commandObjects.argrepWithValues(key, 0L, 10L, params))
+    ArgrepParams params = ArgrepParams.range(0L, 10L).exact("foo");
+    when(commandObjects.argrepWithValues(key, params))
         .thenReturn(listKeyValueLongBytesCommandObject);
     when(commandExecutor.executeCommand(listKeyValueLongBytesCommandObject))
         .thenReturn(java.util.Collections.emptyList());
 
-    jedis.argrepWithValues(key, 0L, 10L, params);
+    jedis.argrepWithValues(key, params);
     verify(commandExecutor).executeCommand(listKeyValueLongBytesCommandObject);
-    verify(commandObjects).argrepWithValues(key, 0L, 10L, params);
+    verify(commandObjects).argrepWithValues(key, params);
   }
 
   @Test

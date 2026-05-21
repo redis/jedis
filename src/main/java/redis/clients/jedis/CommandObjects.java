@@ -2653,23 +2653,23 @@ public class CommandObjects {
         BuilderFactory.BINARY_LIST);
   }
 
-  public final CommandObject<List<Long>> argrep(String key, long start, long end, ArgrepParams params) {
-    return new CommandObject<>(commandArguments(ARGREP).key(key).add(start).add(end).addParams(params),
+  public final CommandObject<List<Long>> argrep(String key, ArgrepParams params) {
+    return new CommandObject<>(commandArguments(ARGREP).key(key).addParams(params),
         BuilderFactory.LONG_LIST);
   }
 
-  public final CommandObject<List<Long>> argrep(byte[] key, long start, long end, ArgrepParams params) {
-    return new CommandObject<>(commandArguments(ARGREP).key(key).add(start).add(end).addParams(params),
+  public final CommandObject<List<Long>> argrep(byte[] key, ArgrepParams params) {
+    return new CommandObject<>(commandArguments(ARGREP).key(key).addParams(params),
         BuilderFactory.LONG_LIST);
   }
 
-  public final CommandObject<List<KeyValue<Long, String>>> argrepWithValues(String key, long start, long end, ArgrepParams params) {
-    return new CommandObject<>(commandArguments(ARGREP).key(key).add(start).add(end).addParams(params).add(WITHVALUES),
+  public final CommandObject<List<KeyValue<Long, String>>> argrepWithValues(String key, ArgrepParams params) {
+    return new CommandObject<>(commandArguments(ARGREP).key(key).addParams(params).add(WITHVALUES),
         BuilderFactory.STRING_INDEXED_VALUE_LIST);
   }
 
-  public final CommandObject<List<KeyValue<Long, byte[]>>> argrepWithValues(byte[] key, long start, long end, ArgrepParams params) {
-    return new CommandObject<>(commandArguments(ARGREP).key(key).add(start).add(end).addParams(params).add(WITHVALUES),
+  public final CommandObject<List<KeyValue<Long, byte[]>>> argrepWithValues(byte[] key, ArgrepParams params) {
+    return new CommandObject<>(commandArguments(ARGREP).key(key).addParams(params).add(WITHVALUES),
         BuilderFactory.BINARY_INDEXED_VALUE_LIST);
   }
 

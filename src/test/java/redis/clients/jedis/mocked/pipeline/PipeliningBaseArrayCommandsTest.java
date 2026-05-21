@@ -111,37 +111,37 @@ public class PipeliningBaseArrayCommandsTest extends PipeliningBaseMockedTestBas
 
   @Test
   public void testArgrep() {
-    ArgrepParams params = ArgrepParams.argrepParams().match("x");
-    when(commandObjects.argrep("k", 0L, 10L, params)).thenReturn(listLongCommandObject);
-    pipeliningBase.argrep("k", 0L, 10L, params);
+    ArgrepParams params = ArgrepParams.range(0L, 10L).match("x");
+    when(commandObjects.argrep("k", params)).thenReturn(listLongCommandObject);
+    pipeliningBase.argrep("k", params);
     assertThat(commands, contains(listLongCommandObject));
   }
 
   @Test
   public void testArgrepBinary() {
     byte[] key = "k".getBytes();
-    ArgrepParams params = ArgrepParams.argrepParams().exact("x");
-    when(commandObjects.argrep(key, 0L, 10L, params)).thenReturn(listLongCommandObject);
-    pipeliningBase.argrep(key, 0L, 10L, params);
+    ArgrepParams params = ArgrepParams.range(0L, 10L).exact("x");
+    when(commandObjects.argrep(key, params)).thenReturn(listLongCommandObject);
+    pipeliningBase.argrep(key, params);
     assertThat(commands, contains(listLongCommandObject));
   }
 
   @Test
   public void testArgrepWithValues() {
-    ArgrepParams params = ArgrepParams.argrepParams().match("x");
-    when(commandObjects.argrepWithValues("k", 0L, 10L, params))
+    ArgrepParams params = ArgrepParams.range(0L, 10L).match("x");
+    when(commandObjects.argrepWithValues("k", params))
         .thenReturn(listKeyValueLongStringCommandObject);
-    pipeliningBase.argrepWithValues("k", 0L, 10L, params);
+    pipeliningBase.argrepWithValues("k", params);
     assertThat(commands, contains(listKeyValueLongStringCommandObject));
   }
 
   @Test
   public void testArgrepWithValuesBinary() {
     byte[] key = "k".getBytes();
-    ArgrepParams params = ArgrepParams.argrepParams().exact("x");
-    when(commandObjects.argrepWithValues(key, 0L, 10L, params))
+    ArgrepParams params = ArgrepParams.range(0L, 10L).exact("x");
+    when(commandObjects.argrepWithValues(key, params))
         .thenReturn(listKeyValueLongBytesCommandObject);
-    pipeliningBase.argrepWithValues(key, 0L, 10L, params);
+    pipeliningBase.argrepWithValues(key, params);
     assertThat(commands, contains(listKeyValueLongBytesCommandObject));
   }
 

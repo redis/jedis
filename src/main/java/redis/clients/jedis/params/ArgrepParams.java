@@ -6,17 +6,22 @@ import java.util.List;
 import java.util.Objects;
 
 import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Protocol.Keyword;
 
 /**
- * Optional arguments for the {@code ARGREP} command.
- * <p>
- * Predicates are added in the order their fluent setters are invoked. Logical combinator
- * ({@code AND}/{@code OR}), {@code LIMIT} and {@code NOCASE} are emitted after the predicate list,
- * matching the order required by the Redis wire protocol. The {@code WITHVALUES} flag is not
- * exposed here: use {@code argrepWithValues} to request index/value pairs.
+ * Arguments for the {@code ARGREP} command. Every instance carries the mandatory {@code start end}
+ * bounds of the search range; instances are obtained through one of the static factories
+ * ({@link #unbounded()}, {@link #range(long, long)}, {@link #from(long)}, {@link #to(long)}) and
+ * may be flipped with {@link #reversed()} to traverse in descending index order. Predicates,
+ * combinator ({@code AND}/{@code OR}), {@code LIMIT} and {@code NOCASE} are appended via fluent
+ * setters in the order required by the wire protocol. The {@code WITHVALUES} flag is not exposed
+ * here: use {@code argrepWithValues} to request index/value pairs.
  */
 public class ArgrepParams implements IParams {
+
+  private static final byte[] MIN = new byte[] { '-' };
+  private static final byte[] MAX = new byte[] { '+' };
 
   private enum PredicateType {
     EXACT(Keyword.EXACT), MATCH(Keyword.MATCH), GLOB(Keyword.GLOB), RE(Keyword.RE);
@@ -51,17 +56,74 @@ public class ArgrepParams implements IParams {
     }
   }
 
+  private byte[] startRaw;
+  private byte[] endRaw;
   private final List<Predicate> predicates = new ArrayList<>();
   private Keyword combinator;
   private Long limit;
   private boolean nocase;
 
+  private ArgrepParams() {
+  }
+
   /**
-   * Create a new empty {@link ArgrepParams}.
-   * @return a fresh parameter object
+   * Search the entire array (wire bounds {@code - +}).
+   * @return a new {@link ArgrepParams} with start={@code -}, end={@code +}
    */
-  public static ArgrepParams argrepParams() {
-    return new ArgrepParams();
+  public static ArgrepParams unbounded() {
+    ArgrepParams p = new ArgrepParams();
+    p.startRaw = MIN;
+    p.endRaw = MAX;
+    return p;
+  }
+
+  /**
+   * Search the inclusive index range {@code [start, end]}.
+   * @param start the zero-based start index (inclusive)
+   * @param end the zero-based end index (inclusive)
+   * @return a new {@link ArgrepParams} with concrete numeric bounds
+   */
+  public static ArgrepParams range(long start, long end) {
+    ArgrepParams p = new ArgrepParams();
+    p.startRaw = Protocol.toByteArray(start);
+    p.endRaw = Protocol.toByteArray(end);
+    return p;
+  }
+
+  /**
+   * Search from a concrete start index to the end of the array (wire end {@code +}).
+   * @param start the zero-based start index (inclusive)
+   * @return a new {@link ArgrepParams} with start=numeric, end={@code +}
+   */
+  public static ArgrepParams from(long start) {
+    ArgrepParams p = new ArgrepParams();
+    p.startRaw = Protocol.toByteArray(start);
+    p.endRaw = MAX;
+    return p;
+  }
+
+  /**
+   * Search from the start of the array to a concrete end index (wire start {@code -}).
+   * @param end the zero-based end index (inclusive)
+   * @return a new {@link ArgrepParams} with start={@code -}, end=numeric
+   */
+  public static ArgrepParams to(long end) {
+    ArgrepParams p = new ArgrepParams();
+    p.startRaw = MIN;
+    p.endRaw = Protocol.toByteArray(end);
+    return p;
+  }
+
+  /**
+   * Swap the start and end bounds. Because the server interprets {@code start > end} as a
+   * descending traversal, this returns matches in reverse index order.
+   * @return this {@link ArgrepParams}
+   */
+  public ArgrepParams reversed() {
+    byte[] tmp = this.startRaw;
+    this.startRaw = this.endRaw;
+    this.endRaw = tmp;
+    return this;
   }
 
   /**
@@ -186,6 +248,11 @@ public class ArgrepParams implements IParams {
 
   @Override
   public void addParams(CommandArguments args) {
+    if (startRaw == null || endRaw == null) {
+      throw new IllegalStateException(
+          "ArgrepParams must be created via unbounded(), range(), from() or to()");
+    }
+    args.add(startRaw).add(endRaw);
     for (Predicate p : predicates) {
       args.add(p.type.keyword).add(p.value);
     }
@@ -209,12 +276,16 @@ public class ArgrepParams implements IParams {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     ArgrepParams that = (ArgrepParams) o;
-    return nocase == that.nocase && Objects.equals(combinator, that.combinator)
+    return nocase == that.nocase && Arrays.equals(startRaw, that.startRaw)
+        && Arrays.equals(endRaw, that.endRaw) && Objects.equals(combinator, that.combinator)
         && Objects.equals(limit, that.limit) && Objects.equals(predicates, that.predicates);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(predicates, combinator, limit, nocase);
+    int result = Objects.hash(predicates, combinator, limit, nocase);
+    result = 31 * result + Arrays.hashCode(startRaw);
+    result = 31 * result + Arrays.hashCode(endRaw);
+    return result;
   }
 }

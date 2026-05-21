@@ -122,39 +122,33 @@ public interface ArrayPipelineBinaryCommands {
 
   /**
    * <b><a href="https://redis.io/commands/argrep">ARGREP Command</a></b> Searches array elements
-   * within an inclusive index range using one or more textual predicates and returns the matching
-   * indices.
+   * within an inclusive index range (carried by {@link ArgrepParams}) using one or more textual
+   * predicates and returns the matching indices.
    * <p>
    * Time complexity: O(N) where N is the number of elements scanned.
    * <p>
    * Wire: {@code ARGREP key start end <params>}
    * @param key the name of the key that holds the array
-   * @param start zero-based start index (inclusive); when {@code start > end} the iteration is
-   *          reversed
-   * @param end zero-based end index (inclusive)
-   * @param params the predicates and options to apply
+   * @param params the search range, predicates and options to apply
    * @return a {@link Response} that resolves to the matching indices in traversal order
    * @since 8.0
    */
-  Response<List<Long>> argrep(byte[] key, long start, long end, ArgrepParams params);
+  Response<List<Long>> argrep(byte[] key, ArgrepParams params);
 
   /**
    * <b><a href="https://redis.io/commands/argrep">ARGREP Command</a></b> Searches array elements
-   * within an inclusive index range and returns the matching index/value pairs.
+   * within an inclusive index range (carried by {@link ArgrepParams}) and returns the matching
+   * index/value pairs.
    * <p>
    * Time complexity: O(N) where N is the number of elements scanned.
    * <p>
    * Wire: {@code ARGREP key start end <params> WITHVALUES}
    * @param key the name of the key that holds the array
-   * @param start zero-based start index (inclusive); when {@code start > end} the iteration is
-   *          reversed
-   * @param end zero-based end index (inclusive)
-   * @param params the predicates and options to apply
+   * @param params the search range, predicates and options to apply
    * @return a {@link Response} that resolves to the matching index/value pairs
    * @since 8.0
    */
-  Response<List<KeyValue<Long, byte[]>>> argrepWithValues(byte[] key, long start, long end,
-      ArgrepParams params);
+  Response<List<KeyValue<Long, byte[]>>> argrepWithValues(byte[] key, ArgrepParams params);
 
   /**
    * <b><a href="https://redis.io/commands/arinfo">ARINFO Command</a></b> Returns metadata

@@ -4623,15 +4623,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<Long> argrep(final byte[] key, final long start, final long end, final ArgrepParams params) {
+  public List<Long> argrep(final byte[] key, final ArgrepParams params) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.argrep(key, start, end, params));
+    return connection.executeCommand(commandObjects.argrep(key, params));
   }
 
   @Override
-  public List<KeyValue<Long, byte[]>> argrepWithValues(final byte[] key, final long start, final long end, final ArgrepParams params) {
+  public List<KeyValue<Long, byte[]>> argrepWithValues(final byte[] key, final ArgrepParams params) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.argrepWithValues(key, start, end, params));
+    return connection.executeCommand(commandObjects.argrepWithValues(key, params));
   }
 
   @Override
@@ -9663,15 +9663,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<Long> argrep(final String key, final long start, final long end, final ArgrepParams params) {
+  public List<Long> argrep(final String key, final ArgrepParams params) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.argrep(key, start, end, params));
+    return connection.executeCommand(commandObjects.argrep(key, params));
   }
 
   @Override
-  public List<KeyValue<Long, String>> argrepWithValues(final String key, final long start, final long end, final ArgrepParams params) {
+  public List<KeyValue<Long, String>> argrepWithValues(final String key, final ArgrepParams params) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.argrepWithValues(key, start, end, params));
+    return connection.executeCommand(commandObjects.argrepWithValues(key, params));
   }
 
   @Override

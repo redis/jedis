@@ -120,8 +120,7 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   public void testArgrep() {
     String key = "argrep-key";
     exec(commandObjects.arinsert(key, "foo", "foobar", "baz"));
-    List<Long> matches = exec(
-      commandObjects.argrep(key, 0L, 10L, ArgrepParams.argrepParams().match("foo")));
+    List<Long> matches = exec(commandObjects.argrep(key, ArgrepParams.range(0L, 10L).match("foo")));
     assertThat(matches, notNullValue());
   }
 
@@ -130,7 +129,7 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
     byte[] key = "argrep-key-b".getBytes();
     exec(commandObjects.arinsert(key, "alpha".getBytes(), "beta".getBytes()));
     List<Long> matches = exec(
-      commandObjects.argrep(key, 0L, 10L, ArgrepParams.argrepParams().exact("alpha")));
+      commandObjects.argrep(key, ArgrepParams.range(0L, 10L).exact("alpha")));
     assertThat(matches, notNullValue());
   }
 
@@ -139,7 +138,7 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
     String key = "argrep-wv-key";
     exec(commandObjects.arinsert(key, "foo", "foobar", "baz"));
     List<KeyValue<Long, String>> matches = exec(
-      commandObjects.argrepWithValues(key, 0L, 10L, ArgrepParams.argrepParams().match("foo")));
+      commandObjects.argrepWithValues(key, ArgrepParams.range(0L, 10L).match("foo")));
     assertThat(matches, notNullValue());
   }
 
@@ -148,7 +147,7 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
     byte[] key = "argrep-wv-key-b".getBytes();
     exec(commandObjects.arinsert(key, "alpha".getBytes(), "beta".getBytes()));
     List<KeyValue<Long, byte[]>> matches = exec(
-      commandObjects.argrepWithValues(key, 0L, 10L, ArgrepParams.argrepParams().exact("alpha")));
+      commandObjects.argrepWithValues(key, ArgrepParams.range(0L, 10L).exact("alpha")));
     assertThat(matches, notNullValue());
   }
 

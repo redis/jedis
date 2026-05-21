@@ -111,7 +111,7 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
   public void argrep() {
     String key = "argrep";
     jedis.arinsert(key, "foo", "foobar");
-    List<Long> r = jedis.argrep(key, 0L, 10L, ArgrepParams.argrepParams().match("foo"));
+    List<Long> r = jedis.argrep(key, ArgrepParams.range(0L, 10L).match("foo"));
     assertNotNull(r);
   }
 
@@ -119,7 +119,7 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
   public void argrepBinary() {
     byte[] key = SafeEncoder.encode("argrep-b");
     jedis.arinsert(key, "abc".getBytes());
-    List<Long> r = jedis.argrep(key, 0L, 10L, ArgrepParams.argrepParams().exact("abc"));
+    List<Long> r = jedis.argrep(key, ArgrepParams.range(0L, 10L).exact("abc"));
     assertNotNull(r);
   }
 
@@ -127,8 +127,8 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
   public void argrepWithValues() {
     String key = "argrepWithValues";
     jedis.arinsert(key, "foo", "foobar");
-    List<KeyValue<Long, String>> r = jedis.argrepWithValues(key, 0L, 10L,
-      ArgrepParams.argrepParams().match("foo"));
+    List<KeyValue<Long, String>> r = jedis.argrepWithValues(key,
+      ArgrepParams.range(0L, 10L).match("foo"));
     assertNotNull(r);
   }
 
@@ -136,8 +136,8 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
   public void argrepWithValuesBinary() {
     byte[] key = SafeEncoder.encode("argrepWithValues-b");
     jedis.arinsert(key, "abc".getBytes());
-    List<KeyValue<Long, byte[]>> r = jedis.argrepWithValues(key, 0L, 10L,
-      ArgrepParams.argrepParams().exact("abc"));
+    List<KeyValue<Long, byte[]>> r = jedis.argrepWithValues(key,
+      ArgrepParams.range(0L, 10L).exact("abc"));
     assertNotNull(r);
   }
 

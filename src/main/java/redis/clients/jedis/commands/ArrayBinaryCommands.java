@@ -122,43 +122,36 @@ public interface ArrayBinaryCommands {
 
   /**
    * <b><a href="https://redis.io/commands/argrep">ARGREP Command</a></b> Searches array elements
-   * within an inclusive index range using one or more textual predicates and returns the matching
-   * indices. Empty slots are skipped. Multiple predicates can be combined with {@code AND}/
-   * {@code OR} via {@link ArgrepParams}. Use
-   * {@link #argrepWithValues(byte[], long, long, ArgrepParams)} to also return the matching values.
+   * within an inclusive index range (carried by {@link ArgrepParams}) using one or more textual
+   * predicates and returns the matching indices. Empty slots are skipped. Multiple predicates can
+   * be combined with {@code AND}/{@code OR} via {@link ArgrepParams}. Use
+   * {@link #argrepWithValues(byte[], ArgrepParams)} to also return the matching values.
    * <p>
    * Time complexity: O(N) where N is the number of elements scanned.
    * <p>
    * Wire: {@code ARGREP key start end <params>}
    * @param key the name of the key that holds the array
-   * @param start zero-based start index (inclusive); when {@code start > end} the iteration is
-   *          reversed
-   * @param end zero-based end index (inclusive)
-   * @param params the predicates and options to apply
+   * @param params the search range, predicates and options to apply
    * @return the matching indices in traversal order; empty when no match
    * @since 8.0
    */
-  List<Long> argrep(byte[] key, long start, long end, ArgrepParams params);
+  List<Long> argrep(byte[] key, ArgrepParams params);
 
   /**
    * <b><a href="https://redis.io/commands/argrep">ARGREP Command</a></b> Searches array elements
-   * within an inclusive index range and returns the matching index/value pairs. Empty slots are
-   * skipped. This overload appends the {@code WITHVALUES} keyword to the wire arguments; do not
-   * also request it on {@link ArgrepParams}.
+   * within an inclusive index range (carried by {@link ArgrepParams}) and returns the matching
+   * index/value pairs. Empty slots are skipped. This overload appends the {@code WITHVALUES}
+   * keyword to the wire arguments; do not also request it on {@link ArgrepParams}.
    * <p>
    * Time complexity: O(N) where N is the number of elements scanned.
    * <p>
    * Wire: {@code ARGREP key start end <params> WITHVALUES}
    * @param key the name of the key that holds the array
-   * @param start zero-based start index (inclusive); when {@code start > end} the iteration is
-   *          reversed
-   * @param end zero-based end index (inclusive)
-   * @param params the predicates and options to apply
+   * @param params the search range, predicates and options to apply
    * @return the matching index/value pairs in traversal order; empty when no match
    * @since 8.0
    */
-  List<KeyValue<Long, byte[]>> argrepWithValues(byte[] key, long start, long end,
-      ArgrepParams params);
+  List<KeyValue<Long, byte[]>> argrepWithValues(byte[] key, ArgrepParams params);
 
   /**
    * <b><a href="https://redis.io/commands/arinfo">ARINFO Command</a></b> Returns metadata

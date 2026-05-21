@@ -1071,28 +1071,26 @@ public class Connection implements Closeable {
     @Override
     public PushConsumerContext handle(PushConsumerContext context) {
       PushMessage message = context.getMessage();
+      byte[] type = message.getType();
+      if (type == null) {
+        return context;
+      }
 
-      switch (message.getType()) {
-      case "MOVING":
+      if (Arrays.equals(type, PushMessageTypes.MOVING_BYTES)) {
         onMoving(message);
         context.drop();
-        break;
-      case "MIGRATING":
+      } else if (Arrays.equals(type, PushMessageTypes.MIGRATING_BYTES)) {
         activateRelaxedTimeout();
         context.drop();
-        break;
-      case "MIGRATED":
+      } else if (Arrays.equals(type, PushMessageTypes.MIGRATED_BYTES)) {
         rollbackRelaxedTimeout();
         context.drop();
-        break;
-      case "FAILING_OVER":
+      } else if (Arrays.equals(type, PushMessageTypes.FAILING_OVER_BYTES)) {
         activateRelaxedTimeout();
         context.drop();
-        break;
-      case "FAILED_OVER":
+      } else if (Arrays.equals(type, PushMessageTypes.FAILED_OVER_BYTES)) {
         rollbackRelaxedTimeout();
         context.drop();
-        break;
       }
 
       return context;

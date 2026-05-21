@@ -6,6 +6,7 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.MSetExParams;
 
+import redis.clients.jedis.params.IncrexFloatParams;
 import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.IncrexResponse;
@@ -126,15 +127,15 @@ public interface StringBinaryCommands extends BitBinaryCommands {
 
   /**
    * Increment the floating-point number stored at key by {@code increment}, with optional bounds,
-   * overflow handling, and expiration control.
+   * saturation, and expiration control.
    * @param key the key
    * @param increment the floating-point amount to increment by (may be negative)
-   * @param params optional bounds, overflow mode, and expiration options
+   * @param params optional bounds, {@code SATURATE} flag, and expiration options
    * @return {@link IncrexResponse} containing the new value and the applied increment
-   * @see StringCommands#increxFloat(String, double, IncrexParams)
+   * @see StringCommands#increx(String, double, IncrexFloatParams)
    * @since 8.0
    */
-  IncrexResponse<Double> increxFloat(byte[] key, double increment, IncrexParams params);
+  IncrexResponse<Double> increx(byte[] key, double increment, IncrexFloatParams params);
 
   long decr(byte[] key);
 

@@ -939,8 +939,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public IncrexResponse<Double> increxFloat(String key, double increment, IncrexParams params) {
-    return executeCommand(commandObjects.increxFloat(key, increment, params));
+  public IncrexResponse<Double> increx(String key, double increment, IncrexFloatParams params) {
+    return executeCommand(commandObjects.increx(key, increment, params));
   }
 
   @Override
@@ -979,8 +979,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public IncrexResponse<Double> increxFloat(byte[] key, double increment, IncrexParams params) {
-    return executeCommand(commandObjects.increxFloat(key, increment, params));
+  public IncrexResponse<Double> increx(byte[] key, double increment, IncrexFloatParams params) {
+    return executeCommand(commandObjects.increx(key, increment, params));
   }
 
   @Override

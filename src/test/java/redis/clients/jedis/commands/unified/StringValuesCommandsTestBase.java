@@ -27,6 +27,7 @@ import redis.clients.jedis.resps.LCSMatchResult;
 import redis.clients.jedis.resps.IncrexResponse;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.IncrexFloatParams;
 import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.util.TestEnvUtil;
 
@@ -371,8 +372,8 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   @EnabledOnCommand("INCREX")
   public void increxByFloatWithBoundsAndExpiry() {
     jedis.set("foo", "3.25");
-    IncrexParams params = new IncrexParams().lbound(-1.5).ubound(9.5).ex(60);
-    IncrexResponse<Double> res = jedis.increxFloat("foo", 1.25, params);
+    IncrexFloatParams params = new IncrexFloatParams().lbound(-1.5).ubound(9.5).ex(60);
+    IncrexResponse<Double> res = jedis.increx("foo", 1.25, params);
     assertEquals(4.5, res.getValue(), 0.0);
     assertEquals(1.25, res.getIncrement(), 0.0);
   }
@@ -483,8 +484,8 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
   @EnabledOnCommand("INCREX")
   public void increxSaturateFloat() {
     jedis.set("foo", "0.0");
-    IncrexParams params = new IncrexParams().ubound(5.0).saturate();
-    IncrexResponse<Double> res = jedis.increxFloat("foo", 10.0, params);
+    IncrexFloatParams params = new IncrexFloatParams().ubound(5.0).saturate();
+    IncrexResponse<Double> res = jedis.increx("foo", 10.0, params);
     assertEquals(5.0, res.getValue(), 0.0);
     assertEquals(5.0, res.getIncrement(), 0.0);
   }

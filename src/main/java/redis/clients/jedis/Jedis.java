@@ -1215,9 +1215,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public IncrexResponse<Double> increxFloat(final byte[] key, final double increment, final IncrexParams params) {
+  public IncrexResponse<Double> increx(final byte[] key, final double increment, final IncrexFloatParams params) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.increxFloat(key, increment, params));
+    return connection.executeCommand(commandObjects.increx(key, increment, params));
   }
 
   /**
@@ -5895,9 +5895,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public IncrexResponse<Double> increxFloat(final String key, final double increment, final IncrexParams params) {
+  public IncrexResponse<Double> increx(final String key, final double increment, final IncrexFloatParams params) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.increxFloat(key, increment, params));
+    return connection.executeCommand(commandObjects.increx(key, increment, params));
   }
 
   /**

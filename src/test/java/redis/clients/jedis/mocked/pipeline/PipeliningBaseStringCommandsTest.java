@@ -10,6 +10,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.IncrexFloatParams;
 import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.params.SetParams;
@@ -694,11 +695,11 @@ public class PipeliningBaseStringCommandsTest extends PipeliningBaseMockedTestBa
 
   @Test
   public void testIncrexFloat() {
-    IncrexParams params = new IncrexParams().ubound(10.0).ex(60);
+    IncrexFloatParams params = new IncrexFloatParams().ubound(10.0).ex(60);
 
-    when(commandObjects.increxFloat("key", 1.5, params)).thenReturn(increxResponseDoubleCommandObject);
+    when(commandObjects.increx("key", 1.5, params)).thenReturn(increxResponseDoubleCommandObject);
 
-    Response<IncrexResponse<Double>> response = pipeliningBase.increxFloat("key", 1.5, params);
+    Response<IncrexResponse<Double>> response = pipeliningBase.increx("key", 1.5, params);
 
     assertThat(commands, contains(increxResponseDoubleCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -707,11 +708,11 @@ public class PipeliningBaseStringCommandsTest extends PipeliningBaseMockedTestBa
   @Test
   public void testIncrexFloatBinary() {
     byte[] key = "key".getBytes();
-    IncrexParams params = new IncrexParams().ubound(10.0).ex(60);
+    IncrexFloatParams params = new IncrexFloatParams().ubound(10.0).ex(60);
 
-    when(commandObjects.increxFloat(key, 1.5, params)).thenReturn(increxResponseDoubleCommandObject);
+    when(commandObjects.increx(key, 1.5, params)).thenReturn(increxResponseDoubleCommandObject);
 
-    Response<IncrexResponse<Double>> response = pipeliningBase.increxFloat(key, 1.5, params);
+    Response<IncrexResponse<Double>> response = pipeliningBase.increx(key, 1.5, params);
 
     assertThat(commands, contains(increxResponseDoubleCommandObject));
     assertThat(response, is(predefinedResponse));

@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.IncrexFloatParams;
 import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.params.SetParams;
@@ -966,33 +967,33 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testIncrexFloat() {
     String key = "key";
-    IncrexParams params = new IncrexParams().ubound(10.0).ex(60);
+    IncrexFloatParams params = new IncrexFloatParams().ubound(10.0).ex(60);
     IncrexResponse<Double> expected = new IncrexResponse<>(1.5, 1.5);
 
-    when(commandObjects.increxFloat(key, 1.5, params)).thenReturn(increxResponseDoubleCommandObject);
+    when(commandObjects.increx(key, 1.5, params)).thenReturn(increxResponseDoubleCommandObject);
     when(commandExecutor.executeCommand(increxResponseDoubleCommandObject)).thenReturn(expected);
 
-    IncrexResponse<Double> result = jedis.increxFloat(key, 1.5, params);
+    IncrexResponse<Double> result = jedis.increx(key, 1.5, params);
 
     assertThat(result, equalTo(expected));
     verify(commandExecutor).executeCommand(increxResponseDoubleCommandObject);
-    verify(commandObjects).increxFloat(key, 1.5, params);
+    verify(commandObjects).increx(key, 1.5, params);
   }
 
   @Test
   public void testIncrexFloatBinary() {
     byte[] key = "key".getBytes();
-    IncrexParams params = new IncrexParams().ubound(10.0).ex(60);
+    IncrexFloatParams params = new IncrexFloatParams().ubound(10.0).ex(60);
     IncrexResponse<Double> expected = new IncrexResponse<>(1.5, 1.5);
 
-    when(commandObjects.increxFloat(key, 1.5, params)).thenReturn(increxResponseDoubleCommandObject);
+    when(commandObjects.increx(key, 1.5, params)).thenReturn(increxResponseDoubleCommandObject);
     when(commandExecutor.executeCommand(increxResponseDoubleCommandObject)).thenReturn(expected);
 
-    IncrexResponse<Double> result = jedis.increxFloat(key, 1.5, params);
+    IncrexResponse<Double> result = jedis.increx(key, 1.5, params);
 
     assertThat(result, equalTo(expected));
     verify(commandExecutor).executeCommand(increxResponseDoubleCommandObject);
-    verify(commandObjects).increxFloat(key, 1.5, params);
+    verify(commandObjects).increx(key, 1.5, params);
   }
 
 }

@@ -681,7 +681,7 @@ public class CommandObjects {
         IncrexResponse.INCREX_RESPONSE_LONG);
   }
 
-  public final CommandObject<IncrexResponse<Double>> increxFloat(String key, double increment, IncrexParams params) {
+  public final CommandObject<IncrexResponse<Double>> increx(String key, double increment, IncrexFloatParams params) {
     return new CommandObject<>(commandArguments(INCREX).key(key).add(BYFLOAT).add(increment).addParams(params),
         IncrexResponse.INCREX_RESPONSE_DOUBLE);
   }
@@ -695,7 +695,7 @@ public class CommandObjects {
         IncrexResponse.INCREX_RESPONSE_LONG);
   }
 
-  public final CommandObject<IncrexResponse<Double>> increxFloat(byte[] key, double increment, IncrexParams params) {
+  public final CommandObject<IncrexResponse<Double>> increx(byte[] key, double increment, IncrexFloatParams params) {
     return new CommandObject<>(commandArguments(INCREX).key(key).add(BYFLOAT).add(increment).addParams(params),
         IncrexResponse.INCREX_RESPONSE_DOUBLE);
   }

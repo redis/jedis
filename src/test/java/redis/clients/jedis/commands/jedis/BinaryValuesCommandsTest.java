@@ -30,6 +30,7 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.IncrexFloatParams;
 import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.MSetExParams;
 import redis.clients.jedis.resps.IncrexResponse;
@@ -457,8 +458,8 @@ public class BinaryValuesCommandsTest extends JedisCommandsTestBase {
   @EnabledOnCommand("INCREX")
   public void increxByFloatWithBoundsAndExpiryBinary() {
     jedis.set(bfoo, "3.25".getBytes());
-    IncrexParams params = new IncrexParams().lbound(-1.5).ubound(9.5).ex(60);
-    IncrexResponse<Double> res = jedis.increxFloat(bfoo, 1.25, params);
+    IncrexFloatParams params = new IncrexFloatParams().lbound(-1.5).ubound(9.5).ex(60);
+    IncrexResponse<Double> res = jedis.increx(bfoo, 1.25, params);
     assertEquals(4.5, res.getValue(), 0.0);
     assertEquals(1.25, res.getIncrement(), 0.0);
   }

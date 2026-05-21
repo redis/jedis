@@ -51,7 +51,7 @@ public class CollectReducerTest {
 
     List<Object> args = serialize(collect);
     assertThat(args, contains(SearchKeyword.REDUCE, "COLLECT", 4, SearchKeyword.FIELDS, 2, "@fruit",
-        "@sweetness", SearchKeyword.AS, "items"));
+      "@sweetness", SearchKeyword.AS, "items"));
   }
 
   @Test
@@ -62,7 +62,7 @@ public class CollectReducerTest {
 
     List<Object> args = serialize(collect);
     assertThat(args, contains(SearchKeyword.REDUCE, "COLLECT", 2, SearchKeyword.FIELDS,
-        Protocol.BYTES_ASTERISK, SearchKeyword.AS, "top"));
+      Protocol.BYTES_ASTERISK, SearchKeyword.AS, "top"));
   }
 
   @Test
@@ -74,19 +74,19 @@ public class CollectReducerTest {
     // narg = FIELDS 3 @a @b @c = 5 tokens
     assertEquals(5, args.get(2));
     assertThat(args, contains(SearchKeyword.REDUCE, "COLLECT", 5, SearchKeyword.FIELDS, 3, "@a",
-        "@b", "@c", SearchKeyword.AS, "items"));
+      "@b", "@c", SearchKeyword.AS, "items"));
   }
 
   @Test
   public void fieldsAllAfterExplicitFieldsThrows() {
     assertThrows(IllegalStateException.class,
-        () -> Reducers.collect().fields("@fruit").fieldsAll());
+      () -> Reducers.collect().fields("@fruit").fieldsAll());
   }
 
   @Test
   public void explicitFieldsAfterFieldsAllThrows() {
     assertThrows(IllegalStateException.class,
-        () -> Reducers.collect().fieldsAll().fields("@fruit"));
+      () -> Reducers.collect().fieldsAll().fields("@fruit"));
   }
 
   @Test
@@ -106,7 +106,7 @@ public class CollectReducerTest {
 
     List<Object> args = serialize(collect);
     assertThat(args, contains(SearchKeyword.REDUCE, "COLLECT", 7, SearchKeyword.FIELDS, 1, "@fruit",
-        SearchKeyword.SORTBY, 2, "@sweetness", "DESC", SearchKeyword.AS, "top"));
+      SearchKeyword.SORTBY, 2, "@sweetness", "DESC", SearchKeyword.AS, "top"));
   }
 
   @Test
@@ -125,13 +125,13 @@ public class CollectReducerTest {
   @Test
   public void sortByMultipleFieldsAccumulates() {
     // narg = FIELDS 1 @x SORTBY 4 @a DESC @b ASC = 9
-    CollectReducer collect = Reducers.collect().fields("@x")
-        .sortBy(SortedField.desc("@a"), SortedField.asc("@b"));
+    CollectReducer collect = Reducers.collect().fields("@x").sortBy(SortedField.desc("@a"),
+      SortedField.asc("@b"));
     collect.as("top");
 
     List<Object> args = serialize(collect);
     assertThat(args, contains(SearchKeyword.REDUCE, "COLLECT", 9, SearchKeyword.FIELDS, 1, "@x",
-        SearchKeyword.SORTBY, 4, "@a", "DESC", "@b", "ASC", SearchKeyword.AS, "top"));
+      SearchKeyword.SORTBY, 4, "@a", "DESC", "@b", "ASC", SearchKeyword.AS, "top"));
   }
 
   @Test
@@ -156,7 +156,7 @@ public class CollectReducerTest {
 
     List<Object> args = serialize(collect);
     assertThat(args, contains(SearchKeyword.REDUCE, "COLLECT", 6, SearchKeyword.FIELDS, 1, "@x",
-        SearchKeyword.LIMIT, 0, 5, SearchKeyword.AS, "top"));
+      SearchKeyword.LIMIT, 0, 5, SearchKeyword.AS, "top"));
   }
 
   @Test
@@ -192,15 +192,16 @@ public class CollectReducerTest {
 
     List<Object> args = serialize(collect);
     // narg = 14: FIELDS 3 @__key @fruit @sweetness SORTBY 4 @sweetness DESC @__key ASC LIMIT 0 2
-    assertThat(args, contains(SearchKeyword.REDUCE, "COLLECT", 14, SearchKeyword.FIELDS, 3,
-        "@__key", "@fruit", "@sweetness", SearchKeyword.SORTBY, 4, "@sweetness", "DESC", "@__key",
-        "ASC", SearchKeyword.LIMIT, 0, 2, SearchKeyword.AS, "top"));
+    assertThat(args,
+      contains(SearchKeyword.REDUCE, "COLLECT", 14, SearchKeyword.FIELDS, 3, "@__key", "@fruit",
+        "@sweetness", SearchKeyword.SORTBY, 4, "@sweetness", "DESC", "@__key", "ASC",
+        SearchKeyword.LIMIT, 0, 2, SearchKeyword.AS, "top"));
   }
 
   @Test
   public void nargMatchesNumberOfTokensBetweenCollectAndAs() {
-    CollectReducer collect = Reducers.collect().fieldsAll()
-        .sortBy(SortedField.desc("@s")).limit(0, 2);
+    CollectReducer collect = Reducers.collect().fieldsAll().sortBy(SortedField.desc("@s")).limit(0,
+      2);
     collect.as("top");
 
     List<Object> args = serialize(collect);
@@ -209,7 +210,7 @@ public class CollectReducerTest {
     int declaredNarg = (Integer) args.get(collectIdx + 1);
 
     assertEquals(asIdx - collectIdx - 2, declaredNarg,
-        "narg must equal the number of tokens between COLLECT <narg> and AS");
+      "narg must equal the number of tokens between COLLECT <narg> and AS");
   }
 
   @Test

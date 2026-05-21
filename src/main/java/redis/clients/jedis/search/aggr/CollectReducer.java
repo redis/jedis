@@ -14,44 +14,42 @@ import redis.clients.jedis.search.SearchProtocol.SearchKeyword;
  * <p>
  * The grammar implemented by this reducer is:
  *
- * <pre>{@code
+ * <pre>
+ * {@code
  * REDUCE COLLECT <narg>
  *     FIELDS ( * | <num_fields> <field_1> [<field_2> ...] )
  *     [SORTBY <narg> <@field> [ASC|DESC] [<@field> [ASC|DESC] ...]]
  *     [LIMIT <offset> <count>]
  *   [AS <alias>]
- * }</pre>
+ * }
+ * </pre>
  *
- * <h2>Server-side feature flag (required)</h2>
- *
- * COLLECT is currently considered an unstable feature in Redis Search and is gated behind a
- * runtime configuration switch. Callers MUST enable it on the Redis server before issuing
- * aggregations that use this reducer; otherwise the server replies with
+ * <h2>Server-side feature flag (required)</h2> COLLECT is currently considered an unstable feature
+ * in Redis Search and is gated behind a runtime configuration switch. Callers MUST enable it on the
+ * Redis server before issuing aggregations that use this reducer; otherwise the server replies with
  * {@code SEARCH_QUERY_BAD `COLLECT` is unavailable when `ENABLE_UNSTABLE_FEATURES` is off}.
  *
- * <pre>{@code
+ * <pre>
+ * {@code
  * jedis.configSet("search-enable-unstable-features", "yes");
- * }</pre>
+ * }
+ * </pre>
  *
  * The flag can also be set permanently in {@code redis.conf} or via the matching module-load
  * argument.
- *
  * <h2>Example</h2>
  *
- * <pre>{@code
- * AggregationBuilder agg = new AggregationBuilder()
- *     .loadAll()
- *     .groupBy("@color",
- *         Reducers.collect()
- *             .fieldsAll()
- *             .sortBy(SortedField.desc("@sweetness"))
- *             .limit(0, 2)
- *             .as("top_fruits"));
- * }</pre>
+ * <pre>
+ * {
+ *   &#64;code
+ *   AggregationBuilder agg = new AggregationBuilder().loadAll().groupBy("@color",
+ *     Reducers.collect().fieldsAll().sortBy(SortedField.desc("@sweetness")).limit(0, 2)
+ *         .as("top_fruits"));
+ * }
+ * </pre>
  *
- * The reducer is marked {@link Experimental} because both the underlying Redis Search feature
- * and this Java surface are subject to change while the server-side rollout is in progress.
- *
+ * The reducer is marked {@link Experimental} because both the underlying Redis Search feature and
+ * this Java surface are subject to change while the server-side rollout is in progress.
  * @see Reducers#collect()
  */
 @Experimental
@@ -68,8 +66,8 @@ public final class CollectReducer extends Reducer {
   }
 
   /**
-   * Project the named fields for every document in the group. Use {@code @__key},
-   * {@code @__score} or document field names (e.g. {@code @title}).
+   * Project the named fields for every document in the group. Use {@code @__key}, {@code @__score}
+   * or document field names (e.g. {@code @title}).
    * <p>
    * Mutually exclusive with {@link #fieldsAll()}.
    */
@@ -86,8 +84,8 @@ public final class CollectReducer extends Reducer {
    * Project every field available in the current input row ({@code FIELDS *}).
    * <p>
    * Per the COLLECT specification, {@code *} does not trigger an implicit load — fields must
-   * already be in the pipeline (typically via {@code LOAD *} or because they are grouping
-   * keys / reducer aliases).
+   * already be in the pipeline (typically via {@code LOAD *} or because they are grouping keys /
+   * reducer aliases).
    * <p>
    * Mutually exclusive with {@link #fields(String...)}.
    */
@@ -101,8 +99,8 @@ public final class CollectReducer extends Reducer {
   }
 
   /**
-   * In-group sort by one or more fields. May be called multiple times to append further sort
-   * keys (each call adds to the existing list).
+   * In-group sort by one or more fields. May be called multiple times to append further sort keys
+   * (each call adds to the existing list).
    */
   public CollectReducer sortBy(SortedField... fields) {
     Collections.addAll(this.sortFields, fields);

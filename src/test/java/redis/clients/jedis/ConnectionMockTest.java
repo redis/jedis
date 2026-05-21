@@ -193,7 +193,7 @@ public class ConnectionMockTest {
 
     private final Duration relaxedBlockingTimeout = Duration.ofMillis(RELAXED_BLOCKING_TIMEOUT_MS);
 
-    private final CommandObjects commandObjects = new CommandObjects();
+    private final CommandObjects commandObjects = new CommandObjects(RedisProtocol.RESP3);
 
     private Connection connection;
 
@@ -227,7 +227,8 @@ public class ConnectionMockTest {
     }
 
     @Test
-    public void testMigratingPushMessage() throws SocketException {
+    public void
+    testMigratingPushMessage() throws SocketException {
       Socket socket = ReflectionTestUtil.getField(connection, "socket");
 
       assertEquals(SO_TIMEOUT_MS, connection.getSoTimeout());

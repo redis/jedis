@@ -8,6 +8,7 @@ import java.util.Objects;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.annots.Experimental;
 
 /**
  * Arguments for the {@code ARGREP} command. Every instance carries the mandatory {@code start end}
@@ -18,6 +19,7 @@ import redis.clients.jedis.Protocol.Keyword;
  * setters in the order required by the wire protocol. The {@code WITHVALUES} flag is not exposed
  * here: use {@code argrepWithValues} to request index/value pairs.
  */
+@Experimental
 public class ArgrepParams implements IParams {
 
   private static final byte[] MIN = new byte[] { '-' };

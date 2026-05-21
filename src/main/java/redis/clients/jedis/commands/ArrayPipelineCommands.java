@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.OptionalLong;
 
 import redis.clients.jedis.Response;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.ArrayAggregate;
 import redis.clients.jedis.args.ArrayBitwise;
 import redis.clients.jedis.args.LongRange;
@@ -133,6 +134,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the matching indices in traversal order
    * @since 8.0
    */
+  @Experimental
   Response<List<Long>> argrep(String key, ArgrepParams params);
 
   /**
@@ -148,6 +150,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the matching index/value pairs
    * @since 8.0
    */
+  @Experimental
   Response<List<KeyValue<Long, String>>> argrepWithValues(String key, ArgrepParams params);
 
   /**

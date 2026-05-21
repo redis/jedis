@@ -90,8 +90,24 @@ public class CommandObjects {
     return FLUSHDB_COMMAND_OBJECT;
   }
 
+  public final CommandObject<Map<String, String>> configGet(String pattern) {
+    return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.GET).add(pattern),
+        BuilderFactory.STRING_MAP);
+  }
+
+  public final CommandObject<Map<String, String>> configGet(String... patterns) {
+    return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.GET).addObjects((Object[]) patterns),
+        BuilderFactory.STRING_MAP);
+  }
+
   public final CommandObject<String> configSet(String parameter, String value) {
     return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.SET).add(parameter).add(value), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> configSet(Map<String, String> parameterValues) {
+    CommandArguments args = commandArguments(Command.CONFIG).add(Keyword.SET);
+    parameterValues.forEach((k, v) -> args.add(k).add(v));
+    return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
   private final CommandObject<String> INFO_COMMAND_OBJECT = new CommandObject<>(commandArguments(Command.INFO),

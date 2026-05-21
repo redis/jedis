@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
@@ -345,7 +346,18 @@ public class TcpMockServer {
             // Process command with custom handler or built-in responses
             processCommand(commandArgs);
           } catch (IOException e) {
-            logger.debug("Client " + clientId + " disconnected: " + e.getMessage());
+            logger.trace("Client " + clientId + " disconnected: " + e.getMessage());
+            connected = false;
+            break;
+          } catch (JedisConnectionException e) {
+            // RedisInputStream wraps any IOException (including SocketException
+            // "Connection reset", which Jedis triggers via SO_LINGER(true, 0) on close)
+            // into JedisConnectionException. Treat those as a normal disconnect.
+            if (e.getCause() instanceof IOException) {
+              logger.trace("Client " + clientId + " disconnected: " + e.getMessage());
+            } else {
+              logger.debug("Client " + clientId + " connection error: " + e.getMessage());
+            }
             connected = false;
             break;
           } catch (Exception e) {

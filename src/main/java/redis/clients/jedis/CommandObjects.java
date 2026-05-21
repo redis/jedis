@@ -38,19 +38,13 @@ import redis.clients.jedis.util.CompareCondition;
 
 public class CommandObjects {
 
-  private RedisProtocol protocol;
-
-  // TODO: Remove together with setProtocol
-  public CommandObjects() {
-  }
+  private final RedisProtocol protocol;
 
   public CommandObjects(RedisProtocol protocol) {
+    if (protocol == null) {
+      throw new IllegalArgumentException("protocol must not be null");
+    }
     this.protocol = protocol;
-  }
-
-  // TODO: restrict?
-  public final void setProtocol(RedisProtocol proto) {
-    this.protocol = proto;
   }
 
   // TODO: remove?
@@ -96,8 +90,24 @@ public class CommandObjects {
     return FLUSHDB_COMMAND_OBJECT;
   }
 
+  public final CommandObject<Map<String, String>> configGet(String pattern) {
+    return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.GET).add(pattern),
+        BuilderFactory.STRING_MAP);
+  }
+
+  public final CommandObject<Map<String, String>> configGet(String... patterns) {
+    return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.GET).addObjects((Object[]) patterns),
+        BuilderFactory.STRING_MAP);
+  }
+
   public final CommandObject<String> configSet(String parameter, String value) {
     return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.SET).add(parameter).add(value), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> configSet(Map<String, String> parameterValues) {
+    CommandArguments args = commandArguments(Command.CONFIG).add(Keyword.SET);
+    parameterValues.forEach((k, v) -> args.add(k).add(v));
+    return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
   private final CommandObject<String> INFO_COMMAND_OBJECT = new CommandObject<>(commandArguments(Command.INFO),
@@ -1212,7 +1222,7 @@ public class CommandObjects {
 
   public final CommandObject<List<Map.Entry<String, String>>> hrandfieldWithValues(String key, long count) {
     return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count).add(WITHVALUES),
-        protocol != RedisProtocol.RESP3 ? BuilderFactory.STRING_PAIR_LIST : BuilderFactory.STRING_PAIR_LIST_FROM_PAIRS);
+        protocol == RedisProtocol.RESP2 ? BuilderFactory.STRING_PAIR_LIST : BuilderFactory.STRING_PAIR_LIST_FROM_PAIRS);
   }
 
   public final CommandObject<Map<byte[], byte[]>> hgetAll(byte[] key) {
@@ -1229,7 +1239,7 @@ public class CommandObjects {
 
   public final CommandObject<List<Map.Entry<byte[], byte[]>>> hrandfieldWithValues(byte[] key, long count) {
     return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count).add(WITHVALUES),
-        protocol != RedisProtocol.RESP3 ? BuilderFactory.BINARY_PAIR_LIST : BuilderFactory.BINARY_PAIR_LIST_FROM_PAIRS);
+        protocol == RedisProtocol.RESP2 ? BuilderFactory.BINARY_PAIR_LIST : BuilderFactory.BINARY_PAIR_LIST_FROM_PAIRS);
   }
 
   public final CommandObject<ScanResult<Map.Entry<String, String>>> hscan(String key, String cursor, ScanParams params) {
@@ -3998,7 +4008,7 @@ public class CommandObjects {
 
   public final CommandObject<List<Class<?>>> jsonType(String key, Path2 path) {
     return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path),
-        protocol != RedisProtocol.RESP3 ? JsonBuilderFactory.JSON_TYPE_LIST : JsonBuilderFactory.JSON_TYPE_RESPONSE_RESP3_COMPATIBLE);
+        protocol == RedisProtocol.RESP2 ? JsonBuilderFactory.JSON_TYPE_LIST : JsonBuilderFactory.JSON_TYPE_RESPONSE_RESP3_COMPATIBLE);
   }
 
   @Deprecated

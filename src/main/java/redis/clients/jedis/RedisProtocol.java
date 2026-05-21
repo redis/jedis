@@ -23,6 +23,8 @@ public enum RedisProtocol {
   RESP2("2"),
   RESP3("3");
 
+  public static final RedisProtocol REDIS_SERVER_DEFAULT_PROTO = RESP2;
+
   private final String version;
 
   private RedisProtocol(String ver) {
@@ -44,5 +46,9 @@ public enum RedisProtocol {
     if (proto == 2) return RESP2;
     if (proto == 3) return RESP3;
     throw new IllegalArgumentException("Unknown protocol version: " + proto);
+  }
+
+  public static RedisProtocol orServerDefault(RedisProtocol proto) {
+    return (proto == null) ? REDIS_SERVER_DEFAULT_PROTO : proto;
   }
 }

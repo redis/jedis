@@ -1,6 +1,5 @@
 package redis.clients.jedis;
 
-import static redis.clients.jedis.MaintenanceNotificationsConfig.Mode.ENABLED;
 import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.io.Closeable;
@@ -191,9 +190,11 @@ public class Connection implements Closeable {
    * @param config the client configuration; if {@code null}, only default consumers are registered
    */
   protected void initPushConsumers(JedisClientConfig config) {
-
-    // Register default Pub/Sub consumer.
-    // Propagates Pub/Sub messages to the caller; all other messages are consumed.
+    /*
+     * Default consumers to process push messages.
+     * Marks all @{link PushMessages as processed, except for pub/sub.
+     * Pub/sub messages are propagated to the client.
+     */
     addPushConsumer(PushConsumerChainImpl.PUBSUB_CONSUMER);
 
     if (config != null && config.maintNotificationsConfig().isEnabled()) {
@@ -793,7 +794,7 @@ public class Connection implements Closeable {
           getStatusCodeReply();
         } catch (JedisDataException e) {
           // command not supported, fail connection
-          if (maintNotificationsConfig.getMode() == ENABLED) {
+          if (maintNotificationsConfig.getMode() == MaintenanceNotificationsConfig.Mode.ENABLED) {
             throw e;
           } else {
             // auto mode - ignore error
@@ -992,7 +993,7 @@ public class Connection implements Closeable {
   /**
    * Returns an unmodifiable view of the registered push consumers.
    *
-   * @return
+   * @return the list of push consumers
    */
   List<PushConsumer> getPushConsumers() {
     return pushConsumers.getConsumers();

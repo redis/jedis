@@ -100,8 +100,8 @@ public class TcpMockServer {
   }
 
   /**
-   * Generic method to send a push message to all connected clients. Can handle mixed types
-   * (Integer, Long, String, etc.).
+   * Generic method to send a push message to all connected clients. Generic method to send a push
+   * message to all connected clients. Can handle mixed types (Integer, Long, String, etc.).
    * <p>
    * For structured maintenance events, use {@link MaintenanceEvent} utility to create the message
    * elements, then pass them to this method.
@@ -142,7 +142,7 @@ public class TcpMockServer {
    *   server.sendPushMessageToAll(MaintenanceEvent.migrating(6, 2, "2", "4"));
    * }
    * </pre>
-   * 
+   *
    * @param messageElements array where first element is the push type, rest are arguments
    */
   public void sendPushMessageToAll(Object[] messageElements) {

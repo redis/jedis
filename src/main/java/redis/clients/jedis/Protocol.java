@@ -298,7 +298,6 @@ public final class Protocol {
     return process(is, pushConsumer);
   }
 
-  // TODO : Refactor to use PushConsumer
   @Experimental
   public static Object readPushes(final RedisInputStream is, final PushConsumerChain pushConsumer) {
     Object unhandledPush = null;

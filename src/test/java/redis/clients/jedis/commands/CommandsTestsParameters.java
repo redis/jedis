@@ -36,4 +36,14 @@ public class CommandsTestsParameters {
         new Object[] { RedisProtocol.RESP2 }, new Object[] { RedisProtocol.RESP3 });
   }
 
+  /**
+   * RESP protocol versions for {@link redis.clients.jedis.CommandObjects} tests. Only the strict
+   * (non-{@code null}) protocols are valid here — {@code CommandObjects} requires a concrete
+   * protocol at construction time, as it is meant to be used after auto-negotiation has already
+   * resolved a specific version.
+   */
+  public static Collection<Object[]> commandObjectsRespVersions() {
+    return Arrays.asList(new Object[] { RedisProtocol.RESP2 }, new Object[] { RedisProtocol.RESP3 });
+  }
+
 }

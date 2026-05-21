@@ -256,7 +256,7 @@ public class UnboundRedisClusterClientTest extends UnboundRedisClusterClientTest
 
     DefaultJedisClientConfig READ_REPLICAS_CLIENT_CONFIG = DefaultJedisClientConfig.builder()
         .password(endpoint.getPassword()).readOnlyForRedisClusterReplicas().build();
-    ClusterCommandObjects commandObjects = new ClusterCommandObjects();
+    ClusterCommandObjects commandObjects = new ClusterCommandObjects(RedisProtocol.RESP2);
     try (RedisClusterClient jedisCluster = RedisClusterClient.builder()
         .nodes(Collections.singleton(nodeInfo1))
         .clientConfig(READ_REPLICAS_CLIENT_CONFIG)

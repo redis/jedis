@@ -7,7 +7,6 @@ import java.util.Set;
 import org.json.JSONArray;
 
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.JedisCommands;
@@ -75,7 +74,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   protected UnifiedJedis(Connection connection) {
     this.provider = null;
     this.executor = new SimpleCommandExecutor(connection);
-    this.commandObjects = newCommandObjects(connection.getRedisProtocol());
+    this.commandObjects = newCommandObjects(RedisProtocol.orServerDefault(connection.getRedisProtocol()));
 
     if (connection instanceof CacheConnection) {
       this.cache = ((CacheConnection) connection).getCache();
@@ -91,31 +90,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
     this(new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
         (RedisProtocol) null, null);
-  }
-
-  /**
-   * Test-only ctor that accepts a pre-built {@link CommandObjects}. The protocol stored on the
-   * supplied object is overridden by probing the provider.
-   * @deprecated
-   */
-  @VisibleForTesting
-  @Deprecated
-  protected UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
-    this.provider = provider;
-    this.executor = executor;
-    this.commandObjects = commandObjects;
-    this.cache = null;
-    if (this.provider != null) {
-      try (Connection conn = this.provider.getConnection()) {
-        if (conn != null) {
-          RedisProtocol resolved = conn.getRedisProtocol();
-          if (resolved != null) {
-            this.commandObjects.setProtocol(resolved);
-          }
-        }
-      } catch (JedisException je) {
-      }
-    }
   }
 
   /**
@@ -150,7 +124,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
     // When the protocol is left unspecified, auto-negotiation may have resolved it to either
     // RESP2 or RESP3 on the wire. Probe a connection to learn the actual value so the command
-    // objects parse replies with the correct decoder.
+    // objects parse replies with the correct decoder. If the probe fails or the connection has
+    // not yet negotiated, fall back to RESP2 — matching the wire default and preserving lazy
+    // construction semantics.
     RedisProtocol resolvedProtocol = protocol;
     if (resolvedProtocol == null && provider != null) {
       try (Connection conn = provider.getConnection()) {
@@ -159,6 +135,9 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
         }
       } catch (JedisException ignored) {
       }
+    }
+    if (resolvedProtocol == null) {
+      resolvedProtocol = RedisProtocol.RESP2;
     }
 
     if (cache != null && resolvedProtocol != RedisProtocol.RESP3) {
@@ -232,8 +211,48 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.flushAll());
   }
 
+  /**
+   * Returns configuration parameters matching the given pattern.
+   * <p>
+   * CONFIG GET is a keyless command with the {@code DEFAULT} request policy. In a Redis OSS Cluster
+   * deployment, keyless commands with the default request policy are executed on an arbitrary
+   * (random) shard, so the result reflects the configuration of that single node only and may
+   * differ across shards.
+   *
+   * @param pattern glob-style pattern to match configuration parameter names
+   * @return a map of matching parameter names to their values from a single, arbitrary shard
+   * @see <a href="https://redis.io/docs/latest/develop/reference/command-tips/#request_policy">Request
+   *     policy</a>
+   */
+  @Experimental
+  public Map<String, String> configGet(String pattern) {
+    return executeCommand(commandObjects.configGet(pattern));
+  }
+
+  /**
+   * Returns configuration parameters matching the given pattern.
+   * <p>
+   * CONFIG GET is a keyless command with the {@code DEFAULT} request policy. In a Redis OSS Cluster
+   * deployment, keyless commands with the default request policy are executed on an arbitrary
+   * (random) shard, so the result reflects the configuration of that single node only and may
+   * differ across shards.
+   *
+   * @param patterns glob-style patterns to match configuration parameter names
+   * @return a map of matching parameter names to their values from a single, arbitrary shard
+   * @see <a href="https://redis.io/docs/latest/develop/reference/command-tips/#request_policy">Request
+   *     policy</a>
+   */
+  @Experimental
+  public Map<String, String> configGet(String... patterns) {
+    return executeCommand(commandObjects.configGet(patterns));
+  }
+
   public String configSet(String parameter, String value) {
     return executeCommand(commandObjects.configSet(parameter, value));
+  }
+
+  public String configSet(Map<String, String> parameterValues) {
+    return executeCommand(commandObjects.configSet(parameterValues));
   }
 
   public String info() {

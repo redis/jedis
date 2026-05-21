@@ -411,7 +411,7 @@ public final class Protocol {
     // JSON keywords
     FPHA,
     // INCREX keywords
-    BYFLOAT, BYINT, ENX, FAIL, LBOUND, OVERFLOW, REJECT, SAT, UBOUND;
+    BYFLOAT, BYINT, ENX, LBOUND, SATURATE, UBOUND;
 
     private final byte[] raw;
 

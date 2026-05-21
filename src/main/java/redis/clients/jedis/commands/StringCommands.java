@@ -316,16 +316,15 @@ public interface StringCommands extends BitCommands {
   /**
    * <b><a href="http://redis.io/commands/increx">INCREX Command</a></b>
    * Increment the integer number stored at key by {@code increment}, with optional lower/upper
-   * bounds, overflow handling, and expiration control. If the key does not exist, it is initialized
-   * to 0. Returns both the new value and the actual increment applied (which may differ from the
-   * requested increment under {@code OVERFLOW SAT}).
+   * bounds, saturation, and expiration control. If the key does not exist, it is initialized to 0.
+   * Returns both the new value and the actual increment applied (which may differ from the requested
+   * increment when {@code SATURATE} is active and the result is clamped to a bound).
    * <p>
    * Time complexity: O(1)
    * @param key the key
    * @param increment the integer amount to increment by (may be negative)
-   * @param params optional bounds ({@code LBOUND}/{@code UBOUND}), overflow mode
-   *        ({@code OVERFLOW FAIL|SAT|REJECT}), and expiration ({@code EX}/{@code PX}/
-   *        {@code EXAT}/{@code PXAT}/{@code PERSIST}/{@code ENX})
+   * @param params optional bounds ({@code LBOUND}/{@code UBOUND}), {@code SATURATE} flag, and
+   *        expiration ({@code EX}/{@code PX}/{@code EXAT}/{@code PXAT}/{@code PERSIST}/{@code ENX})
    * @return {@link IncrexResponse} containing the new value and the applied increment
    * @since 8.0
    */
@@ -334,9 +333,10 @@ public interface StringCommands extends BitCommands {
   /**
    * <b><a href="http://redis.io/commands/increx">INCREX Command</a></b>
    * Increment the floating-point number stored at key by {@code increment}, with optional
-   * lower/upper bounds, overflow handling, and expiration control. If the key does not exist, it is
+   * lower/upper bounds, saturation, and expiration control. If the key does not exist, it is
    * initialized to 0. Returns both the new value and the actual increment applied (which may differ
-   * from the requested increment under {@code OVERFLOW SAT}).
+   * from the requested increment when {@code SATURATE} is active and the result is clamped to a
+   * bound).
    * <p>
    * Note: the key value must be a valid floating-point number. Attempting to use this method on a
    * key holding an integer-only value such as {@code "1"} is valid, but using it on a value like
@@ -346,9 +346,8 @@ public interface StringCommands extends BitCommands {
    * Time complexity: O(1)
    * @param key the key
    * @param increment the floating-point amount to increment by (may be negative)
-   * @param params optional bounds ({@code LBOUND}/{@code UBOUND}), overflow mode
-   *        ({@code OVERFLOW FAIL|SAT|REJECT}), and expiration ({@code EX}/{@code PX}/
-   *        {@code EXAT}/{@code PXAT}/{@code PERSIST}/{@code ENX})
+   * @param params optional bounds ({@code LBOUND}/{@code UBOUND}), {@code SATURATE} flag, and
+   *        expiration ({@code EX}/{@code PX}/{@code EXAT}/{@code PXAT}/{@code PERSIST}/{@code ENX})
    * @return {@link IncrexResponse} containing the new value and the applied increment
    * @since 8.0
    */

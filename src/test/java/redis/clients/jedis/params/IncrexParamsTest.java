@@ -41,9 +41,8 @@ public class IncrexParamsTest {
   }
 
   @Test
-  public void checkOverflowModes() {
-    assertNotEquals(new IncrexParams().overflow(IncrexParams.Overflow.SAT),
-      new IncrexParams().overflow(IncrexParams.Overflow.REJECT));
+  public void checkSaturate() {
+    assertNotEquals(new IncrexParams().saturate(), new IncrexParams());
   }
 
   @Test

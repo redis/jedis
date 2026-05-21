@@ -389,9 +389,9 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
 
   @Test
   @EnabledOnCommand("INCREX")
-  public void increxRejectOverflow() {
+  public void increxDefaultRejectSilent() {
     jedis.set("foo", "0");
-    IncrexParams params = new IncrexParams().ubound(5).overflow(IncrexParams.Overflow.REJECT);
+    IncrexParams params = new IncrexParams().ubound(5);
     IncrexResponse<Long> res = jedis.increx("foo", 10, params);
     assertEquals(Long.valueOf(0), res.getValue());
     assertEquals(Long.valueOf(0), res.getIncrement());
@@ -399,9 +399,9 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
 
   @Test
   @EnabledOnCommand("INCREX")
-  public void increxSatOverflowUbound() {
+  public void increxSaturateUbound() {
     jedis.set("foo", "0");
-    IncrexParams params = new IncrexParams().ubound(5).overflow(IncrexParams.Overflow.SAT);
+    IncrexParams params = new IncrexParams().ubound(5).saturate();
     IncrexResponse<Long> res = jedis.increx("foo", 10, params);
     assertEquals(Long.valueOf(5), res.getValue());
     assertEquals(Long.valueOf(5), res.getIncrement());
@@ -409,9 +409,9 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
 
   @Test
   @EnabledOnCommand("INCREX")
-  public void increxSatOverflowLbound() {
+  public void increxSaturateLbound() {
     jedis.set("foo", "5");
-    IncrexParams params = new IncrexParams().lbound(0).overflow(IncrexParams.Overflow.SAT);
+    IncrexParams params = new IncrexParams().lbound(0).saturate();
     IncrexResponse<Long> res = jedis.increx("foo", -100, params);
     assertEquals(Long.valueOf(0), res.getValue());
     assertEquals(Long.valueOf(-5), res.getIncrement());
@@ -419,17 +419,9 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
 
   @Test
   @EnabledOnCommand("INCREX")
-  public void increxFailOverflow() {
-    jedis.set("foo", "0");
-    IncrexParams params = new IncrexParams().ubound(5).overflow(IncrexParams.Overflow.FAIL);
-    assertThrows(JedisDataException.class, () -> jedis.increx("foo", 10, params));
-  }
-
-  @Test
-  @EnabledOnCommand("INCREX")
-  public void increxSatStillAppliesExpiry() {
+  public void increxSaturateStillAppliesExpiry() {
     jedis.set("foo", "5");
-    IncrexParams params = new IncrexParams().ubound(5).overflow(IncrexParams.Overflow.SAT).ex(60);
+    IncrexParams params = new IncrexParams().ubound(5).saturate().ex(60);
     IncrexResponse<Long> res = jedis.increx("foo", 1, params);
     assertEquals(Long.valueOf(5), res.getValue());
     assertEquals(Long.valueOf(0), res.getIncrement());
@@ -489,9 +481,9 @@ public abstract class StringValuesCommandsTestBase extends UnifiedJedisCommandsT
 
   @Test
   @EnabledOnCommand("INCREX")
-  public void increxFloatSatOverflow() {
+  public void increxSaturateFloat() {
     jedis.set("foo", "0.0");
-    IncrexParams params = new IncrexParams().ubound(5.0).overflow(IncrexParams.Overflow.SAT);
+    IncrexParams params = new IncrexParams().ubound(5.0).saturate();
     IncrexResponse<Double> res = jedis.increxFloat("foo", 10.0, params);
     assertEquals(5.0, res.getValue(), 0.0);
     assertEquals(5.0, res.getIncrement(), 0.0);

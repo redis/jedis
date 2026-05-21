@@ -491,9 +491,9 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
 
   @Test
   @EnabledOnCommand("INCREX")
-  public void increxRejectOverflowBinary() {
+  public void increxDefaultRejectSilentBinary() {
     jedis.set(bfoo, "0".getBytes());
-    IncrexParams params = new IncrexParams().ubound(5).overflow(IncrexParams.Overflow.REJECT);
+    IncrexParams params = new IncrexParams().ubound(5);
     IncrexResponse<Long> res = jedis.increx(bfoo, 10, params);
     assertEquals(Long.valueOf(0), res.getValue());
     assertEquals(Long.valueOf(0), res.getIncrement());
@@ -501,20 +501,12 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
 
   @Test
   @EnabledOnCommand("INCREX")
-  public void increxSatOverflowUboundBinary() {
+  public void increxSaturateUboundBinary() {
     jedis.set(bfoo, "0".getBytes());
-    IncrexParams params = new IncrexParams().ubound(5).overflow(IncrexParams.Overflow.SAT);
+    IncrexParams params = new IncrexParams().ubound(5).saturate();
     IncrexResponse<Long> res = jedis.increx(bfoo, 10, params);
     assertEquals(Long.valueOf(5), res.getValue());
     assertEquals(Long.valueOf(5), res.getIncrement());
-  }
-
-  @Test
-  @EnabledOnCommand("INCREX")
-  public void increxFailOverflowBinary() {
-    jedis.set(bfoo, "0".getBytes());
-    IncrexParams params = new IncrexParams().ubound(5).overflow(IncrexParams.Overflow.FAIL);
-    assertThrows(JedisDataException.class, () -> jedis.increx(bfoo, 10, params));
   }
 
   @Test

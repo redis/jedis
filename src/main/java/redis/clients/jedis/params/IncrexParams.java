@@ -10,8 +10,8 @@ import redis.clients.jedis.Protocol.Keyword;
  * Usage examples:
  *
  * <pre>
- *   new IncrexParams().ubound(100).overflow(Overflow.SAT).ex(60)
- *   new IncrexParams().lbound(0).ubound(100).overflow(Overflow.REJECT)
+ *   new IncrexParams().ubound(100).saturate().ex(60)
+ *   new IncrexParams().lbound(0).ubound(100).saturate()
  *   IncrexParams.increxParams().ex(30).enx()
  * </pre>
  *
@@ -19,13 +19,9 @@ import redis.clients.jedis.Protocol.Keyword;
  */
 public class IncrexParams extends BaseGetExParams<IncrexParams> {
 
-  public enum Overflow {
-    FAIL, SAT, REJECT
-  }
-
   private Number lbound;
   private Number ubound;
-  private Overflow overflow;
+  private boolean saturate = false;
   private boolean enx = false;
 
   public static IncrexParams increxParams() {
@@ -52,8 +48,8 @@ public class IncrexParams extends BaseGetExParams<IncrexParams> {
     return this;
   }
 
-  public IncrexParams overflow(Overflow overflow) {
-    this.overflow = overflow;
+  public IncrexParams saturate() {
+    this.saturate = true;
     return this;
   }
 
@@ -74,19 +70,8 @@ public class IncrexParams extends BaseGetExParams<IncrexParams> {
       args.add(ubound);
     }
 
-    if (overflow != null) {
-      args.add(Keyword.OVERFLOW);
-      switch (overflow) {
-        case FAIL:
-          args.add(Keyword.FAIL);
-          break;
-        case SAT:
-          args.add(Keyword.SAT);
-          break;
-        case REJECT:
-          args.add(Keyword.REJECT);
-          break;
-      }
+    if (saturate) {
+      args.add(Keyword.SATURATE);
     }
 
     // expiration (EX/PX/EXAT/PXAT/PERSIST) from BaseGetExParams
@@ -103,12 +88,12 @@ public class IncrexParams extends BaseGetExParams<IncrexParams> {
     if (!(o instanceof IncrexParams)) return false;
     if (!super.equals(o)) return false;
     IncrexParams that = (IncrexParams) o;
-    return enx == that.enx && Objects.equals(lbound, that.lbound)
-        && Objects.equals(ubound, that.ubound) && overflow == that.overflow;
+    return enx == that.enx && saturate == that.saturate && Objects.equals(lbound, that.lbound)
+        && Objects.equals(ubound, that.ubound);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(super.hashCode(), lbound, ubound, overflow, enx);
+    return Objects.hash(super.hashCode(), lbound, ubound, saturate, enx);
   }
 }

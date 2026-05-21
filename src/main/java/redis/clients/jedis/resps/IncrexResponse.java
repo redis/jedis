@@ -31,8 +31,9 @@ public class IncrexResponse<T extends Number> implements Serializable {
   }
 
   /**
-   * The actual increment applied. May differ from the requested increment when overflow SAT is
-   * active.
+   * The actual increment applied. May differ from the requested increment when {@code SATURATE} is
+   * active and the result is clamped to a bound. Returns {@code 0} when the operation was silently
+   * rejected due to an out-of-bounds result and {@code SATURATE} was not set.
    */
   public T getIncrement() {
     return increment;
@@ -45,10 +46,16 @@ public class IncrexResponse<T extends Number> implements Serializable {
 
   public static final Builder<IncrexResponse<Long>> INCREX_RESPONSE_LONG = new Builder<IncrexResponse<Long>>() {
     @Override
+    @SuppressWarnings("unchecked")
     public IncrexResponse<Long> build(Object data) {
       if (data == null) return null;
-      List<Long> list = BuilderFactory.LONG_LIST.build(data);
-      return new IncrexResponse<>(list.get(0), list.get(1));
+      List<Object> list = (List<Object>) data;
+      return new IncrexResponse<>(parseLong(list.get(0)), parseLong(list.get(1)));
+    }
+
+    private long parseLong(Object o) {
+      if (o instanceof Long) return (Long) o;
+      return Long.parseLong(BuilderFactory.STRING.build(o));
     }
 
     @Override

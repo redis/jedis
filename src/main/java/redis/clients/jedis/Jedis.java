@@ -4689,7 +4689,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public OptionalLong arnext(final byte[] key) {
+  public Long arnext(final byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.arnext(key));
   }
@@ -9729,7 +9729,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public OptionalLong arnext(final String key) {
+  public Long arnext(final String key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.arnext(key));
   }

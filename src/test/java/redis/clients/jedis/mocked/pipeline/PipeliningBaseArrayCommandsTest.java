@@ -260,17 +260,17 @@ public class PipeliningBaseArrayCommandsTest extends PipeliningBaseMockedTestBas
 
   @Test
   public void testArnext() {
-    when(commandObjects.arnext("k")).thenReturn(optionalLongCommandObject);
+    when(commandObjects.arnext("k")).thenReturn(longCommandObject);
     pipeliningBase.arnext("k");
-    assertThat(commands, contains(optionalLongCommandObject));
+    assertThat(commands, contains(longCommandObject));
   }
 
   @Test
   public void testArnextBinary() {
     byte[] key = "k".getBytes();
-    when(commandObjects.arnext(key)).thenReturn(optionalLongCommandObject);
+    when(commandObjects.arnext(key)).thenReturn(longCommandObject);
     pipeliningBase.arnext(key);
-    assertThat(commands, contains(optionalLongCommandObject));
+    assertThat(commands, contains(longCommandObject));
   }
 
   @Test

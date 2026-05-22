@@ -363,22 +363,22 @@ public class UnifiedJedisArrayCommandsTest extends UnifiedJedisMockedTestBase {
   @Test
   public void testArnext() {
     String key = "k";
-    when(commandObjects.arnext(key)).thenReturn(optionalLongCommandObject);
-    when(commandExecutor.executeCommand(optionalLongCommandObject)).thenReturn(OptionalLong.of(5L));
+    when(commandObjects.arnext(key)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(5L);
 
-    assertThat(jedis.arnext(key), equalTo(OptionalLong.of(5L)));
-    verify(commandExecutor).executeCommand(optionalLongCommandObject);
+    assertThat(jedis.arnext(key), equalTo(5L));
+    verify(commandExecutor).executeCommand(longCommandObject);
     verify(commandObjects).arnext(key);
   }
 
   @Test
   public void testArnextBinary() {
     byte[] key = "k".getBytes();
-    when(commandObjects.arnext(key)).thenReturn(optionalLongCommandObject);
-    when(commandExecutor.executeCommand(optionalLongCommandObject)).thenReturn(OptionalLong.of(5L));
+    when(commandObjects.arnext(key)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(5L);
 
-    assertThat(jedis.arnext(key), equalTo(OptionalLong.of(5L)));
-    verify(commandExecutor).executeCommand(optionalLongCommandObject);
+    assertThat(jedis.arnext(key), equalTo(5L));
+    verify(commandExecutor).executeCommand(longCommandObject);
     verify(commandObjects).arnext(key);
   }
 

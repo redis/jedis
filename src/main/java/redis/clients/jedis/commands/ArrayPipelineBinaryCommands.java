@@ -293,7 +293,7 @@ public interface ArrayPipelineBinaryCommands {
    *         available, or {@link OptionalLong#empty()} when the cursor is exhausted
    * @since 8.0
    */
-  Response<OptionalLong> arnext(byte[] key);
+  Response<Long> arnext(byte[] key);
 
   /**
    * <b><a href="https://redis.io/commands/arop">AROP Command</a></b> Applies a bitwise operation

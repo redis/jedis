@@ -297,7 +297,7 @@ public interface ArrayBinaryCommands {
    *         available; {@link OptionalLong#empty()} when the insertion cursor is exhausted
    * @since 8.0
    */
-  OptionalLong arnext(byte[] key);
+  Long arnext(byte[] key);
 
   /**
    * <b><a href="https://redis.io/commands/arop">AROP Command</a></b> Applies a bitwise operation

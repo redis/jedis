@@ -2562,19 +2562,6 @@ public final class BuilderFactory {
     }
   }
 
-  public static final Builder<OptionalLong> OPTIONAL_LONG = new Builder<OptionalLong>() {
-    @Override
-    public OptionalLong build(Object data) {
-      if (data == null) return OptionalLong.empty();
-      return OptionalLong.of((Long) data);
-    }
-
-    @Override
-    public String toString() {
-      return "OptionalLong";
-    }
-  };
-
   public static final Builder<ArrayInfo> ARRAY_INFO = new Builder<ArrayInfo>() {
     @Override
     public ArrayInfo build(Object data) {

@@ -2789,12 +2789,12 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.LONG);
   }
 
-  public final CommandObject<OptionalLong> arnext(String key) {
-    return new CommandObject<>(commandArguments(ARNEXT).key(key), BuilderFactory.OPTIONAL_LONG);
+  public final CommandObject<Long> arnext(String key) {
+    return new CommandObject<>(commandArguments(ARNEXT).key(key), BuilderFactory.LONG);
   }
 
-  public final CommandObject<OptionalLong> arnext(byte[] key) {
-    return new CommandObject<>(commandArguments(ARNEXT).key(key), BuilderFactory.OPTIONAL_LONG);
+  public final CommandObject<Long> arnext(byte[] key) {
+    return new CommandObject<>(commandArguments(ARNEXT).key(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> aropBitwise(String key, long start, long end, ArrayBitwise op) {

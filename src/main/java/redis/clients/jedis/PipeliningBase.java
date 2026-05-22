@@ -1630,7 +1630,7 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<OptionalLong> arnext(String key) {
+  public Response<Long> arnext(String key) {
     return appendCommand(commandObjects.arnext(key));
   }
 
@@ -2601,7 +2601,7 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<OptionalLong> arnext(byte[] key) {
+  public Response<Long> arnext(byte[] key) {
     return appendCommand(commandObjects.arnext(key));
   }
 

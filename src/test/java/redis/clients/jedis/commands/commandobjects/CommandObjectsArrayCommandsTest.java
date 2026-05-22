@@ -256,14 +256,14 @@ public class CommandObjectsArrayCommandsTest extends CommandObjectsStandaloneTes
   public void testArnext() {
     String key = "arnext-key";
     exec(commandObjects.arinsert(key, "a", "b"));
-    OptionalLong next = exec(commandObjects.arnext(key));
-    assertThat(next, equalTo(OptionalLong.of(2L)));
+    Long next = exec(commandObjects.arnext(key));
+    assertThat(next, equalTo(2L));
   }
 
   @Test
   public void testArnextMissingBinary() {
-    OptionalLong next = exec(commandObjects.arnext("arnext-missing-b".getBytes()));
-    assertThat(next, equalTo(OptionalLong.of(0L)));
+    Long next = exec(commandObjects.arnext("arnext-missing-b".getBytes()));
+    assertThat(next, equalTo(0L));
   }
 
   @Test

@@ -3665,12 +3665,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public OptionalLong arnext(String key) {
+  public Long arnext(String key) {
     return executeCommand(commandObjects.arnext(key));
   }
 
   @Override
-  public OptionalLong arnext(byte[] key) {
+  public Long arnext(byte[] key) {
     return executeCommand(commandObjects.arnext(key));
   }
 

@@ -104,7 +104,6 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<Map<byte[], byte[]>> mapBytesBytesCommandObject;
   @Mock protected CommandObject<MyBean> myBeanCommandObject;
   @Mock protected CommandObject<Object> objectCommandObject;
-  @Mock protected CommandObject<OptionalLong> optionalLongCommandObject;
   @Mock protected CommandObject<ScanResult<Map.Entry<String, String>>> scanResultEntryStringStringCommandObject;
   @Mock protected CommandObject<ScanResult<Map.Entry<byte[], byte[]>>> scanResultEntryBytesBytesCommandObject;
   @Mock protected CommandObject<ScanResult<String>> scanResultStringCommandObject;

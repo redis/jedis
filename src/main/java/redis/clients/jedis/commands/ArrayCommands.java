@@ -29,6 +29,7 @@ public interface ArrayCommands {
    * @return the number of non-empty elements, or {@code 0} if {@code key} does not exist
    * @since 8.0
    */
+  @Experimental
   long arcount(String key);
 
   /**
@@ -43,6 +44,7 @@ public interface ArrayCommands {
    * @return {@code 1} if an element was deleted, {@code 0} otherwise
    * @since 8.0
    */
+  @Experimental
   long ardel(String key, long index);
 
   /**
@@ -58,6 +60,7 @@ public interface ArrayCommands {
    * @return the number of elements actually deleted
    * @since 8.0
    */
+  @Experimental
   long ardel(String key, long... indices);
 
   /**
@@ -75,6 +78,7 @@ public interface ArrayCommands {
    * @return the number of elements deleted
    * @since 8.0
    */
+  @Experimental
   long ardelrange(String key, LongRange... ranges);
 
   /**
@@ -89,6 +93,7 @@ public interface ArrayCommands {
    * @return the number of elements deleted
    * @since 8.0
    */
+  @Experimental
   long ardelrange(String key, long start, long end);
 
   /**
@@ -103,6 +108,7 @@ public interface ArrayCommands {
    * @return the value at the given index, or {@code null} if the key or index does not exist
    * @since 8.0
    */
+  @Experimental
   String arget(String key, long index);
 
   /**
@@ -119,6 +125,7 @@ public interface ArrayCommands {
    * @return the list of values in traversal order; empty slots appear as {@code null} entries
    * @since 8.0
    */
+  @Experimental
   List<String> argetrange(String key, long start, long end);
 
   /**
@@ -168,6 +175,7 @@ public interface ArrayCommands {
    * @return a typed {@link ArrayInfo}, or {@code null} if the key does not exist
    * @since 8.0
    */
+  @Experimental
   ArrayInfo arinfo(String key);
 
   /**
@@ -181,6 +189,7 @@ public interface ArrayCommands {
    * @return a typed {@link ArrayFullInfo}, or {@code null} if the key does not exist
    * @since 8.0
    */
+  @Experimental
   ArrayFullInfo arinfoFull(String key);
 
   /**
@@ -196,6 +205,7 @@ public interface ArrayCommands {
    * @return the last index at which a value was inserted
    * @since 8.0
    */
+  @Experimental
   long arinsert(String key, String... values);
 
   /**
@@ -208,6 +218,7 @@ public interface ArrayCommands {
    * @return the index at which the value was inserted
    * @since 8.0
    */
+  @Experimental
   long arinsert(String key, String value);
 
   /**
@@ -222,6 +233,7 @@ public interface ArrayCommands {
    * @return the list of last-inserted values
    * @since 8.0
    */
+  @Experimental
   List<String> arlastitems(String key, long count);
 
   /**
@@ -239,6 +251,7 @@ public interface ArrayCommands {
    * @return the list of last-inserted values
    * @since 8.0
    */
+  @Experimental
   List<String> arlastitems(String key, long count, boolean rev);
 
   /**
@@ -252,6 +265,7 @@ public interface ArrayCommands {
    * @return the array length, or {@code 0} if the key does not exist
    * @since 8.0
    */
+  @Experimental
   long arlen(String key);
 
   /**
@@ -267,6 +281,7 @@ public interface ArrayCommands {
    * @return the list of values aligned with {@code indices}
    * @since 8.0
    */
+  @Experimental
   List<String> armget(String key, long... indices);
 
   /**
@@ -282,6 +297,7 @@ public interface ArrayCommands {
    * @return the number of slots that were previously empty
    * @since 8.0
    */
+  @Experimental
   long armset(String key, Map<Long, String> indexValueMap);
 
   /**
@@ -297,6 +313,7 @@ public interface ArrayCommands {
    *         available; {@link OptionalLong#empty()} when the insertion cursor is exhausted
    * @since 8.0
    */
+  @Experimental
   Long arnext(String key);
 
   /**
@@ -314,6 +331,7 @@ public interface ArrayCommands {
    * @return the operation's numeric result
    * @since 8.0
    */
+  @Experimental
   long aropBitwise(String key, long start, long end, ArrayBitwise op);
 
   /**
@@ -331,6 +349,7 @@ public interface ArrayCommands {
    * @return the aggregate value, or {@code null} when the range is empty
    * @since 8.0
    */
+  @Experimental
   String aropAggregate(String key, long start, long end, ArrayAggregate op);
 
   /**
@@ -346,6 +365,7 @@ public interface ArrayCommands {
    * @return the count of non-empty elements
    * @since 8.0
    */
+  @Experimental
   long aropCount(String key, long start, long end);
 
   /**
@@ -363,6 +383,7 @@ public interface ArrayCommands {
    * @return the count of matching elements
    * @since 8.0
    */
+  @Experimental
   long aropCount(String key, long start, long end, String match);
 
   /**
@@ -379,6 +400,7 @@ public interface ArrayCommands {
    * @return the last index at which a value was inserted
    * @since 8.0
    */
+  @Experimental
   long arring(String key, long size, String... values);
 
   /**
@@ -392,6 +414,7 @@ public interface ArrayCommands {
    * @return the index at which the value was inserted
    * @since 8.0
    */
+  @Experimental
   long arring(String key, long size, String value);
 
   /**
@@ -408,6 +431,7 @@ public interface ArrayCommands {
    * @return the populated {@code (index, value)} pairs; empty when the key does not exist
    * @since 8.0
    */
+  @Experimental
   List<KeyValue<Long, String>> arscan(String key, long start, long end);
 
   /**
@@ -425,6 +449,7 @@ public interface ArrayCommands {
    * @return the populated {@code (index, value)} pairs
    * @since 8.0
    */
+  @Experimental
   List<KeyValue<Long, String>> arscan(String key, long start, long end, long limit);
 
   /**
@@ -439,6 +464,7 @@ public interface ArrayCommands {
    * @return {@code 1} if the cursor was set, {@code 0} if the key does not exist
    * @since 8.0
    */
+  @Experimental
   long arseek(String key, long index);
 
   /**
@@ -455,6 +481,7 @@ public interface ArrayCommands {
    * @return the number of slots that were previously empty
    * @since 8.0
    */
+  @Experimental
   long arset(String key, long index, String... values);
 
   /**
@@ -468,6 +495,7 @@ public interface ArrayCommands {
    * @return the number of slots that were previously empty (0 or 1)
    * @since 8.0
    */
+  @Experimental
   long arset(String key, long index, String value);
 
 }

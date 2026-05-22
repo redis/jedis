@@ -1,11 +1,13 @@
 package redis.clients.jedis.args;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * Bitwise operators for {@code AROP}. Each constant maps directly to the corresponding Redis
  * subcommand keyword.
  */
+@Experimental
 public enum ArrayBitwise implements Rawable {
 
   /** Bitwise AND across all non-empty elements in the range. */

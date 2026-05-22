@@ -31,6 +31,7 @@ public interface ArrayPipelineBinaryCommands {
    *         {@code key} does not exist
    * @since 8.0
    */
+  @Experimental
   Response<Long> arcount(byte[] key);
 
   /**
@@ -46,6 +47,7 @@ public interface ArrayPipelineBinaryCommands {
    *         otherwise
    * @since 8.0
    */
+  @Experimental
   Response<Long> ardel(byte[] key, long index);
 
   /**
@@ -60,6 +62,7 @@ public interface ArrayPipelineBinaryCommands {
    * @return a {@link Response} that resolves to the number of elements actually deleted
    * @since 8.0
    */
+  @Experimental
   Response<Long> ardel(byte[] key, long... indices);
 
   /**
@@ -75,6 +78,7 @@ public interface ArrayPipelineBinaryCommands {
    * @return a {@link Response} that resolves to the number of elements deleted
    * @since 8.0
    */
+  @Experimental
   Response<Long> ardelrange(byte[] key, LongRange... ranges);
 
   /**
@@ -88,6 +92,7 @@ public interface ArrayPipelineBinaryCommands {
    * @return a {@link Response} that resolves to the number of elements deleted
    * @since 8.0
    */
+  @Experimental
   Response<Long> ardelrange(byte[] key, long start, long end);
 
   /**
@@ -103,6 +108,7 @@ public interface ArrayPipelineBinaryCommands {
    *         the key or index does not exist
    * @since 8.0
    */
+  @Experimental
   Response<byte[]> arget(byte[] key, long index);
 
   /**
@@ -119,6 +125,7 @@ public interface ArrayPipelineBinaryCommands {
    *         appear as {@code null} entries
    * @since 8.0
    */
+  @Experimental
   Response<List<byte[]>> argetrange(byte[] key, long start, long end);
 
   /**
@@ -165,6 +172,7 @@ public interface ArrayPipelineBinaryCommands {
    *         key does not exist
    * @since 8.0
    */
+  @Experimental
   Response<ArrayInfo> arinfo(byte[] key);
 
   /**
@@ -179,6 +187,7 @@ public interface ArrayPipelineBinaryCommands {
    *         the key does not exist
    * @since 8.0
    */
+  @Experimental
   Response<ArrayFullInfo> arinfoFull(byte[] key);
 
   /**
@@ -193,6 +202,7 @@ public interface ArrayPipelineBinaryCommands {
    * @return a {@link Response} that resolves to the last index at which a value was inserted
    * @since 8.0
    */
+  @Experimental
   Response<Long> arinsert(byte[] key, byte[]... values);
 
   /**
@@ -205,6 +215,7 @@ public interface ArrayPipelineBinaryCommands {
    * @return a {@link Response} that resolves to the index at which the value was inserted
    * @since 8.0
    */
+  @Experimental
   Response<Long> arinsert(byte[] key, byte[] value);
 
   /**
@@ -219,6 +230,7 @@ public interface ArrayPipelineBinaryCommands {
    * @return a {@link Response} that resolves to the list of last-inserted values
    * @since 8.0
    */
+  @Experimental
   Response<List<byte[]>> arlastitems(byte[] key, long count);
 
   /**
@@ -235,6 +247,7 @@ public interface ArrayPipelineBinaryCommands {
    * @return a {@link Response} that resolves to the list of last-inserted values
    * @since 8.0
    */
+  @Experimental
   Response<List<byte[]>> arlastitems(byte[] key, long count, boolean rev);
 
   /**
@@ -249,6 +262,7 @@ public interface ArrayPipelineBinaryCommands {
    *         exist
    * @since 8.0
    */
+  @Experimental
   Response<Long> arlen(byte[] key);
 
   /**
@@ -264,6 +278,7 @@ public interface ArrayPipelineBinaryCommands {
    *         missing slots appear as {@code null}
    * @since 8.0
    */
+  @Experimental
   Response<List<byte[]>> armget(byte[] key, long... indices);
 
   /**
@@ -278,6 +293,7 @@ public interface ArrayPipelineBinaryCommands {
    * @return a {@link Response} that resolves to the number of slots that were previously empty
    * @since 8.0
    */
+  @Experimental
   Response<Long> armset(byte[] key, Map<Long, byte[]> indexValueMap);
 
   /**
@@ -293,6 +309,7 @@ public interface ArrayPipelineBinaryCommands {
    *         available, or {@link OptionalLong#empty()} when the cursor is exhausted
    * @since 8.0
    */
+  @Experimental
   Response<Long> arnext(byte[] key);
 
   /**
@@ -309,6 +326,7 @@ public interface ArrayPipelineBinaryCommands {
    * @return a {@link Response} that resolves to the operation's numeric result
    * @since 8.0
    */
+  @Experimental
   Response<Long> aropBitwise(byte[] key, long start, long end, ArrayBitwise op);
 
   /**
@@ -326,6 +344,7 @@ public interface ArrayPipelineBinaryCommands {
    *         when the range is empty
    * @since 8.0
    */
+  @Experimental
   Response<byte[]> aropAggregate(byte[] key, long start, long end, ArrayAggregate op);
 
   /**
@@ -341,6 +360,7 @@ public interface ArrayPipelineBinaryCommands {
    * @return a {@link Response} that resolves to the count of non-empty elements
    * @since 8.0
    */
+  @Experimental
   Response<Long> aropCount(byte[] key, long start, long end);
 
   /**
@@ -358,6 +378,7 @@ public interface ArrayPipelineBinaryCommands {
    * @return a {@link Response} that resolves to the count of matching elements
    * @since 8.0
    */
+  @Experimental
   Response<Long> aropCount(byte[] key, long start, long end, byte[] match);
 
   /**
@@ -373,6 +394,7 @@ public interface ArrayPipelineBinaryCommands {
    * @return a {@link Response} that resolves to the last index at which a value was inserted
    * @since 8.0
    */
+  @Experimental
   Response<Long> arring(byte[] key, long size, byte[]... values);
 
   /**
@@ -386,6 +408,7 @@ public interface ArrayPipelineBinaryCommands {
    * @return a {@link Response} that resolves to the index at which the value was inserted
    * @since 8.0
    */
+  @Experimental
   Response<Long> arring(byte[] key, long size, byte[] value);
 
   /**
@@ -401,6 +424,7 @@ public interface ArrayPipelineBinaryCommands {
    * @return a {@link Response} that resolves to the populated {@code (index, value)} pairs
    * @since 8.0
    */
+  @Experimental
   Response<List<KeyValue<Long, byte[]>>> arscan(byte[] key, long start, long end);
 
   /**
@@ -417,6 +441,7 @@ public interface ArrayPipelineBinaryCommands {
    * @return a {@link Response} that resolves to the populated {@code (index, value)} pairs
    * @since 8.0
    */
+  @Experimental
   Response<List<KeyValue<Long, byte[]>>> arscan(byte[] key, long start, long end, long limit);
 
   /**
@@ -432,6 +457,7 @@ public interface ArrayPipelineBinaryCommands {
    *         key does not exist
    * @since 8.0
    */
+  @Experimental
   Response<Long> arseek(byte[] key, long index);
 
   /**
@@ -447,6 +473,7 @@ public interface ArrayPipelineBinaryCommands {
    * @return a {@link Response} that resolves to the number of slots that were previously empty
    * @since 8.0
    */
+  @Experimental
   Response<Long> arset(byte[] key, long index, byte[]... values);
 
   /**
@@ -460,6 +487,7 @@ public interface ArrayPipelineBinaryCommands {
    * @return a {@link Response} that resolves to the number of slots that were previously empty
    * @since 8.0
    */
+  @Experimental
   Response<Long> arset(byte[] key, long index, byte[] value);
 
 }

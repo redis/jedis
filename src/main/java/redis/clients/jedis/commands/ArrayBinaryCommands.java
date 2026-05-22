@@ -29,6 +29,7 @@ public interface ArrayBinaryCommands {
    * @return the number of non-empty elements, or {@code 0} if {@code key} does not exist
    * @since 8.0
    */
+  @Experimental
   long arcount(byte[] key);
 
   /**
@@ -43,6 +44,7 @@ public interface ArrayBinaryCommands {
    * @return {@code 1} if an element was deleted, {@code 0} otherwise
    * @since 8.0
    */
+  @Experimental
   long ardel(byte[] key, long index);
 
   /**
@@ -58,6 +60,7 @@ public interface ArrayBinaryCommands {
    * @return the number of elements actually deleted
    * @since 8.0
    */
+  @Experimental
   long ardel(byte[] key, long... indices);
 
   /**
@@ -75,6 +78,7 @@ public interface ArrayBinaryCommands {
    * @return the number of elements deleted
    * @since 8.0
    */
+  @Experimental
   long ardelrange(byte[] key, LongRange... ranges);
 
   /**
@@ -89,6 +93,7 @@ public interface ArrayBinaryCommands {
    * @return the number of elements deleted
    * @since 8.0
    */
+  @Experimental
   long ardelrange(byte[] key, long start, long end);
 
   /**
@@ -103,6 +108,7 @@ public interface ArrayBinaryCommands {
    * @return the value at the given index, or {@code null} if the key or index does not exist
    * @since 8.0
    */
+  @Experimental
   byte[] arget(byte[] key, long index);
 
   /**
@@ -119,6 +125,7 @@ public interface ArrayBinaryCommands {
    * @return the list of values in traversal order; empty slots appear as {@code null} entries
    * @since 8.0
    */
+  @Experimental
   List<byte[]> argetrange(byte[] key, long start, long end);
 
   /**
@@ -168,6 +175,7 @@ public interface ArrayBinaryCommands {
    * @return a typed {@link ArrayInfo}, or {@code null} if the key does not exist
    * @since 8.0
    */
+  @Experimental
   ArrayInfo arinfo(byte[] key);
 
   /**
@@ -181,6 +189,7 @@ public interface ArrayBinaryCommands {
    * @return a typed {@link ArrayFullInfo}, or {@code null} if the key does not exist
    * @since 8.0
    */
+  @Experimental
   ArrayFullInfo arinfoFull(byte[] key);
 
   /**
@@ -196,6 +205,7 @@ public interface ArrayBinaryCommands {
    * @return the last index at which a value was inserted
    * @since 8.0
    */
+  @Experimental
   long arinsert(byte[] key, byte[]... values);
 
   /**
@@ -208,6 +218,7 @@ public interface ArrayBinaryCommands {
    * @return the index at which the value was inserted
    * @since 8.0
    */
+  @Experimental
   long arinsert(byte[] key, byte[] value);
 
   /**
@@ -222,6 +233,7 @@ public interface ArrayBinaryCommands {
    * @return the list of last-inserted values
    * @since 8.0
    */
+  @Experimental
   List<byte[]> arlastitems(byte[] key, long count);
 
   /**
@@ -239,6 +251,7 @@ public interface ArrayBinaryCommands {
    * @return the list of last-inserted values
    * @since 8.0
    */
+  @Experimental
   List<byte[]> arlastitems(byte[] key, long count, boolean rev);
 
   /**
@@ -252,6 +265,7 @@ public interface ArrayBinaryCommands {
    * @return the array length, or {@code 0} if the key does not exist
    * @since 8.0
    */
+  @Experimental
   long arlen(byte[] key);
 
   /**
@@ -267,6 +281,7 @@ public interface ArrayBinaryCommands {
    * @return the list of values aligned with {@code indices}
    * @since 8.0
    */
+  @Experimental
   List<byte[]> armget(byte[] key, long... indices);
 
   /**
@@ -282,6 +297,7 @@ public interface ArrayBinaryCommands {
    * @return the number of slots that were previously empty
    * @since 8.0
    */
+  @Experimental
   long armset(byte[] key, Map<Long, byte[]> indexValueMap);
 
   /**
@@ -297,6 +313,7 @@ public interface ArrayBinaryCommands {
    *         available; {@link OptionalLong#empty()} when the insertion cursor is exhausted
    * @since 8.0
    */
+  @Experimental
   Long arnext(byte[] key);
 
   /**
@@ -314,6 +331,7 @@ public interface ArrayBinaryCommands {
    * @return the operation's numeric result
    * @since 8.0
    */
+  @Experimental
   long aropBitwise(byte[] key, long start, long end, ArrayBitwise op);
 
   /**
@@ -331,6 +349,7 @@ public interface ArrayBinaryCommands {
    * @return the aggregate value as raw bytes, or {@code null} when the range is empty
    * @since 8.0
    */
+  @Experimental
   byte[] aropAggregate(byte[] key, long start, long end, ArrayAggregate op);
 
   /**
@@ -346,6 +365,7 @@ public interface ArrayBinaryCommands {
    * @return the count of non-empty elements
    * @since 8.0
    */
+  @Experimental
   long aropCount(byte[] key, long start, long end);
 
   /**
@@ -363,6 +383,7 @@ public interface ArrayBinaryCommands {
    * @return the count of matching elements
    * @since 8.0
    */
+  @Experimental
   long aropCount(byte[] key, long start, long end, byte[] match);
 
   /**
@@ -379,6 +400,7 @@ public interface ArrayBinaryCommands {
    * @return the last index at which a value was inserted
    * @since 8.0
    */
+  @Experimental
   long arring(byte[] key, long size, byte[]... values);
 
   /**
@@ -392,6 +414,7 @@ public interface ArrayBinaryCommands {
    * @return the index at which the value was inserted
    * @since 8.0
    */
+  @Experimental
   long arring(byte[] key, long size, byte[] value);
 
   /**
@@ -408,6 +431,7 @@ public interface ArrayBinaryCommands {
    * @return the populated {@code (index, value)} pairs; empty when the key does not exist
    * @since 8.0
    */
+  @Experimental
   List<KeyValue<Long, byte[]>> arscan(byte[] key, long start, long end);
 
   /**
@@ -425,6 +449,7 @@ public interface ArrayBinaryCommands {
    * @return the populated {@code (index, value)} pairs
    * @since 8.0
    */
+  @Experimental
   List<KeyValue<Long, byte[]>> arscan(byte[] key, long start, long end, long limit);
 
   /**
@@ -439,6 +464,7 @@ public interface ArrayBinaryCommands {
    * @return {@code 1} if the cursor was set, {@code 0} if the key does not exist
    * @since 8.0
    */
+  @Experimental
   long arseek(byte[] key, long index);
 
   /**
@@ -455,6 +481,7 @@ public interface ArrayBinaryCommands {
    * @return the number of slots that were previously empty
    * @since 8.0
    */
+  @Experimental
   long arset(byte[] key, long index, byte[]... values);
 
   /**
@@ -468,6 +495,7 @@ public interface ArrayBinaryCommands {
    * @return the number of slots that were previously empty (0 or 1)
    * @since 8.0
    */
+  @Experimental
   long arset(byte[] key, long index, byte[] value);
 
 }

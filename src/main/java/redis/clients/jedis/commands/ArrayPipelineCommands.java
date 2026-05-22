@@ -31,6 +31,7 @@ public interface ArrayPipelineCommands {
    *         {@code key} does not exist
    * @since 8.0
    */
+  @Experimental
   Response<Long> arcount(String key);
 
   /**
@@ -46,6 +47,7 @@ public interface ArrayPipelineCommands {
    *         otherwise
    * @since 8.0
    */
+  @Experimental
   Response<Long> ardel(String key, long index);
 
   /**
@@ -60,6 +62,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the number of elements actually deleted
    * @since 8.0
    */
+  @Experimental
   Response<Long> ardel(String key, long... indices);
 
   /**
@@ -75,6 +78,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the number of elements deleted
    * @since 8.0
    */
+  @Experimental
   Response<Long> ardelrange(String key, LongRange... ranges);
 
   /**
@@ -88,6 +92,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the number of elements deleted
    * @since 8.0
    */
+  @Experimental
   Response<Long> ardelrange(String key, long start, long end);
 
   /**
@@ -103,6 +108,7 @@ public interface ArrayPipelineCommands {
    *         the key or index does not exist
    * @since 8.0
    */
+  @Experimental
   Response<String> arget(String key, long index);
 
   /**
@@ -119,6 +125,7 @@ public interface ArrayPipelineCommands {
    *         appear as {@code null} entries
    * @since 8.0
    */
+  @Experimental
   Response<List<String>> argetrange(String key, long start, long end);
 
   /**
@@ -165,6 +172,7 @@ public interface ArrayPipelineCommands {
    *         key does not exist
    * @since 8.0
    */
+  @Experimental
   Response<ArrayInfo> arinfo(String key);
 
   /**
@@ -179,6 +187,7 @@ public interface ArrayPipelineCommands {
    *         the key does not exist
    * @since 8.0
    */
+  @Experimental
   Response<ArrayFullInfo> arinfoFull(String key);
 
   /**
@@ -193,6 +202,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the last index at which a value was inserted
    * @since 8.0
    */
+  @Experimental
   Response<Long> arinsert(String key, String... values);
 
   /**
@@ -205,6 +215,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the index at which the value was inserted
    * @since 8.0
    */
+  @Experimental
   Response<Long> arinsert(String key, String value);
 
   /**
@@ -219,6 +230,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the list of last-inserted values
    * @since 8.0
    */
+  @Experimental
   Response<List<String>> arlastitems(String key, long count);
 
   /**
@@ -235,6 +247,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the list of last-inserted values
    * @since 8.0
    */
+  @Experimental
   Response<List<String>> arlastitems(String key, long count, boolean rev);
 
   /**
@@ -249,6 +262,7 @@ public interface ArrayPipelineCommands {
    *         exist
    * @since 8.0
    */
+  @Experimental
   Response<Long> arlen(String key);
 
   /**
@@ -264,6 +278,7 @@ public interface ArrayPipelineCommands {
    *         missing slots appear as {@code null}
    * @since 8.0
    */
+  @Experimental
   Response<List<String>> armget(String key, long... indices);
 
   /**
@@ -278,6 +293,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the number of slots that were previously empty
    * @since 8.0
    */
+  @Experimental
   Response<Long> armset(String key, Map<Long, String> indexValueMap);
 
   /**
@@ -293,6 +309,7 @@ public interface ArrayPipelineCommands {
    *         available, or {@link OptionalLong#empty()} when the cursor is exhausted
    * @since 8.0
    */
+  @Experimental
   Response<Long> arnext(String key);
 
   /**
@@ -309,6 +326,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the operation's numeric result
    * @since 8.0
    */
+  @Experimental
   Response<Long> aropBitwise(String key, long start, long end, ArrayBitwise op);
 
   /**
@@ -326,6 +344,7 @@ public interface ArrayPipelineCommands {
    *         is empty
    * @since 8.0
    */
+  @Experimental
   Response<String> aropAggregate(String key, long start, long end, ArrayAggregate op);
 
   /**
@@ -341,6 +360,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the count of non-empty elements
    * @since 8.0
    */
+  @Experimental
   Response<Long> aropCount(String key, long start, long end);
 
   /**
@@ -358,6 +378,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the count of matching elements
    * @since 8.0
    */
+  @Experimental
   Response<Long> aropCount(String key, long start, long end, String match);
 
   /**
@@ -373,6 +394,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the last index at which a value was inserted
    * @since 8.0
    */
+  @Experimental
   Response<Long> arring(String key, long size, String... values);
 
   /**
@@ -386,6 +408,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the index at which the value was inserted
    * @since 8.0
    */
+  @Experimental
   Response<Long> arring(String key, long size, String value);
 
   /**
@@ -401,6 +424,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the populated {@code (index, value)} pairs
    * @since 8.0
    */
+  @Experimental
   Response<List<KeyValue<Long, String>>> arscan(String key, long start, long end);
 
   /**
@@ -417,6 +441,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the populated {@code (index, value)} pairs
    * @since 8.0
    */
+  @Experimental
   Response<List<KeyValue<Long, String>>> arscan(String key, long start, long end, long limit);
 
   /**
@@ -432,6 +457,7 @@ public interface ArrayPipelineCommands {
    *         key does not exist
    * @since 8.0
    */
+  @Experimental
   Response<Long> arseek(String key, long index);
 
   /**
@@ -447,6 +473,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the number of slots that were previously empty
    * @since 8.0
    */
+  @Experimental
   Response<Long> arset(String key, long index, String... values);
 
   /**
@@ -460,6 +487,7 @@ public interface ArrayPipelineCommands {
    * @return a {@link Response} that resolves to the number of slots that were previously empty
    * @since 8.0
    */
+  @Experimental
   Response<Long> arset(String key, long index, String value);
 
 }

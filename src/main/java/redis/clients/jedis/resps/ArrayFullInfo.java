@@ -2,12 +2,15 @@ package redis.clients.jedis.resps;
 
 import java.util.Map;
 
+import redis.clients.jedis.annots.Experimental;
+
 /**
  * This class holds information about an array returned by {@code ARINFO key FULL}. It extends
  * {@link ArrayInfo} with the additional per-slice aggregate fields reported only when the
  * {@code FULL} flag is present. The underlying {@link Map} accessible via {@link #getArrayInfo()}
  * contains every field returned by the server.
  */
+@Experimental
 public class ArrayFullInfo extends ArrayInfo {
 
   public static final String DENSE_SLICES = "dense-slices";

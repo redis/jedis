@@ -3,12 +3,15 @@ package redis.clients.jedis.resps;
 import java.io.Serializable;
 import java.util.Map;
 
+import redis.clients.jedis.annots.Experimental;
+
 /**
  * This class holds information about an array returned by the {@code ARINFO} command. Known fields
  * can be accessed via getters; {@link #getArrayInfo()} returns the underlying {@link Map} so that
  * callers can read fields that are not yet promoted to typed getters or that the server may add in
  * the future.
  */
+@Experimental
 public class ArrayInfo implements Serializable {
 
   public static final String COUNT = "count";

@@ -2562,6 +2562,78 @@ public final class BuilderFactory {
     }
   }
 
+  public static final Builder<ArrayInfo> ARRAY_INFO = new Builder<ArrayInfo>() {
+    @Override
+    public ArrayInfo build(Object data) {
+      if (data == null) return null;
+      return new ArrayInfo(ENCODED_OBJECT_MAP.build(data));
+    }
+
+    @Override
+    public String toString() {
+      return "ArrayInfo";
+    }
+  };
+
+  public static final Builder<ArrayFullInfo> ARRAY_FULL_INFO = new Builder<ArrayFullInfo>() {
+    @Override
+    public ArrayFullInfo build(Object data) {
+      if (data == null) return null;
+      return new ArrayFullInfo(ENCODED_OBJECT_MAP.build(data));
+    }
+
+    @Override
+    public String toString() {
+      return "ArrayFullInfo";
+    }
+  };
+
+  public static final Builder<List<KeyValue<Long, String>>> STRING_INDEXED_VALUE_LIST
+      = new Builder<List<KeyValue<Long, String>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<KeyValue<Long, String>> build(Object data) {
+      if (data == null) return null;
+      final List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyList();
+
+      final List<KeyValue<Long, String>> result = new ArrayList<>(list.size());
+      for (Object pair : list) {
+        List<Object> entry = (List<Object>) pair;
+        result.add(KeyValue.of(LONG.build(entry.get(0)), STRING.build(entry.get(1))));
+      }
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "List<KeyValue<Long, String>>";
+    }
+  };
+
+  public static final Builder<List<KeyValue<Long, byte[]>>> BINARY_INDEXED_VALUE_LIST
+      = new Builder<List<KeyValue<Long, byte[]>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<KeyValue<Long, byte[]>> build(Object data) {
+      if (data == null) return null;
+      final List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyList();
+
+      final List<KeyValue<Long, byte[]>> result = new ArrayList<>(list.size());
+      for (Object pair : list) {
+        List<Object> entry = (List<Object>) pair;
+        result.add(KeyValue.of(LONG.build(entry.get(0)), BINARY.build(entry.get(1))));
+      }
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "List<KeyValue<Long, byte[]>>";
+    }
+  };
+
   private BuilderFactory() {
     throw new InstantiationError("Must not instantiate this class");
   }

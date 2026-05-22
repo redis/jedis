@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * A single sample of a time series.
- * <p>
+ * <p>1
  * A {@code TSElement} carries a timestamp and one or more values. Most queries return one
  * value per sample, in which case {@link #getValue()} returns it directly. Queries that
  * request multiple aggregators (see
@@ -17,16 +17,11 @@ import java.util.List;
 public class TSElement {
 
   private final long timestamp;
-  private final List<Double> values;
+  private final double value;
 
   public TSElement(long timestamp, double value) {
     this.timestamp = timestamp;
-    this.values = Collections.singletonList(value);
-  }
-
-  TSElement(long timestamp, List<Double> values) {
-    this.timestamp = timestamp;
-    this.values = values;
+    this.value = value;
   }
 
   public long getTimestamp() {
@@ -37,7 +32,7 @@ public class TSElement {
    * @return the first value of this sample. Equivalent to {@code getValues().get(0)}.
    */
   public double getValue() {
-    return values.get(0);
+    return value;
   }
 
   /**
@@ -46,26 +41,64 @@ public class TSElement {
    *         multiple aggregators)
    */
   public List<Double> getValues() {
-    return values;
+    return Collections.singletonList(value);
   }
 
   @Override
   public int hashCode() {
-    return 31 * Long.hashCode(timestamp) + values.hashCode();
+    return 31 * Long.hashCode(timestamp) + Long.hashCode(Double.doubleToLongBits(value));
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == null) return false;
     if (obj == this) return true;
-    if (!(obj instanceof TSElement)) return false;
-
+    if (obj == null || obj.getClass() != TSElement.class) return false;
     TSElement other = (TSElement) obj;
-    return this.timestamp == other.timestamp && this.values.equals(other.values);
+    return this.timestamp == other.timestamp
+        && Double.doubleToLongBits(this.value) == Double.doubleToLongBits(other.value);
   }
 
   @Override
   public String toString() {
-    return "(" + timestamp + ":" + (values.size()== 1 ?values.get(0) : values) + ")";
+    return "(" + timestamp + ":" + value + ")";
+  }
+
+  /**
+   * Variant produced by {@link TimeSeriesBuilderFactory} when a query returned more than
+   * one value per sample (multiple aggregators). Holds the parser's list as-is and is
+   * never instantiated for single-value samples, so callers can assume
+   * {@code values.size() >= 2}.
+   */
+  static final class MultiValueTSElement extends TSElement {
+
+    private final List<Double> values;
+
+    MultiValueTSElement(long timestamp, List<Double> values) {
+      super(timestamp, values.get(0));
+      this.values = values;
+    }
+
+    @Override
+    public List<Double> getValues() {
+      return values;
+    }
+
+    @Override
+    public int hashCode() {
+      return 31 * Long.hashCode(getTimestamp()) + values.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (obj == this) return true;
+      if (obj == null || obj.getClass() != MultiValueTSElement.class) return false;
+      MultiValueTSElement other = (MultiValueTSElement) obj;
+      return getTimestamp() == other.getTimestamp() && this.values.equals(other.values);
+    }
+
+    @Override
+    public String toString() {
+      return "(" + getTimestamp() + ":" + values + ")";
+    }
   }
 }

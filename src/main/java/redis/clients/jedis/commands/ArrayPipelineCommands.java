@@ -2,7 +2,6 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalLong;
 
 import redis.clients.jedis.Response;
 import redis.clients.jedis.annots.Experimental;
@@ -304,9 +303,8 @@ public interface ArrayPipelineCommands {
    * <p>
    * Wire: {@code ARNEXT key}
    * @param key the name of the key that holds the array
-   * @return a {@link Response} that resolves to {@link OptionalLong#of(long) OptionalLong.of(0)}
-   *         for missing keys, the next insert index wrapped in {@link OptionalLong} when one is
-   *         available, or {@link OptionalLong#empty()} when the cursor is exhausted
+   * @return a {@link Response} that resolves to {@code 0L} for missing keys, the next insert index
+   *         when one is available, or {@code null} when the cursor is exhausted
    * @since 8.0
    */
   @Experimental

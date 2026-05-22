@@ -2,8 +2,6 @@ package redis.clients.jedis.commands.jedis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.util.OptionalLong;
-
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -43,7 +41,7 @@ public class ArrayCommandsTest extends JedisCommandsTestBase {
 
   @Test
   public void arnextMissingKey() {
-    assertEquals(OptionalLong.of(0L), jedis.arnext("missing-arnext"));
+    assertEquals(0L, jedis.arnext("missing-arnext"));
   }
 
   @Test

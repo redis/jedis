@@ -9,7 +9,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalLong;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Tag;
@@ -240,12 +239,12 @@ public abstract class ArrayCommandsTestBase extends UnifiedJedisCommandsTestBase
   public void arnext() {
     String key = "arnext";
     jedis.arinsert(key, "a", "b");
-    assertEquals(OptionalLong.of(2L), jedis.arnext(key));
+    assertEquals(2L, jedis.arnext(key));
   }
 
   @Test
   public void arnextMissingBinary() {
-    assertEquals(OptionalLong.of(0L), jedis.arnext(SafeEncoder.encode("arnext-missing-b")));
+    assertEquals(0L, jedis.arnext(SafeEncoder.encode("arnext-missing-b")));
   }
 
   @Test

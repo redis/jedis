@@ -8,7 +8,6 @@ import redis.clients.jedis.params.MSetExParams;
 import redis.clients.jedis.params.IncrexFloatParams;
 import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.LCSParams;
-import redis.clients.jedis.resps.IncrexResponse;
 import redis.clients.jedis.resps.LCSMatchResult;
 
 import java.util.List;
@@ -83,19 +82,19 @@ public interface StringPipelineCommands extends BitPipelineCommands {
    * Pipeline variant of {@link StringCommands#increx(String)}.
    * @since 8.0
    */
-  Response<IncrexResponse<Long>> increx(String key);
+  Response<List<Long>> increx(String key);
 
   /**
    * Pipeline variant of {@link StringCommands#increx(String, long, IncrexParams)}.
    * @since 8.0
    */
-  Response<IncrexResponse<Long>> increx(String key, long increment, IncrexParams params);
+  Response<List<Long>> increx(String key, long increment, IncrexParams params);
 
   /**
    * Pipeline variant of {@link StringCommands#increx(String, double, IncrexFloatParams)}.
    * @since 8.0
    */
-  Response<IncrexResponse<Double>> increx(String key, double increment, IncrexFloatParams params);
+  Response<List<Double>> increx(String key, double increment, IncrexFloatParams params);
 
   Response<Long> decr(String key);
 

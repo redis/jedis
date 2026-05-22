@@ -1203,19 +1203,19 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public IncrexResponse<Long> increx(final byte[] key) {
+  public List<Long> increx(final byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.increx(key));
   }
 
   @Override
-  public IncrexResponse<Long> increx(final byte[] key, final long increment, final IncrexParams params) {
+  public List<Long> increx(final byte[] key, final long increment, final IncrexParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.increx(key, increment, params));
   }
 
   @Override
-  public IncrexResponse<Double> increx(final byte[] key, final double increment, final IncrexFloatParams params) {
+  public List<Double> increx(final byte[] key, final double increment, final IncrexFloatParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.increx(key, increment, params));
   }
@@ -5883,19 +5883,19 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public IncrexResponse<Long> increx(final String key) {
+  public List<Long> increx(final String key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.increx(key));
   }
 
   @Override
-  public IncrexResponse<Long> increx(final String key, final long increment, final IncrexParams params) {
+  public List<Long> increx(final String key, final long increment, final IncrexParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.increx(key, increment, params));
   }
 
   @Override
-  public IncrexResponse<Double> increx(final String key, final double increment, final IncrexFloatParams params) {
+  public List<Double> increx(final String key, final double increment, final IncrexFloatParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.increx(key, increment, params));
   }

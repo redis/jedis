@@ -19,7 +19,6 @@ import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.params.MSetExParams;
 
 import redis.clients.jedis.resps.LCSMatchResult;
-import redis.clients.jedis.resps.IncrexResponse;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.IncrexFloatParams;
@@ -340,9 +339,9 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
   @Test
   @EnabledOnCommand("INCREX")
   public void increxBasic() {
-    IncrexResponse<Long> res = jedis.increx("foo");
-    assertEquals(Long.valueOf(1), res.getValue());
-    assertEquals(Long.valueOf(1), res.getIncrement());
+    List<Long> res = jedis.increx("foo");
+    assertEquals(Long.valueOf(1), res.get(0));
+    assertEquals(Long.valueOf(1), res.get(1));
   }
 
   @Test
@@ -350,9 +349,9 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
   public void increxByIntWithBoundsAndExpiry() {
     jedis.set("foo", "10");
     IncrexParams params = new IncrexParams().lbound(0).ubound(20).ex(60);
-    IncrexResponse<Long> res = jedis.increx("foo", 2, params);
-    assertEquals(Long.valueOf(12), res.getValue());
-    assertEquals(Long.valueOf(2), res.getIncrement());
+    List<Long> res = jedis.increx("foo", 2, params);
+    assertEquals(Long.valueOf(12), res.get(0));
+    assertEquals(Long.valueOf(2), res.get(1));
     assertTrue(jedis.ttl("foo") > 0);
   }
 
@@ -361,9 +360,9 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
   public void increxByFloatWithBoundsAndExpiry() {
     jedis.set("foo", "3.25");
     IncrexFloatParams params = new IncrexFloatParams().lbound(-1.5).ubound(9.5).ex(60);
-    IncrexResponse<Double> res = jedis.increx("foo", 1.25, params);
-    assertEquals(4.5, res.getValue(), 0.0);
-    assertEquals(1.25, res.getIncrement(), 0.0);
+    List<Double> res = jedis.increx("foo", 1.25, params);
+    assertEquals(4.5, res.get(0), 0.0);
+    assertEquals(1.25, res.get(1), 0.0);
   }
 
   @Test
@@ -371,9 +370,9 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
   public void increxNegativeIncrement() {
     jedis.set("foo", "10");
     IncrexParams params = new IncrexParams();
-    IncrexResponse<Long> res = jedis.increx("foo", -3, params);
-    assertEquals(Long.valueOf(7), res.getValue());
-    assertEquals(Long.valueOf(-3), res.getIncrement());
+    List<Long> res = jedis.increx("foo", -3, params);
+    assertEquals(Long.valueOf(7), res.get(0));
+    assertEquals(Long.valueOf(-3), res.get(1));
   }
 
   @Test
@@ -381,9 +380,9 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
   public void increxDefaultRejectSilent() {
     jedis.set("foo", "0");
     IncrexParams params = new IncrexParams().ubound(5);
-    IncrexResponse<Long> res = jedis.increx("foo", 10, params);
-    assertEquals(Long.valueOf(0), res.getValue());
-    assertEquals(Long.valueOf(0), res.getIncrement());
+    List<Long> res = jedis.increx("foo", 10, params);
+    assertEquals(Long.valueOf(0), res.get(0));
+    assertEquals(Long.valueOf(0), res.get(1));
   }
 
   @Test
@@ -391,9 +390,9 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
   public void increxSaturateUbound() {
     jedis.set("foo", "0");
     IncrexParams params = new IncrexParams().ubound(5).saturate();
-    IncrexResponse<Long> res = jedis.increx("foo", 10, params);
-    assertEquals(Long.valueOf(5), res.getValue());
-    assertEquals(Long.valueOf(5), res.getIncrement());
+    List<Long> res = jedis.increx("foo", 10, params);
+    assertEquals(Long.valueOf(5), res.get(0));
+    assertEquals(Long.valueOf(5), res.get(1));
   }
 
   @Test
@@ -401,9 +400,9 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
   public void increxSaturateLbound() {
     jedis.set("foo", "5");
     IncrexParams params = new IncrexParams().lbound(0).saturate();
-    IncrexResponse<Long> res = jedis.increx("foo", -100, params);
-    assertEquals(Long.valueOf(0), res.getValue());
-    assertEquals(Long.valueOf(-5), res.getIncrement());
+    List<Long> res = jedis.increx("foo", -100, params);
+    assertEquals(Long.valueOf(0), res.get(0));
+    assertEquals(Long.valueOf(-5), res.get(1));
   }
 
   @Test
@@ -411,9 +410,9 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
   public void increxSaturateStillAppliesExpiry() {
     jedis.set("foo", "5");
     IncrexParams params = new IncrexParams().ubound(5).saturate().ex(60);
-    IncrexResponse<Long> res = jedis.increx("foo", 1, params);
-    assertEquals(Long.valueOf(5), res.getValue());
-    assertEquals(Long.valueOf(0), res.getIncrement());
+    List<Long> res = jedis.increx("foo", 1, params);
+    assertEquals(Long.valueOf(5), res.get(0));
+    assertEquals(Long.valueOf(0), res.get(1));
     assertTrue(jedis.ttl("foo") > 0);
   }
 
@@ -423,9 +422,9 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
     jedis.set("foo", "5");
     jedis.expire("foo", 300);
     IncrexParams params = new IncrexParams().persist();
-    IncrexResponse<Long> res = jedis.increx("foo", 2, params);
-    assertEquals(Long.valueOf(7), res.getValue());
-    assertEquals(Long.valueOf(2), res.getIncrement());
+    List<Long> res = jedis.increx("foo", 2, params);
+    assertEquals(Long.valueOf(7), res.get(0));
+    assertEquals(Long.valueOf(2), res.get(1));
     assertEquals(-1, jedis.ttl("foo"));
   }
 
@@ -434,8 +433,8 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
   public void increxEnxNoExistingTtl() {
     jedis.set("foo", "5");
     IncrexParams params = new IncrexParams().ex(60).enx();
-    IncrexResponse<Long> res = jedis.increx("foo", 1, params);
-    assertEquals(Long.valueOf(6), res.getValue());
+    List<Long> res = jedis.increx("foo", 1, params);
+    assertEquals(Long.valueOf(6), res.get(0));
     assertTrue(jedis.ttl("foo") > 0);
   }
 
@@ -455,9 +454,9 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
   @EnabledOnCommand("INCREX")
   public void increxNonExistentKey() {
     IncrexParams params = new IncrexParams();
-    IncrexResponse<Long> res = jedis.increx("foo", 5, params);
-    assertEquals(Long.valueOf(5), res.getValue());
-    assertEquals(Long.valueOf(5), res.getIncrement());
+    List<Long> res = jedis.increx("foo", 5, params);
+    assertEquals(Long.valueOf(5), res.get(0));
+    assertEquals(Long.valueOf(5), res.get(1));
   }
 
   @Test
@@ -473,18 +472,18 @@ public class StringValuesCommandsTest extends JedisCommandsTestBase {
   public void increxSaturateFloat() {
     jedis.set("foo", "0.0");
     IncrexFloatParams params = new IncrexFloatParams().ubound(5.0).saturate();
-    IncrexResponse<Double> res = jedis.increx("foo", 10.0, params);
-    assertEquals(5.0, res.getValue(), 0.0);
-    assertEquals(5.0, res.getIncrement(), 0.0);
+    List<Double> res = jedis.increx("foo", 10.0, params);
+    assertEquals(5.0, res.get(0), 0.0);
+    assertEquals(5.0, res.get(1), 0.0);
   }
 
   @Test
   @EnabledOnCommand("INCREX")
   public void increxSyncParses() {
     IncrexParams params = new IncrexParams();
-    IncrexResponse<Long> res = jedis.increx("foo", 3, params);
-    assertEquals(Long.valueOf(3), res.getValue());
-    assertEquals(Long.valueOf(3), res.getIncrement());
+    List<Long> res = jedis.increx("foo", 3, params);
+    assertEquals(Long.valueOf(3), res.get(0));
+    assertEquals(Long.valueOf(3), res.get(1));
   }
 
   @Test

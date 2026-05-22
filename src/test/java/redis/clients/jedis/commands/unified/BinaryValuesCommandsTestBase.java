@@ -32,7 +32,6 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.IncrexFloatParams;
 import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.MSetExParams;
-import redis.clients.jedis.resps.IncrexResponse;
 
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.TestEnvUtil;
@@ -464,9 +463,9 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   @Test
   @EnabledOnCommand("INCREX")
   public void increxBasicBinary() {
-    IncrexResponse<Long> res = jedis.increx(bfoo);
-    assertEquals(Long.valueOf(1), res.getValue());
-    assertEquals(Long.valueOf(1), res.getIncrement());
+    List<Long> res = jedis.increx(bfoo);
+    assertEquals(Long.valueOf(1), res.get(0));
+    assertEquals(Long.valueOf(1), res.get(1));
   }
 
   @Test
@@ -474,9 +473,9 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   public void increxByIntWithBoundsAndExpiryBinary() {
     jedis.set(bfoo, "10".getBytes());
     IncrexParams params = new IncrexParams().lbound(0).ubound(20).ex(60);
-    IncrexResponse<Long> res = jedis.increx(bfoo, 2, params);
-    assertEquals(Long.valueOf(12), res.getValue());
-    assertEquals(Long.valueOf(2), res.getIncrement());
+    List<Long> res = jedis.increx(bfoo, 2, params);
+    assertEquals(Long.valueOf(12), res.get(0));
+    assertEquals(Long.valueOf(2), res.get(1));
     assertTrue(jedis.ttl(bfoo) > 0);
   }
 
@@ -485,9 +484,9 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   public void increxByFloatWithBoundsAndExpiryBinary() {
     jedis.set(bfoo, "3.25".getBytes());
     IncrexFloatParams params = new IncrexFloatParams().lbound(-1.5).ubound(9.5).ex(60);
-    IncrexResponse<Double> res = jedis.increx(bfoo, 1.25, params);
-    assertEquals(4.5, res.getValue(), 0.0);
-    assertEquals(1.25, res.getIncrement(), 0.0);
+    List<Double> res = jedis.increx(bfoo, 1.25, params);
+    assertEquals(4.5, res.get(0), 0.0);
+    assertEquals(1.25, res.get(1), 0.0);
   }
 
   @Test
@@ -495,9 +494,9 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   public void increxDefaultRejectSilentBinary() {
     jedis.set(bfoo, "0".getBytes());
     IncrexParams params = new IncrexParams().ubound(5);
-    IncrexResponse<Long> res = jedis.increx(bfoo, 10, params);
-    assertEquals(Long.valueOf(0), res.getValue());
-    assertEquals(Long.valueOf(0), res.getIncrement());
+    List<Long> res = jedis.increx(bfoo, 10, params);
+    assertEquals(Long.valueOf(0), res.get(0));
+    assertEquals(Long.valueOf(0), res.get(1));
   }
 
   @Test
@@ -505,9 +504,9 @@ public abstract class BinaryValuesCommandsTestBase extends UnifiedJedisCommandsT
   public void increxSaturateUboundBinary() {
     jedis.set(bfoo, "0".getBytes());
     IncrexParams params = new IncrexParams().ubound(5).saturate();
-    IncrexResponse<Long> res = jedis.increx(bfoo, 10, params);
-    assertEquals(Long.valueOf(5), res.getValue());
-    assertEquals(Long.valueOf(5), res.getIncrement());
+    List<Long> res = jedis.increx(bfoo, 10, params);
+    assertEquals(Long.valueOf(5), res.get(0));
+    assertEquals(Long.valueOf(5), res.get(1));
   }
 
   @Test

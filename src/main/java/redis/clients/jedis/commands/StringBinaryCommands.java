@@ -9,7 +9,6 @@ import redis.clients.jedis.params.MSetExParams;
 import redis.clients.jedis.params.IncrexFloatParams;
 import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.LCSParams;
-import redis.clients.jedis.resps.IncrexResponse;
 import redis.clients.jedis.resps.LCSMatchResult;
 
 public interface StringBinaryCommands extends BitBinaryCommands {
@@ -107,23 +106,23 @@ public interface StringBinaryCommands extends BitBinaryCommands {
    * Increment the integer number stored at key by 1. If the key does not exist, it is set to 0
    * before performing the operation.
    * @param key the key
-   * @return {@link IncrexResponse} containing the new value and the applied increment
+   * @return a 2-element list: {@code [newValue, appliedIncrement]}
    * @see StringCommands#increx(String)
    * @since 8.0
    */
-  IncrexResponse<Long> increx(byte[] key);
+  List<Long> increx(byte[] key);
 
   /**
    * Increment the integer number stored at key by {@code increment}, with optional bounds,
-   * overflow handling, and expiration control.
+   * saturation, and expiration control.
    * @param key the key
    * @param increment the integer amount to increment by (may be negative)
-   * @param params optional bounds, overflow mode, and expiration options
-   * @return {@link IncrexResponse} containing the new value and the applied increment
+   * @param params optional bounds, {@code SATURATE} flag, and expiration options
+   * @return a 2-element list: {@code [newValue, appliedIncrement]}
    * @see StringCommands#increx(String, long, IncrexParams)
    * @since 8.0
    */
-  IncrexResponse<Long> increx(byte[] key, long increment, IncrexParams params);
+  List<Long> increx(byte[] key, long increment, IncrexParams params);
 
   /**
    * Increment the floating-point number stored at key by {@code increment}, with optional bounds,
@@ -131,11 +130,11 @@ public interface StringBinaryCommands extends BitBinaryCommands {
    * @param key the key
    * @param increment the floating-point amount to increment by (may be negative)
    * @param params optional bounds, {@code SATURATE} flag, and expiration options
-   * @return {@link IncrexResponse} containing the new value and the applied increment
+   * @return a 2-element list: {@code [newValue, appliedIncrement]}
    * @see StringCommands#increx(String, double, IncrexFloatParams)
    * @since 8.0
    */
-  IncrexResponse<Double> increx(byte[] key, double increment, IncrexFloatParams params);
+  List<Double> increx(byte[] key, double increment, IncrexFloatParams params);
 
   long decr(byte[] key);
 

@@ -10,7 +10,6 @@ import redis.clients.jedis.params.MSetExParams;
 import redis.clients.jedis.params.IncrexFloatParams;
 import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.LCSParams;
-import redis.clients.jedis.resps.IncrexResponse;
 import redis.clients.jedis.resps.LCSMatchResult;
 
 public interface StringPipelineBinaryCommands extends BitPipelineBinaryCommands {
@@ -83,19 +82,19 @@ public interface StringPipelineBinaryCommands extends BitPipelineBinaryCommands 
    * Pipeline variant of {@link StringBinaryCommands#increx(byte[])}.
    * @since 8.0
    */
-  Response<IncrexResponse<Long>> increx(byte[] key);
+  Response<List<Long>> increx(byte[] key);
 
   /**
    * Pipeline variant of {@link StringBinaryCommands#increx(byte[], long, IncrexParams)}.
    * @since 8.0
    */
-  Response<IncrexResponse<Long>> increx(byte[] key, long increment, IncrexParams params);
+  Response<List<Long>> increx(byte[] key, long increment, IncrexParams params);
 
   /**
    * Pipeline variant of {@link StringBinaryCommands#increx(byte[], double, IncrexFloatParams)}.
    * @since 8.0
    */
-  Response<IncrexResponse<Double>> increx(byte[] key, double increment, IncrexFloatParams params);
+  Response<List<Double>> increx(byte[] key, double increment, IncrexFloatParams params);
 
   Response<Long> decr(byte[] key);
 

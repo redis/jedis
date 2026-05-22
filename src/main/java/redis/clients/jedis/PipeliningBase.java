@@ -389,17 +389,17 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<IncrexResponse<Long>> increx(String key) {
+  public Response<List<Long>> increx(String key) {
     return appendCommand(commandObjects.increx(key));
   }
 
   @Override
-  public Response<IncrexResponse<Long>> increx(String key, long increment, IncrexParams params) {
+  public Response<List<Long>> increx(String key, long increment, IncrexParams params) {
     return appendCommand(commandObjects.increx(key, increment, params));
   }
 
   @Override
-  public Response<IncrexResponse<Double>> increx(String key, double increment, IncrexFloatParams params) {
+  public Response<List<Double>> increx(String key, double increment, IncrexFloatParams params) {
     return appendCommand(commandObjects.increx(key, increment, params));
   }
 
@@ -3697,17 +3697,17 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<IncrexResponse<Long>> increx(byte[] key) {
+  public Response<List<Long>> increx(byte[] key) {
     return appendCommand(commandObjects.increx(key));
   }
 
   @Override
-  public Response<IncrexResponse<Long>> increx(byte[] key, long increment, IncrexParams params) {
+  public Response<List<Long>> increx(byte[] key, long increment, IncrexParams params) {
     return appendCommand(commandObjects.increx(key, increment, params));
   }
 
   @Override
-  public Response<IncrexResponse<Double>> increx(byte[] key, double increment, IncrexFloatParams params) {
+  public Response<List<Double>> increx(byte[] key, double increment, IncrexFloatParams params) {
     return appendCommand(commandObjects.increx(key, increment, params));
   }
 

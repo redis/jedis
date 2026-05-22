@@ -42,7 +42,8 @@ public class IncrexFloatParams extends BaseIncrexParams<IncrexFloatParams> {
   }
 
   @Override
-  protected void addBoundsParams(CommandArguments args) {
+  public void addParams(CommandArguments args) {
+
     if (lbound != null) {
       args.add(Keyword.LBOUND);
       args.add(lbound);
@@ -51,6 +52,8 @@ public class IncrexFloatParams extends BaseIncrexParams<IncrexFloatParams> {
       args.add(Keyword.UBOUND);
       args.add(ubound);
     }
+
+    super.addParams(args);
   }
 
   @Override

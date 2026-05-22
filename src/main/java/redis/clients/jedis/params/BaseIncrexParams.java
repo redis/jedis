@@ -103,7 +103,6 @@ public abstract class BaseIncrexParams<T extends BaseIncrexParams<T>> implements
    */
   @Override
   public void addParams(CommandArguments args) {
-    addBoundsParams(args);
 
     if (saturate) {
       args.add(Keyword.SATURATE);
@@ -120,11 +119,6 @@ public abstract class BaseIncrexParams<T extends BaseIncrexParams<T>> implements
       args.add(Keyword.ENX);
     }
   }
-
-  /**
-   * Subclasses emit their typed {@code LBOUND}/{@code UBOUND} here.
-   */
-  protected abstract void addBoundsParams(CommandArguments args);
 
   @Override
   public boolean equals(Object o) {

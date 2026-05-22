@@ -4580,6 +4580,186 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long arcount(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arcount(key));
+  }
+
+  @Override
+  public long ardel(final byte[] key, final long index) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.ardel(key, index));
+  }
+
+  @Override
+  public long ardel(final byte[] key, final long... indices) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.ardel(key, indices));
+  }
+
+  @Override
+  public long ardelrange(final byte[] key, final LongRange... ranges) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.ardelrange(key, ranges));
+  }
+
+  @Override
+  public long ardelrange(final byte[] key, final long start, final long end) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.ardelrange(key, start, end));
+  }
+
+  @Override
+  public byte[] arget(final byte[] key, final long index) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arget(key, index));
+  }
+
+  @Override
+  public List<byte[]> argetrange(final byte[] key, final long start, final long end) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.argetrange(key, start, end));
+  }
+
+  @Override
+  public List<Long> argrep(final byte[] key, final ArgrepParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.argrep(key, params));
+  }
+
+  @Override
+  public List<KeyValue<Long, byte[]>> argrepWithValues(final byte[] key, final ArgrepParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.argrepWithValues(key, params));
+  }
+
+  @Override
+  public ArrayInfo arinfo(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arinfo(key));
+  }
+
+  @Override
+  public ArrayFullInfo arinfoFull(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arinfoFull(key));
+  }
+
+  @Override
+  public long arinsert(final byte[] key, final byte[]... values) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arinsert(key, values));
+  }
+
+  @Override
+  public long arinsert(final byte[] key, final byte[] value) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arinsert(key, value));
+  }
+
+  @Override
+  public List<byte[]> arlastitems(final byte[] key, final long count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arlastitems(key, count));
+  }
+
+  @Override
+  public List<byte[]> arlastitems(final byte[] key, final long count, final boolean rev) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arlastitems(key, count, rev));
+  }
+
+  @Override
+  public long arlen(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arlen(key));
+  }
+
+  @Override
+  public List<byte[]> armget(final byte[] key, final long... indices) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.armget(key, indices));
+  }
+
+  @Override
+  public long armset(final byte[] key, final Map<Long, byte[]> indexValueMap) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.armset(key, indexValueMap));
+  }
+
+  @Override
+  public Long arnext(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arnext(key));
+  }
+
+  @Override
+  public long aropBitwise(final byte[] key, final long start, final long end, final ArrayBitwise op) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.aropBitwise(key, start, end, op));
+  }
+
+  @Override
+  public byte[] aropAggregate(final byte[] key, final long start, final long end, final ArrayAggregate op) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.aropAggregate(key, start, end, op));
+  }
+
+  @Override
+  public long aropCount(final byte[] key, final long start, final long end) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.aropCount(key, start, end));
+  }
+
+  @Override
+  public long aropCount(final byte[] key, final long start, final long end, final byte[] match) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.aropCount(key, start, end, match));
+  }
+
+  @Override
+  public long arring(final byte[] key, final long size, final byte[]... values) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arring(key, size, values));
+  }
+
+  @Override
+  public long arring(final byte[] key, final long size, final byte[] value) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arring(key, size, value));
+  }
+
+  @Override
+  public List<KeyValue<Long, byte[]>> arscan(final byte[] key, final long start, final long end) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arscan(key, start, end));
+  }
+
+  @Override
+  public List<KeyValue<Long, byte[]>> arscan(final byte[] key, final long start, final long end, final long limit) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arscan(key, start, end, limit));
+  }
+
+  @Override
+  public long arseek(final byte[] key, final long index) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arseek(key, index));
+  }
+
+  @Override
+  public long arset(final byte[] key, final long index, final byte[]... values) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arset(key, index, values));
+  }
+
+  @Override
+  public long arset(final byte[] key, final long index, final byte[] value) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arset(key, index, value));
+  }
+
+  @Override
   public ScanResult<byte[]> scan(final byte[] cursor) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.scan(cursor));
@@ -9437,6 +9617,186 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String pfmerge(final String destkey, final String... sourcekeys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.pfmerge(destkey, sourcekeys));
+  }
+
+  @Override
+  public long arcount(final String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arcount(key));
+  }
+
+  @Override
+  public long ardel(final String key, final long index) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.ardel(key, index));
+  }
+
+  @Override
+  public long ardel(final String key, final long... indices) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.ardel(key, indices));
+  }
+
+  @Override
+  public long ardelrange(final String key, final LongRange... ranges) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.ardelrange(key, ranges));
+  }
+
+  @Override
+  public long ardelrange(final String key, final long start, final long end) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.ardelrange(key, start, end));
+  }
+
+  @Override
+  public String arget(final String key, final long index) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arget(key, index));
+  }
+
+  @Override
+  public List<String> argetrange(final String key, final long start, final long end) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.argetrange(key, start, end));
+  }
+
+  @Override
+  public List<Long> argrep(final String key, final ArgrepParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.argrep(key, params));
+  }
+
+  @Override
+  public List<KeyValue<Long, String>> argrepWithValues(final String key, final ArgrepParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.argrepWithValues(key, params));
+  }
+
+  @Override
+  public ArrayInfo arinfo(final String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arinfo(key));
+  }
+
+  @Override
+  public ArrayFullInfo arinfoFull(final String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arinfoFull(key));
+  }
+
+  @Override
+  public long arinsert(final String key, final String... values) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arinsert(key, values));
+  }
+
+  @Override
+  public long arinsert(final String key, final String value) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arinsert(key, value));
+  }
+
+  @Override
+  public List<String> arlastitems(final String key, final long count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arlastitems(key, count));
+  }
+
+  @Override
+  public List<String> arlastitems(final String key, final long count, final boolean rev) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arlastitems(key, count, rev));
+  }
+
+  @Override
+  public long arlen(final String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arlen(key));
+  }
+
+  @Override
+  public List<String> armget(final String key, final long... indices) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.armget(key, indices));
+  }
+
+  @Override
+  public long armset(final String key, final Map<Long, String> indexValueMap) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.armset(key, indexValueMap));
+  }
+
+  @Override
+  public Long arnext(final String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arnext(key));
+  }
+
+  @Override
+  public long aropBitwise(final String key, final long start, final long end, final ArrayBitwise op) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.aropBitwise(key, start, end, op));
+  }
+
+  @Override
+  public String aropAggregate(final String key, final long start, final long end, final ArrayAggregate op) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.aropAggregate(key, start, end, op));
+  }
+
+  @Override
+  public long aropCount(final String key, final long start, final long end) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.aropCount(key, start, end));
+  }
+
+  @Override
+  public long aropCount(final String key, final long start, final long end, final String match) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.aropCount(key, start, end, match));
+  }
+
+  @Override
+  public long arring(final String key, final long size, final String... values) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arring(key, size, values));
+  }
+
+  @Override
+  public long arring(final String key, final long size, final String value) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arring(key, size, value));
+  }
+
+  @Override
+  public List<KeyValue<Long, String>> arscan(final String key, final long start, final long end) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arscan(key, start, end));
+  }
+
+  @Override
+  public List<KeyValue<Long, String>> arscan(final String key, final long start, final long end, final long limit) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arscan(key, start, end, limit));
+  }
+
+  @Override
+  public long arseek(final String key, final long index) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arseek(key, index));
+  }
+
+  @Override
+  public long arset(final String key, final long index, final String... values) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arset(key, index, values));
+  }
+
+  @Override
+  public long arset(final String key, final long index, final String value) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.arset(key, index, value));
   }
 
   @Override

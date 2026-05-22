@@ -1539,6 +1539,156 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> arcount(String key) {
+    return appendCommand(commandObjects.arcount(key));
+  }
+
+  @Override
+  public Response<Long> ardel(String key, long index) {
+    return appendCommand(commandObjects.ardel(key, index));
+  }
+
+  @Override
+  public Response<Long> ardel(String key, long... indices) {
+    return appendCommand(commandObjects.ardel(key, indices));
+  }
+
+  @Override
+  public Response<Long> ardelrange(String key, LongRange... ranges) {
+    return appendCommand(commandObjects.ardelrange(key, ranges));
+  }
+
+  @Override
+  public Response<Long> ardelrange(String key, long start, long end) {
+    return appendCommand(commandObjects.ardelrange(key, start, end));
+  }
+
+  @Override
+  public Response<String> arget(String key, long index) {
+    return appendCommand(commandObjects.arget(key, index));
+  }
+
+  @Override
+  public Response<List<String>> argetrange(String key, long start, long end) {
+    return appendCommand(commandObjects.argetrange(key, start, end));
+  }
+
+  @Override
+  public Response<List<Long>> argrep(String key, ArgrepParams params) {
+    return appendCommand(commandObjects.argrep(key, params));
+  }
+
+  @Override
+  public Response<List<KeyValue<Long, String>>> argrepWithValues(String key, ArgrepParams params) {
+    return appendCommand(commandObjects.argrepWithValues(key, params));
+  }
+
+  @Override
+  public Response<ArrayInfo> arinfo(String key) {
+    return appendCommand(commandObjects.arinfo(key));
+  }
+
+  @Override
+  public Response<ArrayFullInfo> arinfoFull(String key) {
+    return appendCommand(commandObjects.arinfoFull(key));
+  }
+
+  @Override
+  public Response<Long> arinsert(String key, String... values) {
+    return appendCommand(commandObjects.arinsert(key, values));
+  }
+
+  @Override
+  public Response<Long> arinsert(String key, String value) {
+    return appendCommand(commandObjects.arinsert(key, value));
+  }
+
+  @Override
+  public Response<List<String>> arlastitems(String key, long count) {
+    return appendCommand(commandObjects.arlastitems(key, count));
+  }
+
+  @Override
+  public Response<List<String>> arlastitems(String key, long count, boolean rev) {
+    return appendCommand(commandObjects.arlastitems(key, count, rev));
+  }
+
+  @Override
+  public Response<Long> arlen(String key) {
+    return appendCommand(commandObjects.arlen(key));
+  }
+
+  @Override
+  public Response<List<String>> armget(String key, long... indices) {
+    return appendCommand(commandObjects.armget(key, indices));
+  }
+
+  @Override
+  public Response<Long> armset(String key, Map<Long, String> indexValueMap) {
+    return appendCommand(commandObjects.armset(key, indexValueMap));
+  }
+
+  @Override
+  public Response<Long> arnext(String key) {
+    return appendCommand(commandObjects.arnext(key));
+  }
+
+  @Override
+  public Response<Long> aropBitwise(String key, long start, long end, ArrayBitwise op) {
+    return appendCommand(commandObjects.aropBitwise(key, start, end, op));
+  }
+
+  @Override
+  public Response<String> aropAggregate(String key, long start, long end, ArrayAggregate op) {
+    return appendCommand(commandObjects.aropAggregate(key, start, end, op));
+  }
+
+  @Override
+  public Response<Long> aropCount(String key, long start, long end) {
+    return appendCommand(commandObjects.aropCount(key, start, end));
+  }
+
+  @Override
+  public Response<Long> aropCount(String key, long start, long end, String match) {
+    return appendCommand(commandObjects.aropCount(key, start, end, match));
+  }
+
+  @Override
+  public Response<Long> arring(String key, long size, String... values) {
+    return appendCommand(commandObjects.arring(key, size, values));
+  }
+
+  @Override
+  public Response<Long> arring(String key, long size, String value) {
+    return appendCommand(commandObjects.arring(key, size, value));
+  }
+
+  @Override
+  public Response<List<KeyValue<Long, String>>> arscan(String key, long start, long end) {
+    return appendCommand(commandObjects.arscan(key, start, end));
+  }
+
+  @Override
+  public Response<List<KeyValue<Long, String>>> arscan(String key, long start, long end, long limit) {
+    return appendCommand(commandObjects.arscan(key, start, end, limit));
+  }
+
+  @Override
+  public Response<Long> arseek(String key, long index) {
+    return appendCommand(commandObjects.arseek(key, index));
+  }
+
+  @Override
+  public Response<Long> arset(String key, long index, String... values) {
+    return appendCommand(commandObjects.arset(key, index, values));
+  }
+
+  @Override
+  public Response<Long> arset(String key, long index, String value) {
+    return appendCommand(commandObjects.arset(key, index, value));
+  }
+
+  @Override
   public Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash) {
     return appendCommand(commandObjects.xadd(key, id, hash));
   }
@@ -2357,6 +2507,156 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> pfcount(byte[]... keys) {
     return appendCommand(commandObjects.pfcount(keys));
+  }
+
+  @Override
+  public Response<Long> arcount(byte[] key) {
+    return appendCommand(commandObjects.arcount(key));
+  }
+
+  @Override
+  public Response<Long> ardel(byte[] key, long index) {
+    return appendCommand(commandObjects.ardel(key, index));
+  }
+
+  @Override
+  public Response<Long> ardel(byte[] key, long... indices) {
+    return appendCommand(commandObjects.ardel(key, indices));
+  }
+
+  @Override
+  public Response<Long> ardelrange(byte[] key, LongRange... ranges) {
+    return appendCommand(commandObjects.ardelrange(key, ranges));
+  }
+
+  @Override
+  public Response<Long> ardelrange(byte[] key, long start, long end) {
+    return appendCommand(commandObjects.ardelrange(key, start, end));
+  }
+
+  @Override
+  public Response<byte[]> arget(byte[] key, long index) {
+    return appendCommand(commandObjects.arget(key, index));
+  }
+
+  @Override
+  public Response<List<byte[]>> argetrange(byte[] key, long start, long end) {
+    return appendCommand(commandObjects.argetrange(key, start, end));
+  }
+
+  @Override
+  public Response<List<Long>> argrep(byte[] key, ArgrepParams params) {
+    return appendCommand(commandObjects.argrep(key, params));
+  }
+
+  @Override
+  public Response<List<KeyValue<Long, byte[]>>> argrepWithValues(byte[] key, ArgrepParams params) {
+    return appendCommand(commandObjects.argrepWithValues(key, params));
+  }
+
+  @Override
+  public Response<ArrayInfo> arinfo(byte[] key) {
+    return appendCommand(commandObjects.arinfo(key));
+  }
+
+  @Override
+  public Response<ArrayFullInfo> arinfoFull(byte[] key) {
+    return appendCommand(commandObjects.arinfoFull(key));
+  }
+
+  @Override
+  public Response<Long> arinsert(byte[] key, byte[]... values) {
+    return appendCommand(commandObjects.arinsert(key, values));
+  }
+
+  @Override
+  public Response<Long> arinsert(byte[] key, byte[] value) {
+    return appendCommand(commandObjects.arinsert(key, value));
+  }
+
+  @Override
+  public Response<List<byte[]>> arlastitems(byte[] key, long count) {
+    return appendCommand(commandObjects.arlastitems(key, count));
+  }
+
+  @Override
+  public Response<List<byte[]>> arlastitems(byte[] key, long count, boolean rev) {
+    return appendCommand(commandObjects.arlastitems(key, count, rev));
+  }
+
+  @Override
+  public Response<Long> arlen(byte[] key) {
+    return appendCommand(commandObjects.arlen(key));
+  }
+
+  @Override
+  public Response<List<byte[]>> armget(byte[] key, long... indices) {
+    return appendCommand(commandObjects.armget(key, indices));
+  }
+
+  @Override
+  public Response<Long> armset(byte[] key, Map<Long, byte[]> indexValueMap) {
+    return appendCommand(commandObjects.armset(key, indexValueMap));
+  }
+
+  @Override
+  public Response<Long> arnext(byte[] key) {
+    return appendCommand(commandObjects.arnext(key));
+  }
+
+  @Override
+  public Response<Long> aropBitwise(byte[] key, long start, long end, ArrayBitwise op) {
+    return appendCommand(commandObjects.aropBitwise(key, start, end, op));
+  }
+
+  @Override
+  public Response<byte[]> aropAggregate(byte[] key, long start, long end, ArrayAggregate op) {
+    return appendCommand(commandObjects.aropAggregate(key, start, end, op));
+  }
+
+  @Override
+  public Response<Long> aropCount(byte[] key, long start, long end) {
+    return appendCommand(commandObjects.aropCount(key, start, end));
+  }
+
+  @Override
+  public Response<Long> aropCount(byte[] key, long start, long end, byte[] match) {
+    return appendCommand(commandObjects.aropCount(key, start, end, match));
+  }
+
+  @Override
+  public Response<Long> arring(byte[] key, long size, byte[]... values) {
+    return appendCommand(commandObjects.arring(key, size, values));
+  }
+
+  @Override
+  public Response<Long> arring(byte[] key, long size, byte[] value) {
+    return appendCommand(commandObjects.arring(key, size, value));
+  }
+
+  @Override
+  public Response<List<KeyValue<Long, byte[]>>> arscan(byte[] key, long start, long end) {
+    return appendCommand(commandObjects.arscan(key, start, end));
+  }
+
+  @Override
+  public Response<List<KeyValue<Long, byte[]>>> arscan(byte[] key, long start, long end, long limit) {
+    return appendCommand(commandObjects.arscan(key, start, end, limit));
+  }
+
+  @Override
+  public Response<Long> arseek(byte[] key, long index) {
+    return appendCommand(commandObjects.arseek(key, index));
+  }
+
+  @Override
+  public Response<Long> arset(byte[] key, long index, byte[]... values) {
+    return appendCommand(commandObjects.arset(key, index, values));
+  }
+
+  @Override
+  public Response<Long> arset(byte[] key, long index, byte[] value) {
+    return appendCommand(commandObjects.arset(key, index, value));
   }
 
   @Override

@@ -46,16 +46,10 @@ public class IncrexResponse<T extends Number> implements Serializable {
 
   public static final Builder<IncrexResponse<Long>> INCREX_RESPONSE_LONG = new Builder<IncrexResponse<Long>>() {
     @Override
-    @SuppressWarnings("unchecked")
     public IncrexResponse<Long> build(Object data) {
       if (data == null) return null;
-      List<Object> list = (List<Object>) data;
-      return new IncrexResponse<>(parseLong(list.get(0)), parseLong(list.get(1)));
-    }
-
-    private long parseLong(Object o) {
-      if (o instanceof Long) return (Long) o;
-      return Long.parseLong(BuilderFactory.STRING.build(o));
+      List<Long> list = BuilderFactory.LONG_LIST.build(data);
+      return new IncrexResponse<>(list.get(0), list.get(1));
     }
 
     @Override

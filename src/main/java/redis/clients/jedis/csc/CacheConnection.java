@@ -1,5 +1,7 @@
 package redis.clients.jedis.csc;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -159,11 +161,32 @@ public class CacheConnection extends Connection {
       }
     }
     addPushConsumer(new PushInvalidateConsumer(cache));
-    sendCommand(Protocol.Command.CLIENT, "TRACKING", "ON");
+    sendCommand(Protocol.Command.CLIENT, buildTrackingArgs(cache));
     String reply = getStatusCodeReply();
     if (!"OK".equals(reply)) {
       throw new JedisException("Could not enable client tracking. Reply: " + reply);
     }
+  }
+
+  public String[] buildTrackingArgs(Cache cache) {
+    List<String> args = new ArrayList<>();
+    args.add("TRACKING");
+    args.add("ON");
+    if (cache.isBroadcastMode()) {
+      args.add("BCAST");
+      for (String prefix : cache.getPrefixes()) {
+        if (prefix == null || prefix.isEmpty()) {
+          throw new JedisException("BCAST prefixes must be non-empty strings.");
+        }
+        args.add("PREFIX");
+        args.add(prefix);
+      }
+    }
+    
+    if (cache.isNoLoop()) {
+      args.add("NOLOOP");
+    }
+    return args.toArray(new String[0]);
   }
 
   private CacheEntry validateEntry(CacheEntry cacheEntry) {

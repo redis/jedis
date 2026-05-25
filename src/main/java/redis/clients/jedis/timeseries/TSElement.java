@@ -5,7 +5,7 @@ import java.util.List;
 
 /**
  * A single sample of a time series.
- * <p>1
+ * <p>
  * A {@code TSElement} carries a timestamp and one or more values. Most queries return one
  * value per sample, in which case {@link #getValue()} returns it directly. Queries that
  * request multiple aggregators (see

@@ -24,7 +24,6 @@ This guide helps you migrate from Jedis 7.5.0 to Jedis 8.0.0. Version 8.0.0 intr
   - [`CONFIG GET`/`SET` on `UnifiedJedis`](#config-getset-on-unifiedjedis)
   - [Shared Executor for `ClusterPipeline`](#shared-executor-for-clusterpipeline)
   - [Pool Access on `RedisSentinelClient`](#pool-access-on-redissentinelclient)
-  - [Redis 8.8 Command Coverage](#redis-88-command-coverage)
 
 ## Overview
 
@@ -362,18 +361,6 @@ Pass a shared executor when you create many short pipelines; reuse semantics are
 ```java
 public Pool<Connection> getPool();
 ```
-
-### Redis 8.8 Command Coverage
-
-Several Redis 8.8 commands are now supported:
-
-- `ZINTER`, `ZINTERSTORE`, `ZUNION`, `ZUNIONSTORE` accept the new `COUNT` aggregator.
-- `XNACK` is supported on stream consumer groups.
-- `JSON.SET` accepts the new `FPHA` argument.
-- `FT.AGGREGATE` accepts the new `COLLECT` parameter.
-- `TS.RANGE` / `TS.MRANGE` accept multiple aggregators.
-
-These are additive — existing code is unaffected.
 
 ## Getting Help
 

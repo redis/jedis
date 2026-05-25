@@ -9,9 +9,9 @@ This guide helps you migrate from Jedis 7.5.0 to Jedis 8.0.0. Version 8.0.0 intr
   - [RESP3 Negotiated by Default](#resp3-negotiated-by-default)
   - [Removed Client Classes (`JedisPooled`, `JedisSentineled`)](#removed-client-classes-jedispooled-jedissentineled)
   - [Removed `UnifiedJedis` Public Constructors](#removed-unifiedjedis-public-constructors)
-  - [`Transaction(Jedis)` Constructor Removed](#transactionjedis-constructor-removed)
+  - [`Transaction(Jedis)` and `ClusterPipeline(ClusterConnectionProvider)` Constructors Removed](#transactionjedis-and-clusterpipelineclusterconnectionprovider-constructors-removed)
   - [`CommandObjects` Protocol is Now Immutable](#commandobjects-protocol-is-now-immutable)
-  - [`CommandExecutor.broadcastCommand` Removed](#commandexecutorbroadcastcommand-removed)
+  - [`broadcastCommand` and `JedisBroadcastAndRoundRobinConfig` Removed](#broadcastcommand-and-jedisbroadcastandroundrobinconfig-removed)
   - [Removed Sharding Utility Classes](#removed-sharding-utility-classes)
   - [`commons-pool2` Upgraded to 2.13.1](#commons-pool2-upgraded-to-2131)
 - [Deprecations](#deprecations)
@@ -180,7 +180,9 @@ RedisClient custom = RedisClient.builder()
     .build();
 ```
 
-### `Transaction(Jedis)` Constructor Removed
+### `Transaction(Jedis)` and `ClusterPipeline(ClusterConnectionProvider)` Constructors Removed
+
+#### `Transaction(Jedis)`
 
 The legacy `public Transaction(Jedis jedis)` constructor — which Jedis used internally to wire `resetState()` callbacks — has been removed. The coupling is now handled inside `Jedis.multi()` via the new `onAfterExec()` / `onAfterDiscard()` hook methods.
 
@@ -203,6 +205,24 @@ protected void onAfterDiscard();
 ```
 
 Additionally, the deprecated `protected AbstractTransaction()` no-arg constructor has been removed — subclasses must call `AbstractTransaction(CommandObjects commandObjects)`.
+
+#### `ClusterPipeline(ClusterConnectionProvider)`
+
+The single-argument `public ClusterPipeline(ClusterConnectionProvider provider)` constructor has been removed. It silently constructed a `ClusterCommandObjects` with no protocol information, which is no longer valid now that `CommandObjects` requires an explicit protocol (see [`CommandObjects` Protocol is Now Immutable](#commandobjects-protocol-is-now-immutable)).
+
+A new overload accepts the protocol explicitly:
+
+**Before (v7.5.0):**
+```java
+new ClusterPipeline(provider);
+```
+
+**After (v8.0.0):**
+```java
+new ClusterPipeline(provider, RedisProtocol.RESP3);    // or RESP2
+// or, if you already have a ClusterCommandObjects:
+new ClusterPipeline(provider, clusterCommandObjects);  // unchanged
+```
 
 ### `CommandObjects` Protocol is Now Immutable
 
@@ -228,9 +248,34 @@ CommandObjects commandObjects = new CommandObjects(RedisProtocol.orServerDefault
 
 A new constant `RedisProtocol.REDIS_SERVER_DEFAULT_PROTO` (= `RESP2`) and a helper `RedisProtocol.orServerDefault(RedisProtocol)` are provided for this purpose.
 
-### `CommandExecutor.broadcastCommand` Removed
+### `broadcastCommand` and `JedisBroadcastAndRoundRobinConfig` Removed
 
-The default `broadcastCommand(CommandObject<T>)` method on the `CommandExecutor` interface has been removed. Routing decisions (broadcast vs. single-node vs. multi-shard fan-out vs. keyless) are now driven entirely by the new request/response policy registry (see [New Features](#requestresponse-policy-support-for-cluster-commands)). Custom `CommandExecutor` implementations that overrode `broadcastCommand` should remove that override — broadcast routing now flows through `executeCommand` and is resolved by the registry.
+Broadcast routing is no longer a separate API surface — it is now driven entirely by the new request/response policy registry (see [Request/Response Policy Support for Cluster Commands](#requestresponse-policy-support-for-cluster-commands)). The following has been removed:
+
+- The `JedisBroadcastAndRoundRobinConfig` interface (including the `RediSearchMode.DEFAULT` / `RediSearchMode.LIGHT` enum) is **deleted**.
+- `UnifiedJedis.setBroadcastAndRoundRobinConfig(JedisBroadcastAndRoundRobinConfig)` is **removed**.
+- The default `broadcastCommand(CommandObject<T>)` method on the `CommandExecutor` interface is **removed**.
+- `UnifiedJedis.broadcastCommand(...)` is **removed** — broadcast routing now flows through `executeCommand(...)` and is resolved by the registry.
+
+#### Migration Path
+
+In v7.x, users running RediSearch against Redis 7 (where `FT.CREATE` only created the index on the contacted shard) had to opt into broadcasting indexes manually:
+
+```java
+// v7.5.0 — manual broadcast opt-in for cluster + RediSearch
+JedisBroadcastAndRoundRobinConfig cfg = () -> RediSearchMode.DEFAULT;
+jedis.setBroadcastAndRoundRobinConfig(cfg);
+jedis.ftCreate("idx", IndexOptions.defaultOptions(), schema);
+```
+
+This is no longer necessary in v8.0.0. **Redis 8.0+ broadcasts `FT.CREATE` automatically on the server side** as well, so the index is created cluster-wide regardless. Simply drop the configuration:
+
+```java
+// v8.0.0 — no special configuration required
+jedis.ftCreate("idx", IndexOptions.defaultOptions(), schema);
+```
+
+Custom `CommandExecutor` implementations that overrode `broadcastCommand` should remove the override.
 
 ### Removed Sharding Utility Classes
 
@@ -274,7 +319,14 @@ AggregationResult ftCursorRead(String indexName, long cursorId, int count);
 String           ftCursorDel(String indexName, long cursorId);
 ```
 
-Use the new `ftAggregateIterator(...)` method, which encapsulates cursor lifecycle and connection affinity:
+The companion search-side iterator class is deprecated for the same reasons:
+
+```java
+// Deprecated in v8.0.0
+redis.clients.jedis.search.FtSearchIteration
+```
+
+For `FT.SEARCH`, call `UnifiedJedis#ftSearch(String, String, FTSearchParams)` directly and paginate via `FTSearchParams.limit(offset, count)`. For `FT.AGGREGATE`, use the new `ftAggregateIterator(...)` method, which encapsulates cursor lifecycle and connection affinity:
 
 **Before (v7.5.0):**
 ```java
@@ -356,11 +408,13 @@ Pass a shared executor when you create many short pipelines; reuse semantics are
 
 ### Pool Access on `RedisSentinelClient`
 
-`RedisSentinelClient` now exposes the underlying connection pool (issue #4469):
+`RedisSentinelClient` now exposes the underlying primary-node connection pools (issue #4469):
 
 ```java
-public Pool<Connection> getPool();
+public Map<?, Pool<Connection>> getPrimaryNodesConnectionMap();
 ```
+
+The returned map is keyed by master `HostAndPort` and yields the `Pool<Connection>` backing each primary, allowing instrumentation, draining, and pool-size monitoring without subclassing the provider.
 
 ## Getting Help
 

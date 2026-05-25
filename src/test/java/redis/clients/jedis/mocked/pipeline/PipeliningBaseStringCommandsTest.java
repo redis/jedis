@@ -10,6 +10,8 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.IncrexFloatParams;
+import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.MSetExParams;
@@ -640,6 +642,78 @@ public class PipeliningBaseStringCommandsTest extends PipeliningBaseMockedTestBa
     Response<byte[]> response = pipeliningBase.substr(key, start, end);
 
     assertThat(commands, contains(bytesCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testIncrex() {
+    when(commandObjects.increx("key")).thenReturn(increxLongListCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.increx("key");
+
+    assertThat(commands, contains(increxLongListCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testIncrexBinary() {
+    byte[] key = "key".getBytes();
+
+    when(commandObjects.increx(key)).thenReturn(increxLongListCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.increx(key);
+
+    assertThat(commands, contains(increxLongListCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testIncrexWithParams() {
+    IncrexParams params = new IncrexParams().ubound(100).ex(60);
+
+    when(commandObjects.increx("key", 5, params)).thenReturn(increxLongListCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.increx("key", 5, params);
+
+    assertThat(commands, contains(increxLongListCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testIncrexWithParamsBinary() {
+    byte[] key = "key".getBytes();
+    IncrexParams params = new IncrexParams().ubound(100).ex(60);
+
+    when(commandObjects.increx(key, 5, params)).thenReturn(increxLongListCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.increx(key, 5, params);
+
+    assertThat(commands, contains(increxLongListCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testIncrexFloat() {
+    IncrexFloatParams params = new IncrexFloatParams().ubound(10.0).ex(60);
+
+    when(commandObjects.increx("key", 1.5, params)).thenReturn(increxDoubleListCommandObject);
+
+    Response<List<Double>> response = pipeliningBase.increx("key", 1.5, params);
+
+    assertThat(commands, contains(increxDoubleListCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testIncrexFloatBinary() {
+    byte[] key = "key".getBytes();
+    IncrexFloatParams params = new IncrexFloatParams().ubound(10.0).ex(60);
+
+    when(commandObjects.increx(key, 1.5, params)).thenReturn(increxDoubleListCommandObject);
+
+    Response<List<Double>> response = pipeliningBase.increx(key, 1.5, params);
+
+    assertThat(commands, contains(increxDoubleListCommandObject));
     assertThat(response, is(predefinedResponse));
   }
 

@@ -1,11 +1,11 @@
 package redis.clients.jedis.timeseries;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.Nested;
@@ -65,7 +65,7 @@ public class TSElementTest {
     }
 
     @Test
-    public void notEqualToMultiValueEvenWhenFirstValueMatches() {
+    public void notEqualToMultiValueWithDifferentSize() {
       TSElement single = new TSElement(1000L, 1.5);
       TSElement.MultiValueTSElement multi = new TSElement.MultiValueTSElement(1000L,
           Arrays.asList(1.5, 2.5));
@@ -75,15 +75,16 @@ public class TSElementTest {
     }
 
     @Test
-    public void notEqualToSingletonMultiValueEvenWhenContentMatches() {
-      // This shape (size==1) cannot be produced by the parser but is still constructible
-      // via the package-private constructor. Strict-class equality should reject it.
+    public void equalToSingletonMultiValueWithSameContent() {
+      // MultiValueTSElement is an internal performance variant; whether a sample is
+      // wrapped in it or not should not be observable through equals/hashCode.
       TSElement single = new TSElement(1000L, 1.5);
       TSElement.MultiValueTSElement multi = new TSElement.MultiValueTSElement(1000L,
-          Arrays.asList(1.5));
+          Collections.singletonList(1.5));
 
-      assertNotEquals(single, multi);
-      assertNotEquals(multi, single);
+      assertEquals(single, multi);
+      assertEquals(multi, single);
+      assertEquals(single.hashCode(), multi.hashCode());
     }
   }
 
@@ -185,13 +186,24 @@ public class TSElementTest {
     }
 
     @Test
-    public void baseAndSubclassNeverEqualEvenWithMatchingFirstValue() {
+    public void baseAndSubclassEqualWhenContentMatches() {
+      TSElement single = new TSElement(1L, 1.5);
+      TSElement.MultiValueTSElement multi = new TSElement.MultiValueTSElement(1L,
+          Collections.singletonList(1.5));
+      // Symmetric.
+      assertEquals(single, multi);
+      assertEquals(multi, single);
+      assertEquals(single.hashCode(), multi.hashCode());
+    }
+
+    @Test
+    public void baseAndSubclassNotEqualWhenSubclassHasExtraValues() {
       TSElement single = new TSElement(1L, 1.5);
       TSElement.MultiValueTSElement multi = new TSElement.MultiValueTSElement(1L,
           Arrays.asList(1.5, 2.5));
-      // Symmetric: both directions must reject.
-      assertFalse(single.equals(multi));
-      assertFalse(multi.equals(single));
+      // Symmetric.
+      assertNotEquals(single, multi);
+      assertNotEquals(multi, single);
     }
 
     @Test

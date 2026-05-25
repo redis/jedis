@@ -46,16 +46,21 @@ public class TSElement {
 
   @Override
   public int hashCode() {
-    return 31 * Long.hashCode(timestamp) + Long.hashCode(Double.doubleToLongBits(value));
+    // Matches Collections.singletonList(value).hashCode() (= 31 + Double.hashCode(value))
+    // so a TSElement and a MultiValueTSElement holding the same single value hash alike.
+    return 31 * Long.hashCode(timestamp) + 31 + Double.hashCode(value);
   }
 
   @Override
   public boolean equals(Object obj) {
     if (obj == this) return true;
-    if (obj == null || obj.getClass() != TSElement.class) return false;
+    if (!(obj instanceof TSElement)) return false;
     TSElement other = (TSElement) obj;
-    return this.timestamp == other.timestamp
-        && Double.doubleToLongBits(this.value) == Double.doubleToLongBits(other.value);
+    if (this.timestamp != other.timestamp) return false;
+    if (this.getClass() == TSElement.class && other.getClass() == TSElement.class) {
+      return Double.doubleToLongBits(this.value) == Double.doubleToLongBits(other.value);
+    }
+    return this.getValues().equals(other.getValues());
   }
 
   @Override
@@ -86,14 +91,6 @@ public class TSElement {
     @Override
     public int hashCode() {
       return 31 * Long.hashCode(getTimestamp()) + values.hashCode();
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (obj == this) return true;
-      if (obj == null || obj.getClass() != MultiValueTSElement.class) return false;
-      MultiValueTSElement other = (MultiValueTSElement) obj;
-      return getTimestamp() == other.getTimestamp() && this.values.equals(other.values);
     }
 
     @Override

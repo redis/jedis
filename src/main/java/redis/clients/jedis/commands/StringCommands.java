@@ -6,6 +6,8 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.MSetExParams;
 
+import redis.clients.jedis.params.IncrexFloatParams;
+import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
@@ -298,6 +300,60 @@ public interface StringCommands extends BitCommands {
    * @return The value of the key after the increment
    */
   double incrByFloat(String key, double increment);
+
+  /**
+   * <b><a href="http://redis.io/commands/increx">INCREX Command</a></b>
+   * Increment the integer number stored at key by 1. If the key does not exist, it is set to 0
+   * before performing the operation.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the key
+   * @return a 2-element list: {@code [newValue, appliedIncrement]}
+   * @since 8.0
+   */
+  List<Long> increx(String key);
+
+  /**
+   * <b><a href="http://redis.io/commands/increx">INCREX Command</a></b>
+   * Increment the integer number stored at key by {@code increment}, with optional lower/upper
+   * bounds, saturation, and expiration control. If the key does not exist, it is initialized to 0.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the key
+   * @param increment the integer amount to increment by (may be negative)
+   * @param params optional bounds ({@code LBOUND}/{@code UBOUND}), {@code SATURATE} flag, and
+   *        expiration ({@code EX}/{@code PX}/{@code EXAT}/{@code PXAT}/{@code PERSIST}/{@code ENX})
+   * @return a 2-element list: {@code [newValue, appliedIncrement]}. The applied increment may
+   *         differ from the requested increment when {@code SATURATE} is active and the result is
+   *         clamped to a bound, and is {@code 0} when the operation is silently rejected for being
+   *         out of bounds without {@code SATURATE}.
+   * @since 8.0
+   */
+  List<Long> increx(String key, long increment, IncrexParams params);
+
+  /**
+   * <b><a href="http://redis.io/commands/increx">INCREX Command</a></b>
+   * Increment the floating-point number stored at key by {@code increment}, with optional
+   * lower/upper bounds, saturation, and expiration control. If the key does not exist, it is
+   * initialized to 0.
+   * <p>
+   * Note: the key value must be a valid floating-point number. Attempting to use this method on a
+   * key holding an integer-only value such as {@code "1"} is valid, but using it on a value like
+   * {@code "1.5"} with the integer variant ({@link #increx(String, long, IncrexParams)}) will
+   * return an error.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the key
+   * @param increment the floating-point amount to increment by (may be negative)
+   * @param params optional bounds ({@code LBOUND}/{@code UBOUND}), {@code SATURATE} flag, and
+   *        expiration ({@code EX}/{@code PX}/{@code EXAT}/{@code PXAT}/{@code PERSIST}/{@code ENX})
+   * @return a 2-element list: {@code [newValue, appliedIncrement]}. The applied increment may
+   *         differ from the requested increment when {@code SATURATE} is active and the result is
+   *         clamped to a bound, and is {@code 0} when the operation is silently rejected for being
+   *         out of bounds without {@code SATURATE}.
+   * @since 8.0
+   */
+  List<Double> increx(String key, double increment, IncrexFloatParams params);
 
   /**
    * <b><a href="http://redis.io/commands/decr">Decr Command</a></b>

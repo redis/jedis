@@ -929,6 +929,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<Long> increx(String key) {
+    return executeCommand(commandObjects.increx(key));
+  }
+
+  @Override
+  public List<Long> increx(String key, long increment, IncrexParams params) {
+    return executeCommand(commandObjects.increx(key, increment, params));
+  }
+
+  @Override
+  public List<Double> increx(String key, double increment, IncrexFloatParams params) {
+    return executeCommand(commandObjects.increx(key, increment, params));
+  }
+
+  @Override
   public long decr(String key) {
     return executeCommand(commandObjects.decr(key));
   }
@@ -951,6 +966,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public double incrByFloat(byte[] key, double increment) {
     return executeCommand(commandObjects.incrByFloat(key, increment));
+  }
+
+  @Override
+  public List<Long> increx(byte[] key) {
+    return executeCommand(commandObjects.increx(key));
+  }
+
+  @Override
+  public List<Long> increx(byte[] key, long increment, IncrexParams params) {
+    return executeCommand(commandObjects.increx(key, increment, params));
+  }
+
+  @Override
+  public List<Double> increx(byte[] key, double increment, IncrexFloatParams params) {
+    return executeCommand(commandObjects.increx(key, increment, params));
   }
 
   @Override
@@ -3481,6 +3511,308 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.pfcount(keys));
   }
   // Hyper Log Log commands
+
+  // Array commands
+  @Override
+  public long arcount(String key) {
+    return executeCommand(commandObjects.arcount(key));
+  }
+
+  @Override
+  public long arcount(byte[] key) {
+    return executeCommand(commandObjects.arcount(key));
+  }
+
+  @Override
+  public long ardel(String key, long index) {
+    return executeCommand(commandObjects.ardel(key, index));
+  }
+
+  @Override
+  public long ardel(byte[] key, long index) {
+    return executeCommand(commandObjects.ardel(key, index));
+  }
+
+  @Override
+  public long ardel(String key, long... indices) {
+    return executeCommand(commandObjects.ardel(key, indices));
+  }
+
+  @Override
+  public long ardel(byte[] key, long... indices) {
+    return executeCommand(commandObjects.ardel(key, indices));
+  }
+
+  @Override
+  public long ardelrange(String key, LongRange... ranges) {
+    return executeCommand(commandObjects.ardelrange(key, ranges));
+  }
+
+  @Override
+  public long ardelrange(byte[] key, LongRange... ranges) {
+    return executeCommand(commandObjects.ardelrange(key, ranges));
+  }
+
+  @Override
+  public long ardelrange(String key, long start, long end) {
+    return executeCommand(commandObjects.ardelrange(key, start, end));
+  }
+
+  @Override
+  public long ardelrange(byte[] key, long start, long end) {
+    return executeCommand(commandObjects.ardelrange(key, start, end));
+  }
+
+  @Override
+  public String arget(String key, long index) {
+    return executeCommand(commandObjects.arget(key, index));
+  }
+
+  @Override
+  public byte[] arget(byte[] key, long index) {
+    return executeCommand(commandObjects.arget(key, index));
+  }
+
+  @Override
+  public List<String> argetrange(String key, long start, long end) {
+    return executeCommand(commandObjects.argetrange(key, start, end));
+  }
+
+  @Override
+  public List<byte[]> argetrange(byte[] key, long start, long end) {
+    return executeCommand(commandObjects.argetrange(key, start, end));
+  }
+
+  @Override
+  public List<Long> argrep(String key, ArgrepParams params) {
+    return executeCommand(commandObjects.argrep(key, params));
+  }
+
+  @Override
+  public List<Long> argrep(byte[] key, ArgrepParams params) {
+    return executeCommand(commandObjects.argrep(key, params));
+  }
+
+  @Override
+  public List<KeyValue<Long, String>> argrepWithValues(String key, ArgrepParams params) {
+    return executeCommand(commandObjects.argrepWithValues(key, params));
+  }
+
+  @Override
+  public List<KeyValue<Long, byte[]>> argrepWithValues(byte[] key, ArgrepParams params) {
+    return executeCommand(commandObjects.argrepWithValues(key, params));
+  }
+
+  @Override
+  public ArrayInfo arinfo(String key) {
+    return executeCommand(commandObjects.arinfo(key));
+  }
+
+  @Override
+  public ArrayInfo arinfo(byte[] key) {
+    return executeCommand(commandObjects.arinfo(key));
+  }
+
+  @Override
+  public ArrayFullInfo arinfoFull(String key) {
+    return executeCommand(commandObjects.arinfoFull(key));
+  }
+
+  @Override
+  public ArrayFullInfo arinfoFull(byte[] key) {
+    return executeCommand(commandObjects.arinfoFull(key));
+  }
+
+  @Override
+  public long arinsert(String key, String... values) {
+    return executeCommand(commandObjects.arinsert(key, values));
+  }
+
+  @Override
+  public long arinsert(byte[] key, byte[]... values) {
+    return executeCommand(commandObjects.arinsert(key, values));
+  }
+
+  @Override
+  public long arinsert(String key, String value) {
+    return executeCommand(commandObjects.arinsert(key, value));
+  }
+
+  @Override
+  public long arinsert(byte[] key, byte[] value) {
+    return executeCommand(commandObjects.arinsert(key, value));
+  }
+
+  @Override
+  public List<String> arlastitems(String key, long count) {
+    return executeCommand(commandObjects.arlastitems(key, count));
+  }
+
+  @Override
+  public List<byte[]> arlastitems(byte[] key, long count) {
+    return executeCommand(commandObjects.arlastitems(key, count));
+  }
+
+  @Override
+  public List<String> arlastitems(String key, long count, boolean rev) {
+    return executeCommand(commandObjects.arlastitems(key, count, rev));
+  }
+
+  @Override
+  public List<byte[]> arlastitems(byte[] key, long count, boolean rev) {
+    return executeCommand(commandObjects.arlastitems(key, count, rev));
+  }
+
+  @Override
+  public long arlen(String key) {
+    return executeCommand(commandObjects.arlen(key));
+  }
+
+  @Override
+  public long arlen(byte[] key) {
+    return executeCommand(commandObjects.arlen(key));
+  }
+
+  @Override
+  public List<String> armget(String key, long... indices) {
+    return executeCommand(commandObjects.armget(key, indices));
+  }
+
+  @Override
+  public List<byte[]> armget(byte[] key, long... indices) {
+    return executeCommand(commandObjects.armget(key, indices));
+  }
+
+  @Override
+  public long armset(String key, Map<Long, String> indexValueMap) {
+    return executeCommand(commandObjects.armset(key, indexValueMap));
+  }
+
+  @Override
+  public long armset(byte[] key, Map<Long, byte[]> indexValueMap) {
+    return executeCommand(commandObjects.armset(key, indexValueMap));
+  }
+
+  @Override
+  public Long arnext(String key) {
+    return executeCommand(commandObjects.arnext(key));
+  }
+
+  @Override
+  public Long arnext(byte[] key) {
+    return executeCommand(commandObjects.arnext(key));
+  }
+
+  @Override
+  public long aropBitwise(String key, long start, long end, ArrayBitwise op) {
+    return executeCommand(commandObjects.aropBitwise(key, start, end, op));
+  }
+
+  @Override
+  public long aropBitwise(byte[] key, long start, long end, ArrayBitwise op) {
+    return executeCommand(commandObjects.aropBitwise(key, start, end, op));
+  }
+
+  @Override
+  public String aropAggregate(String key, long start, long end, ArrayAggregate op) {
+    return executeCommand(commandObjects.aropAggregate(key, start, end, op));
+  }
+
+  @Override
+  public byte[] aropAggregate(byte[] key, long start, long end, ArrayAggregate op) {
+    return executeCommand(commandObjects.aropAggregate(key, start, end, op));
+  }
+
+  @Override
+  public long aropCount(String key, long start, long end) {
+    return executeCommand(commandObjects.aropCount(key, start, end));
+  }
+
+  @Override
+  public long aropCount(byte[] key, long start, long end) {
+    return executeCommand(commandObjects.aropCount(key, start, end));
+  }
+
+  @Override
+  public long aropCount(String key, long start, long end, String match) {
+    return executeCommand(commandObjects.aropCount(key, start, end, match));
+  }
+
+  @Override
+  public long aropCount(byte[] key, long start, long end, byte[] match) {
+    return executeCommand(commandObjects.aropCount(key, start, end, match));
+  }
+
+  @Override
+  public long arring(String key, long size, String... values) {
+    return executeCommand(commandObjects.arring(key, size, values));
+  }
+
+  @Override
+  public long arring(byte[] key, long size, byte[]... values) {
+    return executeCommand(commandObjects.arring(key, size, values));
+  }
+
+  @Override
+  public long arring(String key, long size, String value) {
+    return executeCommand(commandObjects.arring(key, size, value));
+  }
+
+  @Override
+  public long arring(byte[] key, long size, byte[] value) {
+    return executeCommand(commandObjects.arring(key, size, value));
+  }
+
+  @Override
+  public List<KeyValue<Long, String>> arscan(String key, long start, long end) {
+    return executeCommand(commandObjects.arscan(key, start, end));
+  }
+
+  @Override
+  public List<KeyValue<Long, byte[]>> arscan(byte[] key, long start, long end) {
+    return executeCommand(commandObjects.arscan(key, start, end));
+  }
+
+  @Override
+  public List<KeyValue<Long, String>> arscan(String key, long start, long end, long limit) {
+    return executeCommand(commandObjects.arscan(key, start, end, limit));
+  }
+
+  @Override
+  public List<KeyValue<Long, byte[]>> arscan(byte[] key, long start, long end, long limit) {
+    return executeCommand(commandObjects.arscan(key, start, end, limit));
+  }
+
+  @Override
+  public long arseek(String key, long index) {
+    return executeCommand(commandObjects.arseek(key, index));
+  }
+
+  @Override
+  public long arseek(byte[] key, long index) {
+    return executeCommand(commandObjects.arseek(key, index));
+  }
+
+  @Override
+  public long arset(String key, long index, String... values) {
+    return executeCommand(commandObjects.arset(key, index, values));
+  }
+
+  @Override
+  public long arset(byte[] key, long index, byte[]... values) {
+    return executeCommand(commandObjects.arset(key, index, values));
+  }
+
+  @Override
+  public long arset(String key, long index, String value) {
+    return executeCommand(commandObjects.arset(key, index, value));
+  }
+
+  @Override
+  public long arset(byte[] key, long index, byte[] value) {
+    return executeCommand(commandObjects.arset(key, index, value));
+  }
+  // Array commands
 
   // Stream commands
   @Override

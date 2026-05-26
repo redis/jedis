@@ -160,6 +160,10 @@ public class CacheConnection extends Connection {
     }
     addPushConsumer(new PushInvalidateConsumer(cache));
     sendCommand(Protocol.Command.CLIENT, "TRACKING", "ON");
+    String reply = getStatusCodeReply();
+    if (!"OK".equals(reply)) {
+      throw new JedisException("Could not enable client tracking. Reply: " + reply);
+    }
   }
 
   private CacheEntry validateEntry(CacheEntry cacheEntry) {

@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import redis.clients.jedis.annots.Experimental;
+
 /**
  * Created by mnunberg on 2/22/18.
  */
@@ -90,5 +92,26 @@ public class Reducers {
         return Arrays.asList(size);
       }
     };
+  }
+
+  /**
+   * REDUCE COLLECT — gather per-document projections within a GROUPBY group.
+   * <p>
+   * Returns a {@link CollectReducer} builder; configure projected fields via
+   * {@link CollectReducer#fields(String...) fields(...)} or
+   * {@link CollectReducer#fieldsAll() fieldsAll()}, then optionally chain
+   * {@link CollectReducer#sortBy(SortedField...) sortBy(...)} and
+   * {@link CollectReducer#limit(int, int) limit(...)} before calling {@link Reducer#as(String)}.
+   * <p>
+   * <b>Experimental.</b> Both the underlying Redis Search feature and this API may change.
+   * Before issuing COLLECT queries the server must be configured with
+   * {@code CONFIG SET search-enable-unstable-features yes}; otherwise the server returns
+   * {@code SEARCH_QUERY_BAD `COLLECT` is unavailable when `ENABLE_UNSTABLE_FEATURES` is off}.
+   *
+   * @see CollectReducer
+   */
+  @Experimental
+  public static CollectReducer collect() {
+    return new CollectReducer();
   }
 }

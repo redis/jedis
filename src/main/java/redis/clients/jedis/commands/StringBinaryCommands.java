@@ -6,6 +6,8 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.MSetExParams;
 
+import redis.clients.jedis.params.IncrexFloatParams;
+import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
@@ -99,6 +101,40 @@ public interface StringBinaryCommands extends BitBinaryCommands {
   long incrBy(byte[] key, long increment);
 
   double incrByFloat(byte[] key, double increment);
+
+  /**
+   * Increment the integer number stored at key by 1. If the key does not exist, it is set to 0
+   * before performing the operation.
+   * @param key the key
+   * @return a 2-element list: {@code [newValue, appliedIncrement]}
+   * @see StringCommands#increx(String)
+   * @since 8.0
+   */
+  List<Long> increx(byte[] key);
+
+  /**
+   * Increment the integer number stored at key by {@code increment}, with optional bounds,
+   * saturation, and expiration control.
+   * @param key the key
+   * @param increment the integer amount to increment by (may be negative)
+   * @param params optional bounds, {@code SATURATE} flag, and expiration options
+   * @return a 2-element list: {@code [newValue, appliedIncrement]}
+   * @see StringCommands#increx(String, long, IncrexParams)
+   * @since 8.0
+   */
+  List<Long> increx(byte[] key, long increment, IncrexParams params);
+
+  /**
+   * Increment the floating-point number stored at key by {@code increment}, with optional bounds,
+   * saturation, and expiration control.
+   * @param key the key
+   * @param increment the floating-point amount to increment by (may be negative)
+   * @param params optional bounds, {@code SATURATE} flag, and expiration options
+   * @return a 2-element list: {@code [newValue, appliedIncrement]}
+   * @see StringCommands#increx(String, double, IncrexFloatParams)
+   * @since 8.0
+   */
+  List<Double> increx(byte[] key, double increment, IncrexFloatParams params);
 
   long decr(byte[] key);
 

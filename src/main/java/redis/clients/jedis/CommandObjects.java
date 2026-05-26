@@ -670,6 +670,36 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(INCRBYFLOAT).key(key).add(increment), BuilderFactory.DOUBLE);
   }
 
+  // ── INCREX ─────────────────────────────────────────────
+
+  public final CommandObject<List<Long>> increx(String key) {
+    return new CommandObject<>(commandArguments(INCREX).key(key), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> increx(String key, long increment, IncrexParams params) {
+    return new CommandObject<>(commandArguments(INCREX).key(key).add(BYINT).add(increment).addParams(params),
+        BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Double>> increx(String key, double increment, IncrexFloatParams params) {
+    return new CommandObject<>(commandArguments(INCREX).key(key).add(BYFLOAT).add(increment).addParams(params),
+        BuilderFactory.DOUBLE_LIST);
+  }
+
+  public final CommandObject<List<Long>> increx(byte[] key) {
+    return new CommandObject<>(commandArguments(INCREX).key(key), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> increx(byte[] key, long increment, IncrexParams params) {
+    return new CommandObject<>(commandArguments(INCREX).key(key).add(BYINT).add(increment).addParams(params),
+        BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Double>> increx(byte[] key, double increment, IncrexFloatParams params) {
+    return new CommandObject<>(commandArguments(INCREX).key(key).add(BYFLOAT).add(increment).addParams(params),
+        BuilderFactory.DOUBLE_LIST);
+  }
+
   public final CommandObject<Long> decr(String key) {
     return new CommandObject<>(commandArguments(DECR).key(key), BuilderFactory.LONG);
   }

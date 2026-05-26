@@ -6,6 +6,9 @@ on:
     paths:
       - '**/*.java' # Only trigger for Java file changes
 
+permissions:
+  contents: read
+
 jobs:
   check-format:
     runs-on: ubuntu-latest

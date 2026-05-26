@@ -49,6 +49,8 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<Class<?>> classCommandObject;
   @Mock protected CommandObject<Double> doubleCommandObject;
   @Mock protected CommandObject<FunctionStats> functionStatsCommandObject;
+  @Mock protected CommandObject<List<Double>> increxDoubleListCommandObject;
+  @Mock protected CommandObject<List<Long>> increxLongListCommandObject;
   @Mock protected CommandObject<KeyValue<Long, Double>> keyValueLongDoubleCommandObject;
   @Mock protected CommandObject<KeyValue<Long, Long>> keyValueLongLongCommandObject;
   @Mock protected CommandObject<KeyValue<String, List<String>>> keyValueStringListStringCommandObject;

@@ -130,13 +130,13 @@ start:
 	fi; \
 	rm -rf "$(REDIS_ENV_WORK_DIR)"; \
 	mkdir -p "$(REDIS_ENV_WORK_DIR)"; \
-	docker compose $$env_files -f src/test/resources/env/docker-compose.yml up -d --wait --quiet-pull; \
+	docker compose $$env_files -f src/test/resources/env/docker-compose.yml up -d --wait --quiet-pull && \
 	echo "Started test environment with Redis version $$version. "
 
 # Stop the test environment
 stop:
-	docker compose -f src/test/resources/env/docker-compose.yml down; \
-	rm -rf "$(REDIS_ENV_WORK_DIR)"; \
+	docker compose -f src/test/resources/env/docker-compose.yml down && \
+	rm -rf "$(REDIS_ENV_WORK_DIR)" && \
 	echo "Stopped test environment and performed cleanup."
 
 test: | start mvn-test stop

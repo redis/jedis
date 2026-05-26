@@ -90,6 +90,9 @@ public class TSElement {
 
     @Override
     public int hashCode() {
+      if(values.size() == 1) {
+        return super.hashCode();
+      }
       return 31 * Long.hashCode(getTimestamp()) + values.hashCode();
     }
 

@@ -3,11 +3,14 @@ package redis.clients.jedis.benchmark.protocol;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.infra.Blackhole;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.PushConsumerChain;
+import redis.clients.jedis.PushConsumerChainImpl;
 import redis.clients.jedis.benchmark.CyclingInputStream;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.csc.CacheFactory;
 import redis.clients.jedis.csc.DefaultCacheable;
+import redis.clients.jedis.csc.PushInvalidateConsumer;
 import redis.clients.jedis.util.RedisInputStream;
 
 import java.util.concurrent.TimeUnit;
@@ -65,6 +68,9 @@ public class ReadBenchmark {
   private RedisInputStream mixed100PushStream;
 
   private Cache cache;
+  private PushConsumerChain pushChain;
+  /** Mirrors the default chain Connection installs (PUBSUB_CONSUMER only). */
+  private PushConsumerChain baselineChain;
 
   @Setup(Level.Trial)
   public void setupTrial() {
@@ -96,6 +102,9 @@ public class ReadBenchmark {
 
     cache = CacheFactory.getCache(
       CacheConfig.builder().maxSize(10_000).cacheable(DefaultCacheable.INSTANCE).build());
+    pushChain = PushConsumerChainImpl.of(PushConsumerChainImpl.PUBSUB_CONSUMER,
+      new PushInvalidateConsumer(cache));
+    baselineChain = PushConsumerChainImpl.of(PushConsumerChainImpl.PUBSUB_CONSUMER);
   }
 
   private static RedisInputStream wrap(byte[] record) {
@@ -108,7 +117,7 @@ public class ReadBenchmark {
   @OperationsPerInvocation(BATCH)
   public void readSimpleString(Blackhole blackhole) {
     for (int i = 0; i < BATCH; i++) {
-      blackhole.consume(Protocol.read(simpleStringStream));
+      blackhole.consume(Protocol.read(simpleStringStream, baselineChain));
     }
   }
 
@@ -116,7 +125,7 @@ public class ReadBenchmark {
   @OperationsPerInvocation(BATCH)
   public void readBulkString(Blackhole blackhole) {
     for (int i = 0; i < BATCH; i++) {
-      blackhole.consume(Protocol.read(bulkStringStream));
+      blackhole.consume(Protocol.read(bulkStringStream, baselineChain));
     }
   }
 
@@ -124,7 +133,7 @@ public class ReadBenchmark {
   @OperationsPerInvocation(BATCH)
   public void readArray(Blackhole blackhole) {
     for (int i = 0; i < BATCH; i++) {
-      blackhole.consume(Protocol.read(arrayStream));
+      blackhole.consume(Protocol.read(arrayStream, baselineChain));
     }
   }
 
@@ -132,7 +141,7 @@ public class ReadBenchmark {
   @OperationsPerInvocation(BATCH)
   public void readMultiBulkResponse(Blackhole blackhole) {
     for (int i = 0; i < BATCH; i++) {
-      blackhole.consume(Protocol.read(multiBulkStream));
+      blackhole.consume(Protocol.read(multiBulkStream, baselineChain));
     }
   }
 
@@ -142,7 +151,7 @@ public class ReadBenchmark {
   @OperationsPerInvocation(BATCH)
   public void cacheAwareReadSimpleString(Blackhole blackhole) {
     for (int i = 0; i < BATCH; i++) {
-      blackhole.consume(Protocol.read(cacheSimpleStringStream, cache));
+      blackhole.consume(Protocol.read(cacheSimpleStringStream, pushChain));
     }
   }
 
@@ -150,7 +159,7 @@ public class ReadBenchmark {
   @OperationsPerInvocation(BATCH)
   public void cacheAwareReadBulkString(Blackhole blackhole) {
     for (int i = 0; i < BATCH; i++) {
-      blackhole.consume(Protocol.read(cacheBulkStringStream, cache));
+      blackhole.consume(Protocol.read(cacheBulkStringStream, pushChain));
     }
   }
 
@@ -158,7 +167,7 @@ public class ReadBenchmark {
   @OperationsPerInvocation(BATCH)
   public void cacheAwareReadArray(Blackhole blackhole) {
     for (int i = 0; i < BATCH; i++) {
-      blackhole.consume(Protocol.read(cacheArrayStream, cache));
+      blackhole.consume(Protocol.read(cacheArrayStream, pushChain));
     }
   }
 
@@ -166,7 +175,7 @@ public class ReadBenchmark {
   @OperationsPerInvocation(BATCH)
   public void cacheAwareReadMultiBulkResponse(Blackhole blackhole) {
     for (int i = 0; i < BATCH; i++) {
-      blackhole.consume(Protocol.read(cacheMultiBulkStream, cache));
+      blackhole.consume(Protocol.read(cacheMultiBulkStream, pushChain));
     }
   }
 
@@ -176,7 +185,7 @@ public class ReadBenchmark {
   @OperationsPerInvocation(BATCH)
   public void readWith1PushMessage(Blackhole blackhole) {
     for (int i = 0; i < BATCH; i++) {
-      blackhole.consume(Protocol.read(mixed1PushStream, cache));
+      blackhole.consume(Protocol.read(mixed1PushStream, pushChain));
     }
   }
 
@@ -184,7 +193,7 @@ public class ReadBenchmark {
   @OperationsPerInvocation(BATCH)
   public void readWith100PushMessages(Blackhole blackhole) {
     for (int i = 0; i < BATCH; i++) {
-      blackhole.consume(Protocol.read(mixed100PushStream, cache));
+      blackhole.consume(Protocol.read(mixed100PushStream, pushChain));
     }
   }
 }

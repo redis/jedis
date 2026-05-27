@@ -32,7 +32,7 @@ public final class TimeSeriesBuilderFactory {
             }
             List<Double> values = sampleList.subList(1, sampleList.size()).stream()
                 .map(BuilderFactory.DOUBLE::build).collect(Collectors.toList());
-            return new TSElement(timestamp, values);
+            return new TSElement.MultiValueTSElement(timestamp, values);
           }).collect(Collectors.toList());
     }
   };

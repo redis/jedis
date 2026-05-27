@@ -16,6 +16,7 @@ import redis.clients.jedis.csc.CacheConfig;
 
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  * Workload benchmark: mixed GET/SET at 90% read / 10% write. Provides a single comparable
@@ -60,11 +61,20 @@ public abstract class GetSetMixedR90W10Benchmark {
   protected String[] keys;
   protected String[] values;
 
-  /** Per-thread seeded RNG for reproducible workload sequencing across runs. */
+  /**
+   * Per-thread seeded RNG for reproducible workload sequencing across runs. Each thread gets a
+   * distinct seed derived from {@code SEED} so multi-threaded variants generate independent
+   * sequences instead of lockstep on the same key.
+   */
   @State(Scope.Thread)
   public static class Rng {
     private static final long SEED = 12_648_430L;
-    final Random r = new Random(SEED);
+    private static final AtomicInteger THREAD_INDEX = new AtomicInteger();
+    final Random r;
+
+    public Rng() {
+      this.r = new Random(SEED + THREAD_INDEX.getAndIncrement());
+    }
   }
 
   @Setup(Level.Trial)

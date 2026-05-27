@@ -13,7 +13,7 @@ public class ZParams implements IParams {
 
   public enum Aggregate implements Rawable {
 
-    SUM, MIN, MAX;
+    SUM, MIN, MAX, COUNT;
 
     private final byte[] raw;
 

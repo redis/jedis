@@ -24,13 +24,19 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.CommandObjects;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisClient;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.util.TestEnvUtil;
 
 public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
+
+  private static final Logger log = LoggerFactory.getLogger(ClientSideCacheFunctionalityTest.class);
 
   @Test // T.5.1
   public void flushAllTest() {
@@ -52,6 +58,105 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       assertEquals(count, cache.getSize());
       cache.flush();
       assertEquals(0, cache.getSize());
+    }
+  }
+
+  @Test
+  public void invalidateAllWithLargeCacheTest() {
+    final int count = 10000;
+
+    // 1. Populate Redis with 10k keys
+    for (int i = 0; i < count; i++) {
+      control.set("key" + i, "value" + i);
+    }
+
+    try (RedisClient jedis = RedisClient.builder().hostAndPort(hnp).clientConfig(clientConfig.get())
+            .cacheConfig(CacheConfig.builder().maxSize(count).build()).build()) {
+
+      Cache cache = jedis.getCache();
+
+      // 2. Load all 10k keys into cache
+      for (int i = 0; i < count; i++) {
+        jedis.get("key" + i);
+      }
+
+      assertEquals(count, cache.getSize());
+
+      // 3. Trigger NULL invalidation (via flushAll)
+      control.flushAll();
+
+      // 4. Access a key to trigger cache invalidation synchronously
+      long invalidationStartTime = System.nanoTime();
+      jedis.get("key0");
+      long invalidationElapsedNanos = System.nanoTime() - invalidationStartTime;
+
+      assertEquals(1, cache.getSize());
+
+      CacheStats stats = cache.getStats();
+      double keysPerSec = (count * 1_000_000_000.0) / invalidationElapsedNanos;
+
+      log.info("invalidateAllWithLargeCacheTest: NULL invalidation flushed {} entries in {} ns ({} keys/sec)", count,
+              invalidationElapsedNanos, String.format("%.2f", keysPerSec));
+      log.info("cache stats: {}", stats);
+    }
+  }
+
+  @Test
+  public void pendingInvalidationMessagesTest() {
+    final int count = 1000; // Hundreds of keys
+
+    try (RedisClient jedis = RedisClient.builder().hostAndPort(hnp).clientConfig(clientConfig.get())
+            .poolConfig(singleConnectionPoolConfig.get())
+            .cacheConfig(CacheConfig.builder().maxSize(count).build()).build()) {
+      Cache cache = jedis.getCache();
+
+      // 1. Create and cache 1000 keys
+      for (int i = 0; i < count; i++) {
+        jedis.set("key" + i, "value" + i);
+      }
+      for (int i = 0; i < count; i++) {
+        jedis.get("key" + i);
+      }
+
+      assertEquals(count, cache.getSize());
+      assertEquals(0, cache.getStats().getInvalidationCount());
+
+      // Capture the tracked connection's server-side id. Pool is pinned to 1 so this
+      // is the same connection that holds the cached entries and will receive the
+      // invalidation push messages.
+      long trackedClientId = (Long) jedis.sendCommand(Protocol.Command.CLIENT, "ID");
+
+      // 2. Use control connection to update ALL keys
+      // This generates hundreds of invalidation messages
+      for (int i = 0; i < count; i++) {
+        control.set("key" + i, "newvalue" + i);
+      }
+
+      // 3. Wait until the server has flushed all queued output (the invalidation
+      // frames) on the tracked client's connection. `oll` (output list length) and
+      // `omem` (output buffer memory) report what the server still has buffered for
+      // that client; once both are zero, every invalidation has been handed to the
+      // kernel and is on its way / already in the tracked socket's receive buffer.
+      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+              .until(() -> {
+                String info = control.clientList(trackedClientId);
+                return info != null && info.contains(" oll=0 ") && info.contains(" omem=0 ");
+              });
+
+      // 4. Now use the cached connection - it should process all pending invalidations synchronously
+      long processingStartTime = System.nanoTime();
+      jedis.get("key0");
+      long processingElapsedNanos = System.nanoTime() - processingStartTime;
+
+      // 5. Verify all invalidations were processed
+      CacheStats stats = cache.getStats();
+      assertEquals(count, stats.getInvalidationCount());
+
+      double invalidationsPerSec = (count * 1_000_000_000.0) / processingElapsedNanos;
+
+      log.info("pendingInvalidationMessagesTest: {} pending invalidations processed in {} ns ({} invalidations/sec)", count,
+              processingElapsedNanos, String.format("%.2f", invalidationsPerSec));
+      log.info("cache stats: {}", stats);
     }
   }
 
@@ -319,7 +424,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       Set<String> members1 = jedis.smembers("foo");
       Set<String> members2 = jedis.smembers("foo");
 
-      Set<String> fromMap = (Set<String>) cache.get(new CacheKey<>(new CommandObjects().smembers("foo"))).getValue();
+      Set<String> fromMap = (Set<String>) cache.get(new CacheKey<>(new CommandObjects(RedisProtocol.RESP3).smembers("foo"))).getValue();
       assertEquals(expected, members1);
       assertEquals(expected, members2);
       assertEquals(expected, fromMap);
@@ -498,17 +603,17 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
       // check touched keys not evicted
       for (int i = touchOffset; i < touchOffset + expectedEvictions; i++) {
-        assertTrue(cache.hasCacheKey(new CacheKey(new CommandObjects().get("foo" + i))));
+        assertTrue(cache.hasCacheKey(new CacheKey(new CommandObjects(RedisProtocol.RESP3).get("foo" + i))));
       }
 
       // check expected evictions are done till the offset
       for (int i = 0; i < touchOffset; i++) {
-        assertTrue(!cache.hasCacheKey(new CacheKey(new CommandObjects().get("foo" + i))));
+        assertTrue(!cache.hasCacheKey(new CacheKey(new CommandObjects(RedisProtocol.RESP3).get("foo" + i))));
       }
 
       // check expected evictions are done after the touched keys
       for (int i = touchOffset + expectedEvictions; i < (2 * expectedEvictions); i++) {
-        assertFalse(cache.hasCacheKey(new CacheKey(new CommandObjects().get("foo" + i))));
+        assertFalse(cache.hasCacheKey(new CacheKey(new CommandObjects(RedisProtocol.RESP3).get("foo" + i))));
       }
 
       assertEquals(maxSize, cache.getSize());
@@ -640,4 +745,6 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       assertEquals(1, stats.getMissCount());
     }
   }
+
+
 }

@@ -1,7 +1,11 @@
 name: Publish Docs
 on:
   push:
-    branches: ["master", "benchmark-data"]
+    branches: ["master"]
+  workflow_run:
+    workflows: ["Benchmarks"]
+    types: [completed]
+    branches: [master]
   workflow_dispatch:
     inputs:
       deploy:

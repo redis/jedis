@@ -7,6 +7,7 @@ This guide helps you migrate from Jedis 7.5.0 to Jedis 8.0.0. Version 8.0.0 intr
 - [Overview](#overview)
 - [Breaking Changes](#breaking-changes)
   - [RESP3 Negotiated by Default](#resp3-negotiated-by-default)
+  - [TLS Hostname Verification Enforced by Default](#tls-hostname-verification-enforced-by-default)
   - [Removed Client Classes (`JedisPooled`, `JedisSentineled`)](#removed-client-classes-jedispooled-jedissentineled)
   - [Removed `UnifiedJedis` Public Constructors](#removed-unifiedjedis-public-constructors)
   - [`Transaction(Jedis)` and `ClusterPipeline(ClusterConnectionProvider)` Constructors Removed](#transactionjedis-and-clusterpipelineclusterconnectionprovider-constructors-removed)
@@ -16,6 +17,7 @@ This guide helps you migrate from Jedis 7.5.0 to Jedis 8.0.0. Version 8.0.0 intr
   - [`commons-pool2` Upgraded to 2.13.1](#commons-pool2-upgraded-to-2131)
 - [Deprecations](#deprecations)
   - [`JedisCluster` Deprecation](#jediscluster-deprecation)
+  - [Legacy SSL Configuration Setters Deprecated](#legacy-ssl-configuration-setters-deprecated)
   - [RediSearch Cursor APIs Deprecated](#redisearch-cursor-apis-deprecated)
 - [New Features](#new-features)
   - [Request/Response Policy Support for Cluster Commands](#requestresponse-policy-support-for-cluster-commands)
@@ -84,6 +86,39 @@ RedisClient client = RedisClient.builder().clientConfig(config).build();
 - RediSearch `NOCONTENT` responses now return an empty map on RESP3 instead of throwing on field access; missing scores default to `0.0` and missing warnings default to an empty list on both protocols.
 - The deprecated `setProtocol(RedisProtocol)` mutator on `Jedis` was removed as part of the same change set.
 
+### TLS Hostname Verification Enforced by Default
+
+`DefaultJedisSocketFactory` now sets `SSLParameters.setEndpointIdentificationAlgorithm("HTTPS")` whenever SSL is enabled and the user has not supplied custom `SSLParameters`. Connections to a TLS endpoint whose certificate CN/SAN does **not** match the host you connect to will now fail with an SSL handshake error.
+
+This is a security-positive change but **may surface previously silent misconfigurations**: self-signed certificates without a matching SAN, hostname/IP mismatches between client and certificate, or wildcard-SAN limits will now reject the connection instead of silently accepting it.
+
+#### Migration Path
+
+The recommended migration is to fix the certificate (add a SAN that matches the connection host) or to use the modern `SslOptions` API, which exposes a clear `SslVerifyMode`:
+
+```java
+SslOptions sslOptions = SslOptions.builder()
+    .truststore(trustStore)
+    .sslVerifyMode(SslVerifyMode.FULL)   // hostname verification on
+    .build();
+JedisClientConfig config = DefaultJedisClientConfig.builder()
+    .sslOptions(sslOptions)
+    .build();
+```
+
+If you intentionally need to bypass hostname verification (not recommended for production), supply explicit `SSLParameters` with no endpoint identification algorithm:
+
+```java
+SSLParameters sslParameters = new SSLParameters();
+// leave endpointIdentificationAlgorithm null/empty to disable verification
+JedisClientConfig config = DefaultJedisClientConfig.builder()
+    .ssl(true)
+    .sslParameters(sslParameters)
+    .build();
+```
+
+> **Note:** the legacy `ssl()`, `sslSocketFactory()`, `sslParameters()`, and `hostnameVerifier()` setters used in the second snippet are themselves deprecated — see [Legacy SSL Configuration Setters Deprecated](#legacy-ssl-configuration-setters-deprecated).
+
 ### Removed Client Classes (`JedisPooled`, `JedisSentineled`)
 
 `JedisPooled` and `JedisSentineled` were deprecated in 7.0.0 and have now been **completely removed**. Use the corresponding classes from the `RedisClient` family introduced in 7.0.0.
@@ -149,17 +184,21 @@ UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache cach
 UnifiedJedis(ConnectionProvider provider)
 UnifiedJedis(JedisSocketFactory socketFactory)
 UnifiedJedis(JedisSocketFactory socketFactory, JedisClientConfig clientConfig)
-UnifiedJedis(ClusterConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration)
 UnifiedJedis(CommandExecutor executor)
-UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects)
 ```
 
-The following two constructors changed visibility from `public` to `protected`:
+The following constructor changed visibility from `public` to `protected`:
 
 ```java
 // Now protected (still callable from subclasses)
 UnifiedJedis(Connection connection)
-UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects)
+```
+
+The following constructor is **not removed**, but is now `@Deprecated` — call sites continue to compile (the wider `ConnectionProvider` signature absorbs former `ClusterConnectionProvider` callers), but new code should use `RedisClusterClient.builder()`:
+
+```java
+@Deprecated
+public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration)
 ```
 
 #### Migration Path
@@ -309,6 +348,47 @@ RedisClusterClient cluster = RedisClusterClient.builder()
     .build();
 ```
 
+### Legacy SSL Configuration Setters Deprecated
+
+The legacy SSL configuration surface on `JedisClientConfig` and `DefaultJedisClientConfig.Builder` is now `@Deprecated` (since 7.4.2) in favor of `SslOptions`:
+
+```java
+// Deprecated on JedisClientConfig:
+SSLSocketFactory getSslSocketFactory();
+SSLParameters   getSslParameters();
+// (HostnameVerifier was already deprecated)
+
+// And the corresponding builder setters:
+DefaultJedisClientConfig.Builder.ssl(boolean);
+DefaultJedisClientConfig.Builder.sslSocketFactory(SSLSocketFactory);
+DefaultJedisClientConfig.Builder.sslParameters(SSLParameters);
+DefaultJedisClientConfig.Builder.hostnameVerifier(HostnameVerifier);
+```
+
+`SslOptions` is the single configuration knob going forward. It bundles trust store, key store, verify mode, and protocol selection in one place, and takes precedence over the legacy setters when both are present:
+
+**Before (v7.5.0):**
+```java
+JedisClientConfig config = DefaultJedisClientConfig.builder()
+    .ssl(true)
+    .sslSocketFactory(mySocketFactory)
+    .sslParameters(myParameters)
+    .hostnameVerifier(myVerifier)
+    .build();
+```
+
+**After (v8.0.0):**
+```java
+SslOptions sslOptions = SslOptions.builder()
+    .truststore(trustStoreFile, trustStorePassword)
+    .keystore(keyStoreFile, keyStorePassword)
+    .sslVerifyMode(SslVerifyMode.FULL)
+    .build();
+JedisClientConfig config = DefaultJedisClientConfig.builder()
+    .sslOptions(sslOptions)
+    .build();
+```
+
 ### RediSearch Cursor APIs Deprecated
 
 The low-level cursor methods on `RediSearchCommands` are deprecated because they don't work reliably on cluster deployments (the cursor lives on a specific shard, but the next command may be routed elsewhere):
@@ -357,9 +437,7 @@ try (AggregateIterator it = jedis.ftAggregateIterator(idx, b)) {
 Jedis 8.0.0 introduces a comprehensive request/response policy framework that aligns with the Redis [command tips](https://redis.io/docs/latest/develop/reference/key-specs/) — every command now declares how it should be routed (single shard, all shards, all masters, keyless) and how multi-shard responses should be aggregated (logical-AND, sum, set-union, etc.).
 
 Highlights:
-- New `CommandFlagsRegistry` / `StaticCommandFlagsRegistry` infrastructure with auto-generated metadata.
-- New `Aggregator` family (`SumAggregator`, `SetAggregator`, `LogicalAndAggregator`, `MapAggregator`, `MultiNodeResultAggregator`, …) under `redis.clients.jedis.executors.aggregators`.
-- New `ConnectionResolver` strategies (`SlotBasedConnectionResolver`, `RoundRobinConnectionResolver`, `ReplicaOnlyConnectionResolver`, …) under `redis.clients.jedis.executors`.
+- New `CommandFlagsRegistry` interface — every command now exposes its request/response policy metadata.
 - `CommandArguments.isKeyless()` to inspect routing intent.
 - New exceptions: `ClusterAggregationException`, `UnsupportedAggregationException`.
 

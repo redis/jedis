@@ -19,6 +19,7 @@ import redis.clients.jedis.JedisClusterInfoCache;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 
 import static redis.clients.jedis.RedisClusterClient.INIT_NO_ERROR_PROPERTY;
@@ -182,22 +183,45 @@ public class ClusterConnectionProvider implements ConnectionProvider {
     throw noReachableNode;
   }
 
+  private Connection getConnectionFromSlotAfterRenewing(int slot, JedisConnectionException previousException) {
+    // It's abnormal situation for cluster mode that we have just nothing for slot,
+    // or the mapped node is unreachable. Try to rediscover state.
+    renewSlotCache();
+    ConnectionPool connectionPool = cache.getSlotPool(slot);
+    if (connectionPool != null) {
+      try {
+        return connectionPool.getResource();
+      } catch (JedisConnectionException e) {
+        if (previousException != null) {
+          // we throw the retry failure, but attach the original failure as suppressed.
+          e.addSuppressed(previousException);
+        }
+        throw e;
+      }
+    } else {
+      // no choice, fallback to new connection to random node
+      try {
+        return getConnection();
+      } catch (JedisException e) {
+        if (previousException != null) {
+          e.addSuppressed(previousException);
+        }
+        throw e;
+      }
+    }
+  }
+
   public Connection getConnectionFromSlot(int slot) {
     ConnectionPool connectionPool = cache.getSlotPool(slot);
     if (connectionPool != null) {
       // It can't guaranteed to get valid connection because of node assignment
-      return connectionPool.getResource();
-    } else {
-      // It's abnormal situation for cluster mode that we have just nothing for slot.
-      // Try to rediscover state
-      renewSlotCache();
-      connectionPool = cache.getSlotPool(slot);
-      if (connectionPool != null) {
+      try {
         return connectionPool.getResource();
-      } else {
-        // no choice, fallback to new connection to random node
-        return getConnection();
+      } catch(JedisConnectionException e) {
+        return getConnectionFromSlotAfterRenewing(slot, e);
       }
+    } else {
+      return getConnectionFromSlotAfterRenewing(slot, null);
     }
   }
 

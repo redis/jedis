@@ -47,12 +47,15 @@ public class MultiDbConnectionSupplier extends MultiDbFailoverBase {
    */
   private Connection handleGetConnection(Database database) {
     Connection connection = database.getConnection();
+    boolean validated = false;
     try {
       connection.ping();
+      validated = true;
       return connection;
-    } catch (RuntimeException e) {
-      IOUtils.closeQuietly(connection);
-      throw e;
+    } finally {
+      if (!validated) {
+        IOUtils.closeQuietly(connection);
+      }
     }
   }
 

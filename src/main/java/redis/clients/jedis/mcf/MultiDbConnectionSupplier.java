@@ -46,8 +46,13 @@ public class MultiDbConnectionSupplier extends MultiDbFailoverBase {
    */
   private Connection handleGetConnection(Database database) {
     Connection connection = database.getConnection();
-    connection.ping();
-    return connection;
+    try {
+      connection.ping();
+      return connection;
+    } catch (RuntimeException e) {
+      redis.clients.jedis.util.IOUtils.closeQuietly(connection);
+      throw e;
+    }
   }
 
   /**

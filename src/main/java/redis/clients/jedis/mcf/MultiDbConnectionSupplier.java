@@ -7,6 +7,7 @@ import io.github.resilience4j.decorators.Decorators.DecorateSupplier;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
+import redis.clients.jedis.util.IOUtils;
 
 /**
  * ConnectionProvider with built-in retry, circuit-breaker, and failover to another /database
@@ -46,8 +47,13 @@ public class MultiDbConnectionSupplier extends MultiDbFailoverBase {
    */
   private Connection handleGetConnection(Database database) {
     Connection connection = database.getConnection();
-    connection.ping();
-    return connection;
+    try {
+      connection.ping();
+      return connection;
+    } catch (RuntimeException e) {
+      IOUtils.closeQuietly(connection);
+      throw e;
+    }
   }
 
   /**

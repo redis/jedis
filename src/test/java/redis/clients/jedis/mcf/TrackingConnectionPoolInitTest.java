@@ -19,7 +19,6 @@ import redis.clients.jedis.PushConsumer;
 import redis.clients.jedis.PushConsumerChainImpl;
 import redis.clients.jedis.util.server.TcpMockServer;
 
-
 public class TrackingConnectionPoolInitTest {
 
   private TcpMockServer mockServer;

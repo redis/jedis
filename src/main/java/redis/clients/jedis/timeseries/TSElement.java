@@ -1,6 +1,6 @@
 package redis.clients.jedis.timeseries;
 
-import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -17,17 +17,11 @@ import java.util.List;
 public class TSElement {
 
   private final long timestamp;
-  private final List<Double> values;
+  private final double value;
 
   public TSElement(long timestamp, double value) {
     this.timestamp = timestamp;
-    this.values = new ArrayList<>();
-    this.values.add(value);
-  }
-
-  TSElement(long timestamp, List<Double> values) {
-    this.timestamp = timestamp;
-    this.values = values;
+    this.value = value;
   }
 
   public long getTimestamp() {
@@ -38,7 +32,7 @@ public class TSElement {
    * @return the first value of this sample. Equivalent to {@code getValues().get(0)}.
    */
   public double getValue() {
-    return values.get(0);
+    return value;
   }
 
   /**
@@ -47,26 +41,64 @@ public class TSElement {
    *         multiple aggregators)
    */
   public List<Double> getValues() {
-    return values;
+    return Collections.singletonList(value);
   }
 
   @Override
   public int hashCode() {
-    return 31 * Long.hashCode(timestamp) + values.hashCode();
+    // Matches Collections.singletonList(value).hashCode() (= 31 + Double.hashCode(value))
+    // so a TSElement and a MultiValueTSElement holding the same single value hash alike.
+    return 31 * Long.hashCode(timestamp) + 31 + Double.hashCode(value);
   }
 
   @Override
   public boolean equals(Object obj) {
-    if (obj == null) return false;
     if (obj == this) return true;
     if (!(obj instanceof TSElement)) return false;
-
     TSElement other = (TSElement) obj;
-    return this.timestamp == other.timestamp && this.values.equals(other.values);
+    if (this.timestamp != other.timestamp) return false;
+    if (this.getClass() == TSElement.class && other.getClass() == TSElement.class) {
+      return Double.doubleToLongBits(this.value) == Double.doubleToLongBits(other.value);
+    }
+    return this.getValues().equals(other.getValues());
   }
 
   @Override
   public String toString() {
-    return "(" + timestamp + ":" + (values.size()== 1 ?values.get(0) : values) + ")";
+    return "(" + timestamp + ":" + value + ")";
+  }
+
+  /**
+   * Variant produced by {@link TimeSeriesBuilderFactory} when a query returned more than
+   * one value per sample (multiple aggregators). Holds the parser's list as-is and is
+   * never instantiated for single-value samples, so callers can assume
+   * {@code values.size() >= 2}.
+   */
+  static final class MultiValueTSElement extends TSElement {
+
+    private final List<Double> values;
+
+    MultiValueTSElement(long timestamp, List<Double> values) {
+      super(timestamp, values.get(0));
+      this.values = values;
+    }
+
+    @Override
+    public List<Double> getValues() {
+      return values;
+    }
+
+    @Override
+    public int hashCode() {
+      if(values.size() == 1) {
+        return super.hashCode();
+      }
+      return 31 * Long.hashCode(getTimestamp()) + values.hashCode();
+    }
+
+    @Override
+    public String toString() {
+      return "(" + getTimestamp() + ":" + values + ")";
+    }
   }
 }

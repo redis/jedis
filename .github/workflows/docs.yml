@@ -2,6 +2,10 @@ name: Publish Docs
 on:
   push:
     branches: ["master"]
+  workflow_run:
+    workflows: ["Benchmarks"]
+    types: [completed]
+    branches: [master]
   workflow_dispatch:
     inputs:
       deploy:
@@ -21,6 +25,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          ref: master
       - uses: actions/setup-python@v5
         with:
           python-version: 3.13
@@ -31,6 +37,15 @@ jobs:
       - name: Build docs
         run: |
           mkdocs build -d docsbuild
+      - name: Pull benchmark dashboard
+        uses: actions/checkout@v4
+        with:
+          ref: benchmark-data
+          path: benchmark-data
+      - name: Embed benchmark dashboard into site
+        run: |
+          mkdir -p docsbuild/benchmarks
+          cp -r benchmark-data/jedis/* docsbuild/benchmarks/
       - name: Setup Pages
         uses: actions/configure-pages@v3
       - name: Upload artifact

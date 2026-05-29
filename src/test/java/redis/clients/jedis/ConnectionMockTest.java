@@ -13,7 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doAnswer;
-import static redis.clients.jedis.TimeoutOptions.DISABLED_TIMEOUT_MS;
+import static redis.clients.jedis.TimeoutOptions.UNSET_TIMEOUT_MS;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -271,7 +271,7 @@ public class ConnectionMockTest {
     @Test
     public void testRelaxTimeoutsDisabledFallbackToSoTimeout() throws Exception {
       TimeoutOptions disabledTimeoutOptions = TimeoutOptions.builder()
-          .proactiveTimeoutsRelaxing(TimeoutOptions.DISABLED_TIMEOUT).build();
+          .proactiveTimeoutsRelaxing(TimeoutOptions.UNSET_TIMEOUT).build();
 
       MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
           .timeoutOptions(disabledTimeoutOptions).build();
@@ -285,7 +285,7 @@ public class ConnectionMockTest {
         Socket socket = ReflectionTestUtil.getField(conn, "socket");
         assertTrue(conn.isConnected());
         assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
-        assertEquals(DISABLED_TIMEOUT_MS, conn.getRelaxedSoTimeout());
+        assertEquals(UNSET_TIMEOUT_MS, conn.getRelaxedSoTimeout());
 
         conn.activateRelaxedTimeout();
 
@@ -315,7 +315,7 @@ public class ConnectionMockTest {
         assertEquals(SO_TIMEOUT_MS, conn.getSoTimeout());
         assertEquals(0, conn.getBlockingSoTimeout());
         assertEquals(10000, conn.getRelaxedSoTimeout());
-        assertEquals(DISABLED_TIMEOUT_MS, conn.getRelaxedBlockingSoTimeout());
+        assertEquals(UNSET_TIMEOUT_MS, conn.getRelaxedBlockingSoTimeout());
         assertFalse(conn.isRelaxedTimeoutActive());
 
         // verify actual socket timeout

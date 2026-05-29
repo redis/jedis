@@ -6,13 +6,13 @@ import java.time.Duration;
 
 public class TimeoutOptions {
 
-  public static final int DISABLED_TIMEOUT_MS = -1;
+  public static final int UNSET_TIMEOUT_MS = -1;
 
-  public static final Duration DISABLED_TIMEOUT = Duration.ofMillis(DISABLED_TIMEOUT_MS);
+  public static final Duration UNSET_TIMEOUT = Duration.ofMillis(UNSET_TIMEOUT_MS);
 
   public static final Duration DEFAULT_RELAXED_TIMEOUT = Duration.ofSeconds(10);
 
-  public static final Duration DEFAULT_RELAXED_BLOCKING_TIMEOUT = DISABLED_TIMEOUT;
+  public static final Duration DEFAULT_RELAXED_BLOCKING_TIMEOUT = UNSET_TIMEOUT;
 
   private final Duration relaxedTimeout;
 
@@ -23,13 +23,18 @@ public class TimeoutOptions {
     this.relaxedBlockingTimeout = relaxedBlockingTimeout;
   }
 
-  public static boolean isRelaxedTimeoutEnabled(int relaxedTimeout) {
-    return relaxedTimeout != DISABLED_TIMEOUT_MS;
+  /**
+   * Returns whether an explicit relaxed timeout value was configured, as opposed to being unset (in
+   * which case the base socket timeout is inherited).
+   * @param relaxedTimeoutMs the relaxed timeout in milliseconds
+   * @return {@code true} if a value was explicitly configured, {@code false} if unset
+   */
+  public static boolean isSet(int relaxedTimeoutMs) {
+    return relaxedTimeoutMs != UNSET_TIMEOUT_MS;
   }
 
   /**
-   * @return the {@link Duration} to relax timeouts proactively, {@link #DISABLED_TIMEOUT} if
-   *         disabled.
+   * @return the {@link Duration} to relax timeouts proactively, {@link #UNSET_TIMEOUT} if not set.
    */
   public Duration getRelaxedTimeout() {
     return relaxedTimeout;
@@ -37,7 +42,7 @@ public class TimeoutOptions {
 
   /**
    * @return the {@link Duration} to relax timeouts proactively for blocking commands,
-   *         {@link #DISABLED_TIMEOUT} if disabled.
+   *         {@link #UNSET_TIMEOUT} if not set.
    */
   public Duration getRelaxedBlockingTimeout() {
     return relaxedBlockingTimeout;

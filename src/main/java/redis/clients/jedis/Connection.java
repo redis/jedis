@@ -106,8 +106,8 @@ public class Connection implements Closeable {
    * Socket read timeout (SO_TIMEOUT) in milliseconds used for non-blocking commands
    * while the connection is in a relaxed (maintenance) state.
    *
-   * <p>If disabled (see {@link TimeoutOptions#DISABLED_TIMEOUT}), {@link #soTimeout}
-   * is used instead.</p>
+   * <p>If not set (see {@link TimeoutOptions#UNSET_TIMEOUT}), {@link #soTimeout}
+   * is inherited instead.</p>
    */
   private int relaxedTimeout =  NumberUtils.safeToInt(Duration.ofSeconds(10).toMillis());
 
@@ -115,11 +115,15 @@ public class Connection implements Closeable {
    * Socket read timeout (SO_TIMEOUT) in milliseconds used for blocking commands
    * while the connection is in a relaxed (maintenance) state.
    *
-   * <p>If disabled (see {@link TimeoutOptions#DISABLED_TIMEOUT}), {@link #infiniteSoTimeout}
-   * is used instead.</p>
+   * <p>If not set (see {@link TimeoutOptions#UNSET_TIMEOUT}), {@link #infiniteSoTimeout}
+   * is inherited instead.</p>
    */
   private int relaxedBlockingTimeout =
-          NumberUtils.safeToInt(TimeoutOptions.DISABLED_TIMEOUT.toMillis());
+          NumberUtils.safeToInt(TimeoutOptions.UNSET_TIMEOUT.toMillis());
+  
+  private boolean relaxedTimeoutConfigured = TimeoutOptions.isSet(relaxedTimeout);
+  
+  private boolean relaxedBlockingTimeoutConfigured = TimeoutOptions.isSet(relaxedBlockingTimeout);
 
   private boolean broken = false;
   private boolean strValActive;
@@ -719,6 +723,8 @@ public class Connection implements Closeable {
         TimeoutOptions timeoutOptions = maintConfig.getTimeoutOptions();
         this.relaxedTimeout = NumberUtils.safeToInt(timeoutOptions.getRelaxedTimeout().toMillis());
         this.relaxedBlockingTimeout = NumberUtils.safeToInt(timeoutOptions.getRelaxedBlockingTimeout().toMillis());
+        this.relaxedTimeoutConfigured = TimeoutOptions.isSet(relaxedTimeout);
+        this.relaxedBlockingTimeoutConfigured = TimeoutOptions.isSet(relaxedBlockingTimeout);
       }
 
       initPushConsumers(config);
@@ -1010,20 +1016,12 @@ public class Connection implements Closeable {
   }
 
   int getActiveSoTimeout() {
-    if (isRelaxed) {
-      return TimeoutOptions.isRelaxedTimeoutEnabled(relaxedTimeout) ? relaxedTimeout : soTimeout;
-    }
-
-    return soTimeout;
+    return isRelaxed && relaxedTimeoutConfigured ? relaxedTimeout : soTimeout;
   }
 
 
   int getActiveBlockingSoTimeout() {
-    if (isRelaxed) {
-      return TimeoutOptions.isRelaxedTimeoutEnabled(relaxedBlockingTimeout) ? relaxedBlockingTimeout : infiniteSoTimeout;
-    }
-
-    return infiniteSoTimeout;
+    return isRelaxed && relaxedBlockingTimeoutConfigured ? relaxedBlockingTimeout : infiniteSoTimeout;
   }
 
   void activateRelaxedTimeout() {

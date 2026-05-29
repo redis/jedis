@@ -54,9 +54,49 @@ public class Connection implements Closeable {
     }
 
     public Connection build() {
-      Connection conn = new Connection(this);
+      Connection conn = createConnection();
       conn.initializeFromClientConfig();
       return conn;
+    }
+
+    /**
+     * Construct a fresh, uninitialized {@link Connection} for this builder.
+     * <p>
+     * Template-method hook for subclasses to return their concrete {@code Connection} subtype
+     * (see {@link redis.clients.jedis.csc.CacheConnection.Builder} for an example). The
+     * returned instance has its socket factory and client config wired up, but the network
+     * handshake has not run yet.
+     * <p>
+     * Two callers drive initialization differently:
+     * <ul>
+     *   <li>{@link #build()} — the public entry point — invokes
+     *       {@link Connection#initializeFromClientConfig()} on the returned instance before
+     *       handing it back, so external callers receive a ready-to-use connection.</li>
+     *   <li>{@link #buildUninitialized()} — the package-private accessor used by pool
+     *       factories — returns the uninitialized instance so the factory can interpose
+     *       between construction and initialization (e.g. to track an in-flight handshake
+     *       so a forced disconnect can interrupt it).</li>
+     * </ul>
+     * <p>
+     * Implementations must be free of side effects: do not open sockets, send commands, or
+     * invoke {@link Connection#initializeFromClientConfig()} — running initialization here
+     * would break the {@code buildUninitialized()} contract that pool factories rely on.
+     *
+     * @return a freshly constructed, uninitialized {@code Connection}
+     */
+    protected Connection createConnection() {
+      return new Connection(this);
+    }
+
+    /**
+     * Package-private entry point for pool factories that need to interpose between construction
+     * and initialization (e.g. to track in-flight connections so a forced disconnect can
+     * interrupt the init handshake). Callers MUST invoke
+     * {@link Connection#initializeFromClientConfig()} exactly once before handing the connection
+     * out.
+     */
+    final Connection buildUninitialized() {
+      return createConnection();
     }
   }
 

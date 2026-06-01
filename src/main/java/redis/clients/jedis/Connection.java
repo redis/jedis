@@ -1112,17 +1112,17 @@ public class Connection implements Closeable {
 
     private HostAndPort getRebindTarget(PushMessage message) {
       // Extract domain/ip and port from the message
-      // MOVING push message format: ["MOVING", slot, "host:port"]
+      // MOVING push message format: ["MOVING", seq, time_s, "host:port"]
       List<Object> content = message.getContent();
 
-      if (content.size() < 3) {
+      if (content.size() < 4) {
         logger.warn("MOVING push message is malformed: {}", message);
         return null;
       }
 
-      Object addressObject = content.get(2); // Get the 3rd element (index 2)
+      Object addressObject = content.get(3); // Get the 4th element (index 3)
       if (!(addressObject instanceof byte[])) {
-        logger.warn("Invalid re-bind message format, expected 3rd element to be a byte[], got {}", addressObject);
+        logger.warn("Invalid MOVING message format, expected 4th element to be a byte[], got {}", addressObject);
         return null;
       }
 
@@ -1131,7 +1131,7 @@ public class Connection implements Closeable {
         String addressAndPort = SafeEncoder.encode((byte[]) addressObject);
         return HostAndPort.from(addressAndPort);
       } catch (Exception e) {
-        logger.warn("Error parsing re-bind target from message: {}", message, e);
+        logger.warn("Error parsing MOVING target from message: {}", message, e);
         return null;
       }
     }

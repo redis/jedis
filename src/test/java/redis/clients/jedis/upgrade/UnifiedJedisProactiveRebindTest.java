@@ -94,7 +94,7 @@ public class UnifiedJedisProactiveRebindTest {
       assertEquals(0, mockServer2.getConnectedClientCount());
 
       // 2. Send MOVING notification on server1 -> MOVING 30 localhost:port2
-      mockServer1.sendPushMessageToAll("MOVING", "30", server2Address.toString());
+      mockServer1.sendPushMessageToAll("MOVING", "30", "5", server2Address.toString());
 
       // 3. Perform PING command
       // This should trigger read of the MOVING notification and rebind to server2
@@ -141,7 +141,7 @@ public class UnifiedJedisProactiveRebindTest {
       assertEquals(0, mockServer2.getConnectedClientCount());
 
       // 2. Send MOVING notification on server1 -> MOVING 30 localhost:port2
-      mockServer1.sendPushMessageToAll("MOVING", "30", server2Address.toString());
+      mockServer1.sendPushMessageToAll("MOVING", "30", "5", server2Address.toString());
 
       // 3. Active connection should be still usable until closed and returned to the pools
       assertTrue(activeConnection.ping());
@@ -188,7 +188,7 @@ public class UnifiedJedisProactiveRebindTest {
 
       // 2. Send MOVING notification on server1 -> MOVING 30 localhost:port2
       String server2Address = "localhost:" + mockServer2.getPort();
-      mockServer1.sendPushMessageToAll("MOVING", "30", server2Address);
+      mockServer1.sendPushMessageToAll("MOVING", "30", "5", server2Address);
 
       // 3. perform a command on active connection to trigger rebind
       assertTrue(activeConnection.ping());
@@ -228,7 +228,7 @@ public class UnifiedJedisProactiveRebindTest {
       assertEquals(0, mockServer2.getConnectedClientCount());
 
       // 2. Send MOVING notification on server1 -> MOVING 30 localhost:port2
-      mockServer1.sendPushMessageToAll("MOVING", "30", server2Address.toString());
+      mockServer1.sendPushMessageToAll("MOVING", "30", "5", server2Address.toString());
 
       // 3. perform a command on active connection to trigger rebind
       assertTrue(activeConnection.ping());
@@ -273,7 +273,7 @@ public class UnifiedJedisProactiveRebindTest {
       assertEquals(0, mockServer2.getConnectedClientCount());
 
       // 2. Send MOVING notification on server1 -> MOVING 30 localhost:port2
-      mockServer1.sendPushMessageToAll("MOVING", "30", server2Address.toString());
+      mockServer1.sendPushMessageToAll("MOVING", "30", "5", server2Address.toString());
 
       // 3. Perform PING command
       // This should trigger read of the MOVING notification processing

@@ -1104,14 +1104,16 @@ public class Connection implements Closeable {
       }
       activateRelaxedTimeout();
 
-      // notify owning pool to apply the bounded rebind and clear idle connections.
-      // MOVING format ["MOVING", seq, time_s, "host:port"]: seq and time_s are RESP3 integers
-      // (always present in a well-formed message, structure already validated by getRebindTarget).
+      // MOVING format ["MOVING", seq, time_s, "host:port"].
       if (memberOf != null && rebindTarget != null) {
         List<Object> content = message.getContent();
-        long seq = (Long) content.get(1);
-        long ttlSeconds = (Long) content.get(2);
-        memberOf.onMoving(seq, rebindTarget, ttlSeconds);
+        Object seq = content.get(1);
+        Object ttlSeconds = content.get(2);
+        if (seq instanceof Long && ttlSeconds instanceof Long) {
+          memberOf.onMoving((Long) seq, rebindTarget, (Long) ttlSeconds);
+        } else {
+          logger.warn("Invalid MOVING message format, expected integer seq and time_s, got {}", message);
+        }
       }
     }
 

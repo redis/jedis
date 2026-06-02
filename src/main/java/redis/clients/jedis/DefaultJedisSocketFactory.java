@@ -213,7 +213,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory, RebindAwar
    */
   private HostAndPort effectiveHostAndPort() {
     RebindState s = rebindState.get();
-    if (s != null && clockNanos.getAsLong() < s.deadlineNanos) {
+    if (s != null && s.deadlineNanos - clockNanos.getAsLong() > 0) {
       return s.target;
     }
     return this.hostAndPort;

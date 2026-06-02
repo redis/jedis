@@ -58,7 +58,8 @@ public class DefaultJedisSocketFactoryRebindTest {
     assertEquals(RebindResult.APPLIED_NEW_TARGET, factory.rebind(5L, TARGET_B, 100));
 
     assertEquals(RebindResult.STALE, factory.rebind(5L, TARGET_C, 100), "same seq is a duplicate");
-    assertEquals(RebindResult.STALE, factory.rebind(3L, TARGET_C, 100), "lower seq is out-of-order");
+    assertEquals(RebindResult.STALE, factory.rebind(3L, TARGET_C, 100),
+      "lower seq is out-of-order");
     assertEquals(TARGET_B, factory.getHostAndPort(), "target unchanged by stale events");
   }
 
@@ -66,7 +67,7 @@ public class DefaultJedisSocketFactoryRebindTest {
   public void higherSeqSameTarget_isApplied() {
     assertEquals(RebindResult.APPLIED_NEW_TARGET, factory.rebind(5L, TARGET_B, 10));
     assertEquals(RebindResult.APPLIED_NEW_TARGET, factory.rebind(6L, TARGET_B, 10),
-        "a strictly newer seq is always applied; dedup is by seq, not by target");
+      "a strictly newer seq is always applied; dedup is by seq, not by target");
     assertEquals(TARGET_B, factory.getHostAndPort());
   }
 

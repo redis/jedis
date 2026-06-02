@@ -560,6 +560,7 @@
 						<include>src/main/java/redis/clients/jedis/MaintenanceNotificationsConfig.java</include>
 						<include>src/main/java/redis/clients/jedis/util/NumberUtils.java</include>
 						<include>src/test/java/redis/clients/jedis/upgrade/UnifiedJedisProactiveRebindTest.java</include>
+						<include>src/test/java/redis/clients/jedis/DefaultJedisSocketFactoryRebindTest.java</include>
 						<include>src/main/java/redis/clients/jedis/HostAndPort.java</include>
 						<include>**/builders/*.java</include>
 						<include>**/MultiDb*.java</include>

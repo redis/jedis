@@ -1104,9 +1104,14 @@ public class Connection implements Closeable {
       }
       activateRelaxedTimeout();
 
-      // notify owning pool to rebind factory and clear idle connections
-      if (memberOf != null) {
-        memberOf.onMoving(rebindTarget);
+      // notify owning pool to apply the bounded rebind and clear idle connections.
+      // MOVING format ["MOVING", seq, time_s, "host:port"]: seq and time_s are RESP3 integers
+      // (always present in a well-formed message, structure already validated by getRebindTarget).
+      if (memberOf != null && rebindTarget != null) {
+        List<Object> content = message.getContent();
+        long seq = (Long) content.get(1);
+        long ttlSeconds = (Long) content.get(2);
+        memberOf.onMoving(seq, rebindTarget, ttlSeconds);
       }
     }
 

@@ -12,8 +12,6 @@ import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.Pool;
 
-import java.util.concurrent.atomic.AtomicReference;
-
 public class ConnectionPool extends Pool<Connection> {
 
   private AuthXManager authXManager;
@@ -94,28 +92,26 @@ public class ConnectionPool extends Pool<Connection> {
     }
   }
 
-  private final AtomicReference<HostAndPort> rebindTarget = new AtomicReference<>();
-
   /**
-   * Called by a connection when it receives a MOVING maintenance event.
-   * Rebinds the pool's factory to the new target and clears idle connections.
+   * Called by a connection when it receives a MOVING maintenance event. Applies a bounded,
+   * sequence-guarded rebind on the factory; idle connections bound to the previous target are
+   * evicted only when the effective target actually changes. Duplicate / out-of-order events are
+   * suppressed by the factory's sequence guard, so no pool-side dedup state is needed.
    *
+   * @param seq monotonically increasing sequence number of the MOVING event
    * @param target the new host and port to rebind to
+   * @param ttlSeconds grace window after which the rebind expires back to the original endpoint
    */
-  void onMoving(HostAndPort target) {
+  void onMoving(long seq, HostAndPort target, long ttlSeconds) {
     if (target == null) {
       return;
     }
-
-
-    HostAndPort previous = rebindTarget.getAndSet(target);
-    if (!target.equals(previous)) {
-      PooledObjectFactory<Connection> factory = getFactory();
-      if (!(factory instanceof RebindAware)) {
-        return;
-      }
-
-      ((RebindAware) factory).rebind(target);
+    PooledObjectFactory<Connection> factory = getFactory();
+    if (!(factory instanceof RebindAware)) {
+      return;
+    }
+    RebindAware.RebindResult result = ((RebindAware) factory).rebind(seq, target, ttlSeconds);
+    if (result == RebindAware.RebindResult.APPLIED_NEW_TARGET) {
       clear();
     }
   }

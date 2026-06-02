@@ -224,19 +224,17 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> , Rebi
 
 
   @Override
-  public void rebind(HostAndPort newHostAndPort) {
+  public RebindResult rebind(long seq, HostAndPort newHostAndPort, long ttlSeconds) {
     JedisSocketFactory jedisSocketFactory = connectionBuilder.getSocketFactory();
-    if ((connectionBuilder.getSocketFactory() instanceof RebindAware)) {
+    if (jedisSocketFactory instanceof RebindAware) {
       RebindAware factory = (RebindAware) jedisSocketFactory;
-      logger.debug("Rebinding to {}", newHostAndPort);
-      factory.rebind(newHostAndPort);
-    } else {
-      if ( logger.isDebugEnabled()) {
-        logger.debug("Rebind not supported: {}", jedisSocketFactory.getClass().getName());
-      }
+      logger.debug("Rebinding to {} (seq={}, ttl={}s)", newHostAndPort, seq, ttlSeconds);
+      return factory.rebind(seq, newHostAndPort, ttlSeconds);
     }
-
-
+    if (logger.isDebugEnabled()) {
+      logger.debug("Rebind not supported: {}", jedisSocketFactory.getClass().getName());
+    }
+    return RebindResult.STALE;
   }
 
 }

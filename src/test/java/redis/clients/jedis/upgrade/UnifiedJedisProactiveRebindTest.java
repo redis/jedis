@@ -94,7 +94,7 @@ public class UnifiedJedisProactiveRebindTest {
       assertEquals(0, mockServer2.getConnectedClientCount());
 
       // 2. Send MOVING notification on server1 -> MOVING 30 localhost:port2
-      mockServer1.sendPushMessageToAll("MOVING", "30", "5", server2Address.toString());
+      mockServer1.sendPushMessageToAll("MOVING", 30, 60, server2Address.toString());
 
       // 3. Perform PING command
       // This should trigger read of the MOVING notification and rebind to server2
@@ -141,7 +141,7 @@ public class UnifiedJedisProactiveRebindTest {
       assertEquals(0, mockServer2.getConnectedClientCount());
 
       // 2. Send MOVING notification on server1 -> MOVING 30 localhost:port2
-      mockServer1.sendPushMessageToAll("MOVING", "30", "5", server2Address.toString());
+      mockServer1.sendPushMessageToAll("MOVING", 30, 60, server2Address.toString());
 
       // 3. Active connection should be still usable until closed and returned to the pools
       assertTrue(activeConnection.ping());
@@ -188,7 +188,7 @@ public class UnifiedJedisProactiveRebindTest {
 
       // 2. Send MOVING notification on server1 -> MOVING 30 localhost:port2
       String server2Address = "localhost:" + mockServer2.getPort();
-      mockServer1.sendPushMessageToAll("MOVING", "30", "5", server2Address);
+      mockServer1.sendPushMessageToAll("MOVING", 30, 60, server2Address);
 
       // 3. perform a command on active connection to trigger rebind
       assertTrue(activeConnection.ping());
@@ -228,7 +228,7 @@ public class UnifiedJedisProactiveRebindTest {
       assertEquals(0, mockServer2.getConnectedClientCount());
 
       // 2. Send MOVING notification on server1 -> MOVING 30 localhost:port2
-      mockServer1.sendPushMessageToAll("MOVING", "30", "5", server2Address.toString());
+      mockServer1.sendPushMessageToAll("MOVING", 30, 60, server2Address.toString());
 
       // 3. perform a command on active connection to trigger rebind
       assertTrue(activeConnection.ping());
@@ -273,7 +273,7 @@ public class UnifiedJedisProactiveRebindTest {
       assertEquals(0, mockServer2.getConnectedClientCount());
 
       // 2. Send MOVING notification on server1 -> MOVING 30 localhost:port2
-      mockServer1.sendPushMessageToAll("MOVING", "30", "5", server2Address.toString());
+      mockServer1.sendPushMessageToAll("MOVING", 30, 60, server2Address.toString());
 
       // 3. Perform PING command
       // This should trigger read of the MOVING notification processing
@@ -285,6 +285,41 @@ public class UnifiedJedisProactiveRebindTest {
       assertEquals(0, pool.getDestroyedCount());
       assertEquals(2, mockServer1.getConnectedClientCount());
       assertEquals(0, mockServer2.getConnectedClientCount());
+    }
+  }
+
+  @Test
+  public void testRebindRevertsToOriginalEndpointAfterTtl() {
+    ConnectionPoolConfig connectionPoolConfig = new ConnectionPoolConfig();
+    connectionPoolConfig.setMaxTotal(1);
+
+    try (RedisClient unifiedJedis = RedisClient.builder().poolConfig(connectionPoolConfig)
+        .clientConfig(clientConfig).hostAndPort(server1Address).build()) {
+
+      // 1. Initial connection on server1
+      assertEquals("PONG", unifiedJedis.ping());
+      assertEquals(1, mockServer1.getConnectedClientCount());
+      assertEquals(0, mockServer2.getConnectedClientCount());
+
+      // 2. MOVING to server2 with a short 1s grace window
+      mockServer1.sendPushMessageToAll("MOVING", 30, 1, server2Address.toString());
+
+      // 3. Within the grace window the rebind takes effect: connection moves to server2
+      assertEquals("PONG", unifiedJedis.ping());
+      assertEquals(0, mockServer1.getConnectedClientCount());
+      assertEquals(1, mockServer2.getConnectedClientCount());
+
+      // 4. After the grace window expires, new connections target the ORIGINAL endpoint again.
+      // clear() simulates the natural connection turnover the design relies on for re-spread.
+      Pool<Connection> pool = unifiedJedis.getPool();
+      await().atMost(Duration.ofSeconds(5)).pollInterval(Duration.ofMillis(200))
+          .untilAsserted(() -> {
+            pool.clear();
+            assertEquals("PONG", unifiedJedis.ping());
+            assertEquals(1, mockServer1.getConnectedClientCount(),
+              "after TTL expiry, new connections must target the original endpoint");
+            assertEquals(0, mockServer2.getConnectedClientCount());
+          });
     }
   }
 

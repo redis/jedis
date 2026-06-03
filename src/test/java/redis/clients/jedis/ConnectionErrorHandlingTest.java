@@ -75,8 +75,8 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void errorDuringCommandOutputWriteMarksConnectionBrokenAndRethrowsSameError() {
     SyntheticError expected = new SyntheticError();
-    Connection conn = new Connection(fakeSocketFactory(new byte[0],
-      new ErrorOnWriteOutputStream(expected)));
+    Connection conn = new Connection(
+        fakeSocketFactory(new byte[0], new ErrorOnWriteOutputStream(expected)));
     CommandArguments args = new CommandArguments(Command.SET).add(new byte[9000]);
 
     SyntheticError thrown = assertThrows(SyntheticError.class, () -> conn.sendCommand(args));
@@ -88,8 +88,9 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void commandWriteFailureReadsRedisErrorLineAndStillMarksConnectionBroken() {
     IOException expected = new IOException("write failed");
-    Connection conn = new Connection(fakeSocketFactory("-ERR invalid request\r\n"
-      .getBytes(StandardCharsets.UTF_8), new IOExceptionOnWriteOutputStream(expected)));
+    Connection conn = new Connection(
+        fakeSocketFactory("-ERR invalid request\r\n".getBytes(StandardCharsets.UTF_8),
+          new IOExceptionOnWriteOutputStream(expected)));
     CommandArguments args = new CommandArguments(Command.SET).add(new byte[9000]);
 
     JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
@@ -120,7 +121,7 @@ public class ConnectionErrorHandlingTest {
     IOException diagnosticFailure = new IOException("diagnostic read failed");
     Connection conn = new Connection(
         () -> new FakeSocket(new IOExceptionOnReadInputStream(diagnosticFailure),
-          new IOExceptionOnWriteOutputStream(expected)));
+            new IOExceptionOnWriteOutputStream(expected)));
     CommandArguments args = new CommandArguments(Command.SET).add(new byte[9000]);
 
     JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
@@ -136,7 +137,7 @@ public class ConnectionErrorHandlingTest {
     SyntheticError diagnosticFailure = new SyntheticError();
     Connection conn = new Connection(
         () -> new FakeSocket(new ErrorOnReadInputStream(diagnosticFailure),
-          new IOExceptionOnWriteOutputStream(expected)));
+            new IOExceptionOnWriteOutputStream(expected)));
     CommandArguments args = new CommandArguments(Command.SET).add(new byte[9000]);
 
     SyntheticError thrown = assertThrows(SyntheticError.class, () -> conn.sendCommand(args));
@@ -150,7 +151,7 @@ public class ConnectionErrorHandlingTest {
     SyntheticError expected = new SyntheticError();
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     Connection conn = new ProtocolReadErrorConnection(expected,
-      fakeSocketFactory(new byte[0], output));
+        fakeSocketFactory(new byte[0], output));
 
     SyntheticError thrown = assertThrows(SyntheticError.class,
       () -> conn.executeCommand(Command.PING));
@@ -163,8 +164,8 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void commandObjectBuilderErrorAfterSuccessfulReadDoesNotMarkConnectionBroken() {
     SyntheticError expected = new SyntheticError();
-    Connection conn = new Connection(fakeSocketFactory("+OK\r\n".getBytes(StandardCharsets.UTF_8),
-      new ByteArrayOutputStream()));
+    Connection conn = new Connection(
+        fakeSocketFactory("+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
     CommandObject<String> commandObject = new CommandObject<>(new CommandArguments(Command.PING),
         new ErrorBuilder<>(expected));
 
@@ -179,10 +180,10 @@ public class ConnectionErrorHandlingTest {
   public void blockingCommandReadErrorMarksConnectionBroken() {
     SyntheticError expected = new SyntheticError();
     Connection conn = new ProtocolReadErrorConnection(expected,
-      fakeSocketFactory(new byte[0], new ByteArrayOutputStream()));
+        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()));
     CommandObject<Object> commandObject = new CommandObject<>(
-      new CommandArguments(Command.BLPOP).add("queue").add("0").blocking(),
-      BuilderFactory.RAW_OBJECT);
+        new CommandArguments(Command.BLPOP).add("queue").add("0").blocking(),
+        BuilderFactory.RAW_OBJECT);
 
     SyntheticError thrown = assertThrows(SyntheticError.class,
       () -> conn.executeCommand(commandObject));
@@ -194,11 +195,11 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void blockingCommandBuilderErrorAfterSuccessfulReadDoesNotMarkConnectionBroken() {
     SyntheticError expected = new SyntheticError();
-    Connection conn = new Connection(fakeSocketFactory("+OK\r\n".getBytes(StandardCharsets.UTF_8),
-      new ByteArrayOutputStream()));
+    Connection conn = new Connection(
+        fakeSocketFactory("+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
     CommandObject<String> commandObject = new CommandObject<>(
-      new CommandArguments(Command.BLPOP).add("queue").add("0").blocking(),
-      new ErrorBuilder<>(expected));
+        new CommandArguments(Command.BLPOP).add("queue").add("0").blocking(),
+        new ErrorBuilder<>(expected));
 
     SyntheticError thrown = assertThrows(SyntheticError.class,
       () -> conn.executeCommand(commandObject));
@@ -209,8 +210,8 @@ public class ConnectionErrorHandlingTest {
 
   @Test
   public void malformedReplyDuringPublicReadMarksConnectionBroken() {
-    Connection conn = new Connection(fakeSocketFactory("?\r\n".getBytes(StandardCharsets.UTF_8),
-      new ByteArrayOutputStream()));
+    Connection conn = new Connection(
+        fakeSocketFactory("?\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
     conn.connect();
 
     JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
@@ -233,8 +234,8 @@ public class ConnectionErrorHandlingTest {
 
   @Test
   public void truncatedArrayReplyDuringPublicReadMarksConnectionBroken() {
-    Connection conn = new Connection(fakeSocketFactory("*2\r\n+OK\r\n"
-      .getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
+    Connection conn = new Connection(fakeSocketFactory(
+      "*2\r\n+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
     conn.connect();
 
     JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
@@ -245,8 +246,8 @@ public class ConnectionErrorHandlingTest {
 
   @Test
   public void truncatedErrorReplyDuringPublicReadMarksConnectionBroken() {
-    Connection conn = new Connection(fakeSocketFactory("-ERR wrong type"
-      .getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
+    Connection conn = new Connection(fakeSocketFactory(
+      "-ERR wrong type".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
     conn.connect();
 
     JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
@@ -258,9 +259,8 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void ioExceptionDuringPublicReadMarksConnectionBrokenAndWrapsCause() {
     IOException expected = new IOException("read failed");
-    Connection conn = new Connection(
-        () -> new FakeSocket(new IOExceptionOnReadInputStream(expected),
-          new ByteArrayOutputStream()));
+    Connection conn = new Connection(() -> new FakeSocket(
+        new IOExceptionOnReadInputStream(expected), new ByteArrayOutputStream()));
     conn.connect();
 
     JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
@@ -271,8 +271,8 @@ public class ConnectionErrorHandlingTest {
 
   @Test
   public void invalidBooleanReplyDuringPublicReadMarksConnectionBroken() {
-    Connection conn = new Connection(fakeSocketFactory("#x\r\n".getBytes(StandardCharsets.UTF_8),
-      new ByteArrayOutputStream()));
+    Connection conn = new Connection(
+        fakeSocketFactory("#x\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
     conn.connect();
 
     JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
@@ -283,8 +283,8 @@ public class ConnectionErrorHandlingTest {
 
   @Test
   public void invalidVerbatimStringLengthDuringPublicReadMarksConnectionBroken() {
-    Connection conn = new Connection(fakeSocketFactory("=3\r\ntxt\r\n"
-      .getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
+    Connection conn = new Connection(fakeSocketFactory(
+      "=3\r\ntxt\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
     conn.connect();
 
     JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
@@ -295,8 +295,8 @@ public class ConnectionErrorHandlingTest {
 
   @Test
   public void nullBulkReplyDuringPublicReadDoesNotMarkConnectionBroken() {
-    Connection conn = new Connection(fakeSocketFactory("$-1\r\n+OK\r\n"
-      .getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
+    Connection conn = new Connection(fakeSocketFactory(
+      "$-1\r\n+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
     conn.connect();
 
     assertNull(conn.getOne());
@@ -308,8 +308,8 @@ public class ConnectionErrorHandlingTest {
 
   @Test
   public void nullArrayReplyDuringPublicReadDoesNotMarkConnectionBroken() {
-    Connection conn = new Connection(fakeSocketFactory("*-1\r\n+OK\r\n"
-      .getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
+    Connection conn = new Connection(fakeSocketFactory(
+      "*-1\r\n+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
     conn.connect();
 
     assertNull(conn.getOne());
@@ -321,8 +321,8 @@ public class ConnectionErrorHandlingTest {
 
   @Test
   public void redisErrorReplyDuringPublicReadDoesNotMarkConnectionBroken() {
-    Connection conn = new Connection(fakeSocketFactory("-ERR wrong type\r\n+OK\r\n"
-      .getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
+    Connection conn = new Connection(fakeSocketFactory(
+      "-ERR wrong type\r\n+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
     conn.connect();
 
     JedisDataException thrown = assertThrows(JedisDataException.class, conn::getOne);
@@ -335,8 +335,9 @@ public class ConnectionErrorHandlingTest {
 
   @Test
   public void redisErrorInsideArrayReplyIsReturnedAndDoesNotMarkConnectionBroken() {
-    Connection conn = new Connection(fakeSocketFactory("*2\r\n-ERR wrong type\r\n+OK\r\n"
-      .getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
+    Connection conn = new Connection(
+        fakeSocketFactory("*2\r\n-ERR wrong type\r\n+OK\r\n".getBytes(StandardCharsets.UTF_8),
+          new ByteArrayOutputStream()));
     conn.connect();
 
     List<Object> replies = conn.getObjectMultiBulkReply();
@@ -362,16 +363,16 @@ public class ConnectionErrorHandlingTest {
       new ReadOperationCase("getIntegerMultiBulkReply", Connection::getIntegerMultiBulkReply),
       new ReadOperationCase("getUnflushedObject", Connection::getUnflushedObject),
       new ReadOperationCase("getUnflushedObjectMultiBulkReply",
-        ConnectionErrorHandlingTest::getUnflushedObjectMultiBulkReply));
+          ConnectionErrorHandlingTest::getUnflushedObjectMultiBulkReply));
 
     for (ReadOperationCase operation : operations) {
       SyntheticError expected = new SyntheticError();
       Connection conn = new ProtocolReadErrorConnection(expected,
-        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()));
+          fakeSocketFactory(new byte[0], new ByteArrayOutputStream()));
       conn.connect();
 
-      SyntheticError thrown = assertThrows(SyntheticError.class,
-        () -> operation.run(conn), operation.name);
+      SyntheticError thrown = assertThrows(SyntheticError.class, () -> operation.run(conn),
+        operation.name);
 
       assertSame(expected, thrown, operation.name);
       assertTrue(conn.isBroken(), operation.name);
@@ -395,11 +396,11 @@ public class ConnectionErrorHandlingTest {
     for (ReadOperationCase operation : operations) {
       SyntheticError expected = new SyntheticError();
       CountingSuccessfulReadConnection conn = new CountingSuccessfulReadConnection(
-        fakeSocketFactory(new byte[0], new ErrorOnFlushOutputStream(expected)));
+          fakeSocketFactory(new byte[0], new ErrorOnFlushOutputStream(expected)));
       conn.connect();
 
-      SyntheticError thrown = assertThrows(SyntheticError.class,
-        () -> operation.run(conn), operation.name);
+      SyntheticError thrown = assertThrows(SyntheticError.class, () -> operation.run(conn),
+        operation.name);
 
       assertSame(expected, thrown, operation.name);
       assertEquals(0, conn.reads(), operation.name);
@@ -410,8 +411,8 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void errorDuringFlushMarksConnectionBrokenAndRethrowsSameError() {
     SyntheticError expected = new SyntheticError();
-    Connection conn = new Connection(fakeSocketFactory(new byte[0],
-      new ErrorOnFlushOutputStream(expected)));
+    Connection conn = new Connection(
+        fakeSocketFactory(new byte[0], new ErrorOnFlushOutputStream(expected)));
     conn.connect();
 
     SyntheticError thrown = assertThrows(SyntheticError.class, conn::flush);
@@ -423,8 +424,8 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void ioExceptionDuringFlushMarksConnectionBrokenAndWrapsCause() {
     IOException expected = new IOException("flush failed");
-    Connection conn = new Connection(fakeSocketFactory(new byte[0],
-      new IOExceptionOnFlushOutputStream(expected)));
+    Connection conn = new Connection(
+        fakeSocketFactory(new byte[0], new IOExceptionOnFlushOutputStream(expected)));
     conn.connect();
 
     JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::flush);
@@ -474,7 +475,7 @@ public class ConnectionErrorHandlingTest {
   public void alreadyBrokenPublicReplyHelperRejectsBeforeFlushOrRead() {
     SyntheticError unexpected = new SyntheticError();
     CountingSuccessfulReadConnection conn = new CountingSuccessfulReadConnection(
-      fakeSocketFactory(new byte[0], new ErrorOnFlushOutputStream(unexpected)));
+        fakeSocketFactory(new byte[0], new ErrorOnFlushOutputStream(unexpected)));
     conn.connect();
     conn.setBroken();
 
@@ -488,8 +489,8 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void errorDuringGetManyReadLoopMarksConnectionBrokenAndRethrowsSameError() {
     SyntheticError expected = new SyntheticError();
-    Connection conn = new CountingReadConnection(fakeSocketFactory(new byte[0],
-      new ByteArrayOutputStream()), expected);
+    Connection conn = new CountingReadConnection(
+        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()), expected);
     conn.connect();
 
     SyntheticError thrown = assertThrows(SyntheticError.class, () -> conn.getMany(2));
@@ -502,7 +503,7 @@ public class ConnectionErrorHandlingTest {
   public void errorDuringGetManyFlushPreventsAnyProtocolReadAndMarksConnectionBroken() {
     SyntheticError expected = new SyntheticError();
     CountingSuccessfulReadConnection conn = new CountingSuccessfulReadConnection(
-      fakeSocketFactory(new byte[0], new ErrorOnFlushOutputStream(expected)));
+        fakeSocketFactory(new byte[0], new ErrorOnFlushOutputStream(expected)));
     conn.connect();
 
     SyntheticError thrown = assertThrows(SyntheticError.class, () -> conn.getMany(2));
@@ -515,8 +516,8 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void jedisDataExceptionDuringGetManyIsReturnedAsReplyAndDoesNotBreakConnection() {
     JedisDataException expected = new JedisDataException("ERR wrong type");
-    Connection conn = new DataExceptionThenValueConnection(fakeSocketFactory(new byte[0],
-      new ByteArrayOutputStream()), expected);
+    Connection conn = new DataExceptionThenValueConnection(
+        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()), expected);
     conn.connect();
 
     List<Object> replies = conn.getMany(2);
@@ -530,8 +531,8 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void jedisConnectionExceptionDuringGetManyReadLoopMarksConnectionBroken() {
     JedisConnectionException expected = new JedisConnectionException("read failed");
-    Connection conn = new ConnectionExceptionThenValueConnection(fakeSocketFactory(new byte[0],
-      new ByteArrayOutputStream()), expected);
+    Connection conn = new ConnectionExceptionThenValueConnection(
+        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()), expected);
     conn.connect();
 
     JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
@@ -547,8 +548,7 @@ public class ConnectionErrorHandlingTest {
     Connection conn = new PushReadErrorConnection(expected);
     conn.connect();
 
-    SyntheticError thrown = assertThrows(SyntheticError.class,
-      conn::readPushesWithCheckingBroken);
+    SyntheticError thrown = assertThrows(SyntheticError.class, conn::readPushesWithCheckingBroken);
 
     assertSame(expected, thrown);
     assertTrue(conn.isBroken());
@@ -583,13 +583,11 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void errorDuringPushAvailabilityCheckMarksConnectionBrokenAndRethrowsSameError() {
     SyntheticError expected = new SyntheticError();
-    Connection conn = new Connection(
-        () -> new FakeSocket(new ErrorOnAvailableInputStream(expected),
-          new ByteArrayOutputStream()));
+    Connection conn = new Connection(() -> new FakeSocket(new ErrorOnAvailableInputStream(expected),
+        new ByteArrayOutputStream()));
     conn.connect();
 
-    SyntheticError thrown = assertThrows(SyntheticError.class,
-      conn::readPushesWithCheckingBroken);
+    SyntheticError thrown = assertThrows(SyntheticError.class, conn::readPushesWithCheckingBroken);
 
     assertSame(expected, thrown);
     assertTrue(conn.isBroken());
@@ -598,9 +596,8 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void ioExceptionDuringPushAvailabilityCheckMarksConnectionBrokenAndWrapsCause() {
     IOException expected = new IOException("available failed");
-    Connection conn = new Connection(
-        () -> new FakeSocket(new IOExceptionOnAvailableInputStream(expected),
-          new ByteArrayOutputStream()));
+    Connection conn = new Connection(() -> new FakeSocket(
+        new IOExceptionOnAvailableInputStream(expected), new ByteArrayOutputStream()));
     conn.connect();
 
     JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
@@ -613,7 +610,7 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void readPushesDoesNothingWhenNoPushBytesAreBuffered() {
     CountingPushReadConnection conn = new CountingPushReadConnection(
-      fakeSocketFactory(new byte[0], new ByteArrayOutputStream()));
+        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()));
     conn.connect();
 
     conn.readPushesWithCheckingBroken();
@@ -625,7 +622,7 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void successfulPushReadLeavesConnectionHealthyAndReadsOnePushBatch() {
     CountingPushReadConnection conn = new CountingPushReadConnection(
-      fakeSocketFactory(new byte[] { 1 }, new ByteArrayOutputStream()));
+        fakeSocketFactory(new byte[] { 1 }, new ByteArrayOutputStream()));
     conn.connect();
 
     conn.readPushesWithCheckingBroken();
@@ -636,9 +633,9 @@ public class ConnectionErrorHandlingTest {
 
   @Test
   public void malformedBufferedPushReplyMarksConnectionBroken() {
-    Connection conn = new RealPushParsingConnection(fakeSocketFactory(
-      ">2\r\n$10\r\ninvalidate\r\n$3\r\nab".getBytes(StandardCharsets.UTF_8),
-      new ByteArrayOutputStream()));
+    Connection conn = new RealPushParsingConnection(
+        fakeSocketFactory(">2\r\n$10\r\ninvalidate\r\n$3\r\nab".getBytes(StandardCharsets.UTF_8),
+          new ByteArrayOutputStream()));
     conn.connect();
 
     JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
@@ -650,8 +647,8 @@ public class ConnectionErrorHandlingTest {
 
   @Test
   public void malformedBufferedPushElementMarksConnectionBroken() {
-    Connection conn = new RealPushParsingConnection(fakeSocketFactory(">1\r\n?\r\n"
-      .getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
+    Connection conn = new RealPushParsingConnection(fakeSocketFactory(
+      ">1\r\n?\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
     conn.connect();
 
     JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
@@ -675,8 +672,8 @@ public class ConnectionErrorHandlingTest {
 
   @Test
   public void bufferedNonPushReplyIsNotConsumedAndDoesNotBreakConnection() {
-    Connection conn = new RealPushParsingConnection(fakeSocketFactory("+OK\r\n"
-      .getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
+    Connection conn = new RealPushParsingConnection(
+        fakeSocketFactory("+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
     conn.connect();
 
     conn.readPushesWithCheckingBroken();
@@ -689,9 +686,8 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void alreadyBrokenConnectionRejectsPushReadWithoutCheckingAvailability() {
     SyntheticError unexpected = new SyntheticError();
-    Connection conn = new Connection(
-        () -> new FakeSocket(new ErrorOnAvailableInputStream(unexpected),
-          new ByteArrayOutputStream()));
+    Connection conn = new Connection(() -> new FakeSocket(
+        new ErrorOnAvailableInputStream(unexpected), new ByteArrayOutputStream()));
     conn.connect();
     conn.setBroken();
 
@@ -708,7 +704,7 @@ public class ConnectionErrorHandlingTest {
     SyntheticError expected = new SyntheticError();
 
     try (ConnectionPool pool = newSingleConnectionPool(destroyed,
-        () -> new ProtocolReadErrorConnection(expected))) {
+      () -> new ProtocolReadErrorConnection(expected))) {
       Connection conn = pool.getResource();
 
       SyntheticError thrown = assertThrows(SyntheticError.class,
@@ -730,7 +726,7 @@ public class ConnectionErrorHandlingTest {
     SyntheticError expected = new SyntheticError();
 
     try (ConnectionPool pool = newSingleConnectionPool(destroyed,
-        () -> new Connection(fakeSocketFactory(new byte[0], new ByteArrayOutputStream())))) {
+      () -> new Connection(fakeSocketFactory(new byte[0], new ByteArrayOutputStream())))) {
       Connection conn = pool.getResource();
       CommandArguments args = new CommandArguments(Command.SET).add(new ErrorRawable(expected));
 
@@ -752,7 +748,7 @@ public class ConnectionErrorHandlingTest {
     RuntimeException expected = new IllegalStateException("raw argument failed");
 
     try (ConnectionPool pool = newSingleConnectionPool(destroyed,
-        () -> new Connection(fakeSocketFactory(new byte[0], new ByteArrayOutputStream())))) {
+      () -> new Connection(fakeSocketFactory(new byte[0], new ByteArrayOutputStream())))) {
       Connection conn = pool.getResource();
       CommandArguments args = new CommandArguments(Command.SET).add(new RuntimeRawable(expected));
 
@@ -774,8 +770,9 @@ public class ConnectionErrorHandlingTest {
     IOException expected = new IOException("write failed");
 
     try (ConnectionPool pool = newSingleConnectionPool(destroyed,
-        () -> new Connection(fakeSocketFactory("-ERR invalid request\r\n"
-          .getBytes(StandardCharsets.UTF_8), new IOExceptionOnWriteOutputStream(expected))))) {
+      () -> new Connection(
+          fakeSocketFactory("-ERR invalid request\r\n".getBytes(StandardCharsets.UTF_8),
+            new IOExceptionOnWriteOutputStream(expected))))) {
       Connection conn = pool.getResource();
       CommandArguments args = new CommandArguments(Command.SET).add(new byte[9000]);
 
@@ -798,9 +795,8 @@ public class ConnectionErrorHandlingTest {
     AtomicInteger destroyed = new AtomicInteger();
     SyntheticError expected = new SyntheticError();
 
-    try (ConnectionPool pool = newSingleConnectionPool(destroyed,
-        () -> new Connection(fakeSocketFactory(new byte[0],
-          new ErrorOnFlushOutputStream(expected))))) {
+    try (ConnectionPool pool = newSingleConnectionPool(destroyed, () -> new Connection(
+        fakeSocketFactory(new byte[0], new ErrorOnFlushOutputStream(expected))))) {
       Connection conn = pool.getResource();
       conn.connect();
 
@@ -822,7 +818,7 @@ public class ConnectionErrorHandlingTest {
     SyntheticError expected = new SyntheticError();
 
     try (ConnectionPool pool = newSingleConnectionPool(destroyed,
-        () -> new PushReadErrorConnection(expected))) {
+      () -> new PushReadErrorConnection(expected))) {
       Connection conn = pool.getResource();
       conn.connect();
 
@@ -844,8 +840,8 @@ public class ConnectionErrorHandlingTest {
     AtomicInteger destroyed = new AtomicInteger();
 
     try (ConnectionPool pool = newSingleConnectionPool(destroyed,
-        () -> new Connection(fakeSocketFactory("$5\r\nabc".getBytes(StandardCharsets.UTF_8),
-          new ByteArrayOutputStream())))) {
+      () -> new Connection(fakeSocketFactory("$5\r\nabc".getBytes(StandardCharsets.UTF_8),
+        new ByteArrayOutputStream())))) {
       Connection conn = pool.getResource();
       conn.connect();
 
@@ -866,8 +862,8 @@ public class ConnectionErrorHandlingTest {
     AtomicInteger destroyed = new AtomicInteger();
 
     try (ConnectionPool pool = newSingleConnectionPool(destroyed,
-        () -> new Connection(fakeSocketFactory("-ERR wrong type\r\n"
-          .getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream())))) {
+      () -> new Connection(fakeSocketFactory("-ERR wrong type\r\n".getBytes(StandardCharsets.UTF_8),
+        new ByteArrayOutputStream())))) {
       Connection conn = pool.getResource();
       conn.connect();
 

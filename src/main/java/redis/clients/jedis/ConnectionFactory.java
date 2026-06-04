@@ -6,6 +6,7 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.LongSupplier;
@@ -186,7 +187,8 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> , Rebi
 
   @Override
   public void activateObject(PooledObject<Connection> pooledConnection) throws Exception {
-    // what to do ??
+    // Relax on borrow so every connection handed out during a rebind window is relaxed
+    relaxIfRebinding(pooledConnection.getObject());
   }
 
   @Override
@@ -209,6 +211,18 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> , Rebi
     } catch (JedisException je) {
       logger.debug("Error while makeObject", je);
       throw je;
+    }
+  }
+
+  /** Relaxes a borrowed connection for the remainder of an active rebind window. */
+  private void relaxIfRebinding(Connection jedis) {
+    RebindState s = rebindState.get();
+    if (s == null) {
+      return;
+    }
+    long remainingNanos = s.deadlineNanos - clockNanos.getAsLong();
+    if (remainingNanos > 0) {
+      jedis.relaxTimeouts(Duration.ofNanos(remainingNanos));
     }
   }
 

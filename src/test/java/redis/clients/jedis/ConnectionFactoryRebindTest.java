@@ -1,15 +1,22 @@
 package redis.clients.jedis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.net.Socket;
+import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+
+import org.apache.commons.pool2.PooledObject;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.RebindAware.RebindResult;
+import redis.clients.jedis.util.ReflectionTestUtil;
+import redis.clients.jedis.util.server.TcpMockServer;
 
 /**
  * Unit tests for the lock-free, sequence-guarded, time-bounded MOVING rebind overlay owned by
@@ -92,5 +99,42 @@ public class ConnectionFactoryRebindTest {
     assertEquals(RebindResult.APPLIED_NEW_TARGET, connectionFactory.rebind(6L, TARGET_C, 10));
     assertEquals(TARGET_C, socketFactory.getHostAndPort(),
       "a newer event after expiry applies again");
+  }
+
+  @Test
+  public void borrowRelaxesConnectionDuringRebindWindow() throws Exception {
+    int soTimeoutMs = 2000;
+    int relaxedTimeoutMs = 10000;
+    TcpMockServer mockServer = new TcpMockServer();
+    mockServer.start();
+    try {
+      MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
+          .timeoutOptions(TimeoutOptions.builder()
+              .proactiveTimeoutsRelaxing(Duration.ofMillis(relaxedTimeoutMs)).build())
+          .build();
+      DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
+          .socketTimeoutMillis(soTimeoutMs).maintNotificationsConfig(maintConfig)
+          .protocol(RedisProtocol.RESP3).build();
+      HostAndPort mock = new HostAndPort("localhost", mockServer.getPort());
+
+      DefaultJedisSocketFactory mockSocketFactory = new DefaultJedisSocketFactory(mock,
+          clientConfig);
+      ConnectionFactory factory = new ConnectionFactory(mockSocketFactory, clientConfig);
+
+      assertEquals(RebindResult.APPLIED_NEW_TARGET, factory.rebind(1L, mock, 100));
+      PooledObject<Connection> pooled = factory.makeObject();
+      try {
+        factory.activateObject(pooled); // simulate a pool borrow
+        Connection borrowed = pooled.getObject();
+        assertTrue(borrowed.isRelaxedTimeoutActive(),
+          "a connection borrowed during a rebind window is relaxed");
+        Socket socket = ReflectionTestUtil.getField(borrowed, "socket");
+        assertEquals(relaxedTimeoutMs, socket.getSoTimeout());
+      } finally {
+        pooled.getObject().close();
+      }
+    } finally {
+      mockServer.stop();
+    }
   }
 }

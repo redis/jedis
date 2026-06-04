@@ -22,6 +22,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -287,7 +288,7 @@ public class ConnectionMockTest {
         assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
         assertEquals(UNSET_TIMEOUT_MS, conn.getRelaxedSoTimeout());
 
-        conn.activateRelaxedTimeout();
+        conn.relaxTimeouts(Duration.ofSeconds(10));
 
         // Relaxed timeout should fallback to original timeout, if relaxed timeout is disabled
         assertTrue(conn.isRelaxedTimeoutActive());
@@ -376,6 +377,44 @@ public class ConnectionMockTest {
         "Relaxed timeout should be disabled after MIGRATED");
       assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout(),
         "Socket timeout should be restored to original timeout");
+    }
+
+    @Test
+    public void testMigratingWithoutMigratedRevertsAtMaxDuration() throws SocketException {
+      Socket socket = ReflectionTestUtil.getField(connection, "socket");
+      AtomicLong clock = new AtomicLong(0);
+      connection.setClockNanos(clock::get);
+
+      mockServer
+          .sendPushMessageToAll(MaintenanceEvent.migrating(1, 10, Collections.singletonList("1")));
+      assertTrue(connection.ping());
+      assertTrue(connection.isRelaxedTimeoutActive());
+      assertEquals(RELAXED_TIMEOUT_MS, socket.getSoTimeout());
+
+      // No MIGRATED arrives; advance past the 60s safety cap.
+      clock.set(Duration.ofSeconds(61).toNanos());
+      assertTrue(connection.ping());
+      assertFalse(connection.isRelaxedTimeoutActive(),
+        "Relaxed timeout should revert at maxRelaxedDuration without a terminator");
+      assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
+    }
+
+    @Test
+    public void testMovingRelaxesReceiverForGraceWindowThenReverts() throws SocketException {
+      Socket socket = ReflectionTestUtil.getField(connection, "socket");
+      AtomicLong clock = new AtomicLong(0);
+      connection.setClockNanos(clock::get);
+
+      mockServer.sendPushMessageToAll(MaintenanceEvent.moving(1, 15, "localhost:6379"));
+      assertTrue(connection.ping());
+      assertTrue(connection.isRelaxedTimeoutActive(), "MOVING relaxes the receiving connection");
+      assertEquals(RELAXED_TIMEOUT_MS, socket.getSoTimeout());
+
+      // After the grace window, the next command reverts to the standard timeout.
+      clock.set(Duration.ofSeconds(16).toNanos());
+      assertTrue(connection.ping());
+      assertFalse(connection.isRelaxedTimeoutActive());
+      assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
     }
 
   }

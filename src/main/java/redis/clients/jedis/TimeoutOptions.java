@@ -14,13 +14,23 @@ public class TimeoutOptions {
 
   public static final Duration DEFAULT_RELAXED_BLOCKING_TIMEOUT = UNSET_TIMEOUT;
 
+  /**
+   * Upper bound on relaxation triggered by MIGRATING/FAILING_OVER, after which timeouts revert even
+   * if the matching MIGRATED/FAILED_OVER notification is never received.
+   */
+  public static final Duration DEFAULT_RELAXED_TIMEOUT_MAX_DURATION = Duration.ofSeconds(60);
+
   private final Duration relaxedTimeout;
 
   private final Duration relaxedBlockingTimeout;
 
-  private TimeoutOptions(Duration relaxedTimeout, Duration relaxedBlockingTimeout) {
+  private final Duration relaxedTimeoutMaxDuration;
+
+  private TimeoutOptions(Duration relaxedTimeout, Duration relaxedBlockingTimeout,
+      Duration relaxedTimeoutMaxDuration) {
     this.relaxedTimeout = relaxedTimeout;
     this.relaxedBlockingTimeout = relaxedBlockingTimeout;
+    this.relaxedTimeoutMaxDuration = relaxedTimeoutMaxDuration;
   }
 
   /**
@@ -49,6 +59,14 @@ public class TimeoutOptions {
   }
 
   /**
+   * @return the upper bound on relaxation from MIGRATING/FAILING_OVER, after which timeouts revert
+   *         even without the matching closing notification.
+   */
+  public Duration getRelaxedTimeoutMaxDuration() {
+    return relaxedTimeoutMaxDuration;
+  }
+
+  /**
    * Returns a new {@link TimeoutOptions.Builder} to construct {@link TimeoutOptions}.
    * @return a new {@link TimeoutOptions.Builder} to construct {@link TimeoutOptions}.
    */
@@ -67,6 +85,7 @@ public class TimeoutOptions {
   public static class Builder {
     private Duration relaxedTimeout = DEFAULT_RELAXED_TIMEOUT;
     private Duration relaxedBlockingTimeout = DEFAULT_RELAXED_BLOCKING_TIMEOUT;
+    private Duration relaxedTimeoutMaxDuration = DEFAULT_RELAXED_TIMEOUT_MAX_DURATION;
 
     /**
      * Enable proactive timeout relaxing. Disabled by default, see {@link #DEFAULT_RELAXED_TIMEOUT}.
@@ -109,8 +128,21 @@ public class TimeoutOptions {
       return this;
     }
 
+    /**
+     * Set the upper bound on relaxation triggered by MIGRATING/FAILING_OVER. Acts as a safety net:
+     * timeouts revert after this duration even if the matching closing notification is lost.
+     * @param duration max relaxed window, must not be {@code null}.
+     * @return {@code this}
+     */
+    public Builder relaxedTimeoutMaxDuration(Duration duration) {
+      JedisAsserts.notNull(duration, "Duration must not be null");
+
+      this.relaxedTimeoutMaxDuration = duration;
+      return this;
+    }
+
     public TimeoutOptions build() {
-      return new TimeoutOptions(relaxedTimeout, relaxedBlockingTimeout);
+      return new TimeoutOptions(relaxedTimeout, relaxedBlockingTimeout, relaxedTimeoutMaxDuration);
     }
   }
 

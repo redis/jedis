@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -109,7 +110,7 @@ public class Connection implements Closeable {
    * <p>If not set (see {@link TimeoutOptions#UNSET_TIMEOUT}), {@link #soTimeout}
    * is inherited instead.</p>
    */
-  private int relaxedTimeout =  NumberUtils.safeToInt(Duration.ofSeconds(10).toMillis());
+  private int relaxedTimeout = NumberUtils.safeToInt(TimeoutOptions.DEFAULT_RELAXED_TIMEOUT.toMillis());
 
   /**
    * Socket read timeout (SO_TIMEOUT) in milliseconds used for blocking commands
@@ -119,10 +120,10 @@ public class Connection implements Closeable {
    * is inherited instead.</p>
    */
   private int relaxedBlockingTimeout =
-          NumberUtils.safeToInt(TimeoutOptions.UNSET_TIMEOUT.toMillis());
-  
+      NumberUtils.safeToInt(TimeoutOptions.DEFAULT_RELAXED_BLOCKING_TIMEOUT.toMillis());
+
   private boolean relaxedTimeoutConfigured = TimeoutOptions.isSet(relaxedTimeout);
-  
+
   private boolean relaxedBlockingTimeoutConfigured = TimeoutOptions.isSet(relaxedBlockingTimeout);
 
   private boolean broken = false;
@@ -133,7 +134,21 @@ public class Connection implements Closeable {
   private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
   private AuthXManager authXManager;
   private boolean isBlocking = false;
-  private boolean isRelaxed = false;
+
+  /**
+   * Maintenance relaxed-timeout overlay: {@code 0} = not relaxed, else the absolute
+   * {@link #clockNanos} deadline until which relaxed timeouts apply. Reset to {@code 0} lazily on
+   * the next read once expired.
+   */
+  private long relaxedUntilNanos = 0L;
+
+  /** Max relaxed window for MIGRATING/FAILING_OVER; their terminator normally reverts earlier. */
+  private long maxRelaxedDurationNanos =
+      TimeoutOptions.DEFAULT_RELAXED_TIMEOUT_MAX_DURATION.toNanos();
+
+  /** Monotonic clock for relaxed-timeout expiry; overridable for tests. */
+  private LongSupplier clockNanos = System::nanoTime;
+
   private JedisClientConfig clientConfig;
   private final ProtocolHandshake handshake = new ProtocolHandshake(this);
   private final PushConsumerChainImpl pushConsumers = PushConsumerChainImpl.of();
@@ -652,6 +667,7 @@ public class Connection implements Closeable {
       throw new JedisConnectionException("Attempting to read from a broken connection.");
     }
 
+    expireRelaxedTimeout();
     try {
       return protocolRead(inputStream, pushConsumers);
     } catch (JedisConnectionException exc) {
@@ -725,6 +741,7 @@ public class Connection implements Closeable {
         this.relaxedBlockingTimeout = NumberUtils.safeToInt(timeoutOptions.getRelaxedBlockingTimeout().toMillis());
         this.relaxedTimeoutConfigured = TimeoutOptions.isSet(relaxedTimeout);
         this.relaxedBlockingTimeoutConfigured = TimeoutOptions.isSet(relaxedBlockingTimeout);
+        this.maxRelaxedDurationNanos = timeoutOptions.getRelaxedTimeoutMaxDuration().toNanos();
       }
 
       initPushConsumers(config);
@@ -1012,44 +1029,61 @@ public class Connection implements Closeable {
 
   @Experimental
   public boolean isRelaxedTimeoutActive() {
-    return isRelaxed;
+    long d = relaxedUntilNanos;
+    return d != 0 && d - clockNanos.getAsLong() > 0;
   }
 
   int getActiveSoTimeout() {
-    return isRelaxed && relaxedTimeoutConfigured ? relaxedTimeout : soTimeout;
+    return isRelaxedTimeoutActive() && relaxedTimeoutConfigured ? relaxedTimeout : soTimeout;
   }
-
 
   int getActiveBlockingSoTimeout() {
-    return isRelaxed && relaxedBlockingTimeoutConfigured ? relaxedBlockingTimeout : infiniteSoTimeout;
+    return isRelaxedTimeoutActive() && relaxedBlockingTimeoutConfigured ? relaxedBlockingTimeout
+        : infiniteSoTimeout;
   }
 
-  void activateRelaxedTimeout() {
-    isRelaxed = true;
+  /**
+   * Relaxes this connection's read timeouts for {@code period}; extends an active window, never
+   * shrinks it.
+   */
+  @Experimental
+  public void relaxTimeouts(Duration period) {
+    long deadline = clockNanos.getAsLong() + period.toNanos();
+    if (relaxedUntilNanos == 0 || deadline - relaxedUntilNanos > 0) {
+      relaxedUntilNanos = deadline;
+    }
+    applyActiveTimeout();
+  }
+
+  /** Reverts to the configured timeouts immediately. */
+  @Experimental
+  public void resetRelaxedTimeouts() {
+    relaxedUntilNanos = 0;
+    applyActiveTimeout();
+  }
+
+  private void applyActiveTimeout() {
+    if (socket == null) {
+      return;
+    }
     try {
-      if (isBlocking){
-        socket.setSoTimeout(getActiveBlockingSoTimeout());
-      }  else {
-        socket.setSoTimeout(getActiveSoTimeout());
-      }
+      socket.setSoTimeout(isBlocking ? getActiveBlockingSoTimeout() : getActiveSoTimeout());
     } catch (SocketException ex) {
       setBroken();
       throw new JedisConnectionException(ex);
     }
   }
 
-  void rollbackRelaxedTimeout(){
-    isRelaxed = false;
-    try {
-      if (isBlocking){
-        socket.setSoTimeout(getActiveBlockingSoTimeout());
-      }  else {
-        socket.setSoTimeout(getActiveSoTimeout());
-      }
-    } catch (SocketException ex) {
-      setBroken();
-      throw new JedisConnectionException(ex);
+  /** Reverts a relaxed-timeout overlay once its window has passed; cheap no-op when none is set. */
+  private void expireRelaxedTimeout() {
+    if (relaxedUntilNanos != 0 && !isRelaxedTimeoutActive()) {
+      relaxedUntilNanos = 0;
+      applyActiveTimeout();
     }
+  }
+
+  void setClockNanos(LongSupplier clockNanos) {
+    this.clockNanos = clockNanos;
   }
 
   /**
@@ -1078,17 +1112,13 @@ public class Connection implements Closeable {
       if (Arrays.equals(type, PushMessageTypes.MOVING_BYTES)) {
         onMoving(message);
         context.drop();
-      } else if (Arrays.equals(type, PushMessageTypes.MIGRATING_BYTES)) {
-        activateRelaxedTimeout();
+      } else if (Arrays.equals(type, PushMessageTypes.MIGRATING_BYTES)
+          || Arrays.equals(type, PushMessageTypes.FAILING_OVER_BYTES)) {
+        relaxTimeouts(Duration.ofNanos(maxRelaxedDurationNanos));
         context.drop();
-      } else if (Arrays.equals(type, PushMessageTypes.MIGRATED_BYTES)) {
-        rollbackRelaxedTimeout();
-        context.drop();
-      } else if (Arrays.equals(type, PushMessageTypes.FAILING_OVER_BYTES)) {
-        activateRelaxedTimeout();
-        context.drop();
-      } else if (Arrays.equals(type, PushMessageTypes.FAILED_OVER_BYTES)) {
-        rollbackRelaxedTimeout();
+      } else if (Arrays.equals(type, PushMessageTypes.MIGRATED_BYTES)
+          || Arrays.equals(type, PushMessageTypes.FAILED_OVER_BYTES)) {
+        resetRelaxedTimeouts();
         context.drop();
       }
 
@@ -1097,23 +1127,25 @@ public class Connection implements Closeable {
 
     private void onMoving(PushMessage message) {
       HostAndPort rebindTarget = getRebindTarget(message);
-
-      // per-connection: mark rebind requested and relax timeouts
       if (proactiveRebindEnabled) {
         rebindRequested = true;
       }
-      activateRelaxedTimeout();
 
       // MOVING format ["MOVING", seq, time_s, "host:port"].
+      List<Object> content = message.getContent();
+      if (content.size() < 3 || !(content.get(1) instanceof Long)
+          || !(content.get(2) instanceof Long)) {
+        logger.warn("Invalid MOVING message format, expected integer seq and time_s, got {}", message);
+        return;
+      }
+      long seq = (Long) content.get(1);
+      long ttlSeconds = (Long) content.get(2);
+
+      // Relax commands run on this connection before it is returned (then destroyed).
+      relaxTimeouts(Duration.ofSeconds(ttlSeconds));
+
       if (memberOf != null && rebindTarget != null) {
-        List<Object> content = message.getContent();
-        Object seq = content.get(1);
-        Object ttlSeconds = content.get(2);
-        if (seq instanceof Long && ttlSeconds instanceof Long) {
-          memberOf.onMoving((Long) seq, rebindTarget, (Long) ttlSeconds);
-        } else {
-          logger.warn("Invalid MOVING message format, expected integer seq and time_s, got {}", message);
-        }
+        memberOf.onMoving(seq, rebindTarget, ttlSeconds);
       }
     }
 

@@ -285,4 +285,16 @@ class ClusterClientBuilderTest {
       }
     }
   }
+
+  @Test
+  void refreshClusterTopology() {
+    ClusterConnectionProvider mockProvider = Mockito.mock(ClusterConnectionProvider.class);
+
+    try (RedisClusterClient client = RedisClusterClient.builder().nodes(someNodes())
+        .connectionProvider(mockProvider).build()) {
+      client.refreshClusterTopology();
+    }
+
+    verify(mockProvider).renewSlotCache();
+  }
 }

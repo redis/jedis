@@ -58,7 +58,7 @@
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
 		<jackson.version>2.21.3</jackson.version>
-		<maven.surefire.version>3.5.5</maven.surefire.version>
+		<maven.surefire.version>3.5.6</maven.surefire.version>
 		<junit.version>5.14.4</junit.version>
 		<!-- Default JVM options for tests -->
 		<JVM_OPTS></JVM_OPTS>
@@ -785,7 +785,7 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>build-helper-maven-plugin</artifactId>
-						<version>3.5.0</version>
+						<version>3.6.1</version>
 						<executions>
 							<execution>
 								<id>add-jmh-source</id>

@@ -6,6 +6,9 @@ import org.apache.commons.pool2.impl.DefaultPooledObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
 import redis.clients.jedis.annots.Experimental;
@@ -114,6 +117,23 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> , Rebi
 
   private AuthXEventListener authXEventListener;
 
+  /** Active MOVING rebind, or {@code null}. Read for target selection (socket factory) and to relax connections created mid-window (makeObject). */
+  private final AtomicReference<RebindState> rebindState = new AtomicReference<>();
+  private LongSupplier clockNanos = System::nanoTime;
+
+  /** Immutable snapshot of an active, time-bounded MOVING rebind. */
+  private static final class RebindState {
+    private final long seq;
+    private final HostAndPort target;
+    private final long deadlineNanos;
+
+    RebindState(long seq, HostAndPort target, long deadlineNanos) {
+      this.seq = seq;
+      this.target = target;
+      this.deadlineNanos = deadlineNanos;
+    }
+  }
+
   public ConnectionFactory(final HostAndPort hostAndPort) {
     this(builder().hostAndPort(hostAndPort).withDefaults());
   }
@@ -134,6 +154,16 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> , Rebi
   public ConnectionFactory(Builder builder) {
     this.clientConfig = builder.getClientConfig();
     this.connectionBuilder = builder.getConnectionBuilder();
+
+    // The socket factory resolves its target through our rebind overlay: override during the grace
+    // window, else null (falls back to its configured host). Pure read → race-free, revert implicit.
+    JedisSocketFactory socketFactory = connectionBuilder.getSocketFactory();
+    if (socketFactory instanceof DefaultJedisSocketFactory) {
+      ((DefaultJedisSocketFactory) socketFactory).setHostAndPortSupplier(() -> {
+        RebindState s = rebindState.get();
+        return (s != null && s.deadlineNanos - clockNanos.getAsLong() > 0) ? s.target : null;
+      });
+    }
 
     initAuthXManager();
   }
@@ -223,18 +253,32 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> , Rebi
   }
 
 
+  /**
+   * Records a {@code ttlSeconds}-bounded target override, applied only when {@code seq} is newer
+   * than the last — duplicate and out-of-order MOVINGs are ignored. New connections resolve to
+   * {@code newHostAndPort} during the window, then to the configured host once it expires.
+   * Lock-free; target selection reads this state, so it never observes a stale target.
+   */
   @Override
   public RebindResult rebind(long seq, HostAndPort newHostAndPort, long ttlSeconds) {
-    JedisSocketFactory jedisSocketFactory = connectionBuilder.getSocketFactory();
-    if (jedisSocketFactory instanceof RebindAware) {
-      RebindAware factory = (RebindAware) jedisSocketFactory;
-      logger.debug("Rebinding to {} (seq={}, ttl={}s)", newHostAndPort, seq, ttlSeconds);
-      return factory.rebind(seq, newHostAndPort, ttlSeconds);
+    long deadline = clockNanos.getAsLong() + TimeUnit.SECONDS.toNanos(ttlSeconds);
+    while (true) {
+      RebindState cur = rebindState.get();
+      if (cur != null && seq <= cur.seq) {
+        return RebindResult.STALE; // duplicate or out-of-order event
+      }
+      RebindState next = new RebindState(seq, newHostAndPort, deadline);
+      if (rebindState.compareAndSet(cur, next)) {
+        logger.debug("Rebinding to {} (seq={}, ttl={}s)", newHostAndPort, seq, ttlSeconds);
+        return RebindResult.APPLIED_NEW_TARGET;
+      }
+      // Lost the CAS to a concurrent apply; retry (may then observe STALE).
     }
-    if (logger.isDebugEnabled()) {
-      logger.debug("Rebind not supported: {}", jedisSocketFactory.getClass().getName());
-    }
-    return RebindResult.STALE;
+  }
+
+  /** Test seam: override the monotonic clock used for rebind expiry. */
+  void setClockNanos(LongSupplier clockNanos) {
+    this.clockNanos = clockNanos;
   }
 
 }

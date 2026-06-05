@@ -40,6 +40,7 @@ public class Connection implements Closeable {
   public static class Builder {
     private JedisSocketFactory socketFactory;
     private JedisClientConfig clientConfig;
+    private MaintenanceEventController maintenanceController;
 
     public Builder socketFactory(JedisSocketFactory socketFactory) {
       this.socketFactory = socketFactory;
@@ -51,12 +52,21 @@ public class Connection implements Closeable {
       return this;
     }
 
+    Builder maintenanceController(MaintenanceEventController maintenanceController) {
+      this.maintenanceController = maintenanceController;
+      return this;
+    }
+
     public JedisSocketFactory getSocketFactory() {
       return socketFactory;
     }
 
     public JedisClientConfig getClientConfig() {
       return clientConfig;
+    }
+
+    MaintenanceEventController getMaintenanceController() {
+      return maintenanceController;
     }
 
     public Connection build() {
@@ -141,12 +151,11 @@ public class Connection implements Closeable {
    */
   private long relaxedUntilNanos = 0L;
 
-  /** Max relaxed window for MIGRATING/FAILING_OVER; their terminator normally reverts earlier. */
-  private long maxRelaxedDurationNanos =
-      TimeoutOptions.DEFAULT_RELAXED_TIMEOUT_MAX_DURATION.toNanos();
-
   /** Monotonic clock for relaxed-timeout expiry; overridable for tests. */
   private LongSupplier clockNanos = System::nanoTime;
+
+  /** Maintenance handler (pool-injected; {@code null} when non-pooled or maintenance disabled). */
+  private MaintenanceEventController maintenanceController;
 
   private JedisClientConfig clientConfig;
   private final ProtocolHandshake handshake = new ProtocolHandshake(this);
@@ -185,6 +194,7 @@ public class Connection implements Closeable {
   protected Connection(Builder builder) {
     this.socketFactory = builder.getSocketFactory();
     this.clientConfig = builder.getClientConfig();
+    this.maintenanceController = builder.getMaintenanceController(); // pool-injected (may be null)
   }
 
   /**
@@ -195,14 +205,10 @@ public class Connection implements Closeable {
    * <ul>
    *   <li><b>Pub/Sub consumer</b> – Handles Pub/Sub messages and propagates them back to the caller.
    *       All other message types are considered processed and are not propagated further.</li>
-   *   <li><b>Maintenance event consumer</b> (optional) – Handles server-side maintenance notifications
-   *       when enabled via {@link JedisClientConfig#maintNotificationsConfig()}.</li>
-   * </ul>
-   *
-   * <p>The maintenance consumer is responsible for:</p>
-   * <ul>
-   *   <li>Per-connection handling (e.g. timeout relaxation, rebind flags)</li>
-   *   <li>Notifying pool-level components (e.g. factory rebind, pool clear) via the owning connection</li>
+   *   <li><b>Maintenance event consumer</b> (optional) – Forwards server maintenance notifications
+   *       to the pool-owned {@link MaintenanceEventController}. Registered only when maintenance is
+   *       enabled via {@link JedisClientConfig#maintNotificationsConfig()} <em>and</em> a controller
+   *       was injected by the pool; non-pooled connections do not support maintenance events.</li>
    * </ul>
    *
    * @param config the client configuration; if {@code null}, only default consumers are registered
@@ -215,10 +221,8 @@ public class Connection implements Closeable {
      */
     addPushConsumer(PushConsumerChainImpl.PUBSUB_CONSUMER);
 
-    if (config != null && config.maintNotificationsConfig().isEnabled()) {
-
-      // Register maintenance event consumer.
-      // Handles server maintenance notifications and triggers connection/pool-level actions.
+    if (config != null && config.maintNotificationsConfig().isEnabled()
+        && maintenanceController != null) {
       addPushConsumer(new MaintenanceEventConsumer());
     }
   }
@@ -740,7 +744,6 @@ public class Connection implements Closeable {
         this.relaxedBlockingTimeout = NumberUtils.safeToInt(timeoutOptions.getRelaxedBlockingTimeout().toMillis());
         this.relaxedTimeoutConfigured = TimeoutOptions.isSet(relaxedTimeout);
         this.relaxedBlockingTimeoutConfigured = TimeoutOptions.isSet(relaxedBlockingTimeout);
-        this.maxRelaxedDurationNanos = timeoutOptions.getRelaxedTimeoutMaxDuration().toNanos();
       }
 
       initPushConsumers(config);
@@ -1085,13 +1088,16 @@ public class Connection implements Closeable {
     this.clockNanos = clockNanos;
   }
 
+  /** Marks this connection for discard on return to the pool (MOVING receiver). */
+  void requestRebind() {
+    this.rebindRequested = true;
+  }
+
   /**
    * Push consumer for server maintenance events: parses each frame into a typed
-   * {@link MaintenanceEvent} and dispatches it via the visitor. Handles per-connection concerns
-   * (timeout relaxation, rebind flag) and notifies the owning {@link ConnectionPool} via
-   * {@code memberOf} for pool-level rebind.
+   * {@link MaintenanceEvent} and forwards it to the {@link MaintenanceEventController}
    */
-  class MaintenanceEventConsumer implements PushConsumer, MaintenanceEvent.Handler {
+  class MaintenanceEventConsumer implements PushConsumer {
 
     @Override
     public PushConsumerContext handle(PushConsumerContext context) {
@@ -1101,41 +1107,10 @@ public class Connection implements Closeable {
       }
       MaintenanceEvent event = MaintenanceEvent.parse(message);
       if (event != null) {
-        event.accept(this, Connection.this);
+        event.accept(maintenanceController, Connection.this);
       }
-      context.drop();
+      context.drop(); // a maintenance event is consumed even if malformed
       return context;
-    }
-
-    @Override
-    public void onMoving(MovingEvent e, Connection c) {
-      // Any MOVING means this connection is affected: mark for discard and relax the commands that
-      // run on it before it is returned (then destroyed). Pool-level rebind only on a known target.
-      rebindRequested = true;
-      relaxTimeouts(Duration.ofSeconds(e.ttlSeconds));
-      if (memberOf != null) {
-        memberOf.onMoving(e.seq, e.target, e.ttlSeconds);
-      }
-    }
-
-    @Override
-    public void onMigrating(MigratingEvent e, Connection c) {
-      relaxTimeouts(Duration.ofNanos(maxRelaxedDurationNanos));
-    }
-
-    @Override
-    public void onFailingOver(FailingOverEvent e, Connection c) {
-      relaxTimeouts(Duration.ofNanos(maxRelaxedDurationNanos));
-    }
-
-    @Override
-    public void onMigrated(MigratedEvent e, Connection c) {
-      resetRelaxedTimeouts();
-    }
-
-    @Override
-    public void onFailedOver(FailedOverEvent e, Connection c) {
-      resetRelaxedTimeouts();
     }
   }
 }

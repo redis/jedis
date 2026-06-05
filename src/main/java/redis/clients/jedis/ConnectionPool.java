@@ -3,8 +3,6 @@ package redis.clients.jedis;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import redis.clients.authentication.core.Token;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.authentication.AuthXManager;
@@ -19,11 +17,32 @@ public class ConnectionPool extends Pool<Connection> {
   // Primary constructors using factory
   public ConnectionPool(PooledObjectFactory<Connection> factory) {
     super(factory);
+    wireMaintenance(factory);
   }
 
   public ConnectionPool(PooledObjectFactory<Connection> factory,
       GenericObjectPoolConfig<Connection> poolConfig) {
     super(factory, poolConfig);
+    wireMaintenance(factory);
+  }
+
+  /**
+   * Wire maintenance event controller. Entry point for all pool constructors (convenience, factory, and customer-supplied
+   * pools): when maintenance is enabled, create the pool-owned controller, route {@code clear()} to
+   * it, and hand it to the factory.
+   */
+  private void wireMaintenance(PooledObjectFactory<Connection> factory) {
+    if (!(factory instanceof ConnectionFactory)) {
+      return;
+    }
+    ConnectionFactory cf = (ConnectionFactory) factory;
+    MaintenanceNotificationsConfig maint = cf.getClientConfig().maintNotificationsConfig();
+    if (!maint.isEnabled()) {
+      return;
+    }
+    MaintenanceEventController controller = MaintenanceEventController.from(maint);
+    controller.addHandoffHook(handoff -> clear());
+    cf.attachMaintenanceController(controller);
   }
 
   // Convenience constructors
@@ -89,30 +108,6 @@ public class ConnectionPool extends Pool<Connection> {
       evict();
     } catch (Exception e) {
       throw new JedisException("Failed to evict connections from pool", e);
-    }
-  }
-
-  /**
-   * Called by a connection when it receives a MOVING maintenance event. Applies a bounded,
-   * sequence-guarded rebind on the factory; idle connections bound to the previous target are
-   * evicted only when the effective target actually changes. Duplicate / out-of-order events are
-   * suppressed by the factory's sequence guard, so no pool-side dedup state is needed.
-   *
-   * @param seq monotonically increasing sequence number of the MOVING event
-   * @param target the new host and port to rebind to
-   * @param ttlSeconds grace window after which the rebind expires back to the original endpoint
-   */
-  void onMoving(long seq, HostAndPort target, long ttlSeconds) {
-    if (target == null) {
-      return;
-    }
-    PooledObjectFactory<Connection> factory = getFactory();
-    if (!(factory instanceof RebindAware)) {
-      return;
-    }
-    RebindAware.RebindResult result = ((RebindAware) factory).rebind(seq, target, ttlSeconds);
-    if (result == RebindAware.RebindResult.APPLIED_NEW_TARGET) {
-      clear();
     }
   }
 }

@@ -33,10 +33,8 @@ abstract class MaintenanceEvent {
   }
 
   /**
-   * Returns {@code true} iff {@code t} is a maintenance push type. Length-dispatched (each length
-   * maps to a single type), so the common non-maintenance path is a switch with no allocation and
-   * at most one {@link Arrays#equals(byte[], byte[])}. Lets the consumer skip {@link #parse} for
-   * unrelated pushes.
+   * Returns {@code true} iff {@code t} is a maintenance push type. Lets the consumer skip
+   * {@link #parse} for unrelated pushes.
    */
   static boolean isMaintenanceType(byte[] t) {
     if (t == null) {

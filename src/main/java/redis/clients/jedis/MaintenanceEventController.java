@@ -1,0 +1,159 @@
+package redis.clients.jedis;
+
+import java.time.Duration;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
+import java.util.function.LongSupplier;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * Per-pool maintenance handler: owns the shared rebind overlay, the relax-window policy, and the
+ * handoff hooks fired when a MOVING is applied.
+ */
+final class MaintenanceEventController implements MaintenanceEvent.Handler {
+
+  private static final Logger logger = LoggerFactory.getLogger(MaintenanceEventController.class);
+
+  private final long maxRelaxedDurationNanos;            // MIGRATING/FAILING_OVER backstop window
+  private LongSupplier clockNanos = System::nanoTime;    // test seam
+  private final AtomicReference<RebindState> rebind = new AtomicReference<>();
+  /** Synchronous hooks fired once per applied MOVING handoff; see {@link #addHandoffHook}. */
+  private final List<Consumer<MaintenanceHandoff>> handoffHooks = new CopyOnWriteArrayList<>();
+
+  private MaintenanceEventController(long maxRelaxedDurationNanos) {
+    this.maxRelaxedDurationNanos = maxRelaxedDurationNanos;
+  }
+
+  static MaintenanceEventController from(MaintenanceNotificationsConfig cfg) {
+    return new MaintenanceEventController(
+        cfg.getTimeoutOptions().getRelaxedTimeoutMaxDuration().toNanos());
+  }
+
+  /**
+   * Registers a hook invoked synchronously, once, when a MOVING handoff is applied (i.e. a real new
+   * target is committed under the seq guard). Hook exceptions propagate.
+   */
+  public void addHandoffHook(Consumer<MaintenanceHandoff> hook) {
+    handoffHooks.add(hook);
+  }
+
+  public void removeHandoffHook(Consumer<MaintenanceHandoff> hook) {
+    handoffHooks.remove(hook);
+  }
+
+  /** Test seam: override the monotonic clock used for rebind expiry. */
+  void setClockNanos(LongSupplier clockNanos) {
+    this.clockNanos = clockNanos;
+  }
+
+  /** Socket-factory resolver: the override target while the window is open, else null. */
+  HostAndPort targetOverride() {
+    RebindState s = rebind.get();
+    return (s != null && s.deadlineNanos - clockNanos.getAsLong() > 0) ? s.target : null;
+  }
+
+  /** Relaxes a borrowed connection for the remainder of an active rebind window. */
+  public void relaxIfRebinding(Connection conn) {
+    RebindState s = rebind.get();
+    if (s == null) {
+      return;
+    }
+    long remainingNanos = s.deadlineNanos - clockNanos.getAsLong();
+    if (remainingNanos > 0) {
+      conn.relaxTimeouts(Duration.ofNanos(remainingNanos));
+    }
+  }
+
+  @Override
+  public void onMoving(MovingEvent e, Connection c) {
+    // Any MOVING affects the receiver: mark for discard and relax commands on it before return.
+    c.requestRebind();
+    c.relaxTimeouts(Duration.ofSeconds(e.ttlSeconds));
+    long deadline = clockNanos.getAsLong() + TimeUnit.SECONDS.toNanos(e.ttlSeconds);
+    while (true) {
+      RebindState cur = rebind.get();
+      if (cur != null && e.seq <= cur.seq) {
+        return; // duplicate or out-of-order event
+      }
+      if (rebind.compareAndSet(cur, new RebindState(e.seq, e.target, deadline))) {
+        logger.debug("Rebinding to {} (seq={}, ttl={}s)", e.target, e.seq, e.ttlSeconds);
+        MaintenanceHandoff handoff = new MaintenanceHandoff(e.seq, e.target,
+            Duration.ofSeconds(e.ttlSeconds));
+        handoffHooks.forEach(hook -> hook.accept(handoff));
+        return;
+      }
+      // Lost the CAS to a concurrent apply; retry (may then observe a stale seq).
+    }
+  }
+
+  @Override
+  public void onMigrating(MigratingEvent e, Connection c) {
+    c.relaxTimeouts(Duration.ofNanos(maxRelaxedDurationNanos)); // time_s = "starts within"; backstop
+  }
+
+  @Override
+  public void onFailingOver(FailingOverEvent e, Connection c) {
+    c.relaxTimeouts(Duration.ofNanos(maxRelaxedDurationNanos));
+  }
+
+  @Override
+  public void onMigrated(MigratedEvent e, Connection c) {
+    c.resetRelaxedTimeouts();
+  }
+
+  @Override
+  public void onFailedOver(FailedOverEvent e, Connection c) {
+    c.resetRelaxedTimeouts();
+  }
+
+  /** Observation payload delivered to handoff hooks: seq, new endpoint, and the handoff window. */
+  public static final class MaintenanceHandoff {
+    private final long seq;
+    private final HostAndPort target;
+    private final Duration ttl;
+
+    MaintenanceHandoff(long seq, HostAndPort target, Duration ttl) {
+      this.seq = seq;
+      this.target = target;
+      this.ttl = ttl;
+    }
+
+    /** Monotonically-increasing sequence number of the originating MOVING event. */
+    public long getSeq() {
+      return seq;
+    }
+
+    /** The new endpoint connections will be routed to during the handoff window. */
+    public HostAndPort getTarget() {
+      return target;
+    }
+
+    /** Window the handoff is active for, after which the configured endpoint is used again. */
+    public Duration getTtl() {
+      return ttl;
+    }
+
+    @Override
+    public String toString() {
+      return "MaintenanceHandoff[seq=" + seq + ", target=" + target + ", ttl=" + ttl + "]";
+    }
+  }
+
+  /** Immutable snapshot of an active, time-bounded MOVING rebind. */
+  private static final class RebindState {
+    final long seq;
+    final HostAndPort target;
+    final long deadlineNanos;
+
+    RebindState(long seq, HostAndPort target, long deadlineNanos) {
+      this.seq = seq;
+      this.target = target;
+      this.deadlineNanos = deadlineNanos;
+    }
+  }
+}

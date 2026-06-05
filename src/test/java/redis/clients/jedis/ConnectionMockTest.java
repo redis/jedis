@@ -127,46 +127,59 @@ public class ConnectionMockTest {
   @Nested
   class MaintenanceEventHandling {
 
-    /**
-     * Tests that the MaintenanceEventConsumer is registered when using the constructors not
-     * providing a JedisClientConfig.
-     */
+    private MaintenanceNotificationsConfig enabledMaint() {
+      return MaintenanceNotificationsConfig.builder()
+          .timeoutOptions(
+            TimeoutOptions.builder().proactiveTimeoutsRelaxing(Duration.ofSeconds(10)).build())
+          .build();
+    }
+
+    /** Maintenance is pool-only: a pooled connection registers the maintenance consumer. */
     @Test
-    public void maintenanceConsumerRegisteredConstructorWithConfig() {
-      TimeoutOptions timeoutOpts = TimeoutOptions.builder()
-          .proactiveTimeoutsRelaxing(Duration.ofSeconds(10)).build();
-
-      MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
-          .timeoutOptions(timeoutOpts).build();
-
+    public void maintenanceConsumerRegisteredForPooledConnection() {
       DefaultJedisClientConfig config = DefaultJedisClientConfig.builder()
-          .maintNotificationsConfig(maintConfig).build();
+          .maintNotificationsConfig(enabledMaint()).build();
+
+      try (ConnectionPool pool = new ConnectionPool(
+          new HostAndPort("localhost", mockServer.getPort()), config)) {
+        Connection conn = pool.getResource();
+        try {
+          assertThat(conn.getPushConsumers(), contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER),
+            instanceOf(Connection.MaintenanceEventConsumer.class)));
+        } finally {
+          conn.close();
+        }
+      }
+    }
+
+    /** A non-pooled connection has no controller, so it registers no maintenance consumer. */
+    @Test
+    public void maintenanceConsumerNotRegisteredForNonPooledConnection() {
+      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder()
+          .maintNotificationsConfig(enabledMaint()).build();
 
       Connection conn = new Connection(new HostAndPort("localhost", mockServer.getPort()), config);
 
-      assertThat(conn.getPushConsumers(), contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER),
-        instanceOf(Connection.MaintenanceEventConsumer.class)));
+      assertThat(conn.getPushConsumers(), contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER)));
+      assertThat(conn.getPushConsumers(),
+        not(hasItem(instanceOf(Connection.MaintenanceEventConsumer.class))));
     }
 
+    /**
+     * A builder-built connection (no injected controller) is non-pooled: no maintenance consumer.
+     */
     @Test
-    public void maintenanceConsumerRegisteredWithConnectionBuilder() {
-      TimeoutOptions timeoutOpts = TimeoutOptions.builder()
-          .proactiveTimeoutsRelaxing(Duration.ofSeconds(10)).build();
-
-      MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
-          .timeoutOptions(timeoutOpts).build();
-
+    public void maintenanceConsumerNotRegisteredForConnectionBuilder() {
       DefaultJedisClientConfig config = DefaultJedisClientConfig.builder()
-          .maintNotificationsConfig(maintConfig).build();
-
-      HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
-      DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(hostAndPort, config);
+          .maintNotificationsConfig(enabledMaint()).build();
+      DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(
+          new HostAndPort("localhost", mockServer.getPort()), config);
 
       Connection conn = Connection.builder().socketFactory(socketFactory).clientConfig(config)
           .build();
 
-      assertThat(conn.getPushConsumers(), contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER),
-        instanceOf(Connection.MaintenanceEventConsumer.class)));
+      assertThat(conn.getPushConsumers(),
+        not(hasItem(instanceOf(Connection.MaintenanceEventConsumer.class))));
     }
 
     @Test
@@ -196,6 +209,7 @@ public class ConnectionMockTest {
 
     private final CommandObjects commandObjects = new CommandObjects(RedisProtocol.RESP3);
 
+    private ConnectionPool pool;
     private Connection connection;
 
     @BeforeEach
@@ -212,15 +226,19 @@ public class ConnectionMockTest {
           .socketTimeoutMillis(SO_TIMEOUT_MS).maintNotificationsConfig(maintConfig)
           .protocol(RedisProtocol.RESP3).build();
 
-      // Create connection to the mock server
+      // Maintenance is pool-only: borrow a pooled connection so the controller/consumer are wired.
       HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
-      connection = new Connection(hostAndPort, clientConfig);
+      pool = new ConnectionPool(hostAndPort, clientConfig);
+      connection = pool.getResource();
     }
 
     @AfterEach
     public void tearDown() throws IOException {
       if (connection != null && connection.isConnected()) {
         connection.close();
+      }
+      if (pool != null) {
+        pool.close();
       }
       if (mockServer != null) {
         mockServer.stop();
@@ -407,7 +425,8 @@ public class ConnectionMockTest {
       AtomicLong clock = new AtomicLong(0);
       connection.setClockNanos(clock::get);
 
-      mockServer.sendPushMessageToAll(MaintenanceEventMessages.moving(1, 15, "localhost:6379"));
+      mockServer.sendPushMessageToAll(
+        MaintenanceEventMessages.moving(1, 15, "localhost:" + mockServer.getPort()));
       assertTrue(connection.ping());
       assertTrue(connection.isRelaxedTimeoutActive(), "MOVING relaxes the receiving connection");
       assertEquals(RELAXED_TIMEOUT_MS, socket.getSoTimeout());

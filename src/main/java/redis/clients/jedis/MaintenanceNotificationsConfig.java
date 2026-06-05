@@ -60,10 +60,6 @@ public class MaintenanceNotificationsConfig {
     return endpointType;
   }
 
-  public EndpointType getMovingTargetEndpointType() {
-    return endpointType;
-  }
-
   public TimeoutOptions getTimeoutOptions() {
     return timeoutOptions;
   }

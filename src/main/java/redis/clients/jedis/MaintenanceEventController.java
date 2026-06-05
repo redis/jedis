@@ -71,6 +71,7 @@ final class MaintenanceEventController implements MaintenanceEvent.Handler {
 
   @Override
   public void onMoving(MovingEvent e, Connection c) {
+    logger.debug("Moving to {} (seq={}, ttl={}s)", e.target, e.seq, e.ttlSeconds);
     // Any MOVING affects the receiver: mark for discard and relax commands on it before return.
     c.requestRebind();
     c.relaxTimeouts(Duration.ofSeconds(e.ttlSeconds));
@@ -93,21 +94,25 @@ final class MaintenanceEventController implements MaintenanceEvent.Handler {
 
   @Override
   public void onMigrating(MigratingEvent e, Connection c) {
+    logger.debug("Migrating shards {} (seq={}, ttl={}s)", e.shardIds, e.seq, e.ttlSeconds);
     c.relaxTimeouts(Duration.ofNanos(maxRelaxedDurationNanos)); // time_s = "starts within"; backstop
   }
 
   @Override
   public void onFailingOver(FailingOverEvent e, Connection c) {
+    logger.debug("Failing over shards {} (seq={}, ttl={}s)", e.shardIds, e.seq, e.ttlSeconds);
     c.relaxTimeouts(Duration.ofNanos(maxRelaxedDurationNanos));
   }
 
   @Override
   public void onMigrated(MigratedEvent e, Connection c) {
+    logger.debug("Migrated shards {} (seq={})", e.shardIds, e.seq);
     c.resetRelaxedTimeouts();
   }
 
   @Override
   public void onFailedOver(FailedOverEvent e, Connection c) {
+    logger.debug("Failed over shards {} (seq={})", e.shardIds, e.seq);
     c.resetRelaxedTimeouts();
   }
 

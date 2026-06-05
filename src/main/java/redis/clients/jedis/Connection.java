@@ -814,7 +814,7 @@ public class Connection implements Closeable {
       MaintenanceNotificationsConfig maintNotificationsConfig = config.maintNotificationsConfig();
       if (maintNotificationsConfig.isEnabled()) {
         // TODO: Store movingTargetEndpointType if needed
-        sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON");
+        sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type", resolveEndpointType(maintNotificationsConfig.getEndpointType()));
         try {
           getStatusCodeReply();
         } catch (JedisDataException e) {
@@ -840,6 +840,23 @@ public class Connection implements Closeable {
         // the first exception 'je' will be thrown
       }
       throw je;
+    }
+  }
+
+  private String resolveEndpointType(MaintenanceNotificationsConfig.EndpointType endpointType) {
+    switch (endpointType) {
+      case INTERNAL_IP:
+        return "internal-ip";
+      case INTERNAL_FQDN:
+        return "internal-fqdn";
+      case EXTERNAL_IP:
+        return "external-ip";
+      case EXTERNAL_FQDN:
+        return "external-fqdn";
+      case NONE:
+        return "NONE";
+      default:
+        throw new JedisException("Unknown endpoint type: " + endpointType);
     }
   }
 

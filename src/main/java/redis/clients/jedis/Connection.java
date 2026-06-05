@@ -33,7 +33,6 @@ import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.NumberUtils;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
-import redis.clients.jedis.util.SafeEncoder;
 
 public class Connection implements Closeable {
   public static Logger logger = LoggerFactory.getLogger(Connection.class);
@@ -220,7 +219,7 @@ public class Connection implements Closeable {
 
       // Register maintenance event consumer.
       // Handles server maintenance notifications and triggers connection/pool-level actions.
-      addPushConsumer(new MaintenanceEventConsumer(true)); // proactiveRebindEnabled = true
+      addPushConsumer(new MaintenanceEventConsumer());
     }
   }
 
@@ -1087,93 +1086,56 @@ public class Connection implements Closeable {
   }
 
   /**
-   * Push consumer that handles server maintenance events.
-   * <p>
-   * Handles per-connection concerns (timeout relaxation, rebind flag) inline.
-   * Notifies the owning {@link ConnectionPool} via {@code memberOf} for pool-level concerns.
-   * </p>
+   * Push consumer for server maintenance events: parses each frame into a typed
+   * {@link MaintenanceEvent} and dispatches it via the visitor. Handles per-connection concerns
+   * (timeout relaxation, rebind flag) and notifies the owning {@link ConnectionPool} via
+   * {@code memberOf} for pool-level rebind.
    */
-  class MaintenanceEventConsumer implements PushConsumer {
-    private final boolean proactiveRebindEnabled;
-
-    public MaintenanceEventConsumer(boolean proactiveRebindEnabled) {
-      this.proactiveRebindEnabled = proactiveRebindEnabled;
-    }
-
+  class MaintenanceEventConsumer implements PushConsumer, MaintenanceEvent.Handler {
 
     @Override
     public PushConsumerContext handle(PushConsumerContext context) {
       PushMessage message = context.getMessage();
-      byte[] type = message.getType();
-      if (type == null) {
+      if (!MaintenanceEvent.isMaintenanceType(message.getType())) {
         return context;
       }
-
-      if (Arrays.equals(type, PushMessageTypes.MOVING_BYTES)) {
-        onMoving(message);
-        context.drop();
-      } else if (Arrays.equals(type, PushMessageTypes.MIGRATING_BYTES)
-          || Arrays.equals(type, PushMessageTypes.FAILING_OVER_BYTES)) {
-        relaxTimeouts(Duration.ofNanos(maxRelaxedDurationNanos));
-        context.drop();
-      } else if (Arrays.equals(type, PushMessageTypes.MIGRATED_BYTES)
-          || Arrays.equals(type, PushMessageTypes.FAILED_OVER_BYTES)) {
-        resetRelaxedTimeouts();
-        context.drop();
+      MaintenanceEvent event = MaintenanceEvent.parse(message);
+      if (event != null) {
+        event.accept(this, Connection.this);
       }
-
+      context.drop();
       return context;
     }
 
-    private void onMoving(PushMessage message) {
-      HostAndPort rebindTarget = getRebindTarget(message);
-      if (proactiveRebindEnabled) {
-        rebindRequested = true;
-      }
-
-      // MOVING format ["MOVING", seq, time_s, "host:port"].
-      List<Object> content = message.getContent();
-      if (content.size() < 3 || !(content.get(1) instanceof Long)
-          || !(content.get(2) instanceof Long)) {
-        logger.warn("Invalid MOVING message format, expected integer seq and time_s, got {}", message);
-        return;
-      }
-      long seq = (Long) content.get(1);
-      long ttlSeconds = (Long) content.get(2);
-
-      // Relax commands run on this connection before it is returned (then destroyed).
-      relaxTimeouts(Duration.ofSeconds(ttlSeconds));
-
-      if (memberOf != null && rebindTarget != null) {
-        memberOf.onMoving(seq, rebindTarget, ttlSeconds);
+    @Override
+    public void onMoving(MovingEvent e, Connection c) {
+      // Any MOVING means this connection is affected: mark for discard and relax the commands that
+      // run on it before it is returned (then destroyed). Pool-level rebind only on a known target.
+      rebindRequested = true;
+      relaxTimeouts(Duration.ofSeconds(e.ttlSeconds));
+      if (memberOf != null) {
+        memberOf.onMoving(e.seq, e.target, e.ttlSeconds);
       }
     }
 
-    private HostAndPort getRebindTarget(PushMessage message) {
-      // Extract domain/ip and port from the message
-      // MOVING push message format: ["MOVING", seq, time_s, "host:port"]
-      List<Object> content = message.getContent();
-
-      if (content.size() < 4) {
-        logger.warn("MOVING push message is malformed: {}", message);
-        return null;
-      }
-
-      Object addressObject = content.get(3); // Get the 4th element (index 3)
-      if (!(addressObject instanceof byte[])) {
-        logger.warn("Invalid MOVING message format, expected 4th element to be a byte[], got {}", addressObject);
-        return null;
-      }
-
-
-      try {
-        String addressAndPort = SafeEncoder.encode((byte[]) addressObject);
-        return HostAndPort.from(addressAndPort);
-      } catch (Exception e) {
-        logger.warn("Error parsing MOVING target from message: {}", message, e);
-        return null;
-      }
+    @Override
+    public void onMigrating(MigratingEvent e, Connection c) {
+      relaxTimeouts(Duration.ofNanos(maxRelaxedDurationNanos));
     }
 
+    @Override
+    public void onFailingOver(FailingOverEvent e, Connection c) {
+      relaxTimeouts(Duration.ofNanos(maxRelaxedDurationNanos));
+    }
+
+    @Override
+    public void onMigrated(MigratedEvent e, Connection c) {
+      resetRelaxedTimeouts();
+    }
+
+    @Override
+    public void onFailedOver(FailedOverEvent e, Connection c) {
+      resetRelaxedTimeouts();
+    }
   }
 }

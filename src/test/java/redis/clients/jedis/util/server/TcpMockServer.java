@@ -104,16 +104,16 @@ public class TcpMockServer {
    * Generic method to send a push message to all connected clients. Generic method to send a push
    * message to all connected clients. Can handle mixed types (Integer, Long, String, etc.).
    * <p>
-   * For structured maintenance events, use {@link MaintenanceEvent} utility to create the message
-   * elements, then pass them to this method.
+   * For structured maintenance events, use {@link MaintenanceEventMessages} utility to create the
+   * message elements, then pass them to this method.
    * <p>
    * Example:
    *
    * <pre>
    * {
    *   &#64;code
-   *   // Using MaintenanceEvent utility
-   *   Object[] migrating = MaintenanceEvent.migrating(6, 2, "2", "4");
+   *   // Using MaintenanceEventMessages utility
+   *   Object[] migrating = MaintenanceEventMessages.migrating(6, 2, "2", "4");
    *   server.sendPushMessageToAll(migrating);
    *
    *   // Or directly
@@ -132,15 +132,15 @@ public class TcpMockServer {
    * Generic method to send a push message to all connected clients using a pre-built message array.
    * The first element must be the push type (String), followed by message arguments.
    * <p>
-   * This is designed to work with {@link MaintenanceEvent} utility methods.
+   * This is designed to work with {@link MaintenanceEventMessages} utility methods.
    * <p>
    * Example:
    *
    * <pre>
    * {
    *   &#64;code
-   *   // Using MaintenanceEvent utility
-   *   server.sendPushMessageToAll(MaintenanceEvent.migrating(6, 2, "2", "4"));
+   *   // Using MaintenanceEventMessages utility
+   *   server.sendPushMessageToAll(MaintenanceEventMessages.migrating(6, 2, "2", "4"));
    * }
    * </pre>
    *

@@ -20,17 +20,17 @@ import java.util.List;
  * {
  *   &#64;code
  *   // Create MIGRATING push message
- *   Object[] migrating = MaintenanceEvent.migrating(6, 2, Arrays.asList("2", "4"));
+ *   Object[] migrating = MaintenanceEventMessages.migrating(6, 2, Arrays.asList("2", "4"));
  *   // Results in: ["MIGRATING", 6 (int), 2 (int), "[\"2\", \"4\"]" (string)]
  *
  *   // Create MOVING push message
- *   Object[] moving = MaintenanceEvent.moving(1, 30, "new-host:6380");
+ *   Object[] moving = MaintenanceEventMessages.moving(1, 30, "new-host:6380");
  * }
  * </pre>
  */
-public class MaintenanceEvent {
+public class MaintenanceEventMessages {
 
-  private MaintenanceEvent() {
+  private MaintenanceEventMessages() {
     // Utility class - no instantiation
   }
 

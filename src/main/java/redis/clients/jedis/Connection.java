@@ -276,6 +276,10 @@ public class Connection implements Closeable {
 
   public void sendCommand(final CommandArguments args) {
     connect();
+    if (broken) {
+      throw new JedisConnectionException("Attempting to write to a broken connection.");
+    }
+
     try {
       Protocol.sendCommand(outputStream, args);
     } catch (JedisConnectionException ex) {

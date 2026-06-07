@@ -73,6 +73,78 @@ public class ConnectionErrorHandlingTest {
   }
 
   @Test
+  public void alreadyBrokenConnectedConnectionRejectsCommandArgumentsWithoutWriting() {
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    Connection conn = new Connection(fakeSocketFactory(new byte[0], output));
+    conn.connect();
+    conn.setBroken();
+    CommandArguments args = new CommandArguments(Command.SET).add("key").add(new byte[9000]);
+
+    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+      () -> conn.sendCommand(args));
+
+    assertEquals("Attempting to write to a broken connection.", thrown.getMessage());
+    assertEquals(0, output.size());
+    assertTrue(conn.isBroken());
+  }
+
+  @Test
+  public void alreadyBrokenConnectedConnectionRejectsBeforeArgumentSerialization() {
+    SyntheticError unexpected = new SyntheticError();
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    Connection conn = new Connection(fakeSocketFactory(new byte[0], output));
+    conn.connect();
+    conn.setBroken();
+    CommandArguments args = new CommandArguments(Command.SET).add(new ErrorRawable(unexpected));
+
+    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+      () -> conn.sendCommand(args));
+
+    assertEquals("Attempting to write to a broken connection.", thrown.getMessage());
+    assertEquals(0, output.size());
+    assertTrue(conn.isBroken());
+  }
+
+  @Test
+  public void alreadyBrokenConnectedConnectionDoesNotAttemptDiagnosticRedisErrorRead() {
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    Connection conn = new Connection(
+        fakeSocketFactory("-ERR should not be read\r\n".getBytes(StandardCharsets.UTF_8), output));
+    conn.connect();
+    conn.setBroken();
+    CommandArguments args = new CommandArguments(Command.SET).add("key").add(new byte[9000]);
+
+    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+      () -> conn.sendCommand(args));
+
+    assertEquals("Attempting to write to a broken connection.", thrown.getMessage());
+    assertNull(thrown.getCause());
+    assertEquals(0, output.size());
+    assertTrue(conn.isBroken());
+  }
+
+  @Test
+  public void brokenDisconnectedConnectionReconnectsBeforeApplyingWriteGuard() {
+    AtomicInteger sockets = new AtomicInteger();
+    ByteArrayOutputStream firstOutput = new ByteArrayOutputStream();
+    ByteArrayOutputStream replacementOutput = new ByteArrayOutputStream();
+    Connection conn = new Connection(() -> sockets.getAndIncrement() == 0
+        ? new CloseTrackingFakeSocket(new ByteArrayInputStream(new byte[0]), firstOutput)
+        : new CloseTrackingFakeSocket(new ByteArrayInputStream(new byte[0]), replacementOutput));
+    conn.connect();
+    conn.setBroken();
+    conn.disconnect();
+    CommandArguments args = new CommandArguments(Command.SET).add("key").add(new byte[9000]);
+
+    conn.sendCommand(args);
+
+    assertFalse(conn.isBroken());
+    assertEquals(0, firstOutput.size());
+    assertTrue(replacementOutput.size() > 0);
+    assertEquals(2, sockets.get());
+  }
+
+  @Test
   public void errorDuringCommandOutputWriteMarksConnectionBrokenAndRethrowsSameError() {
     SyntheticError expected = new SyntheticError();
     Connection conn = new Connection(
@@ -791,6 +863,32 @@ public class ConnectionErrorHandlingTest {
   }
 
   @Test
+  public void alreadyBrokenPooledConnectionInvalidatesOnCloseWithoutWriting() {
+    AtomicInteger destroyed = new AtomicInteger();
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+
+    try (ConnectionPool pool = newSingleConnectionPool(destroyed,
+      () -> new Connection(fakeSocketFactory(new byte[0], output)))) {
+      Connection conn = pool.getResource();
+      conn.connect();
+      conn.setBroken();
+      CommandArguments args = new CommandArguments(Command.SET).add("key").add(new byte[9000]);
+
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+        () -> conn.sendCommand(args));
+      conn.close();
+
+      assertEquals("Attempting to write to a broken connection.", thrown.getMessage());
+      assertEquals(0, output.size());
+      assertEquals(1, destroyed.get());
+      Connection replacement = pool.getResource();
+      assertNotSame(conn, replacement);
+      assertFalse(replacement.isBroken());
+      replacement.close();
+    }
+  }
+
+  @Test
   public void errorDuringFlushCausesPooledConnectionToBeInvalidatedOnClose() {
     AtomicInteger destroyed = new AtomicInteger();
     SyntheticError expected = new SyntheticError();
@@ -989,6 +1087,25 @@ public class ConnectionErrorHandlingTest {
 
     @Override
     public void setSoTimeout(int timeout) {
+    }
+  }
+
+  private static final class CloseTrackingFakeSocket extends FakeSocket {
+
+    private boolean closed;
+
+    private CloseTrackingFakeSocket(InputStream input, OutputStream output) {
+      super(input, output);
+    }
+
+    @Override
+    public boolean isClosed() {
+      return closed;
+    }
+
+    @Override
+    public void close() {
+      closed = true;
     }
   }
 

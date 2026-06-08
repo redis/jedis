@@ -6,8 +6,9 @@ public class MaintenanceNotificationsConfig {
 
   static {
     DEFAULT = new MaintenanceNotificationsConfig();
-    DEFAULT.mode = Mode.DISABLED; // Disabled by default for backward compatibility
-    DEFAULT.timeoutOptions = TimeoutOptions.create(); // Default timeout options
+    DEFAULT.timeoutOptions = TimeoutOptions.create();
+    // mode is left at the field default (AUTO): negotiate maintenance notifications on connect,
+    // silently fall back if the server rejects them.
   }
 
   /**
@@ -69,10 +70,6 @@ public class MaintenanceNotificationsConfig {
    */
   public boolean isEnabled() {
     return mode == Mode.ENABLED || mode == Mode.AUTO;
-  }
-
-  public static MaintenanceNotificationsConfig create() {
-    return new MaintenanceNotificationsConfig();
   }
 
   public static Builder builder() {

@@ -34,6 +34,7 @@ nav:
   - User Guide:
     - Transactions/Multi: transactions-multi.md
   - Migrating to newer versions:
+      - Jedis 8: migration-guides/v7-to-v8.md
       - Jedis 7: migration-guides/v6-to-v7.md
       - Jedis 6: migration-guides/v5-to-v6.md
       - Jedis 5: migration-guides/v4-to-v5.md

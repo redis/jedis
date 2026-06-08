@@ -21,8 +21,8 @@ final class MaintenanceEventController implements MaintenanceEvent.Handler, Sock
 
   private static final Logger logger = LoggerFactory.getLogger(MaintenanceEventController.class);
 
-  private final long maxRelaxedDurationNanos;            // MIGRATING/FAILING_OVER backstop window
-  private LongSupplier clockNanos = System::nanoTime;    // test seam
+  private final long maxRelaxedDurationNanos; // MIGRATING/FAILING_OVER backstop window
+  private LongSupplier clockNanos = System::nanoTime; // test seam
   private final AtomicReference<RebindState> rebind = new AtomicReference<>();
   /** Synchronous hooks fired once per applied MOVING handoff; see {@link #addHandoffHook}. */
   private final List<Consumer<MaintenanceHandoff>> handoffHooks = new CopyOnWriteArrayList<>();
@@ -55,8 +55,8 @@ final class MaintenanceEventController implements MaintenanceEvent.Handler, Sock
 
   /**
    * Post-DNS address mapper: remaps the resolved peer to the rebind target only when the resolved
-   * peer is the active rebind's affected node and the window is still open; else returns null
-   * (no remap).
+   * peer is the active rebind's affected node and the window is still open; else returns null (no
+   * remap).
    */
   @Override
   public SocketAddress getSocketAddress(SocketAddress resolved) {
@@ -116,7 +116,8 @@ final class MaintenanceEventController implements MaintenanceEvent.Handler, Sock
   @Override
   public void onMigrating(MigratingEvent e, Connection c) {
     logger.debug("Migrating shards {} (seq={}, ttl={}s)", e.shardIds, e.seq, e.ttlSeconds);
-    c.relaxTimeouts(Duration.ofNanos(maxRelaxedDurationNanos)); // time_s = "starts within"; backstop
+    c.relaxTimeouts(Duration.ofNanos(maxRelaxedDurationNanos)); // time_s = "starts within";
+                                                                // backstop
   }
 
   @Override
@@ -173,8 +174,8 @@ final class MaintenanceEventController implements MaintenanceEvent.Handler, Sock
   /** Immutable snapshot of an active, time-bounded MOVING rebind. */
   private static final class RebindState {
     final long seq;
-    final SocketAddress affected;     // receiver's resolved peer that received MOVING
-    final SocketAddress target;       // its replacement
+    final SocketAddress affected; // receiver's resolved peer that received MOVING
+    final SocketAddress target; // its replacement
     final long deadlineNanos;
 
     RebindState(long seq, SocketAddress affected, SocketAddress target, long deadlineNanos) {

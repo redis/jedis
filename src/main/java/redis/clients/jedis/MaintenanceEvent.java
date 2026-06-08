@@ -26,9 +26,13 @@ abstract class MaintenanceEvent {
   /** Typed visitor for maintenance events. */
   interface Handler {
     void onMoving(MovingEvent e, Connection c);
+
     void onMigrating(MigratingEvent e, Connection c);
+
     void onMigrated(MigratedEvent e, Connection c);
+
     void onFailingOver(FailingOverEvent e, Connection c);
+
     void onFailedOver(FailedOverEvent e, Connection c);
   }
 
@@ -69,28 +73,31 @@ abstract class MaintenanceEvent {
       return null;
     }
     List<Object> c = msg.getContent();
-    if (Arrays.equals(t, PushMessageTypes.MOVING_BYTES)) {        // [MOVING, seq, time_s, host:port]
+    if (Arrays.equals(t, PushMessageTypes.MOVING_BYTES)) { // [MOVING, seq, time_s, host:port]
       if (!hasLongs(c, 1, 2)) {
         return malformed(msg);
       }
-      HostAndPort target = parseHostPort(c, 3);                   // logs on failure
+      HostAndPort target = parseHostPort(c, 3); // logs on failure
       return target != null ? new MovingEvent((Long) c.get(1), (Long) c.get(2), target) : null;
     }
-    if (Arrays.equals(t, PushMessageTypes.MIGRATING_BYTES)) {     // [MIGRATING, seq, time_s, shards]
+    if (Arrays.equals(t, PushMessageTypes.MIGRATING_BYTES)) { // [MIGRATING, seq, time_s, shards]
       return hasLongs(c, 1, 2) && hasBytes(c, 3)
-          ? new MigratingEvent((Long) c.get(1), (Long) c.get(2), shardIds(c, 3)) : malformed(msg);
+          ? new MigratingEvent((Long) c.get(1), (Long) c.get(2), shardIds(c, 3))
+          : malformed(msg);
     }
-    if (Arrays.equals(t, PushMessageTypes.FAILING_OVER_BYTES)) {  // [FAILING_OVER, seq, time_s, shards]
+    if (Arrays.equals(t, PushMessageTypes.FAILING_OVER_BYTES)) { // [FAILING_OVER, seq, time_s,
+                                                                 // shards]
       return hasLongs(c, 1, 2) && hasBytes(c, 3)
-          ? new FailingOverEvent((Long) c.get(1), (Long) c.get(2), shardIds(c, 3)) : malformed(msg);
+          ? new FailingOverEvent((Long) c.get(1), (Long) c.get(2), shardIds(c, 3))
+          : malformed(msg);
     }
-    if (Arrays.equals(t, PushMessageTypes.MIGRATED_BYTES)) {      // [MIGRATED, seq, shards]
-      return hasLongs(c, 1) && hasBytes(c, 2)
-          ? new MigratedEvent((Long) c.get(1), shardIds(c, 2)) : malformed(msg);
+    if (Arrays.equals(t, PushMessageTypes.MIGRATED_BYTES)) { // [MIGRATED, seq, shards]
+      return hasLongs(c, 1) && hasBytes(c, 2) ? new MigratedEvent((Long) c.get(1), shardIds(c, 2))
+          : malformed(msg);
     }
-    if (Arrays.equals(t, PushMessageTypes.FAILED_OVER_BYTES)) {   // [FAILED_OVER, seq, shards]
-      return hasLongs(c, 1) && hasBytes(c, 2)
-          ? new FailedOverEvent((Long) c.get(1), shardIds(c, 2)) : malformed(msg);
+    if (Arrays.equals(t, PushMessageTypes.FAILED_OVER_BYTES)) { // [FAILED_OVER, seq, shards]
+      return hasLongs(c, 1) && hasBytes(c, 2) ? new FailedOverEvent((Long) c.get(1), shardIds(c, 2))
+          : malformed(msg);
     }
     return null;
   }
@@ -113,7 +120,9 @@ abstract class MaintenanceEvent {
     return null;
   }
 
-  /** Diagnostic shard-id list (stringified JSON array), used for logging only; required on the wire. */
+  /**
+   * Diagnostic shard-id list (stringified JSON array), used for logging only; required on the wire.
+   */
   private static String shardIds(List<Object> c, int i) {
     return SafeEncoder.encode((byte[]) c.get(i));
   }
@@ -132,7 +141,10 @@ abstract class MaintenanceEvent {
   }
 }
 
-/** {@code [MOVING, seq, time_s, host:port]} — endpoint moves to {@code target} within {@code ttlSeconds}. */
+/**
+ * {@code [MOVING, seq, time_s, host:port]} — endpoint moves to {@code target} within
+ * {@code ttlSeconds}.
+ */
 final class MovingEvent extends MaintenanceEvent {
   final long ttlSeconds;
   final HostAndPort target;
@@ -149,7 +161,10 @@ final class MovingEvent extends MaintenanceEvent {
   }
 }
 
-/** {@code [MIGRATING, seq, time_s, shards]} — {@code time_s} = starts-within; {@code shardIds} diagnostic. */
+/**
+ * {@code [MIGRATING, seq, time_s, shards]} — {@code time_s} = starts-within; {@code shardIds}
+ * diagnostic.
+ */
 final class MigratingEvent extends MaintenanceEvent {
   final long ttlSeconds;
   final String shardIds;
@@ -166,7 +181,10 @@ final class MigratingEvent extends MaintenanceEvent {
   }
 }
 
-/** {@code [FAILING_OVER, seq, time_s, shards]} — {@code time_s} = starts-within; {@code shardIds} diagnostic. */
+/**
+ * {@code [FAILING_OVER, seq, time_s, shards]} — {@code time_s} = starts-within; {@code shardIds}
+ * diagnostic.
+ */
 final class FailingOverEvent extends MaintenanceEvent {
   final long ttlSeconds;
   final String shardIds;

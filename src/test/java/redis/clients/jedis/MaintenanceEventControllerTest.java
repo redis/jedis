@@ -210,9 +210,10 @@ public class MaintenanceEventControllerTest {
 
   @Test
   public void disabledMaintenance_leavesFactoryUnwired() {
-    JedisClientConfig config = DefaultJedisClientConfig.builder().maintNotificationsConfig(
-        MaintenanceNotificationsConfig.builder().mode(MaintenanceNotificationsConfig.Mode.DISABLED)
-            .build()).build();
+    JedisClientConfig config = DefaultJedisClientConfig.builder()
+        .maintNotificationsConfig(MaintenanceNotificationsConfig.builder()
+            .mode(MaintenanceNotificationsConfig.Mode.DISABLED).build())
+        .build();
     ConnectionFactory factory = new ConnectionFactory(
         new DefaultJedisSocketFactory(new HostAndPort("localhost", mockServer.getPort())), config);
 

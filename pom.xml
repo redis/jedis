@@ -557,7 +557,8 @@
 						<include>**/*IT.java</include>
 						<include>**/scenario/RestEndpointUtil.java</include>
 						<include>src/main/java/redis/clients/jedis/MultiDbConfig.java</include>
-						<include>src/main/java/redis/clients/jedis/MaintenanceNotificationsConfig.java</include>
+						<include>**/Maintenance*.java</include>
+						<include>**/SocketAddress*.java</include>
 						<include>src/main/java/redis/clients/jedis/util/NumberUtils.java</include>
 						<include>src/test/java/redis/clients/jedis/upgrade/UnifiedJedisProactiveRebindTest.java</include>
 						<include>src/test/java/redis/clients/jedis/ConnectionFactoryRebindTest.java</include>

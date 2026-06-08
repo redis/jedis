@@ -16,14 +16,15 @@ import redis.clients.jedis.exceptions.JedisException;
 /**
  * Manual example for server maintenance notifications. A {@link RedisClient} is opened with
  * maintenance enabled (RESP3 + {@code CLIENT MAINT_NOTIFICATIONS ON}) and runs a small workload for
- * a while. Trigger a maintenance operation on the server (e.g. a shard migration or failover) during
- * the run; the example logs whenever a connection's timeouts are relaxed in response to a
+ * a while. Trigger a maintenance operation on the server (e.g. a shard migration or failover)
+ * during the run; the example logs whenever a connection's timeouts are relaxed in response to a
  * notification. Observation borrows one connection from the client's pool via
  * {@link RedisClient#getPool()}.
  * <p>
  * Configure via system properties: {@code redis.host} (127.0.0.1), {@code redis.port} (6379),
  * {@code redis.username}, {@code redis.password}, {@code example.durationSeconds} (300). Enable
- * DEBUG logging on {@code redis.clients.jedis.MaintenanceEventController} to also see MOVING rebinds.
+ * DEBUG logging on {@code redis.clients.jedis.MaintenanceEventController} to also see MOVING
+ * rebinds.
  */
 public class MaintenanceEventsExample {
 

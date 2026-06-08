@@ -47,12 +47,6 @@ public class TrackingConnectionPool extends ConnectionPool {
       }
       try {
         PooledObject<Connection> object = super.makeObject();
-        factoryTrackedObjects.add(object.getObject());
-        try {
-          object.getObject().initializeFromClientConfig();
-        } finally {
-          factoryTrackedObjects.remove(object.getObject());
-        }
         // this can make a marginal improvement on fast failover duration!
         if (failFast) {
           object.getObject().close();
@@ -63,6 +57,18 @@ public class TrackingConnectionPool extends ConnectionPool {
         throw e;
       } catch (Exception e) {
         throw new JedisConnectionException(e);
+      }
+    }
+
+    @Override
+    protected void initialize(Connection conn) {
+      // Track the connection while it is being initialized so forceDisconnect() can interrupt
+      // a thread that is blocked inside HELLO/AUTH/CLIENT round-trips.
+      factoryTrackedObjects.add(conn);
+      try {
+        super.initialize(conn);
+      } finally {
+        factoryTrackedObjects.remove(conn);
       }
     }
 

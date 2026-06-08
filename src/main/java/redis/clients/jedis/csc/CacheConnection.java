@@ -43,10 +43,8 @@ public class CacheConnection extends Connection {
     }
 
     @Override
-    public Connection build() {
-      CacheConnection conn = new CacheConnection(this);
-      conn.initializeFromClientConfig();
-      return conn;
+    protected Connection createConnection() {
+      return new CacheConnection(this);
     }
   }
 

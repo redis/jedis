@@ -54,7 +54,7 @@ runs:
   using: 'composite'
   steps:
     - name: Checkout code
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
       with:
         repository: ${{ inputs.repository }}
         ref: ${{ inputs.ref }}
@@ -102,7 +102,7 @@ runs:
         fi
 
     - name: Set up Java
-      uses: actions/setup-java@v4
+      uses: actions/setup-java@v5
       with:
         java-version: ${{ inputs.java_version }}
         distribution: ${{ inputs.java_distribution }}
@@ -115,7 +115,7 @@ runs:
         make compile-module
 
     - name: Cache dependencies
-      uses: actions/cache@v4
+      uses: actions/cache@v5
       with:
         path: |
           ~/.m2/repository
@@ -156,14 +156,14 @@ runs:
 
     - name: Upload Heap Dumps
       if: failure()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: heap-dumps-${{ steps.args.outputs.redis_version_label }}
         path: ${{ runner.temp }}/heapdump-${{ steps.args.outputs.redis_version_label }}.hprof
         retention-days: 5
 
     - name: Upload Surefire Dump File
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: surefire-dumpstream
         path: target/surefire-reports/*.dumpstream
@@ -187,7 +187,7 @@ runs:
 
     - name: Upload logs on failure
       if: failure()
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v5
       with:
         name: redis-env-work-logs-${{ steps.args.outputs.redis_version_label }}
         path: ${{ steps.args.outputs.redis_env_work_dir }}

@@ -13,6 +13,8 @@ import java.util.Queue;
 import redis.clients.jedis.*;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
@@ -44,24 +46,25 @@ public class MultiDbTransaction extends AbstractTransaction {
 
   private static final Builder<?> NO_OP_BUILDER = BuilderFactory.RAW_OBJECT;
 
-  private final MultiDbConnectionSupplier failoverProvider;
+  private final MultiDbConnectionSupplier connectionSupplier;
   private final Queue<KeyValue<CommandArguments, Response<?>>> commands = new LinkedList<>();
 
   private Connection connection;
+  private Database initialDatabase;
   private boolean inWatch = false;
   private boolean inMulti = false;
 
   /**
-   * A user wanting to WATCH/UNWATCH keys followed by a call to MULTI ({@link #multi()}) it should
-   * be {@code doMulti=false}.
-   * @param provider
+   * A user wanting to WATCH/UNWATCH keys followed by a call to {@link #multi()} should set
+   * {@code doMulti=false}.
+   * @param provider connection provider supplying connections from the active database
    * @param doMulti {@code false} should be set to enable manual WATCH, UNWATCH and MULTI
    * @param commandObjects command objects
    */
   public MultiDbTransaction(MultiDbConnectionProvider provider, boolean doMulti,
       CommandObjects commandObjects) {
     super(commandObjects);
-    this.failoverProvider = new MultiDbConnectionSupplier(provider);
+    this.connectionSupplier = new MultiDbConnectionSupplier(provider);
 
     if (doMulti) {
       multi();
@@ -110,6 +113,9 @@ public class MultiDbTransaction extends AbstractTransaction {
       commands.add(KeyValue.of(args, response));
       return response;
     }
+    if (initialDatabase != null && !connectionSupplier.isActiveDatabase(initialDatabase)) {
+      throw new JedisException("Active database has changed since transaction started");
+    }
     try {
       return Response.of(acquireConnection().executeCommand(commandObject));
     } catch (JedisDataException e) {
@@ -156,6 +162,10 @@ public class MultiDbTransaction extends AbstractTransaction {
         }
       });
 
+      if (!connectionSupplier.isActiveDatabase(initialDatabase)) {
+        throw new JedisException("Active database has changed since transaction started");
+      }
+
       conn.sendCommand(EXEC);
 
       List<Object> unformatted = conn.getObjectMultiBulkReply();
@@ -190,7 +200,7 @@ public class MultiDbTransaction extends AbstractTransaction {
     }
 
     try {
-      // MULTI was never sent to the server (acquisition is deferred until exec()).
+      // MULTI itself is only issued from exec(), so the server never started a transaction.
       // Buffered commands only exist locally, so there is nothing to roll back server-side
       // unless we have already acquired a connection for pre-MULTI traffic (e.g. WATCH).
       if (inWatch) {
@@ -215,7 +225,8 @@ public class MultiDbTransaction extends AbstractTransaction {
 
   private Connection acquireConnection() {
     if (connection == null) {
-      connection = failoverProvider.getConnection();
+      initialDatabase = connectionSupplier.provider.getDatabase();
+      connection = connectionSupplier.getConnection();
     }
     return connection;
   }

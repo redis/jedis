@@ -31,6 +31,7 @@ import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
 import redis.clients.jedis.util.ReflectionTestUtil;
 
@@ -121,12 +122,13 @@ public class MultiDbTransactionUnitTest {
   public void watch_setsInWatch_andClose_callsUnwatch() {
     Connection conn = mock(Connection.class);
     when(conn.ping()).thenReturn(true);
+    when(conn.executeCommand(any(CommandObject.class))).thenReturn("OK");
     doNothing().when(conn).close();
     when(poolMock.getResource()).thenReturn(conn);
 
     // doMulti=false defers connection acquisition; watch() borrows it and executes WATCH inline.
     MultiDbTransaction tx = newTx(false);
-    assertNull(tx.watch("k"));
+    assertEquals("OK", tx.watch("k"));
     tx.close();
 
     // the same connection borrowed for WATCH is reused for the UNWATCH triggered by close()
@@ -163,7 +165,9 @@ public class MultiDbTransactionUnitTest {
     MultiDbTransaction tx = newTx(true);
     tx.set("k", "v");
     Exception ex = assertThrows(Exception.class, tx::exec);
-    assertTrue(ex instanceof RuntimeException);
+    assertTrue(ex instanceof JedisConnectionException);
+    assertEquals("stale", ex.getMessage());
+    verify(conn, atLeastOnce()).close();
   }
 
   @Test

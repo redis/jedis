@@ -148,7 +148,8 @@ public class MultiDbTransaction extends AbstractTransaction {
       Object multiReply = conn
           .executeCommand(new CommandObject<>(new CommandArguments(MULTI), NO_OP_BUILDER));
       if (!bytesEquals(OK_IN_BYTES, multiReply)) {
-        throw new JedisDataException("Unexpected response: " + multiReply);
+        throw new JedisDataException(
+            "Unexpected response: " + SafeEncoder.encode((byte[]) multiReply));
       }
 
       commands.forEach((command) -> conn.sendCommand(command.getKey()));
@@ -158,7 +159,8 @@ public class MultiDbTransaction extends AbstractTransaction {
       List<Object> queuedCmdResponses = conn.getMany(commands.size());
       queuedCmdResponses.forEach((rawReply) -> {
         if (!bytesEquals(QUEUED_IN_BYTES, rawReply)) {
-          throw new JedisDataException("Unexpected response: " + rawReply);
+          throw new JedisDataException(
+              "Unexpected response: " + SafeEncoder.encode((byte[]) rawReply));
         }
       });
 
@@ -207,7 +209,7 @@ public class MultiDbTransaction extends AbstractTransaction {
         acquireConnection().sendCommand(UNWATCH);
         return connection.getStatusCodeReply();
       }
-      return OK_STR.toString();
+      return OK_STR;
     } finally {
       inMulti = false;
       inWatch = false;

@@ -24,6 +24,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.providers.SentineledConnectionProvider.SentinelConnectionFactory;
 import redis.clients.jedis.util.Delay;
@@ -69,6 +70,11 @@ public class SentineledConnectionProviderReconnectionTest {
 
     masterConfig = mock(JedisClientConfig.class);
     sentinelConfig = mock(JedisClientConfig.class);
+
+    lenient().when(masterConfig.maintNotificationsConfig())
+        .thenReturn(MaintenanceNotificationsConfig.DEFAULT);
+    lenient().when(sentinelConfig.maintNotificationsConfig())
+        .thenReturn(MaintenanceNotificationsConfig.DEFAULT);
   }
 
   @AfterEach

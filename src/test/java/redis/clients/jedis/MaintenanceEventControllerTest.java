@@ -20,6 +20,7 @@ import java.util.function.Consumer;
 import org.apache.commons.pool2.PooledObject;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Assumptions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -111,12 +112,66 @@ public class MaintenanceEventControllerTest {
   // --- Seq guard ---
 
   @Test
-  public void staleAndOutOfOrderEvents_areIgnored() {
+  public void sameSeqDifferentTarget_isRejected() {
     moving(5L, TARGET_B, 100);
-    moving(5L, TARGET_C, 100); // same seq is a duplicate
-    moving(3L, TARGET_C, 100); // lower seq is out-of-order
+    moving(5L, TARGET_C, 100); // conflicting target for the same seq is treated as a server bug
     assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer),
-      "target unchanged by stale events");
+      "target unchanged by conflicting-target same-seq event");
+  }
+
+  @Test
+  public void lowerSeq_isIgnored() {
+    moving(5L, TARGET_B, 100);
+    moving(3L, TARGET_C, 100); // older event
+    assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer));
+  }
+
+  @Test
+  public void sameSeqSameTarget_mergesAffectedSources() throws Exception {
+    AtomicInteger fires = new AtomicInteger();
+    controller.addHandoffHook(handoff -> fires.incrementAndGet());
+
+    // First MOVING from `receiver` (connected to 127.0.0.1 in setUp()).
+    moving(1L, TARGET_B, 100);
+    assertEquals(1, fires.get(), "handoff hook fires on new seq");
+    assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer));
+
+    // Dual-stack receiver: connect the SAME mock server via the IPv6 loopback. The mock binds the
+    // wildcard address (new ServerSocket(0)) and accepts both families on the same port. Skip on
+    // environments without IPv6 (some CI/containers).
+    Connection ipv6Receiver = openIpv6Receiver(mockServer.getPort());
+    Assumptions.assumeTrue(ipv6Receiver != null,
+      "IPv6 loopback not available; skipping merge test");
+    SocketAddress ipv6Peer = ipv6Receiver.getRemoteSocketAddress();
+    try {
+      // Same seq, same target, different IP family → must merge and re-fire the hook so
+      // subscribers (e.g. pool.evict()) re-scan with the larger affected set.
+      controller.onMoving(new MovingEvent(1L, 100, TARGET_B), ipv6Receiver);
+
+      assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer),
+        "original IPv4 peer still remaps");
+      assertEquals(TARGET_B_ADDR, controller.getSocketAddress(ipv6Peer),
+        "merged IPv6 peer also remaps to same target");
+      assertEquals(2, fires.get(), "handoff hook fires again on same-seq merge");
+
+      // Idempotent: re-delivering the same MOVING to the same connection is a no-op (source
+      // already in the affected set; no state change → no hook fire).
+      controller.onMoving(new MovingEvent(1L, 100, TARGET_B), ipv6Receiver);
+      assertEquals(2, fires.get(), "no fire on duplicate merge of an already-present source");
+    } finally {
+      ipv6Receiver.close();
+    }
+  }
+
+  /** Connect to localhost:{@code port} over IPv6; returns null if IPv6 is unavailable. */
+  private static Connection openIpv6Receiver(int port) {
+    try {
+      Connection c = new Connection(new HostAndPort("::1", port));
+      c.connect();
+      return c;
+    } catch (Exception e) {
+      return null;
+    }
   }
 
   @Test

@@ -3,7 +3,10 @@ package redis.clients.jedis;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
@@ -54,9 +57,9 @@ final class MaintenanceEventController implements MaintenanceEvent.Handler, Sock
   }
 
   /**
-   * Post-DNS address mapper: remaps the resolved peer to the rebind target only when the resolved
-   * peer is the active rebind's affected node and the window is still open; else returns null (no
-   * remap).
+   * Post-DNS address mapper: remaps the resolved peer to the rebind target when the resolved peer
+   * is one of the active rebind's affected sources and the window is still open; else returns null
+   * (no remap). Lock-free read; {@link HashSet#contains} is O(1).
    */
   @Override
   public SocketAddress getSocketAddress(SocketAddress resolved) {
@@ -64,13 +67,13 @@ final class MaintenanceEventController implements MaintenanceEvent.Handler, Sock
     if (s == null || s.deadlineNanos - clockNanos.getAsLong() <= 0) {
       return null;
     }
-    return resolved.equals(s.affected) ? s.target : null;
+    return s.affected.contains(resolved) ? s.target : null;
   }
 
-  /** True iff {@code peer} matches the active rebind's affected node. */
+  /** True iff {@code peer} is one of the active rebind's affected sources. */
   boolean isAffected(SocketAddress peer) {
     RebindState s = rebind.get();
-    return s != null && s.deadlineNanos - clockNanos.getAsLong() > 0 && peer.equals(s.affected);
+    return s != null && s.deadlineNanos - clockNanos.getAsLong() > 0 && s.affected.contains(peer);
   }
 
   /** Relaxes a borrowed connection for the remainder of the active rebind window. */
@@ -91,26 +94,58 @@ final class MaintenanceEventController implements MaintenanceEvent.Handler, Sock
     // Any MOVING affects the receiver: mark for discard and relax commands on it before return.
     c.requestRebind();
     c.relaxTimeouts(Duration.ofSeconds(e.ttlSeconds));
-    SocketAddress affected = c.getRemoteSocketAddress();
-    if (affected == null) {
+    SocketAddress affectedPeer = c.getRemoteSocketAddress();
+    if (affectedPeer == null) {
       return; // receiver socket already closed; no peer to register
     }
     SocketAddress target = new InetSocketAddress(e.target.getHost(), e.target.getPort());
     long deadline = clockNanos.getAsLong() + TimeUnit.SECONDS.toNanos(e.ttlSeconds);
+
     while (true) {
       RebindState cur = rebind.get();
-      if (cur != null && e.seq <= cur.seq) {
-        return; // duplicate or out-of-order event
+      if (cur != null && e.seq < cur.seq) {
+        return; // older event
       }
-      if (rebind.compareAndSet(cur, new RebindState(e.seq, affected, target, deadline))) {
-        logger.debug("Rebinding {} -> {} (seq={}, ttl={}s)", affected, target, e.seq, e.ttlSeconds);
-        MaintenanceHandoff handoff = new MaintenanceHandoff(e.seq, e.target,
-            Duration.ofSeconds(e.ttlSeconds));
-        handoffHooks.forEach(hook -> hook.accept(handoff));
+      if (cur != null && e.seq == cur.seq) {
+        // Same handoff event from another affected connection: merge its peer into the set.
+        if (!target.equals(cur.target)) {
+          logger.warn("Ignoring MOVING with conflicting target for seq {}: have {}, got {}", e.seq,
+            cur.target, target);
+          return;
+        }
+        if (cur.affected.contains(affectedPeer)) {
+          return; // already merged
+        }
+        Set<SocketAddress> merged = new HashSet<>(cur.affected.size() + 1, 1.0f);
+        merged.addAll(cur.affected);
+        merged.add(affectedPeer);
+        RebindState next = new RebindState(cur.seq, Collections.unmodifiableSet(merged), cur.target,
+            cur.deadlineNanos);
+        if (rebind.compareAndSet(cur, next)) {
+          logger.debug("Merged source {} into rebind seq={} (sources={})", affectedPeer, cur.seq,
+            next.affected.size());
+          fireHandoffHook(e);
+          return;
+        }
+        continue; // CAS lost; retry
+      }
+      // New seq (or first ever): replace state with a fresh single-source set.
+      RebindState next = new RebindState(e.seq, Collections.singleton(affectedPeer), target,
+          deadline);
+      if (rebind.compareAndSet(cur, next)) {
+        logger.debug("Rebinding {} -> {} (seq={}, ttl={}s)", affectedPeer, target, e.seq,
+          e.ttlSeconds);
+        fireHandoffHook(e);
         return;
       }
-      // Lost the CAS to a concurrent apply; retry (may then observe a stale seq).
+      // CAS lost (concurrent apply); retry — may then see same-seq merge path or older-seq exit.
     }
+  }
+
+  private void fireHandoffHook(MovingEvent e) {
+    MaintenanceHandoff handoff = new MaintenanceHandoff(e.seq, e.target,
+        Duration.ofSeconds(e.ttlSeconds));
+    handoffHooks.forEach(hook -> hook.accept(handoff));
   }
 
   @Override
@@ -171,14 +206,19 @@ final class MaintenanceEventController implements MaintenanceEvent.Handler, Sock
     }
   }
 
-  /** Immutable snapshot of an active, time-bounded MOVING rebind. */
+  /**
+   * Immutable snapshot of an active, time-bounded MOVING rebind. {@code affected} holds the
+   * receivers' resolved peers (one per affected connection that delivered a MOVING with this
+   * {@code seq}); same-seq events with the same target merge by adding to this set under CAS. The
+   * set is always immutable; updates swap the whole state.
+   */
   private static final class RebindState {
     final long seq;
-    final SocketAddress affected; // receiver's resolved peer that received MOVING
-    final SocketAddress target; // its replacement
+    final Set<SocketAddress> affected;
+    final SocketAddress target;
     final long deadlineNanos;
 
-    RebindState(long seq, SocketAddress affected, SocketAddress target, long deadlineNanos) {
+    RebindState(long seq, Set<SocketAddress> affected, SocketAddress target, long deadlineNanos) {
       this.seq = seq;
       this.affected = affected;
       this.target = target;

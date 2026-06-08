@@ -24,13 +24,7 @@ public class MaintenanceNotificationsConfig {
     /** External IP address (for public network connections) */
     EXTERNAL_IP,
     /** External fully qualified domain name (for public network connections with TLS) */
-    EXTERNAL_FQDN,
-    /**
-     * none indicates that the MOVING message doesn’t need to contain an endpoint. In such a case,
-     * the client is expected to schedule a graceful reconnect to its currently configured endpoint
-     * after half of the grace period that was communicated by the server is over.
-     */
-    NONE
+    EXTERNAL_FQDN
   }
 
   /**

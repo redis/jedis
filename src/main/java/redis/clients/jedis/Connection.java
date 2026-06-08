@@ -853,8 +853,6 @@ public class Connection implements Closeable {
         return "external-ip";
       case EXTERNAL_FQDN:
         return "external-fqdn";
-      case NONE:
-        return "NONE";
       default:
         throw new JedisException("Unknown endpoint type: " + endpointType);
     }

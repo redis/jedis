@@ -149,18 +149,16 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   }
 
   /**
-   * Wires the pool-owned maintenance controller: injects it into built connections and routes the
-   * socket factory's target resolution through it (override during a MOVING grace window, else the
-   * configured host). Pure read → race-free, revert implicit.
+   * Wires the pool-owned maintenance controller: injects it into built connections and installs it
+   * as the socket factory's post-DNS address mapper so new connections to an affected peer are
+   * redirected to the rebind target within the MOVING grace window.
    */
   void attachMaintenanceController(MaintenanceEventController controller) {
     this.maintenanceController = controller;
     connectionBuilder.maintenanceController(controller);
     JedisSocketFactory socketFactory = connectionBuilder.getSocketFactory();
-    // TODO : introduce address mapper (map address after DNS resolution) vs hostAndPortSupplier
-    // TODO : Can we handle custom socket factory?
     if (socketFactory instanceof DefaultJedisSocketFactory) {
-      ((DefaultJedisSocketFactory) socketFactory).setHostAndPortSupplier(controller::targetOverride);
+      ((DefaultJedisSocketFactory) socketFactory).setSocketAddressMapper(controller);
     }
   }
 

@@ -1,12 +1,15 @@
 package redis.clients.jedis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -14,44 +17,59 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 
-import redis.clients.jedis.MaintenanceEventController.MaintenanceHandoff;
-
 import org.apache.commons.pool2.PooledObject;
 
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import redis.clients.jedis.MaintenanceEventController.MaintenanceHandoff;
 import redis.clients.jedis.util.ReflectionTestUtil;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 /**
- * Unit tests for the {@link MaintenanceEventController}: the lock-free, sequence-guarded,
- * time-bounded MOVING rebind overlay and the relax-on-borrow behaviour. The socket factory resolves
- * its target through {@code controller::targetOverride}; an injected monotonic clock makes expiry
- * deterministic. MOVING events are driven through {@link MaintenanceEventController#onMoving} with a
- * throwaway, socket-less receiver connection.
+ * Unit tests for {@link MaintenanceEventController}: the sequence-guarded, time-bounded MOVING
+ * rebind overlay; the {@link SocketAddressMapper} contract (affected-only redirect); the
+ * relax-on-borrow scope; and the handoff hook fan-out. The receiver connection is given a real
+ * (TcpMockServer-backed) socket so {@code getRemoteSocketAddress()} returns a real peer.
  */
 @Tag("sch")
 public class MaintenanceEventControllerTest {
 
-  private static final HostAndPort ORIGINAL = new HostAndPort("original.example.com", 6379);
   private static final HostAndPort TARGET_B = new HostAndPort("node-b.example.com", 6380);
   private static final HostAndPort TARGET_C = new HostAndPort("node-c.example.com", 6381);
+  private static final SocketAddress TARGET_B_ADDR = new InetSocketAddress("node-b.example.com",
+      6380);
+  private static final SocketAddress TARGET_C_ADDR = new InetSocketAddress("node-c.example.com",
+      6381);
 
-  private DefaultJedisSocketFactory socketFactory;
+  private TcpMockServer mockServer;
   private MaintenanceEventController controller;
   private Connection receiver;
+  private SocketAddress receiverPeer;
   private AtomicLong now;
 
   @BeforeEach
-  public void setUp() {
+  public void setUp() throws Exception {
     now = new AtomicLong(0);
     controller = MaintenanceEventController.from(MaintenanceNotificationsConfig.builder().build());
     controller.setClockNanos(now::get);
-    socketFactory = new DefaultJedisSocketFactory(ORIGINAL);
-    socketFactory.setHostAndPortSupplier(controller::targetOverride);
-    receiver = new Connection(); // socket-less; absorbs the per-connection relax/rebind calls
+
+    mockServer = new TcpMockServer();
+    mockServer.start();
+
+    HostAndPort mock = new HostAndPort("127.0.0.1", mockServer.getPort());
+    receiver = new Connection(mock);
+    receiver.connect();
+    receiverPeer = receiver.getRemoteSocketAddress();
+    assertNotNull(receiverPeer, "receiver must have a real peer for the affected-key tests");
+  }
+
+  @AfterEach
+  public void tearDown() throws Exception {
+    if (receiver != null) receiver.close();
+    if (mockServer != null) mockServer.stop();
   }
 
   private void moving(long seq, HostAndPort target, long ttlSeconds) {
@@ -62,54 +80,64 @@ public class MaintenanceEventControllerTest {
     now.addAndGet(TimeUnit.SECONDS.toNanos(seconds));
   }
 
-  @Test
-  public void noRebind_usesOriginal() {
-    assertEquals(ORIGINAL, socketFactory.getHostAndPort());
-  }
+  // --- SocketAddressMapper / affected-only redirect ---
 
   @Test
-  public void applyNewTarget_thenExpiresBackToOriginal() {
+  public void getSocketAddress_remapsAffectedOnly() {
     moving(1L, TARGET_B, 10);
-    assertEquals(TARGET_B, socketFactory.getHostAndPort(), "within grace window uses new target");
 
-    advanceSeconds(9);
-    assertEquals(TARGET_B, socketFactory.getHostAndPort(), "still within window");
-
-    advanceSeconds(2); // now past the 10s deadline
-    assertEquals(ORIGINAL, socketFactory.getHostAndPort(), "after expiry reverts to original");
+    assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer),
+      "affected peer remapped to target");
+    SocketAddress other = new InetSocketAddress("unaffected.example.com", 7000);
+    assertNull(controller.getSocketAddress(other), "unaffected peer not remapped");
   }
+
+  @Test
+  public void getSocketAddress_returnsNullAfterDeadline() {
+    moving(1L, TARGET_B, 10);
+    advanceSeconds(11);
+    assertNull(controller.getSocketAddress(receiverPeer));
+  }
+
+  @Test
+  public void isAffected_matchesActiveAffectedWithinWindow() {
+    assertFalse(controller.isAffected(receiverPeer), "no rebind yet");
+    moving(1L, TARGET_B, 10);
+    assertTrue(controller.isAffected(receiverPeer));
+    advanceSeconds(11);
+    assertFalse(controller.isAffected(receiverPeer), "after deadline");
+  }
+
+  // --- Seq guard ---
 
   @Test
   public void staleAndOutOfOrderEvents_areIgnored() {
     moving(5L, TARGET_B, 100);
     moving(5L, TARGET_C, 100); // same seq is a duplicate
     moving(3L, TARGET_C, 100); // lower seq is out-of-order
-    assertEquals(TARGET_B, socketFactory.getHostAndPort(), "target unchanged by stale events");
-  }
-
-  @Test
-  public void higherSeqSameTarget_isApplied() {
-    moving(5L, TARGET_B, 10);
-    moving(6L, TARGET_B, 10); // dedup is by seq, not by target
-    assertEquals(TARGET_B, socketFactory.getHostAndPort());
+    assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer),
+      "target unchanged by stale events");
   }
 
   @Test
   public void higherSeqNewTarget_supersedes() {
     moving(5L, TARGET_B, 100);
     moving(6L, TARGET_C, 100);
-    assertEquals(TARGET_C, socketFactory.getHostAndPort());
+    assertEquals(TARGET_C_ADDR, controller.getSocketAddress(receiverPeer));
   }
 
   @Test
   public void newEventAfterExpiry_appliesAgain() {
     moving(5L, TARGET_B, 10);
     advanceSeconds(11); // expire
-    assertEquals(ORIGINAL, socketFactory.getHostAndPort());
+    assertNull(controller.getSocketAddress(receiverPeer));
 
     moving(6L, TARGET_C, 10);
-    assertEquals(TARGET_C, socketFactory.getHostAndPort(), "a newer event after expiry applies again");
+    assertEquals(TARGET_C_ADDR, controller.getSocketAddress(receiverPeer),
+      "newer event after expiry applies again");
   }
+
+  // --- Handoff hooks ---
 
   @Test
   public void handoffHook_firesOncePerAppliedHandoff() {
@@ -121,7 +149,7 @@ public class MaintenanceEventControllerTest {
     moving(6L, TARGET_C, 100); // newer: fire
 
     assertEquals(2, fires.get());
-    receiverWasMarkedAndRelaxed();
+    assertTrue(receiver.isRelaxedTimeoutActive(), "receiver relaxed on MOVING");
   }
 
   @Test
@@ -163,13 +191,12 @@ public class MaintenanceEventControllerTest {
     assertEquals(1, fires.get(), "removed hook should not fire on subsequent handoffs");
   }
 
-  private void receiverWasMarkedAndRelaxed() {
-    assertTrue(receiver.isRelaxedTimeoutActive(), "receiver relaxed on MOVING");
-  }
+  // --- Pool wiring ---
 
   @Test
-  public void poolWiresControllerIntoFactoryAndSocketFactory() {
-    DefaultJedisSocketFactory sf = new DefaultJedisSocketFactory(ORIGINAL);
+  public void poolWiresControllerAsSocketAddressMapper() {
+    DefaultJedisSocketFactory sf = new DefaultJedisSocketFactory(
+        new HostAndPort("localhost", mockServer.getPort()));
     JedisClientConfig config = DefaultJedisClientConfig.builder()
         .maintNotificationsConfig(MaintenanceNotificationsConfig.builder().build()).build();
     ConnectionFactory factory = new ConnectionFactory(sf, config);
@@ -177,10 +204,8 @@ public class MaintenanceEventControllerTest {
     new ConnectionPool(factory); // constructing the pool wires the controller from the config
     MaintenanceEventController wired = factory.getMaintenanceController();
     assertNotNull(wired, "pool creates and attaches a controller when maintenance is enabled");
-    assertEquals(ORIGINAL, sf.getHostAndPort(), "no rebind yet → configured host");
-
-    wired.onMoving(new MovingEvent(1L, 100, TARGET_B), new Connection());
-    assertEquals(TARGET_B, sf.getHostAndPort(), "socket factory resolves through the controller");
+    assertSame(wired, sf.getSocketAddressMapper(),
+      "socket factory uses the controller as its post-DNS mapper");
   }
 
   @Test
@@ -188,47 +213,76 @@ public class MaintenanceEventControllerTest {
     JedisClientConfig config = DefaultJedisClientConfig.builder().maintNotificationsConfig(
         MaintenanceNotificationsConfig.builder().mode(MaintenanceNotificationsConfig.Mode.DISABLED)
             .build()).build();
-    ConnectionFactory factory = new ConnectionFactory(new DefaultJedisSocketFactory(ORIGINAL), config);
+    ConnectionFactory factory = new ConnectionFactory(
+        new DefaultJedisSocketFactory(new HostAndPort("localhost", mockServer.getPort())), config);
 
     new ConnectionPool(factory);
     assertNull(factory.getMaintenanceController());
   }
 
+  // --- Relax-on-borrow ---
+
   @Test
-  public void borrowRelaxesConnectionDuringRebindWindow() throws Exception {
+  public void borrowRelaxesConnection_duringRebindWindow() throws Exception {
     int soTimeoutMs = 2000;
     int relaxedTimeoutMs = 10000;
-    TcpMockServer mockServer = new TcpMockServer();
-    mockServer.start();
+    MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
+        .timeoutOptions(TimeoutOptions.builder()
+            .proactiveTimeoutsRelaxing(Duration.ofMillis(relaxedTimeoutMs)).build())
+        .build();
+    DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
+        .socketTimeoutMillis(soTimeoutMs).maintNotificationsConfig(maintConfig)
+        .protocol(RedisProtocol.RESP3).build();
+    HostAndPort mock = new HostAndPort("127.0.0.1", mockServer.getPort());
+
+    DefaultJedisSocketFactory mockSocketFactory = new DefaultJedisSocketFactory(mock, clientConfig);
+    ConnectionFactory factory = new ConnectionFactory(mockSocketFactory, clientConfig);
+    MaintenanceEventController poolCtl = MaintenanceEventController.from(maintConfig);
+    factory.attachMaintenanceController(poolCtl);
+
+    poolCtl.onMoving(new MovingEvent(1L, 100, mock), receiver);
+
+    PooledObject<Connection> pooled = factory.makeObject();
     try {
-      MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
-          .timeoutOptions(TimeoutOptions.builder()
-              .proactiveTimeoutsRelaxing(Duration.ofMillis(relaxedTimeoutMs)).build())
-          .build();
-      DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
-          .socketTimeoutMillis(soTimeoutMs).maintNotificationsConfig(maintConfig)
-          .protocol(RedisProtocol.RESP3).build();
-      HostAndPort mock = new HostAndPort("localhost", mockServer.getPort());
+      factory.activateObject(pooled);
+      Connection borrowed = pooled.getObject();
+      assertTrue(borrowed.isRelaxedTimeoutActive(),
+        "a connection borrowed during an active rebind window is relaxed");
+      Socket socket = ReflectionTestUtil.getField(borrowed, "socket");
+      assertEquals(relaxedTimeoutMs, socket.getSoTimeout());
+    } finally {
+      pooled.getObject().close();
+    }
+  }
 
-      DefaultJedisSocketFactory mockSocketFactory = new DefaultJedisSocketFactory(mock, clientConfig);
-      ConnectionFactory factory = new ConnectionFactory(mockSocketFactory, clientConfig);
-      MaintenanceEventController controller = MaintenanceEventController.from(maintConfig);
-      factory.attachMaintenanceController(controller);
+  @Test
+  public void relaxIfRebinding_relaxesAnyPeerWhileWindowIsOpen() throws Exception {
+    moving(1L, TARGET_B, 100);
 
-      controller.onMoving(new MovingEvent(1L, 100, mock), new Connection()); // open the window
-      PooledObject<Connection> pooled = factory.makeObject();
+    // Borrow a fresh connection bound to the same mock (its peer is the receiver's affected peer).
+    Connection samePeer = new Connection(new HostAndPort("127.0.0.1", mockServer.getPort()));
+    samePeer.connect();
+    try {
+      controller.relaxIfRebinding(samePeer);
+      assertTrue(samePeer.isRelaxedTimeoutActive(), "affected peer relaxed");
+    } finally {
+      samePeer.close();
+    }
+
+    TcpMockServer other = new TcpMockServer();
+    other.start();
+    try {
+      Connection differentPeer = new Connection(new HostAndPort("127.0.0.1", other.getPort()));
+      differentPeer.connect();
       try {
-        factory.activateObject(pooled); // simulate a pool borrow
-        Connection borrowed = pooled.getObject();
-        assertTrue(borrowed.isRelaxedTimeoutActive(),
-          "a connection borrowed during a rebind window is relaxed");
-        Socket socket = ReflectionTestUtil.getField(borrowed, "socket");
-        assertEquals(relaxedTimeoutMs, socket.getSoTimeout());
+        controller.relaxIfRebinding(differentPeer);
+        assertTrue(differentPeer.isRelaxedTimeoutActive(),
+          "unaffected peer also relaxed during an active rebind window");
       } finally {
-        pooled.getObject().close();
+        differentPeer.close();
       }
     } finally {
-      mockServer.stop();
+      other.stop();
     }
   }
 }

@@ -4,11 +4,11 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Supplier;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLParameters;
@@ -33,9 +33,9 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   private HostnameVerifier hostnameVerifier = null;
   private HostAndPortMapper hostAndPortMapper = null;
 
-  // Optional transient target override (e.g. maintenance MOVING rebind, owned by ConnectionFactory).
-  // Returns the override host:port, or null to use the configured hostAndPort.
-  private volatile Supplier<HostAndPort> hostAndPortSupplier = null;
+  // Optional post-DNS address mapper (e.g. maintenance MOVING rebind, owned by ConnectionFactory).
+  // Called once the configured host has been resolved, before Socket.connect.
+  private volatile SocketAddressMapper socketAddressMapper = null;
 
   public DefaultJedisSocketFactory() {
   }
@@ -82,7 +82,16 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
         // Passing 'host' directly will avoid another call to InetAddress.getByName() inside the InetSocketAddress constructor.
         // For machines with ipv4 and ipv6, but the startNode uses ipv4 to connect, the ipv6 connection may fail.
-        socket.connect(new InetSocketAddress(host, hostAndPort.getPort()), connectionTimeout);
+        InetSocketAddress resolved = new InetSocketAddress(host, hostAndPort.getPort());
+        SocketAddress target = resolved;
+        SocketAddressMapper mapper = socketAddressMapper;
+        if (mapper != null) {
+          SocketAddress mapped = mapper.getSocketAddress(resolved);
+          if (mapped != null) {
+            target = mapped;
+          }
+        }
+        socket.connect(target, connectionTimeout);
         return socket;
       } catch (Exception e) {
         jce.addSuppressed(e);
@@ -169,36 +178,27 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   }
 
   /**
-   * Installs a resolver for a transient target override (e.g. the maintenance MOVING rebind window,
-   * owned by {@link ConnectionFactory}). The resolver returns the override host:port, or
-   * {@code null} to use the configured {@link #hostAndPort}. Read on every connect.
+   * Installs a post-DNS address mapper (e.g. the maintenance MOVING rebind, owned by
+   * {@link ConnectionFactory}). The mapper is called after the configured host has been resolved,
+   * before {@link Socket#connect(SocketAddress, int)}; it returns the address to connect to
+   * instead, or {@code null} to leave the resolved address unchanged.
    */
-  void setHostAndPortSupplier(Supplier<HostAndPort> hostAndPortSupplier) {
-    this.hostAndPortSupplier = hostAndPortSupplier;
+  void setSocketAddressMapper(SocketAddressMapper socketAddressMapper) {
+    this.socketAddressMapper = socketAddressMapper;
   }
 
-  /**
-   * The effective target: the resolver's override when present, otherwise the configured
-   * {@link #hostAndPort}. The configured value is never overwritten by a rebind.
-   */
-  private HostAndPort effectiveHostAndPort() {
-    Supplier<HostAndPort> supplier = hostAndPortSupplier;
-    if (supplier != null) {
-      HostAndPort override = supplier.get();
-      if (override != null) {
-        return override;
-      }
-    }
-    return this.hostAndPort;
+  /** Visible for testing: the currently installed mapper, or {@code null}. */
+  SocketAddressMapper getSocketAddressMapper() {
+    return socketAddressMapper;
   }
 
   public HostAndPort getHostAndPort() {
-    return effectiveHostAndPort();
+    return this.hostAndPort;
   }
 
   protected HostAndPort getSocketHostAndPort() {
     HostAndPortMapper mapper = hostAndPortMapper;
-    HostAndPort hap = effectiveHostAndPort();
+    HostAndPort hap = this.hostAndPort;
     if (mapper != null) {
       HostAndPort mapped = mapper.getHostAndPort(hap);
       if (mapped != null) {

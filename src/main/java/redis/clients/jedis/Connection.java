@@ -1110,6 +1110,11 @@ public class Connection implements Closeable {
     this.rebindRequested = true;
   }
 
+  /** The connected peer's address, or {@code null} if the socket is not (yet) open. */
+  SocketAddress getRemoteSocketAddress() {
+    return socket == null ? null : socket.getRemoteSocketAddress();
+  }
+
   /**
    * Push consumer for server maintenance events: parses each frame into a typed
    * {@link MaintenanceEvent} and forwards it to the {@link MaintenanceEventController}

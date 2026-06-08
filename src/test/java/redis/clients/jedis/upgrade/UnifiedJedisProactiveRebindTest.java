@@ -58,8 +58,11 @@ public class UnifiedJedisProactiveRebindTest {
     mockServer2 = new TcpMockServer();
     mockServer2.start();
 
-    server1Address = new HostAndPort("localhost", mockServer1.getPort());
-    server2Address = new HostAndPort("localhost", mockServer2.getPort());
+    // Use 127.0.0.1 (not "localhost") so the receiver's resolved peer and the configured host's
+    // resolution match deterministically — avoids the IPv4/IPv6 split that the new post-DNS
+    // SocketAddressMapper compares strictly.
+    server1Address = new HostAndPort("127.0.0.1", mockServer1.getPort());
+    server2Address = new HostAndPort("127.0.0.1", mockServer2.getPort());
 
     System.out.println("MockServer1 started on port: " + mockServer1.getPort());
     System.out.println("MockServer2 started on port: " + mockServer2.getPort());
@@ -238,8 +241,9 @@ public class UnifiedJedisProactiveRebindTest {
       Connection newConnection = unifiedJedis.getPool().getResource();
       assertTrue(newConnection.ping());
 
-      // Verify that new connections are being created against server2
-      assertEquals(server2Address, newConnection.getHostAndPort());
+      // Verify that the new connection landed on server2 (the SocketAddressMapper remapped the
+      // resolved peer). Under the new post-DNS design Connection.getHostAndPort() returns the
+      // configured value; connected-client counts are the source of truth.
       assertEquals(0, mockServer1.getConnectedClientCount());
       assertEquals(1, mockServer2.getConnectedClientCount());
     }

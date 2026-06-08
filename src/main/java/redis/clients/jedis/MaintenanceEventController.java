@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -15,7 +17,7 @@ import org.slf4j.LoggerFactory;
  * Per-pool maintenance handler: owns the shared rebind overlay, the relax-window policy, and the
  * handoff hooks fired when a MOVING is applied.
  */
-final class MaintenanceEventController implements MaintenanceEvent.Handler {
+final class MaintenanceEventController implements MaintenanceEvent.Handler, SocketAddressMapper {
 
   private static final Logger logger = LoggerFactory.getLogger(MaintenanceEventController.class);
 
@@ -51,13 +53,27 @@ final class MaintenanceEventController implements MaintenanceEvent.Handler {
     this.clockNanos = clockNanos;
   }
 
-  /** Socket-factory resolver: the override target while the window is open, else null. */
-  HostAndPort targetOverride() {
+  /**
+   * Post-DNS address mapper: remaps the resolved peer to the rebind target only when the resolved
+   * peer is the active rebind's affected node and the window is still open; else returns null
+   * (no remap).
+   */
+  @Override
+  public SocketAddress getSocketAddress(SocketAddress resolved) {
     RebindState s = rebind.get();
-    return (s != null && s.deadlineNanos - clockNanos.getAsLong() > 0) ? s.target : null;
+    if (s == null || s.deadlineNanos - clockNanos.getAsLong() <= 0) {
+      return null;
+    }
+    return resolved.equals(s.affected) ? s.target : null;
   }
 
-  /** Relaxes a borrowed connection for the remainder of an active rebind window. */
+  /** True iff {@code peer} matches the active rebind's affected node. */
+  boolean isAffected(SocketAddress peer) {
+    RebindState s = rebind.get();
+    return s != null && s.deadlineNanos - clockNanos.getAsLong() > 0 && peer.equals(s.affected);
+  }
+
+  /** Relaxes a borrowed connection for the remainder of the active rebind window. */
   public void relaxIfRebinding(Connection conn) {
     RebindState s = rebind.get();
     if (s == null) {
@@ -75,14 +91,19 @@ final class MaintenanceEventController implements MaintenanceEvent.Handler {
     // Any MOVING affects the receiver: mark for discard and relax commands on it before return.
     c.requestRebind();
     c.relaxTimeouts(Duration.ofSeconds(e.ttlSeconds));
+    SocketAddress affected = c.getRemoteSocketAddress();
+    if (affected == null) {
+      return; // receiver socket already closed; no peer to register
+    }
+    SocketAddress target = new InetSocketAddress(e.target.getHost(), e.target.getPort());
     long deadline = clockNanos.getAsLong() + TimeUnit.SECONDS.toNanos(e.ttlSeconds);
     while (true) {
       RebindState cur = rebind.get();
       if (cur != null && e.seq <= cur.seq) {
         return; // duplicate or out-of-order event
       }
-      if (rebind.compareAndSet(cur, new RebindState(e.seq, e.target, deadline))) {
-        logger.debug("Rebinding to {} (seq={}, ttl={}s)", e.target, e.seq, e.ttlSeconds);
+      if (rebind.compareAndSet(cur, new RebindState(e.seq, affected, target, deadline))) {
+        logger.debug("Rebinding {} -> {} (seq={}, ttl={}s)", affected, target, e.seq, e.ttlSeconds);
         MaintenanceHandoff handoff = new MaintenanceHandoff(e.seq, e.target,
             Duration.ofSeconds(e.ttlSeconds));
         handoffHooks.forEach(hook -> hook.accept(handoff));
@@ -152,11 +173,13 @@ final class MaintenanceEventController implements MaintenanceEvent.Handler {
   /** Immutable snapshot of an active, time-bounded MOVING rebind. */
   private static final class RebindState {
     final long seq;
-    final HostAndPort target;
+    final SocketAddress affected;     // receiver's resolved peer that received MOVING
+    final SocketAddress target;       // its replacement
     final long deadlineNanos;
 
-    RebindState(long seq, HostAndPort target, long deadlineNanos) {
+    RebindState(long seq, SocketAddress affected, SocketAddress target, long deadlineNanos) {
       this.seq = seq;
+      this.affected = affected;
       this.target = target;
       this.deadlineNanos = deadlineNanos;
     }

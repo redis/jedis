@@ -424,6 +424,11 @@ public class ConnectionMockTest {
       Socket socket = ReflectionTestUtil.getField(connection, "socket");
       AtomicLong clock = new AtomicLong(0);
       connection.setClockNanos(clock::get);
+      // MOVING also drives the pool-wide rebind state via the controller; sync its clock so
+      // executeCommand's read-time apply sees the same time progression as the connection.
+      ConnectionFactory factory = (ConnectionFactory) pool.getFactory();
+      MaintenanceEventController ctrl = factory.getMaintenanceController();
+      if (ctrl != null) ctrl.setClockNanos(clock::get);
 
       mockServer.sendPushMessageToAll(
         MaintenanceEventMessages.moving(1, 15, "localhost:" + mockServer.getPort()));

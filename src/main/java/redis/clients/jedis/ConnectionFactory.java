@@ -180,10 +180,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
   @Override
   public void activateObject(PooledObject<Connection> pooledConnection) throws Exception {
-    // Relax on borrow so every connection handed out during a rebind window is relaxed.
-    if (maintenanceController != null) {
-      maintenanceController.relaxIfRebinding(pooledConnection.getObject());
-    }
+    // what to do ??
   }
 
   @Override

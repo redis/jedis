@@ -300,45 +300,56 @@ public class MaintenanceEventControllerTest {
 
     PooledObject<Connection> pooled = factory.makeObject();
     try {
-      factory.activateObject(pooled);
+      factory.activateObject(pooled); // borrow-time hook is now a no-op
       Connection borrowed = pooled.getObject();
-      assertTrue(borrowed.isRelaxedTimeoutActive(),
-        "a connection borrowed during an active rebind window is relaxed");
-      Socket socket = ReflectionTestUtil.getField(borrowed, "socket");
-      assertEquals(relaxedTimeoutMs, socket.getSoTimeout());
+      // The lazy/sticky model applies the relaxed timeout on the next command, not at borrow time.
+      // The controller's per-connection query is what executeCommand consults.
+      assertTrue(poolCtl.isTimeoutRelaxed(borrowed),
+        "controller reports relaxed for any connection during an active rebind window");
     } finally {
       pooled.getObject().close();
     }
   }
 
   @Test
-  public void relaxIfRebinding_relaxesAnyPeerWhileWindowIsOpen() throws Exception {
+  public void isTimeoutRelaxed_trueForAnyConnectionWhileRebindActive() throws Exception {
     moving(1L, TARGET_B, 100);
 
-    // Borrow a fresh connection bound to the same mock (its peer is the receiver's affected peer).
-    Connection samePeer = new Connection(new HostAndPort("127.0.0.1", mockServer.getPort()));
-    samePeer.connect();
-    try {
-      controller.relaxIfRebinding(samePeer);
-      assertTrue(samePeer.isRelaxedTimeoutActive(), "affected peer relaxed");
-    } finally {
-      samePeer.close();
-    }
-
+    // A peer that never received a MOVING is still reported relaxed while a rebind window is open.
     TcpMockServer other = new TcpMockServer();
     other.start();
     try {
-      Connection differentPeer = new Connection(new HostAndPort("127.0.0.1", other.getPort()));
-      differentPeer.connect();
+      Connection peer = new Connection(new HostAndPort("127.0.0.1", other.getPort()));
+      peer.connect();
       try {
-        controller.relaxIfRebinding(differentPeer);
-        assertTrue(differentPeer.isRelaxedTimeoutActive(),
-          "unaffected peer also relaxed during an active rebind window");
+        assertFalse(peer.isRelaxedTimeoutActive(),
+          "this connection never got a MOVING, so it should have no relaxation window of its own");
+        assertTrue(controller.isTimeoutRelaxed(peer),
+          "controller should still flag the connection as relaxed while a pool-wide MOVING window is open");
       } finally {
-        differentPeer.close();
+        peer.close();
       }
     } finally {
       other.stop();
     }
+  }
+
+  @Test
+  public void onMoving_capsRelaxDurationAtMax() {
+    // Configure a 10s max-relax backstop.
+    MaintenanceEventController capped = MaintenanceEventController
+        .from(MaintenanceNotificationsConfig.builder()
+            .timeoutOptions(
+              TimeoutOptions.builder().relaxedTimeoutMaxDuration(Duration.ofSeconds(10)).build())
+            .build());
+    capped.setClockNanos(now::get);
+
+    // Server says 100s; the cap shortens it to 10s.
+    capped.onMoving(new MovingEvent(1L, 100, TARGET_B), receiver);
+    assertNotNull(capped.getSocketAddress(receiverPeer), "active just after MOVING");
+
+    advanceSeconds(11);
+    assertNull(capped.getSocketAddress(receiverPeer),
+      "ttl is capped at maxRelaxedDuration (10s), not the server-supplied 100s");
   }
 }

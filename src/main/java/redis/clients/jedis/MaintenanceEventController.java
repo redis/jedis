@@ -76,30 +76,39 @@ final class MaintenanceEventController implements MaintenanceEvent.Handler, Sock
     return s != null && s.deadlineNanos - clockNanos.getAsLong() > 0 && s.affected.contains(peer);
   }
 
-  /** Relaxes a borrowed connection for the remainder of the active rebind window. */
-  public void relaxIfRebinding(Connection conn) {
+  /** True iff there is an active MOVING rebind window in the pool right now. */
+  boolean isRebindActive() {
     RebindState s = rebind.get();
-    if (s == null) {
-      return;
-    }
-    long remainingNanos = s.deadlineNanos - clockNanos.getAsLong();
-    if (remainingNanos > 0) {
-      conn.relaxTimeouts(Duration.ofNanos(remainingNanos));
-    }
+    if (s == null) return false;
+    if (s.deadlineNanos - clockNanos.getAsLong() > 0) return true;
+    rebind.compareAndSet(s, null); // lazy cleanup past deadline; loser silently skips
+    return false;
+  }
+
+  /**
+   * True iff {@code conn}'s next command should run with relaxed timeouts: either the connection
+   * itself is in a per-receiver relaxation window (MIGRATING / FAILING_OVER / MOVING receiver) or a
+   * pool-wide MOVING rebind window is currently active.
+   */
+  public boolean isTimeoutRelaxed(Connection conn) {
+    return conn.isRelaxedTimeoutActive() || isRebindActive();
   }
 
   @Override
   public void onMoving(MovingEvent e, Connection c) {
     logger.debug("Moving to {} (seq={}, ttl={}s)", e.target, e.seq, e.ttlSeconds);
+    // Cap the server-supplied ttl at the user-configured backstop so a generous or misbehaving
+    // server can't pin the pool in relaxed mode beyond {@code relaxedTimeoutMaxDuration}.
+    long ttlNanos = Math.min(TimeUnit.SECONDS.toNanos(e.ttlSeconds), maxRelaxedDurationNanos);
     // Any MOVING affects the receiver: mark for discard and relax commands on it before return.
     c.requestRebind();
-    c.relaxTimeouts(Duration.ofSeconds(e.ttlSeconds));
+    c.relaxTimeouts(Duration.ofNanos(ttlNanos));
     SocketAddress affectedPeer = c.getRemoteSocketAddress();
     if (affectedPeer == null) {
       return; // receiver socket already closed; no peer to register
     }
     SocketAddress target = new InetSocketAddress(e.target.getHost(), e.target.getPort());
-    long deadline = clockNanos.getAsLong() + TimeUnit.SECONDS.toNanos(e.ttlSeconds);
+    long deadline = clockNanos.getAsLong() + ttlNanos;
 
     while (true) {
       RebindState cur = rebind.get();

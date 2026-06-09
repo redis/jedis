@@ -157,6 +157,13 @@ public class Connection implements Closeable {
   /** Maintenance handler (pool-injected; {@code null} when non-pooled or maintenance disabled). */
   private MaintenanceEventController maintenanceController;
 
+  /**
+   * Cache of the SO_TIMEOUT value currently applied to {@link #socket}. Lets {@link #applyTimeout}
+   * skip the {@code setSoTimeout} syscall when the desired value already matches. Initialized in
+   * {@link #connect()} from the socket's actual value and updated by {@link #applyTimeout}.
+   */
+  private int lastAppliedTimeout;
+
   private JedisClientConfig clientConfig;
   private final ProtocolHandshake handshake = new ProtocolHandshake(this);
   private final PushConsumerChainImpl pushConsumers = PushConsumerChainImpl.of();
@@ -357,14 +364,7 @@ public class Connection implements Closeable {
    */
   public void setSoTimeout(int soTimeout) {
     this.soTimeout = soTimeout;
-    if (this.socket != null) {
-      try {
-        this.socket.setSoTimeout(getActiveSoTimeout());
-      } catch (SocketException ex) {
-        setBroken();
-        throw new JedisConnectionException(ex);
-      }
-    }
+    applyTimeout(desiredSoTimeout(isBlocking, isCurrentlyRelaxed()));
   }
 
   /**
@@ -386,15 +386,11 @@ public class Connection implements Closeable {
    * @see #isRelaxedTimeoutActive()
    */
   public void setTimeoutInfinite() {
-    try {
-      if (!isConnected()) {
-        connect();
-      }
-      socket.setSoTimeout(getActiveBlockingSoTimeout());
-    } catch (SocketException ex) {
-      setBroken();
-      throw new JedisConnectionException(ex);
+    if (!isConnected()) {
+      connect();
     }
+    isBlocking = true;
+    applyTimeout(desiredSoTimeout(true, isCurrentlyRelaxed()));
   }
 
   /**
@@ -413,12 +409,8 @@ public class Connection implements Closeable {
    * @see #getActiveSoTimeout()
    */
   public void rollbackTimeout() {
-    try {
-      socket.setSoTimeout(getActiveSoTimeout());
-    } catch (SocketException ex) {
-      setBroken();
-      throw new JedisConnectionException(ex);
-    }
+    isBlocking = false;
+    applyTimeout(desiredSoTimeout(false, isCurrentlyRelaxed()));
   }
 
   public Object executeCommand(final ProtocolCommand cmd) {
@@ -435,15 +427,15 @@ public class Connection implements Closeable {
     sendCommand(args);
     if (!args.isBlocking()) {
       return commandObject.getBuilder().build(getOne());
-    } else {
-      try {
-        isBlocking = true;
-        setTimeoutInfinite();
-        return commandObject.getBuilder().build(getOne());
-      } finally {
-        isBlocking = false;
-        rollbackTimeout();
-      }
+    }
+    try {
+      isBlocking = true;
+      return commandObject.getBuilder().build(getOne());
+    } finally {
+      isBlocking = false;
+      // Restore the non-blocking socket timeout so observers (and the next, possibly non-blocking,
+      // command) see a coherent value immediately. Cache-checked → no syscall when unchanged.
+      applyTimeout(desiredSoTimeout(false, isCurrentlyRelaxed()));
     }
   }
 
@@ -495,6 +487,7 @@ public class Connection implements Closeable {
       try {
         socket = socketFactory.createSocket();
         soTimeout = socket.getSoTimeout(); // ?
+        lastAppliedTimeout = soTimeout;    // mirror the freshly-set baseline
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
@@ -669,8 +662,14 @@ public class Connection implements Closeable {
     if (broken) {
       throw new JedisConnectionException("Attempting to read from a broken connection.");
     }
-
-    expireRelaxedTimeout();
+    // Hot-path fast skip: when no maintenance state is in play and we're not in a blocking
+    // section, the socket's SO_TIMEOUT invariantly equals the configured baseline (set in
+    // {@link #connect()} and maintained by {@link #applyTimeout}). Avoid the apply machinery in
+    // that overwhelming common case. Otherwise, align the socket to the current blocking /
+    // relaxation state — cache-checked, so a syscall fires only on a transition.
+    if (relaxedUntilNanos != 0 || isBlocking || maintenanceController != null) {
+      applyTimeout(desiredSoTimeout(isBlocking, isCurrentlyRelaxed()));
+    }
     try {
       return protocolRead(inputStream, pushConsumers);
     } catch (JedisConnectionException exc) {
@@ -1047,21 +1046,55 @@ public class Connection implements Closeable {
   @Experimental
   public boolean isRelaxedTimeoutActive() {
     long d = relaxedUntilNanos;
-    return d != 0 && d - clockNanos.getAsLong() > 0;
-  }
-
-  int getActiveSoTimeout() {
-    return isRelaxedTimeoutActive() && relaxedTimeoutConfigured ? relaxedTimeout : soTimeout;
-  }
-
-  int getActiveBlockingSoTimeout() {
-    return isRelaxedTimeoutActive() && relaxedBlockingTimeoutConfigured ? relaxedBlockingTimeout
-        : infiniteSoTimeout;
+    if (d == 0) return false;
+    if (d - clockNanos.getAsLong() > 0) return true;
+    relaxedUntilNanos = 0; // lazy reset past deadline; same thread owns the field
+    return false;
   }
 
   /**
-   * Relaxes this connection's read timeouts for {@code period}; extends an active window, never
-   * shrinks it.
+   * Whether the next command should run with relaxed timeouts: either this connection has its own
+   * receiver-local window open (MIGRATING / FAILING_OVER / MOVING-receiver) or the pool is in an
+   * active MOVING rebind window.
+   */
+  private boolean isCurrentlyRelaxed() {
+    return isRelaxedTimeoutActive()
+        || (maintenanceController != null && maintenanceController.isRebindActive());
+  }
+
+  /**
+   * Returns the {@code SO_TIMEOUT} value to apply for the next operation given the blocking mode
+   * and whether relaxation is in effect right now.
+   */
+  private int desiredSoTimeout(boolean blocking, boolean relaxed) {
+    if (blocking) {
+      return relaxed && relaxedBlockingTimeoutConfigured ? relaxedBlockingTimeout : infiniteSoTimeout;
+    }
+    return relaxed && relaxedTimeoutConfigured ? relaxedTimeout : soTimeout;
+  }
+
+  /**
+   * Sets {@code SO_TIMEOUT} only when {@code desired} differs from what we've previously applied —
+   * skips the {@code setSoTimeout} syscall in the steady state.
+   */
+  private void applyTimeout(int desired) {
+    if (socket == null || lastAppliedTimeout == desired) {
+      return;
+    }
+    try {
+      socket.setSoTimeout(desired);
+      lastAppliedTimeout = desired;
+    } catch (SocketException ex) {
+      setBroken();
+      throw new JedisConnectionException(ex);
+    }
+  }
+
+  /**
+   * Records a per-receiver relaxation deadline and eagerly aligns the socket. Eager apply is
+   * cache-checked, so it's a no-op when the socket is already at the desired value; the eagerness
+   * matters for observers (and for in-flight blocking reads on platforms where {@code SO_RCVTIMEO}
+   * is re-checked) so a mid-read state change is reflected on the socket immediately.
    */
   @Experimental
   public void relaxTimeouts(Duration period) {
@@ -1069,34 +1102,14 @@ public class Connection implements Closeable {
     if (relaxedUntilNanos == 0 || deadline - relaxedUntilNanos > 0) {
       relaxedUntilNanos = deadline;
     }
-    applyActiveTimeout();
+    applyTimeout(desiredSoTimeout(isBlocking, isCurrentlyRelaxed()));
   }
 
-  /** Reverts to the configured timeouts immediately. */
+  /** Clears the per-receiver relaxation deadline and eagerly realigns the socket (cache-checked). */
   @Experimental
   public void resetRelaxedTimeouts() {
     relaxedUntilNanos = 0;
-    applyActiveTimeout();
-  }
-
-  private void applyActiveTimeout() {
-    if (socket == null) {
-      return;
-    }
-    try {
-      socket.setSoTimeout(isBlocking ? getActiveBlockingSoTimeout() : getActiveSoTimeout());
-    } catch (SocketException ex) {
-      setBroken();
-      throw new JedisConnectionException(ex);
-    }
-  }
-
-  /** Reverts a relaxed-timeout overlay once its window has passed; cheap no-op when none is set. */
-  private void expireRelaxedTimeout() {
-    if (relaxedUntilNanos != 0 && !isRelaxedTimeoutActive()) {
-      relaxedUntilNanos = 0;
-      applyActiveTimeout();
-    }
+    applyTimeout(desiredSoTimeout(isBlocking, isCurrentlyRelaxed()));
   }
 
   void setClockNanos(LongSupplier clockNanos) {

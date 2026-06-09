@@ -11,6 +11,9 @@ import static org.mockito.Mockito.verify;
 import java.io.IOException;
 import java.util.List;
 
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -59,9 +62,23 @@ public class TrackingConnectionPoolInitTest {
         Connection conn = pool.getResource()) {
 
       List<PushConsumer> consumers = ConnectionTestHelper.getPushConsumers(conn);
-      // contains(...) is an exact-length matcher: two copies of PUBSUB_CONSUMER would fail.
-      assertThat(consumers, contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER)));
+      assertThat(consumers,
+        contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER), matchesMaintenanceConsumer()));
     }
+  }
+
+  private static Matcher<PushConsumer> matchesMaintenanceConsumer() {
+    return new TypeSafeMatcher<PushConsumer>() {
+      @Override
+      protected boolean matchesSafely(PushConsumer consumer) {
+        return ConnectionTestHelper.isMaintenanceEventConsumer(consumer);
+      }
+
+      @Override
+      public void describeTo(Description description) {
+        description.appendText("a maintenance event consumer");
+      }
+    };
   }
 
   /**

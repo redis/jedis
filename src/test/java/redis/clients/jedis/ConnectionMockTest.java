@@ -34,7 +34,6 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.util.ReflectionTestUtil;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.server.CommandHandler;
 import redis.clients.jedis.util.server.MaintenanceEventMessages;
@@ -326,7 +325,7 @@ public class ConnectionMockTest {
 
     @Test
     public void testMigratingPushMessage() throws SocketException {
-      Socket socket = ReflectionTestUtil.getField(connection, "socket");
+      Socket socket = ConnectionTestHelper.getSocket(connection);
 
       assertEquals(SO_TIMEOUT_MS, connection.getSoTimeout());
       assertEquals(RELAXED_TIMEOUT_MS, connection.getRelaxedSoTimeout());
@@ -347,7 +346,7 @@ public class ConnectionMockTest {
 
     @Test
     public void testFailoverPushMessage() throws SocketException {
-      Socket socket = ReflectionTestUtil.getField(connection, "socket");
+      Socket socket = ConnectionTestHelper.getSocket(connection);
 
       assertTrue(connection.isConnected());
       assertEquals(SO_TIMEOUT_MS, connection.getSoTimeout());
@@ -381,7 +380,7 @@ public class ConnectionMockTest {
 
       HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
       try (Connection conn = new Connection(hostAndPort, clientConfig)) {
-        Socket socket = ReflectionTestUtil.getField(conn, "socket");
+        Socket socket = ConnectionTestHelper.getSocket(conn);
         assertTrue(conn.isConnected());
         assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
         assertEquals(UNSET_TIMEOUT_MS, conn.getRelaxedSoTimeout());
@@ -406,7 +405,7 @@ public class ConnectionMockTest {
       HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
 
       Connection conn = new Connection(hostAndPort, clientConfig);
-      Socket socket = ReflectionTestUtil.getField(conn, "socket");
+      Socket socket = ConnectionTestHelper.getSocket(conn);
 
       try {
         assertTrue(conn.isConnected());
@@ -431,7 +430,7 @@ public class ConnectionMockTest {
         throws IOException, InterruptedException {
 
       // Verify initial timeout
-      Socket socket = ReflectionTestUtil.getField(connection, "socket");
+      Socket socket = ConnectionTestHelper.getSocket(connection);
       assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
 
       CountDownLatch blpopLatch = new CountDownLatch(1);
@@ -480,7 +479,7 @@ public class ConnectionMockTest {
 
     @Test
     public void testMigratingWithoutMigratedRevertsAtMaxDuration() throws SocketException {
-      Socket socket = ReflectionTestUtil.getField(connection, "socket");
+      Socket socket = ConnectionTestHelper.getSocket(connection);
       AtomicLong clock = new AtomicLong(0);
       connection.setClockNanos(clock::get);
 
@@ -500,7 +499,7 @@ public class ConnectionMockTest {
 
     @Test
     public void testMovingRelaxesReceiverForGraceWindowThenReverts() throws SocketException {
-      Socket socket = ReflectionTestUtil.getField(connection, "socket");
+      Socket socket = ConnectionTestHelper.getSocket(connection);
       AtomicLong clock = new AtomicLong(0);
       connection.setClockNanos(clock::get);
       // MOVING also drives the pool-wide rebind state via the controller; sync its clock so

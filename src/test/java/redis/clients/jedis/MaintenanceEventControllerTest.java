@@ -26,7 +26,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.MaintenanceEventController.MaintenanceHandoff;
-import redis.clients.jedis.util.ReflectionTestUtil;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 /**

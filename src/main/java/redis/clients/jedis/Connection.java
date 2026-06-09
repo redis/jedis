@@ -355,8 +355,8 @@ public class Connection implements Closeable {
    * is already established. Otherwise, it will be applied when the socket is created.</p>
    *
    * <p>If the connection is currently in a <em>relaxed timeout</em> state (see {@link #isRelaxedTimeoutActive()}),
-   * the effective timeout applied to the socket will be the relaxed timeout value instead of the provided one.
-   * Once the relaxed state is disabled, the configured timeout will take effect again.</p>
+   * the relaxed value remains in effect on the socket; the value configured here takes effect
+   * once the relaxation window closes.</p>
    *
    * @param soTimeout the timeout value in milliseconds; a value of {@code 0} means infinite timeout
    * @throws JedisConnectionException if the underlying socket fails to apply the timeout
@@ -382,7 +382,6 @@ public class Connection implements Closeable {
    * the connection is expected to wait indefinitely for server responses.</p>
    *
    * @throws JedisConnectionException if the socket cannot be configured or connection fails
-   * @see #getActiveBlockingSoTimeout()
    * @see #isRelaxedTimeoutActive()
    */
   public void setTimeoutInfinite() {
@@ -406,7 +405,7 @@ public class Connection implements Closeable {
    * </ul>
    *
    * @throws JedisConnectionException if the socket cannot be reconfigured
-   * @see #getActiveSoTimeout()
+   * @see #isRelaxedTimeoutActive()
    */
   public void rollbackTimeout() {
     isBlocking = false;
@@ -1043,6 +1042,12 @@ public class Connection implements Closeable {
     this.pushConsumers.add(consumer);
   }
 
+  /**
+   * {@code true} while this connection is operating with relaxed timeouts because a server-side
+   * maintenance event is in progress on it (MIGRATING / FAILING_OVER, or a MOVING handoff
+   * delivered on this connection). Reverts to {@code false} once the event completes or the
+   * relaxation window expires.
+   */
   @Experimental
   public boolean isRelaxedTimeoutActive() {
     long d = relaxedUntilNanos;
@@ -1091,10 +1096,14 @@ public class Connection implements Closeable {
   }
 
   /**
-   * Records a per-receiver relaxation deadline and eagerly aligns the socket. Eager apply is
-   * cache-checked, so it's a no-op when the socket is already at the desired value; the eagerness
-   * matters for observers (and for in-flight blocking reads on platforms where {@code SO_RCVTIMEO}
-   * is re-checked) so a mid-read state change is reflected on the socket immediately.
+   * Switches this connection to relaxed timeouts for at most {@code period}. While the window is
+   * open, commands use {@link #getRelaxedSoTimeout()} and {@link #getRelaxedBlockingSoTimeout()}
+   * instead of the configured values, giving in-flight commands extra headroom across a
+   * server-side maintenance event (MIGRATING / FAILING_OVER / MOVING-receiver). The original
+   * timeouts return into effect once the window closes or {@link #resetRelaxedTimeouts()} is
+   * called. Calling this with a later deadline extends the window; an earlier one is ignored.
+   *
+   * @param period maximum duration of the relaxation window
    */
   @Experimental
   public void relaxTimeouts(Duration period) {

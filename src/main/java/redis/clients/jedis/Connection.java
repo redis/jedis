@@ -811,17 +811,31 @@ public class Connection implements Closeable {
 
       MaintenanceNotificationsConfig maintNotificationsConfig = config.maintNotificationsConfig();
       if (maintNotificationsConfig.isEnabled()) {
-        // TODO: Store movingTargetEndpointType if needed
-        sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type", resolveEndpointType(maintNotificationsConfig.getEndpointType()));
-        try {
-          getStatusCodeReply();
-        } catch (JedisDataException e) {
-          // command not supported, fail connection
+        // Maintenance push notifications are delivered as RESP3 push frames; the feature can't
+        // be activated on a RESP2 connection.
+        if (protocol != RedisProtocol.RESP3) {
           if (maintNotificationsConfig.getMode() == MaintenanceNotificationsConfig.Mode.ENABLED) {
-            throw e;
-          } else {
-            // auto mode - ignore error
-            // failback to connection without maintenance notifications support
+            throw new JedisConnectionException(
+                "Maintenance notifications require RESP3 but the established protocol is "
+                    + (protocol == null ? "RESP2" : protocol));
+          }
+          logger.warn(
+            "Maintenance notifications disabled: RESP3 is required but the established protocol is {}.",
+            protocol == null ? "RESP2" : protocol);
+        } else {
+          sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
+            resolveEndpointType(maintNotificationsConfig.getEndpointType()));
+          try {
+            getStatusCodeReply();
+          } catch (JedisDataException e) {
+            // command not supported, fail connection
+            if (maintNotificationsConfig.getMode() == MaintenanceNotificationsConfig.Mode.ENABLED) {
+              throw e;
+            }
+            // auto mode - ignore error, fall back to a connection without maintenance support
+            logger.debug(
+              "Maintenance notifications disabled: server rejected CLIENT MAINT_NOTIFICATIONS ({}).",
+              e.getMessage());
           }
         }
       }

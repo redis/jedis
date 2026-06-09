@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.util.RedisInputStream;
@@ -33,6 +34,12 @@ public class TcpMockServer {
   private ServerSocket serverSocket;
   private int port;
   private CommandHandler commandHandler;
+
+  /** Protocol assumed for a connection that never sent HELLO. Real Redis defaults to RESP2. */
+  private volatile RedisProtocol defaultProtocol = RedisProtocol.RESP2;
+
+  /** Per-instance command response overrides; consulted before {@link #BUILTIN_RESPONSES}. */
+  private final Map<CommandKey, String> responseOverrides = new ConcurrentHashMap<>();
 
   /**
    * Start the server on an available port
@@ -125,7 +132,13 @@ public class TcpMockServer {
    * @param args optional arguments for the push message (can be Integer, Long, String, etc.)
    */
   public void sendPushMessageToAll(String pushType, Object... args) {
-    connectedClients.values().forEach(client -> client.sendPushMessage(pushType, args));
+    // Push frames are only meaningful to RESP3 clients; RESP2 connections silently drop them, as
+    // a real server would.
+    for (ClientHandler client : connectedClients.values()) {
+      if (client.activeProtocol() == RedisProtocol.RESP3) {
+        client.sendPushMessage(pushType, args);
+      }
+    }
   }
 
   /**
@@ -162,7 +175,11 @@ public class TcpMockServer {
    * @param rawMessage the raw RESP3 protocol message to send
    */
   public void sendRawPushMessageToAll(String rawMessage) {
-    connectedClients.values().forEach(client -> client.sendRawPushMessage(rawMessage));
+    for (ClientHandler client : connectedClients.values()) {
+      if (client.activeProtocol() == RedisProtocol.RESP3) {
+        client.sendRawPushMessage(rawMessage);
+      }
+    }
   }
 
   /**
@@ -179,6 +196,24 @@ public class TcpMockServer {
    */
   public void setCommandHandler(CommandHandler commandHandler) {
     this.commandHandler = commandHandler;
+  }
+
+  /**
+   * Protocol applied to a connection that never sent HELLO. Real Redis defaults to RESP2; tests can
+   * change this if they want raw connections (no HELLO) to be treated as RESP3.
+   */
+  public TcpMockServer defaultProtocol(RedisProtocol protocol) {
+    this.defaultProtocol = protocol;
+    return this;
+  }
+
+  /**
+   * Override or add a per-instance command response, looked up before {@link #BUILTIN_RESPONSES}.
+   * Pass {@code null} for {@code subcommand} to match the command alone.
+   */
+  public TcpMockServer respondWith(String command, String subcommand, String resp) {
+    responseOverrides.put(new CommandKey(command, subcommand), resp);
+    return this;
   }
 
   /**
@@ -201,20 +236,27 @@ public class TcpMockServer {
     connectedClients.clear();
   }
 
+  /** RESP3 HELLO reply (map). Server version 7.4.0. */
+  private static final String RESP3_HELLO_REPLY = "%7\r\n" + "$6\r\nserver\r\n$5\r\nredis\r\n"
+      + "$7\r\nversion\r\n$5\r\n7.4.0\r\n" + "$5\r\nproto\r\n:3\r\n" + "$2\r\nid\r\n:1\r\n"
+      + "$4\r\nmode\r\n$10\r\nstandalone\r\n" + "$4\r\nrole\r\n$6\r\nmaster\r\n"
+      + "$7\r\nmodules\r\n*0\r\n";
+
+  /** RESP2 HELLO reply (server array). Server version 7.4.0. */
+  private static final String RESP2_HELLO_REPLY = "*14\r\n" + "$6\r\nserver\r\n$5\r\nredis\r\n"
+      + "$7\r\nversion\r\n$5\r\n7.4.0\r\n" + "$5\r\nproto\r\n:2\r\n" + "$2\r\nid\r\n:1\r\n"
+      + "$4\r\nmode\r\n$10\r\nstandalone\r\n" + "$4\r\nrole\r\n$6\r\nmaster\r\n"
+      + "$7\r\nmodules\r\n*0\r\n";
+
   /**
    * Static registry of built-in command responses (shared across all client handlers). Commands are
-   * stored as CommandKey (command + optional subcommand) for smart lookup.
+   * stored as CommandKey (command + optional subcommand) for smart lookup. HELLO is handled
+   * separately by the per-connection negotiation in {@link ClientHandler}.
    */
   private static final java.util.Map<CommandKey, String> BUILTIN_RESPONSES;
 
   static {
     java.util.Map<CommandKey, String> responses = new java.util.HashMap<>();
-
-    // RESP3 HELLO response - version 7.4.0 to support client-side caching
-    responses.put(new CommandKey(Protocol.Command.HELLO),
-      "%7\r\n" + "$6\r\nserver\r\n$5\r\nredis\r\n" + "$7\r\nversion\r\n$5\r\n7.4.0\r\n"
-          + "$5\r\nproto\r\n:3\r\n" + "$2\r\nid\r\n:1\r\n" + "$4\r\nmode\r\n$10\r\nstandalone\r\n"
-          + "$4\r\nrole\r\n$6\r\nmaster\r\n" + "$7\r\nmodules\r\n*0\r\n");
 
     responses.put(new CommandKey(Protocol.Command.PING), "+PONG\r\n");
 
@@ -317,9 +359,18 @@ public class TcpMockServer {
     private volatile boolean connected = true;
     private final Object outputLock = new Object(); // Lock to prevent interleaving
 
+    /**
+     * Protocol the client negotiated via HELLO; falls back to {@link #defaultProtocol} pre-HELLO.
+     */
+    private volatile RedisProtocol negotiatedProtocol;
+
     public ClientHandler(Socket clientSocket) {
       this.clientSocket = clientSocket;
       this.clientId = clientSocket.getRemoteSocketAddress().toString();
+    }
+
+    RedisProtocol activeProtocol() {
+      return negotiatedProtocol != null ? negotiatedProtocol : defaultProtocol;
     }
 
     @Override
@@ -421,24 +472,62 @@ public class TcpMockServer {
      * @throws IOException if writing the response fails
      */
     private void processCommand(CommandArguments commandArgs) throws IOException {
+      String cmd = SafeEncoder.encode(commandArgs.getCommand().getRaw()).toUpperCase();
+      String sub = commandArgs.size() > 1
+          ? SafeEncoder.encode(commandArgs.get(1).getRaw()).toUpperCase()
+          : null;
+
       String response = null;
 
-      // First, try custom command handler if available
-      if (commandHandler != null) {
+      // HELLO is handled internally to track per-connection protocol negotiation, unless the test
+      // has installed an explicit override (e.g. to simulate -NOPROTO from an old server).
+      if ("HELLO".equals(cmd) && !responseOverrides.containsKey(new CommandKey(cmd, null))) {
+        response = handleHello(commandArgs);
+      }
+
+      // Per-instance overrides win over built-ins; check command+sub first, then command-only.
+      if (response == null && sub != null) {
+        response = responseOverrides.get(new CommandKey(cmd, sub));
+      }
+      if (response == null) {
+        response = responseOverrides.get(new CommandKey(cmd, null));
+      }
+
+      // Then a custom command handler if one was installed (Mockito mocks, etc.).
+      if (response == null && commandHandler != null) {
         response = commandHandler.handleCommand(commandArgs, clientId);
       }
 
-      // If no custom handler or it returned null, fall back to built-in responses
+      // Finally fall back to predefined built-in responses.
       if (response == null) {
         response = getBuiltinResponse(commandArgs);
       }
 
-      // Write the response
       if (response != null) {
         writeResponse(response);
       } else {
         throw new RuntimeException("Unknown command: " + commandArgs.getCommand());
       }
+    }
+
+    /**
+     * Handles HELLO with explicit version negotiation. {@code HELLO 2} replies with the RESP2-array
+     * form; {@code HELLO 3} with the RESP3-map form; an unversioned HELLO replies in the
+     * connection's current protocol (the server default until HELLO upgrades it).
+     */
+    private String handleHello(CommandArguments commandArgs) {
+      String version = commandArgs.size() > 1 ? SafeEncoder.encode(commandArgs.get(1).getRaw())
+          : null;
+      if ("3".equals(version)) {
+        this.negotiatedProtocol = RedisProtocol.RESP3;
+        return RESP3_HELLO_REPLY;
+      }
+      if ("2".equals(version)) {
+        this.negotiatedProtocol = RedisProtocol.RESP2;
+        return RESP2_HELLO_REPLY;
+      }
+      // Versionless HELLO: reply in whatever protocol the connection is currently on.
+      return activeProtocol() == RedisProtocol.RESP3 ? RESP3_HELLO_REPLY : RESP2_HELLO_REPLY;
     }
 
     /**

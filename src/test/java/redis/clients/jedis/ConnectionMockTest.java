@@ -9,10 +9,13 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 import static redis.clients.jedis.TimeoutOptions.UNSET_TIMEOUT_MS;
 
 import java.io.IOException;
@@ -29,6 +32,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.ReflectionTestUtil;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.server.CommandHandler;
@@ -191,6 +196,80 @@ public class ConnectionMockTest {
       assertThat(conn.getPushConsumers(), contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER)));
       assertThat(conn.getPushConsumers(),
         not(hasItem(instanceOf(Connection.MaintenanceEventConsumer.class))));
+    }
+  }
+
+  /**
+   * Verifies the RESP3 gating in {@link Connection#initializeFromClientConfig(JedisClientConfig)}:
+   * ENABLED mode requires RESP3 and propagates a protocol-mismatch error; AUTO mode tolerates both
+   * a RESP2 connection and an unsupporting server by falling back without maintenance support.
+   */
+  @Nested
+  class MaintenanceHandshake {
+
+    private static final String NOPROTO_MAINT_REPLY = "-ERR unknown CLIENT subcommand 'MAINT_NOTIFICATIONS'\r\n";
+
+    @Test
+    public void enabledMode_overResp2_throwsConnectionException() {
+      MaintenanceNotificationsConfig maint = MaintenanceNotificationsConfig.builder()
+          .mode(MaintenanceNotificationsConfig.Mode.ENABLED).build();
+      JedisClientConfig cfg = DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP2)
+          .maintNotificationsConfig(maint).build();
+
+      HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
+      JedisConnectionException ex = assertThrows(JedisConnectionException.class,
+        () -> new Connection(hp, cfg));
+      assertTrue(ex.getMessage().toUpperCase().contains("RESP3"),
+        "exception message should mention RESP3 requirement, got: " + ex.getMessage());
+    }
+
+    @Test
+    public void autoMode_overResp2_succeedsAndDoesNotSendMaintCommand() {
+      JedisClientConfig cfg = DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP2)
+          .maintNotificationsConfig(MaintenanceNotificationsConfig.DEFAULT) // AUTO
+          .build();
+
+      HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
+      try (Connection c = new Connection(hp, cfg)) {
+        assertTrue(c.isConnected());
+        assertEquals(RedisProtocol.RESP2, c.getRedisProtocol());
+      }
+      // CLIENT MAINT_NOTIFICATIONS must not be sent when the protocol is RESP2.
+      verify(mockHandler, never()).handleCommand(argThat(args -> {
+        if (args.size() < 2) return false;
+        String cmd = SafeEncoder.encode(args.getCommand().getRaw());
+        String sub = SafeEncoder.encode(args.get(1).getRaw());
+        return "CLIENT".equalsIgnoreCase(cmd) && "MAINT_NOTIFICATIONS".equalsIgnoreCase(sub);
+      }), anyString());
+    }
+
+    @Test
+    public void enabledMode_overResp3_serverRejectsCommand_throws() {
+      mockServer.respondWith("CLIENT", "MAINT_NOTIFICATIONS", NOPROTO_MAINT_REPLY);
+
+      MaintenanceNotificationsConfig maint = MaintenanceNotificationsConfig.builder()
+          .mode(MaintenanceNotificationsConfig.Mode.ENABLED).build();
+      JedisClientConfig cfg = DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3)
+          .maintNotificationsConfig(maint).build();
+
+      HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
+      assertThrows(JedisDataException.class, () -> new Connection(hp, cfg));
+    }
+
+    @Test
+    public void autoMode_overResp3_serverRejectsCommand_succeeds() {
+      mockServer.respondWith("CLIENT", "MAINT_NOTIFICATIONS", NOPROTO_MAINT_REPLY);
+
+      JedisClientConfig cfg = DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3)
+          .maintNotificationsConfig(MaintenanceNotificationsConfig.DEFAULT) // AUTO
+          .build();
+
+      HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
+      try (Connection c = new Connection(hp, cfg)) {
+        assertTrue(c.isConnected());
+        assertEquals(RedisProtocol.RESP3, c.getRedisProtocol());
+        assertTrue(c.ping());
+      }
     }
   }
 

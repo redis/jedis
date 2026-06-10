@@ -173,6 +173,18 @@ public class RedisClusterClient extends UnifiedJedis {
     return ((ClusterConnectionProvider) provider).getConnectionFromSlot(slot);
   }
 
+  /**
+   * Forces an immediate refresh of the in-memory Redis Cluster topology
+   * (node map, primary and replica slot assignments).
+   * <p>
+   * Useful before {@link #getConnectionFromSlot(int)} when stale topology is
+   * detected outside the command retry path. Best-effort; a no-op if a refresh
+   * is already in progress.
+   */
+  public void refreshClusterTopology() {
+    ((ClusterConnectionProvider) provider).renewSlotCache();
+  }
+
   // commands
   public long spublish(String channel, String message) {
     return executeCommand(commandObjects.spublish(channel, message));

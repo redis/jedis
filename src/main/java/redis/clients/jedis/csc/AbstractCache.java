@@ -3,6 +3,7 @@ package redis.clients.jedis.csc;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,14 +26,31 @@ public abstract class AbstractCache implements Cache {
   private final int maximumSize;
   private ReentrantLock lock = new ReentrantLock();
   private volatile CacheStats stats = new CacheStats();
+  private final boolean broadcastMode;
+  private final List<String> prefixes;
+  private final boolean noLoop;
 
   protected AbstractCache(int maximumSize) {
     this(maximumSize, DefaultCacheable.INSTANCE);
   }
 
   protected AbstractCache(int maximumSize, Cacheable cacheable) {
+    this(maximumSize, cacheable, false, Collections.emptyList(), false);
+  }
+
+  protected AbstractCache(int maximumSize, Cacheable cacheable, boolean broadcastMode,
+      List<String> prefixes) {
+    this(maximumSize, cacheable, broadcastMode, prefixes, false);
+  }
+
+  protected AbstractCache(int maximumSize, Cacheable cacheable, boolean broadcastMode,
+      List<String> prefixes, boolean noLoop) {
     this.maximumSize = maximumSize;
     this.cacheable = cacheable;
+    this.broadcastMode = broadcastMode;
+    this.prefixes = (prefixes == null) ? Collections.emptyList()
+        : Collections.unmodifiableList(new ArrayList<>(prefixes));
+    this.noLoop = noLoop;
   }
 
   // Cache interface methods
@@ -196,6 +214,21 @@ public abstract class AbstractCache implements Cache {
   @Override
   public boolean compatibilityMode() {
     return false;
+  }
+
+  @Override
+  public boolean isBroadcastMode() {
+    return broadcastMode;
+  }
+
+  @Override
+  public List<String> getPrefixes() {
+    return prefixes;
+  }
+
+  @Override
+  public boolean isNoLoop() {
+    return noLoop;
   }
   // End of Cache interface methods
 

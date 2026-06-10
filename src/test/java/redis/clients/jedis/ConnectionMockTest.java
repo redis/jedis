@@ -34,6 +34,9 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.sch.AbstractMaintenanceEventHandlingTest;
+import redis.clients.jedis.sch.AbstractMaintenanceHandshakeTest;
+import redis.clients.jedis.sch.AbstractRelaxedTimeoutBehaviorTest;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.server.CommandHandler;
 import redis.clients.jedis.util.server.MaintenanceEventMessages;
@@ -129,84 +132,36 @@ public class ConnectionMockTest {
   }
 
   @Nested
-  class MaintenanceEventHandling {
+  class MaintenanceEventHandling extends AbstractMaintenanceEventHandlingTest {
 
-    private MaintenanceNotificationsConfig enabledMaint() {
-      return MaintenanceNotificationsConfig.builder()
-          .timeoutOptions(
-            TimeoutOptions.builder().proactiveTimeoutsRelaxing(Duration.ofSeconds(10)).build())
-          .build();
+    @Override
+    protected ConnectionPool createPool(HostAndPort hostAndPort, JedisClientConfig config) {
+      return new ConnectionPool(hostAndPort, config);
     }
 
-    /** Maintenance is pool-only: a pooled connection registers the maintenance consumer. */
-    @Test
-    public void maintenanceConsumerRegisteredForPooledConnection() {
-      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder()
-          .maintNotificationsConfig(enabledMaint()).build();
-
-      try (ConnectionPool pool = new ConnectionPool(
-          new HostAndPort("localhost", mockServer.getPort()), config)) {
-        Connection conn = pool.getResource();
-        try {
-          assertThat(conn.getPushConsumers(), contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER),
-            instanceOf(Connection.MaintenanceEventConsumer.class)));
-        } finally {
-          conn.close();
-        }
-      }
+    @Override
+    protected Connection buildDirect(HostAndPort hostAndPort, JedisClientConfig config) {
+      return new Connection(hostAndPort, config);
     }
 
-    /** A non-pooled connection has no controller, so it registers no maintenance consumer. */
-    @Test
-    public void maintenanceConsumerNotRegisteredForNonPooledConnection() {
-      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder()
-          .maintNotificationsConfig(enabledMaint()).build();
-
-      Connection conn = new Connection(new HostAndPort("localhost", mockServer.getPort()), config);
-
-      assertThat(conn.getPushConsumers(), contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER)));
-      assertThat(conn.getPushConsumers(),
-        not(hasItem(instanceOf(Connection.MaintenanceEventConsumer.class))));
-    }
-
-    /**
-     * A builder-built connection (no injected controller) is non-pooled: no maintenance consumer.
-     */
-    @Test
-    public void maintenanceConsumerNotRegisteredForConnectionBuilder() {
-      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder()
-          .maintNotificationsConfig(enabledMaint()).build();
-      DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(
-          new HostAndPort("localhost", mockServer.getPort()), config);
-
-      Connection conn = Connection.builder().socketFactory(socketFactory).clientConfig(config)
-          .build();
-
-      assertThat(conn.getPushConsumers(),
-        not(hasItem(instanceOf(Connection.MaintenanceEventConsumer.class))));
-    }
-
-    @Test
-    public void maintenanceConsumerNotRegisteredRelaxedTimeoutDisabled() {
-      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().build();
-
-      Connection conn = new Connection(new HostAndPort("localhost", mockServer.getPort()), config);
-
-      assertThat(conn.getPushConsumers(), contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER)));
-      assertThat(conn.getPushConsumers(),
-        not(hasItem(instanceOf(Connection.MaintenanceEventConsumer.class))));
+    @Override
+    protected Connection buildFromBuilder(DefaultJedisSocketFactory socketFactory,
+        JedisClientConfig config) {
+      return Connection.builder().socketFactory(socketFactory).clientConfig(config).build();
     }
   }
 
   /**
-   * Verifies the RESP3 gating in {@link Connection#initializeFromClientConfig(JedisClientConfig)}:
-   * ENABLED mode requires RESP3 and propagates a protocol-mismatch error; AUTO mode tolerates both
-   * a RESP2 connection and an unsupporting server by falling back without maintenance support.
+   * RESP2-specific maintenance-handshake behavior on plain {@link Connection}. The RESP3 paths
+   * applicable to both connection types live in {@link AbstractMaintenanceHandshakeTest}.
    */
   @Nested
-  class MaintenanceHandshake {
+  class MaintenanceHandshake extends AbstractMaintenanceHandshakeTest {
 
-    private static final String NOPROTO_MAINT_REPLY = "-ERR unknown CLIENT subcommand 'MAINT_NOTIFICATIONS'\r\n";
+    @Override
+    protected Connection buildConnection(HostAndPort hostAndPort, JedisClientConfig config) {
+      return new Connection(hostAndPort, config);
+    }
 
     @Test
     public void enabledMode_overResp2_throwsConnectionException() {
@@ -224,6 +179,9 @@ public class ConnectionMockTest {
 
     @Test
     public void autoMode_overResp2_succeedsAndDoesNotSendMaintCommand() {
+      CommandHandler localHandler = Mockito.mock(CommandHandler.class);
+      mockServer.setCommandHandler(localHandler);
+
       JedisClientConfig cfg = DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP2)
           .maintNotificationsConfig(MaintenanceNotificationsConfig.DEFAULT) // AUTO
           .build();
@@ -234,292 +192,26 @@ public class ConnectionMockTest {
         assertEquals(RedisProtocol.RESP2, c.getRedisProtocol());
       }
       // CLIENT MAINT_NOTIFICATIONS must not be sent when the protocol is RESP2.
-      verify(mockHandler, never()).handleCommand(argThat(args -> {
+      verify(localHandler, never()).handleCommand(argThat(args -> {
         if (args.size() < 2) return false;
         String cmd = SafeEncoder.encode(args.getCommand().getRaw());
         String sub = SafeEncoder.encode(args.get(1).getRaw());
         return "CLIENT".equalsIgnoreCase(cmd) && "MAINT_NOTIFICATIONS".equalsIgnoreCase(sub);
       }), anyString());
     }
-
-    @Test
-    public void enabledMode_overResp3_serverRejectsCommand_throws() {
-      mockServer.respondWith("CLIENT", "MAINT_NOTIFICATIONS", NOPROTO_MAINT_REPLY);
-
-      MaintenanceNotificationsConfig maint = MaintenanceNotificationsConfig.builder()
-          .mode(MaintenanceNotificationsConfig.Mode.ENABLED).build();
-      JedisClientConfig cfg = DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3)
-          .maintNotificationsConfig(maint).build();
-
-      HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
-      assertThrows(JedisDataException.class, () -> new Connection(hp, cfg));
-    }
-
-    @Test
-    public void autoMode_overResp3_serverRejectsCommand_succeeds() {
-      mockServer.respondWith("CLIENT", "MAINT_NOTIFICATIONS", NOPROTO_MAINT_REPLY);
-
-      JedisClientConfig cfg = DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3)
-          .maintNotificationsConfig(MaintenanceNotificationsConfig.DEFAULT) // AUTO
-          .build();
-
-      HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
-      try (Connection c = new Connection(hp, cfg)) {
-        assertTrue(c.isConnected());
-        assertEquals(RedisProtocol.RESP3, c.getRedisProtocol());
-        assertTrue(c.ping());
-      }
-    }
   }
 
   @Nested
-  public class RelaxedTimeoutTest {
+  public class RelaxedTimeoutTest extends AbstractRelaxedTimeoutBehaviorTest {
 
-    private final int SO_TIMEOUT_MS = 2000;
-
-    private final int RELAXED_TIMEOUT_MS = 10000;
-
-    private final int RELAXED_BLOCKING_TIMEOUT_MS = 15000;
-
-    private final Duration relaxedTimeout = Duration.ofMillis(RELAXED_TIMEOUT_MS);
-
-    private final Duration relaxedBlockingTimeout = Duration.ofMillis(RELAXED_BLOCKING_TIMEOUT_MS);
-
-    private final CommandObjects commandObjects = new CommandObjects(RedisProtocol.RESP3);
-
-    private ConnectionPool pool;
-    private Connection connection;
-
-    @BeforeEach
-    public void setUp() throws IOException {
-      // Create client configuration with relaxed timeout and maintenance event handler
-      TimeoutOptions timeoutOptions = TimeoutOptions.builder()
-          .proactiveTimeoutsRelaxing(relaxedTimeout)
-          .proactiveBlockingTimeoutsRelaxing(relaxedBlockingTimeout).build();
-
-      MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
-          .timeoutOptions(timeoutOptions).build();
-
-      DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
-          .socketTimeoutMillis(SO_TIMEOUT_MS).maintNotificationsConfig(maintConfig)
-          .protocol(RedisProtocol.RESP3).build();
-
-      // Maintenance is pool-only: borrow a pooled connection so the controller/consumer are wired.
-      HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
-      pool = new ConnectionPool(hostAndPort, clientConfig);
-      connection = pool.getResource();
+    @Override
+    protected ConnectionPool createPool(HostAndPort hostAndPort, JedisClientConfig config) {
+      return new ConnectionPool(hostAndPort, config);
     }
 
-    @AfterEach
-    public void tearDown() throws IOException {
-      if (connection != null && connection.isConnected()) {
-        connection.close();
-      }
-      if (pool != null) {
-        pool.close();
-      }
-      if (mockServer != null) {
-        mockServer.stop();
-      }
+    @Override
+    protected Connection buildDirect(HostAndPort hostAndPort, JedisClientConfig config) {
+      return new Connection(hostAndPort, config);
     }
-
-    @Test
-    public void testMigratingPushMessage() throws SocketException {
-      Socket socket = ConnectionTestHelper.getSocket(connection);
-
-      assertEquals(SO_TIMEOUT_MS, connection.getSoTimeout());
-      assertEquals(RELAXED_TIMEOUT_MS, connection.getRelaxedSoTimeout());
-
-      // First send MIGRATING to activate relaxed timeout
-      mockServer.sendPushMessageToAll(
-        MaintenanceEventMessages.migrating(1, 10, Collections.singletonList("1")));
-      assertTrue(connection.ping());
-      assertTrue(connection.isRelaxedTimeoutActive());
-      assertEquals(relaxedTimeout.toMillis(), socket.getSoTimeout());
-
-      mockServer.sendPushMessageToAll(
-        MaintenanceEventMessages.migrated(1, Collections.singletonList("1")));
-      assertTrue(connection.ping());
-      assertFalse(connection.isRelaxedTimeoutActive());
-      assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
-    }
-
-    @Test
-    public void testFailoverPushMessage() throws SocketException {
-      Socket socket = ConnectionTestHelper.getSocket(connection);
-
-      assertTrue(connection.isConnected());
-      assertEquals(SO_TIMEOUT_MS, connection.getSoTimeout());
-      assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
-
-      // First send MIGRATING to activate relaxed timeout
-      mockServer.sendPushMessageToAll(
-        MaintenanceEventMessages.failingOver(1, 10, Collections.singletonList("1")));
-      assertTrue(connection.ping());
-      assertTrue(connection.isRelaxedTimeoutActive());
-      assertEquals(relaxedTimeout.toMillis(), socket.getSoTimeout());
-
-      mockServer.sendPushMessageToAll(
-        MaintenanceEventMessages.failedOver(1, Collections.singletonList("1")));
-      assertTrue(connection.ping());
-      assertFalse(connection.isRelaxedTimeoutActive());
-      assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
-    }
-
-    @Test
-    public void testRelaxTimeoutsDisabledFallbackToSoTimeout() throws Exception {
-      TimeoutOptions disabledTimeoutOptions = TimeoutOptions.builder()
-          .proactiveTimeoutsRelaxing(TimeoutOptions.UNSET_TIMEOUT).build();
-
-      MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
-          .timeoutOptions(disabledTimeoutOptions).build();
-
-      DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
-          .socketTimeoutMillis(SO_TIMEOUT_MS).maintNotificationsConfig(maintConfig)
-          .protocol(RedisProtocol.RESP3).build();
-
-      HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
-      try (Connection conn = new Connection(hostAndPort, clientConfig)) {
-        Socket socket = ConnectionTestHelper.getSocket(conn);
-        assertTrue(conn.isConnected());
-        assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
-        assertEquals(UNSET_TIMEOUT_MS, conn.getRelaxedSoTimeout());
-
-        conn.relaxTimeouts(Duration.ofSeconds(10));
-
-        // Relaxed timeout should fallback to original timeout, if relaxed timeout is disabled
-        assertTrue(conn.isRelaxedTimeoutActive());
-        assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
-      }
-    }
-
-    @Test
-    public void testDefaultTimeoutOptions() throws Exception {
-
-      DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
-          .socketTimeoutMillis(SO_TIMEOUT_MS)
-          .maintNotificationsConfig(MaintenanceNotificationsConfig.DEFAULT)
-          .protocol(RedisProtocol.RESP3).build();
-
-      // Create connection to the mock server (connection is established in constructor)
-      HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
-
-      Connection conn = new Connection(hostAndPort, clientConfig);
-      Socket socket = ConnectionTestHelper.getSocket(conn);
-
-      try {
-        assertTrue(conn.isConnected());
-
-        assertEquals(SO_TIMEOUT_MS, conn.getSoTimeout());
-        assertEquals(0, conn.getBlockingSoTimeout());
-        assertEquals(10000, conn.getRelaxedSoTimeout());
-        assertEquals(UNSET_TIMEOUT_MS, conn.getRelaxedBlockingSoTimeout());
-        assertFalse(conn.isRelaxedTimeoutActive());
-
-        // verify actual socket timeout
-        assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
-      } finally {
-        if (conn.isConnected()) {
-          conn.close();
-        }
-      }
-    }
-
-    @Test
-    public void testRelaxedBlockingTimeoutAppliedDuringBlockingCommand()
-        throws IOException, InterruptedException {
-
-      // Verify initial timeout
-      Socket socket = ConnectionTestHelper.getSocket(connection);
-      assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
-
-      CountDownLatch blpopLatch = new CountDownLatch(1);
-      CountDownLatch blpopLatchAfter = new CountDownLatch(1);
-      doAnswer(invocation -> {
-        blpopLatch.countDown();
-        return RespResponse.arrayOfBulkStrings("popped-item");
-      }).when(mockHandler).handleCommand(argThat(args -> {
-        String cmd = SafeEncoder.encode(args.getCommand().getRaw());
-        return "BLPOP".equalsIgnoreCase(cmd);
-      }), anyString());
-
-      // Send MIGRATING push notification which should trigger relaxTimeouts()
-      mockServer.sendPushMessageToAll(
-        MaintenanceEventMessages.migrating(1, 10, Collections.singletonList("1")));
-
-      Thread t1 = new Thread(() -> {
-        connection.executeCommand(commandObjects.blpop(5, "test:blpop:key"));
-        blpopLatchAfter.countDown();
-      });
-      t1.start();
-
-      // Verify that relaxed blocking timeout was applied
-      blpopLatch.await();
-      assertTrue(connection.isRelaxedTimeoutActive(),
-        "Relaxed timeout should be active during blocking command");
-      assertEquals((int) relaxedBlockingTimeout.toMillis(), socket.getSoTimeout(),
-        "Socket timeout should be relaxed blocking timeout during blocking command");
-
-      blpopLatchAfter.await();
-      assertTrue(connection.isRelaxedTimeoutActive(),
-        "Relaxed timeout should be still active after blocking command");
-      assertEquals(relaxedTimeout.toMillis(), socket.getSoTimeout(),
-        "Socket timeout should be restored to relaxed timeout for non blocking command");
-
-      // Send MIGRATED push notification to disable relaxed timeout
-      mockServer.sendPushMessageToAll(
-        MaintenanceEventMessages.migrated(1, Collections.singletonList("1")));
-      connection.executeCommand(commandObjects.ping());
-
-      assertFalse(connection.isRelaxedTimeoutActive(),
-        "Relaxed timeout should be disabled after MIGRATED");
-      assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout(),
-        "Socket timeout should be restored to original timeout");
-    }
-
-    @Test
-    public void testMigratingWithoutMigratedRevertsAtMaxDuration() throws SocketException {
-      Socket socket = ConnectionTestHelper.getSocket(connection);
-      AtomicLong clock = new AtomicLong(0);
-      connection.setClockNanos(clock::get);
-
-      mockServer.sendPushMessageToAll(
-        MaintenanceEventMessages.migrating(1, 10, Collections.singletonList("1")));
-      assertTrue(connection.ping());
-      assertTrue(connection.isRelaxedTimeoutActive());
-      assertEquals(RELAXED_TIMEOUT_MS, socket.getSoTimeout());
-
-      // No MIGRATED arrives; advance past the 60s safety cap.
-      clock.set(Duration.ofSeconds(61).toNanos());
-      assertTrue(connection.ping());
-      assertFalse(connection.isRelaxedTimeoutActive(),
-        "Relaxed timeout should revert at maxRelaxedDuration without a terminator");
-      assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
-    }
-
-    @Test
-    public void testMovingRelaxesReceiverForGraceWindowThenReverts() throws SocketException {
-      Socket socket = ConnectionTestHelper.getSocket(connection);
-      AtomicLong clock = new AtomicLong(0);
-      connection.setClockNanos(clock::get);
-      // MOVING also drives the pool-wide rebind state via the controller; sync its clock so
-      // executeCommand's read-time apply sees the same time progression as the connection.
-      ConnectionFactory factory = (ConnectionFactory) pool.getFactory();
-      MaintenanceEventController ctrl = factory.getMaintenanceController();
-      if (ctrl != null) ctrl.setClockNanos(clock::get);
-
-      mockServer.sendPushMessageToAll(
-        MaintenanceEventMessages.moving(1, 15, "localhost:" + mockServer.getPort()));
-      assertTrue(connection.ping());
-      assertTrue(connection.isRelaxedTimeoutActive(), "MOVING relaxes the receiving connection");
-      assertEquals(RELAXED_TIMEOUT_MS, socket.getSoTimeout());
-
-      // After the grace window, the next command reverts to the standard timeout.
-      clock.set(Duration.ofSeconds(16).toNanos());
-      assertTrue(connection.ping());
-      assertFalse(connection.isRelaxedTimeoutActive());
-      assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
-    }
-
   }
 }

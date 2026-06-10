@@ -573,7 +573,15 @@ public class Connection implements Closeable {
     return true;
   }
 
-  public void initializeFromClientConfig() {
+  /**
+   * Initialize this connection using the {@link JedisClientConfig} captured at construction.
+   * <p>
+   * Internal lifecycle step: invoked once by {@link Connection.Builder#build()} for direct
+   * callers, and once by {@link ConnectionFactory#initialize(Connection)} for pooled
+   * connections. There is no public construction path that produces an uninitialized-but-
+   * configured {@code Connection}, so this method has no out-of-package use case.
+   */
+  void initializeFromClientConfig() {
     this.initializeFromClientConfig(clientConfig);
   }
 

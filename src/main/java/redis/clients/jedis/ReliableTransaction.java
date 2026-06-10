@@ -85,7 +85,7 @@ public class ReliableTransaction extends AbstractTransaction {
   }
 
   private static CommandObjects createCommandObjects(Connection connection) {
-    return new CommandObjects(connection.getRedisProtocol());
+    return new CommandObjects(RedisProtocol.orServerDefault(connection.getRedisProtocol()));
   }
 
   @Override

@@ -120,10 +120,10 @@ public class ClusterPipeline extends MultiNodePipelineBase {
             effective = resolved;
           }
         } catch (JedisException je) {
-          // Protocol negotiation failed, leave protocol=null on the command objects.
+          // Protocol negotiation failed; fall back to RESP2 below.
         }
       }
-      return new ClusterCommandObjects(effective);
+      return new ClusterCommandObjects(RedisProtocol.orServerDefault(effective));
     };
   }
 

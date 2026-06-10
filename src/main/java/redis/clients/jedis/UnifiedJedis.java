@@ -7,7 +7,6 @@ import java.util.Set;
 import org.json.JSONArray;
 
 import redis.clients.jedis.annots.Experimental;
-import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.JedisCommands;
@@ -56,12 +55,12 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   private final Cache cache;
 
   protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol) {
-    this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol);
+    this(new DefaultCommandExecutor(provider), provider, protocol, (Cache) null);
   }
 
   @Experimental
   protected UnifiedJedis(ConnectionProvider provider, RedisProtocol protocol, Cache cache) {
-    this(new DefaultCommandExecutor(provider), provider, new CommandObjects(), protocol, cache);
+    this(new DefaultCommandExecutor(provider), provider, protocol, cache);
   }
 
   /**
@@ -75,7 +74,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   protected UnifiedJedis(Connection connection) {
     this.provider = null;
     this.executor = new SimpleCommandExecutor(connection);
-    this.commandObjects = new CommandObjects(connection.getRedisProtocol());
+    this.commandObjects = newCommandObjects(RedisProtocol.orServerDefault(connection.getRedisProtocol()));
 
     if (connection instanceof CacheConnection) {
       this.cache = ((CacheConnection) connection).getCache();
@@ -89,51 +88,45 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    */
   @Deprecated
   public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration) {
-    this(new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider);
-  }
-
-  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider) {
-    this(executor, provider, new CommandObjects());
+    this(new RetryableCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
+        (RedisProtocol) null, null);
   }
 
   /**
-   * Uses a fetched connection to process protocol. Should be avoided if possible.
-   * @deprecated
+   * Builder-facing constructor. The client owns {@link CommandObjects} construction: it reads the
+   * protocol (and the {@code CommandObjects} knobs) from {@code clientConfig}, probes the provider
+   * when the protocol is left unspecified, then delegates to
+   * {@link #newCommandObjects(RedisProtocol)} so subclasses can supply a specialized type (e.g.
+   * {@code ClusterCommandObjects}).
    */
-  @VisibleForTesting
-  @Deprecated
-  protected UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects) {
-    this(executor, provider, commandObjects, null, null);
-    if (this.provider != null) {
-      try (Connection conn = this.provider.getConnection()) {
-        if (conn != null) {
-          RedisProtocol resolved = conn.getRedisProtocol();
-          if (resolved != null) {
-            this.commandObjects.setProtocol(resolved);
-          }
-        }
-      } catch (JedisException je) {
-      }
-    }
+  @Experimental
+  protected UnifiedJedis(CommandExecutor executor, ConnectionProvider provider,
+      JedisClientConfig clientConfig, Cache cache) {
+    this(executor, provider, clientConfig != null ? clientConfig.getRedisProtocol() : null,
+        clientConfig, cache);
   }
 
-  @Experimental
-  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
-      RedisProtocol protocol) {
-    this(executor, provider, commandObjects, protocol, (Cache) null);
-  }
-
-  @Experimental
-  UnifiedJedis(CommandExecutor executor, ConnectionProvider provider, CommandObjects commandObjects,
+  /**
+   * Legacy constructor for code paths that have only a {@link RedisProtocol} in hand (no
+   * {@link JedisClientConfig}). Command-objects-level knobs (key pre-processor, JSON mapper, search
+   * dialect) fall back to library defaults.
+   */
+  protected UnifiedJedis(CommandExecutor executor, ConnectionProvider provider,
       RedisProtocol protocol, Cache cache) {
+    this(executor, provider, protocol, null, cache);
+  }
+
+  private UnifiedJedis(CommandExecutor executor, ConnectionProvider provider,
+      RedisProtocol protocol, JedisClientConfig clientConfig, Cache cache) {
 
     this.provider = provider;
     this.executor = executor;
-    this.commandObjects = commandObjects;
 
     // When the protocol is left unspecified, auto-negotiation may have resolved it to either
     // RESP2 or RESP3 on the wire. Probe a connection to learn the actual value so the command
-    // objects parse replies with the correct decoder.
+    // objects parse replies with the correct decoder. If the probe fails or the connection has
+    // not yet negotiated, fall back to RESP2 — matching the wire default and preserving lazy
+    // construction semantics.
     RedisProtocol resolvedProtocol = protocol;
     if (resolvedProtocol == null && provider != null) {
       try (Connection conn = provider.getConnection()) {
@@ -143,16 +136,50 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
       } catch (JedisException ignored) {
       }
     }
+    if (resolvedProtocol == null) {
+      resolvedProtocol = RedisProtocol.RESP2;
+    }
 
     if (cache != null && resolvedProtocol != RedisProtocol.RESP3) {
       throw new IllegalArgumentException("Client-side caching is only supported with RESP3.");
     }
 
-    if (resolvedProtocol != null) {
-      this.commandObjects.setProtocol(resolvedProtocol);
-    }
-
+    this.commandObjects = newCommandObjects(resolvedProtocol);
+    applyCommandObjectsConfiguration(commandObjects, clientConfig);
     this.cache = cache;
+  }
+
+  /**
+   * Factory hook for the {@link CommandObjects} instance held by this client. Subclasses (e.g.
+   * {@link JedisCluster}) override to return their specialized subtype. Called from the
+   * {@link UnifiedJedis} constructor — must not depend on subclass instance state.
+   */
+  protected CommandObjects newCommandObjects(RedisProtocol protocol) {
+    return new CommandObjects(protocol);
+  }
+
+  /**
+   * Applies the {@code CommandObjects}-level knobs ({@code commandKeyArgumentPreProcessor},
+   * {@code jsonObjectMapper}, {@code searchDialect}) carried by {@code clientConfig} onto the
+   * freshly constructed instance. Called once from the {@link UnifiedJedis} constructor after
+   * {@link #newCommandObjects(RedisProtocol)}.
+   */
+  static void applyCommandObjectsConfiguration(CommandObjects target, JedisClientConfig clientConfig) {
+    if (clientConfig == null) {
+      return;
+    }
+    CommandKeyArgumentPreProcessor preProcessor = clientConfig.getCommandKeyArgumentPreProcessor();
+    if (preProcessor != null) {
+      target.setKeyArgumentPreProcessor(preProcessor);
+    }
+    JsonObjectMapper mapper = clientConfig.getJsonObjectMapper();
+    if (mapper != null) {
+      target.setJsonObjectMapper(mapper);
+    }
+    int dialect = clientConfig.getSearchDialect();
+    if (dialect != SearchProtocol.DEFAULT_DIALECT) {
+      target.setDefaultSearchDialect(dialect);
+    }
   }
 
   @Override
@@ -184,8 +211,48 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.flushAll());
   }
 
+  /**
+   * Returns configuration parameters matching the given pattern.
+   * <p>
+   * CONFIG GET is a keyless command with the {@code DEFAULT} request policy. In a Redis OSS Cluster
+   * deployment, keyless commands with the default request policy are executed on an arbitrary
+   * (random) shard, so the result reflects the configuration of that single node only and may
+   * differ across shards.
+   *
+   * @param pattern glob-style pattern to match configuration parameter names
+   * @return a map of matching parameter names to their values from a single, arbitrary shard
+   * @see <a href="https://redis.io/docs/latest/develop/reference/command-tips/#request_policy">Request
+   *     policy</a>
+   */
+  @Experimental
+  public Map<String, String> configGet(String pattern) {
+    return executeCommand(commandObjects.configGet(pattern));
+  }
+
+  /**
+   * Returns configuration parameters matching the given pattern.
+   * <p>
+   * CONFIG GET is a keyless command with the {@code DEFAULT} request policy. In a Redis OSS Cluster
+   * deployment, keyless commands with the default request policy are executed on an arbitrary
+   * (random) shard, so the result reflects the configuration of that single node only and may
+   * differ across shards.
+   *
+   * @param patterns glob-style patterns to match configuration parameter names
+   * @return a map of matching parameter names to their values from a single, arbitrary shard
+   * @see <a href="https://redis.io/docs/latest/develop/reference/command-tips/#request_policy">Request
+   *     policy</a>
+   */
+  @Experimental
+  public Map<String, String> configGet(String... patterns) {
+    return executeCommand(commandObjects.configGet(patterns));
+  }
+
   public String configSet(String parameter, String value) {
     return executeCommand(commandObjects.configSet(parameter, value));
+  }
+
+  public String configSet(Map<String, String> parameterValues) {
+    return executeCommand(commandObjects.configSet(parameterValues));
   }
 
   public String info() {
@@ -862,6 +929,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<Long> increx(String key) {
+    return executeCommand(commandObjects.increx(key));
+  }
+
+  @Override
+  public List<Long> increx(String key, long increment, IncrexParams params) {
+    return executeCommand(commandObjects.increx(key, increment, params));
+  }
+
+  @Override
+  public List<Double> increx(String key, double increment, IncrexFloatParams params) {
+    return executeCommand(commandObjects.increx(key, increment, params));
+  }
+
+  @Override
   public long decr(String key) {
     return executeCommand(commandObjects.decr(key));
   }
@@ -884,6 +966,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public double incrByFloat(byte[] key, double increment) {
     return executeCommand(commandObjects.incrByFloat(key, increment));
+  }
+
+  @Override
+  public List<Long> increx(byte[] key) {
+    return executeCommand(commandObjects.increx(key));
+  }
+
+  @Override
+  public List<Long> increx(byte[] key, long increment, IncrexParams params) {
+    return executeCommand(commandObjects.increx(key, increment, params));
+  }
+
+  @Override
+  public List<Double> increx(byte[] key, double increment, IncrexFloatParams params) {
+    return executeCommand(commandObjects.increx(key, increment, params));
   }
 
   @Override
@@ -3415,6 +3512,308 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
   // Hyper Log Log commands
 
+  // Array commands
+  @Override
+  public long arcount(String key) {
+    return executeCommand(commandObjects.arcount(key));
+  }
+
+  @Override
+  public long arcount(byte[] key) {
+    return executeCommand(commandObjects.arcount(key));
+  }
+
+  @Override
+  public long ardel(String key, long index) {
+    return executeCommand(commandObjects.ardel(key, index));
+  }
+
+  @Override
+  public long ardel(byte[] key, long index) {
+    return executeCommand(commandObjects.ardel(key, index));
+  }
+
+  @Override
+  public long ardel(String key, long... indices) {
+    return executeCommand(commandObjects.ardel(key, indices));
+  }
+
+  @Override
+  public long ardel(byte[] key, long... indices) {
+    return executeCommand(commandObjects.ardel(key, indices));
+  }
+
+  @Override
+  public long ardelrange(String key, LongRange... ranges) {
+    return executeCommand(commandObjects.ardelrange(key, ranges));
+  }
+
+  @Override
+  public long ardelrange(byte[] key, LongRange... ranges) {
+    return executeCommand(commandObjects.ardelrange(key, ranges));
+  }
+
+  @Override
+  public long ardelrange(String key, long start, long end) {
+    return executeCommand(commandObjects.ardelrange(key, start, end));
+  }
+
+  @Override
+  public long ardelrange(byte[] key, long start, long end) {
+    return executeCommand(commandObjects.ardelrange(key, start, end));
+  }
+
+  @Override
+  public String arget(String key, long index) {
+    return executeCommand(commandObjects.arget(key, index));
+  }
+
+  @Override
+  public byte[] arget(byte[] key, long index) {
+    return executeCommand(commandObjects.arget(key, index));
+  }
+
+  @Override
+  public List<String> argetrange(String key, long start, long end) {
+    return executeCommand(commandObjects.argetrange(key, start, end));
+  }
+
+  @Override
+  public List<byte[]> argetrange(byte[] key, long start, long end) {
+    return executeCommand(commandObjects.argetrange(key, start, end));
+  }
+
+  @Override
+  public List<Long> argrep(String key, ArgrepParams params) {
+    return executeCommand(commandObjects.argrep(key, params));
+  }
+
+  @Override
+  public List<Long> argrep(byte[] key, ArgrepParams params) {
+    return executeCommand(commandObjects.argrep(key, params));
+  }
+
+  @Override
+  public List<KeyValue<Long, String>> argrepWithValues(String key, ArgrepParams params) {
+    return executeCommand(commandObjects.argrepWithValues(key, params));
+  }
+
+  @Override
+  public List<KeyValue<Long, byte[]>> argrepWithValues(byte[] key, ArgrepParams params) {
+    return executeCommand(commandObjects.argrepWithValues(key, params));
+  }
+
+  @Override
+  public ArrayInfo arinfo(String key) {
+    return executeCommand(commandObjects.arinfo(key));
+  }
+
+  @Override
+  public ArrayInfo arinfo(byte[] key) {
+    return executeCommand(commandObjects.arinfo(key));
+  }
+
+  @Override
+  public ArrayFullInfo arinfoFull(String key) {
+    return executeCommand(commandObjects.arinfoFull(key));
+  }
+
+  @Override
+  public ArrayFullInfo arinfoFull(byte[] key) {
+    return executeCommand(commandObjects.arinfoFull(key));
+  }
+
+  @Override
+  public long arinsert(String key, String... values) {
+    return executeCommand(commandObjects.arinsert(key, values));
+  }
+
+  @Override
+  public long arinsert(byte[] key, byte[]... values) {
+    return executeCommand(commandObjects.arinsert(key, values));
+  }
+
+  @Override
+  public long arinsert(String key, String value) {
+    return executeCommand(commandObjects.arinsert(key, value));
+  }
+
+  @Override
+  public long arinsert(byte[] key, byte[] value) {
+    return executeCommand(commandObjects.arinsert(key, value));
+  }
+
+  @Override
+  public List<String> arlastitems(String key, long count) {
+    return executeCommand(commandObjects.arlastitems(key, count));
+  }
+
+  @Override
+  public List<byte[]> arlastitems(byte[] key, long count) {
+    return executeCommand(commandObjects.arlastitems(key, count));
+  }
+
+  @Override
+  public List<String> arlastitems(String key, long count, boolean rev) {
+    return executeCommand(commandObjects.arlastitems(key, count, rev));
+  }
+
+  @Override
+  public List<byte[]> arlastitems(byte[] key, long count, boolean rev) {
+    return executeCommand(commandObjects.arlastitems(key, count, rev));
+  }
+
+  @Override
+  public long arlen(String key) {
+    return executeCommand(commandObjects.arlen(key));
+  }
+
+  @Override
+  public long arlen(byte[] key) {
+    return executeCommand(commandObjects.arlen(key));
+  }
+
+  @Override
+  public List<String> armget(String key, long... indices) {
+    return executeCommand(commandObjects.armget(key, indices));
+  }
+
+  @Override
+  public List<byte[]> armget(byte[] key, long... indices) {
+    return executeCommand(commandObjects.armget(key, indices));
+  }
+
+  @Override
+  public long armset(String key, Map<Long, String> indexValueMap) {
+    return executeCommand(commandObjects.armset(key, indexValueMap));
+  }
+
+  @Override
+  public long armset(byte[] key, Map<Long, byte[]> indexValueMap) {
+    return executeCommand(commandObjects.armset(key, indexValueMap));
+  }
+
+  @Override
+  public Long arnext(String key) {
+    return executeCommand(commandObjects.arnext(key));
+  }
+
+  @Override
+  public Long arnext(byte[] key) {
+    return executeCommand(commandObjects.arnext(key));
+  }
+
+  @Override
+  public long aropBitwise(String key, long start, long end, ArrayBitwise op) {
+    return executeCommand(commandObjects.aropBitwise(key, start, end, op));
+  }
+
+  @Override
+  public long aropBitwise(byte[] key, long start, long end, ArrayBitwise op) {
+    return executeCommand(commandObjects.aropBitwise(key, start, end, op));
+  }
+
+  @Override
+  public String aropAggregate(String key, long start, long end, ArrayAggregate op) {
+    return executeCommand(commandObjects.aropAggregate(key, start, end, op));
+  }
+
+  @Override
+  public byte[] aropAggregate(byte[] key, long start, long end, ArrayAggregate op) {
+    return executeCommand(commandObjects.aropAggregate(key, start, end, op));
+  }
+
+  @Override
+  public long aropCount(String key, long start, long end) {
+    return executeCommand(commandObjects.aropCount(key, start, end));
+  }
+
+  @Override
+  public long aropCount(byte[] key, long start, long end) {
+    return executeCommand(commandObjects.aropCount(key, start, end));
+  }
+
+  @Override
+  public long aropCount(String key, long start, long end, String match) {
+    return executeCommand(commandObjects.aropCount(key, start, end, match));
+  }
+
+  @Override
+  public long aropCount(byte[] key, long start, long end, byte[] match) {
+    return executeCommand(commandObjects.aropCount(key, start, end, match));
+  }
+
+  @Override
+  public long arring(String key, long size, String... values) {
+    return executeCommand(commandObjects.arring(key, size, values));
+  }
+
+  @Override
+  public long arring(byte[] key, long size, byte[]... values) {
+    return executeCommand(commandObjects.arring(key, size, values));
+  }
+
+  @Override
+  public long arring(String key, long size, String value) {
+    return executeCommand(commandObjects.arring(key, size, value));
+  }
+
+  @Override
+  public long arring(byte[] key, long size, byte[] value) {
+    return executeCommand(commandObjects.arring(key, size, value));
+  }
+
+  @Override
+  public List<KeyValue<Long, String>> arscan(String key, long start, long end) {
+    return executeCommand(commandObjects.arscan(key, start, end));
+  }
+
+  @Override
+  public List<KeyValue<Long, byte[]>> arscan(byte[] key, long start, long end) {
+    return executeCommand(commandObjects.arscan(key, start, end));
+  }
+
+  @Override
+  public List<KeyValue<Long, String>> arscan(String key, long start, long end, long limit) {
+    return executeCommand(commandObjects.arscan(key, start, end, limit));
+  }
+
+  @Override
+  public List<KeyValue<Long, byte[]>> arscan(byte[] key, long start, long end, long limit) {
+    return executeCommand(commandObjects.arscan(key, start, end, limit));
+  }
+
+  @Override
+  public long arseek(String key, long index) {
+    return executeCommand(commandObjects.arseek(key, index));
+  }
+
+  @Override
+  public long arseek(byte[] key, long index) {
+    return executeCommand(commandObjects.arseek(key, index));
+  }
+
+  @Override
+  public long arset(String key, long index, String... values) {
+    return executeCommand(commandObjects.arset(key, index, values));
+  }
+
+  @Override
+  public long arset(byte[] key, long index, byte[]... values) {
+    return executeCommand(commandObjects.arset(key, index, values));
+  }
+
+  @Override
+  public long arset(String key, long index, String value) {
+    return executeCommand(commandObjects.arset(key, index, value));
+  }
+
+  @Override
+  public long arset(byte[] key, long index, byte[] value) {
+    return executeCommand(commandObjects.arset(key, index, value));
+  }
+  // Array commands
+
   // Stream commands
   @Override
   public StreamEntryID xadd(String key, StreamEntryID id, Map<String, String> hash) {
@@ -3484,6 +3883,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public List<StreamEntryDeletionResult> xackdel(String key, String group, StreamDeletionPolicy trimMode, StreamEntryID... ids) {
     return executeCommand(commandObjects.xackdel(key, group, trimMode, ids));
+  }
+
+  @Override
+  public long xnack(String key, String group, XNackMode mode, StreamEntryID... ids) {
+    return executeCommand(commandObjects.xnack(key, group, mode, ids));
   }
 
   @Override
@@ -3659,6 +4063,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public List<StreamEntryDeletionResult> xackdel(byte[] key, byte[] group, StreamDeletionPolicy trimMode, byte[]... ids) {
     return executeCommand(commandObjects.xackdel(key, group, trimMode, ids));
+  }
+
+  @Override
+  public long xnack(byte[] key, byte[] group, XNackMode mode, byte[]... ids) {
+    return executeCommand(commandObjects.xnack(key, group, mode, ids));
   }
 
   @Override

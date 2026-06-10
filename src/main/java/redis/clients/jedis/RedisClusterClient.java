@@ -61,10 +61,14 @@ public class RedisClusterClient extends UnifiedJedis {
   private final CommandFlagsRegistry commandFlagsRegistry;
 
   private RedisClusterClient(CommandExecutor commandExecutor, ConnectionProvider connectionProvider,
-      CommandObjects commandObjects, RedisProtocol redisProtocol, Cache cache,
-      CommandFlagsRegistry commandFlagsRegistry) {
-    super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+      JedisClientConfig clientConfig, Cache cache, CommandFlagsRegistry commandFlagsRegistry) {
+    super(commandExecutor, connectionProvider, clientConfig, cache);
     this.commandFlagsRegistry = commandFlagsRegistry;
+  }
+
+  @Override
+  protected CommandObjects newCommandObjects(RedisProtocol protocol) {
+    return new ClusterCommandObjects(protocol);
   }
 
   /**
@@ -137,8 +141,8 @@ public class RedisClusterClient extends UnifiedJedis {
 
     @Override
     protected RedisClusterClient createClient() {
-      return new RedisClusterClient(commandExecutor, connectionProvider, commandObjects,
-          clientConfig.getRedisProtocol(), cache, getCommandFlags());
+      return new RedisClusterClient(commandExecutor, connectionProvider, clientConfig, cache,
+          getCommandFlags());
     }
   }
 

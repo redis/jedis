@@ -246,7 +246,7 @@ public class TransactionV2Test {
     // A command may fail to be queued, so there may be an error before EXEC is called.
     // For instance the command may be syntactically wrong (wrong number of arguments, wrong command name, ...)
     CommandObject<String> invalidCommand =
-        new CommandObject<>(new CommandObjects().commandArguments(SET), BuilderFactory.STRING);
+        new CommandObject<>(new CommandObjects(RedisProtocol.RESP2).commandArguments(SET), BuilderFactory.STRING);
 
     Transaction t = new Transaction(conn);
     t.appendCommand(invalidCommand);

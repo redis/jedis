@@ -38,19 +38,13 @@ import redis.clients.jedis.util.CompareCondition;
 
 public class CommandObjects {
 
-  private RedisProtocol protocol;
-
-  // TODO: Remove together with setProtocol
-  public CommandObjects() {
-  }
+  private final RedisProtocol protocol;
 
   public CommandObjects(RedisProtocol protocol) {
+    if (protocol == null) {
+      throw new IllegalArgumentException("protocol must not be null");
+    }
     this.protocol = protocol;
-  }
-
-  // TODO: restrict?
-  public final void setProtocol(RedisProtocol proto) {
-    this.protocol = proto;
   }
 
   // TODO: remove?
@@ -96,8 +90,24 @@ public class CommandObjects {
     return FLUSHDB_COMMAND_OBJECT;
   }
 
+  public final CommandObject<Map<String, String>> configGet(String pattern) {
+    return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.GET).add(pattern),
+        BuilderFactory.STRING_MAP);
+  }
+
+  public final CommandObject<Map<String, String>> configGet(String... patterns) {
+    return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.GET).addObjects((Object[]) patterns),
+        BuilderFactory.STRING_MAP);
+  }
+
   public final CommandObject<String> configSet(String parameter, String value) {
     return new CommandObject<>(commandArguments(Command.CONFIG).add(Keyword.SET).add(parameter).add(value), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> configSet(Map<String, String> parameterValues) {
+    CommandArguments args = commandArguments(Command.CONFIG).add(Keyword.SET);
+    parameterValues.forEach((k, v) -> args.add(k).add(v));
+    return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
   private final CommandObject<String> INFO_COMMAND_OBJECT = new CommandObject<>(commandArguments(Command.INFO),
@@ -660,6 +670,36 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(INCRBYFLOAT).key(key).add(increment), BuilderFactory.DOUBLE);
   }
 
+  // ── INCREX ─────────────────────────────────────────────
+
+  public final CommandObject<List<Long>> increx(String key) {
+    return new CommandObject<>(commandArguments(INCREX).key(key), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> increx(String key, long increment, IncrexParams params) {
+    return new CommandObject<>(commandArguments(INCREX).key(key).add(BYINT).add(increment).addParams(params),
+        BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Double>> increx(String key, double increment, IncrexFloatParams params) {
+    return new CommandObject<>(commandArguments(INCREX).key(key).add(BYFLOAT).add(increment).addParams(params),
+        BuilderFactory.DOUBLE_LIST);
+  }
+
+  public final CommandObject<List<Long>> increx(byte[] key) {
+    return new CommandObject<>(commandArguments(INCREX).key(key), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> increx(byte[] key, long increment, IncrexParams params) {
+    return new CommandObject<>(commandArguments(INCREX).key(key).add(BYINT).add(increment).addParams(params),
+        BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Double>> increx(byte[] key, double increment, IncrexFloatParams params) {
+    return new CommandObject<>(commandArguments(INCREX).key(key).add(BYFLOAT).add(increment).addParams(params),
+        BuilderFactory.DOUBLE_LIST);
+  }
+
   public final CommandObject<Long> decr(String key) {
     return new CommandObject<>(commandArguments(DECR).key(key), BuilderFactory.LONG);
   }
@@ -1212,7 +1252,7 @@ public class CommandObjects {
 
   public final CommandObject<List<Map.Entry<String, String>>> hrandfieldWithValues(String key, long count) {
     return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count).add(WITHVALUES),
-        protocol != RedisProtocol.RESP3 ? BuilderFactory.STRING_PAIR_LIST : BuilderFactory.STRING_PAIR_LIST_FROM_PAIRS);
+        protocol == RedisProtocol.RESP2 ? BuilderFactory.STRING_PAIR_LIST : BuilderFactory.STRING_PAIR_LIST_FROM_PAIRS);
   }
 
   public final CommandObject<Map<byte[], byte[]>> hgetAll(byte[] key) {
@@ -1229,7 +1269,7 @@ public class CommandObjects {
 
   public final CommandObject<List<Map.Entry<byte[], byte[]>>> hrandfieldWithValues(byte[] key, long count) {
     return new CommandObject<>(commandArguments(HRANDFIELD).key(key).add(count).add(WITHVALUES),
-        protocol != RedisProtocol.RESP3 ? BuilderFactory.BINARY_PAIR_LIST : BuilderFactory.BINARY_PAIR_LIST_FROM_PAIRS);
+        protocol == RedisProtocol.RESP2 ? BuilderFactory.BINARY_PAIR_LIST : BuilderFactory.BINARY_PAIR_LIST_FROM_PAIRS);
   }
 
   public final CommandObject<ScanResult<Map.Entry<String, String>>> hscan(String key, String cursor, ScanParams params) {
@@ -2586,6 +2626,325 @@ public class CommandObjects {
   }
   // Hyper Log Log commands
 
+  // Array commands
+  public final CommandObject<Long> arcount(String key) {
+    return new CommandObject<>(commandArguments(ARCOUNT).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> arcount(byte[] key) {
+    return new CommandObject<>(commandArguments(ARCOUNT).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> ardel(String key, long index) {
+    return new CommandObject<>(commandArguments(ARDEL).key(key).add(index), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> ardel(byte[] key, long index) {
+    return new CommandObject<>(commandArguments(ARDEL).key(key).add(index), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> ardel(String key, long... indices) {
+    CommandArguments args = commandArguments(ARDEL).key(key);
+    for (long i : indices) {
+      args.add(i);
+    }
+    return new CommandObject<>(args, BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> ardel(byte[] key, long... indices) {
+    CommandArguments args = commandArguments(ARDEL).key(key);
+    for (long i : indices) {
+      args.add(i);
+    }
+    return new CommandObject<>(args, BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> ardelrange(String key, LongRange... ranges) {
+    CommandArguments args = commandArguments(ARDELRANGE).key(key);
+    addLongRanges(args, ranges);
+    return new CommandObject<>(args, BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> ardelrange(byte[] key, LongRange... ranges) {
+    CommandArguments args = commandArguments(ARDELRANGE).key(key);
+    addLongRanges(args, ranges);
+    return new CommandObject<>(args, BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> ardelrange(String key, long start, long end) {
+    return new CommandObject<>(commandArguments(ARDELRANGE).key(key).add(start).add(end),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> ardelrange(byte[] key, long start, long end) {
+    return new CommandObject<>(commandArguments(ARDELRANGE).key(key).add(start).add(end),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<String> arget(String key, long index) {
+    return new CommandObject<>(commandArguments(ARGET).key(key).add(index), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<byte[]> arget(byte[] key, long index) {
+    return new CommandObject<>(commandArguments(ARGET).key(key).add(index), BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<List<String>> argetrange(String key, long start, long end) {
+    return new CommandObject<>(commandArguments(ARGETRANGE).key(key).add(start).add(end),
+        BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> argetrange(byte[] key, long start, long end) {
+    return new CommandObject<>(commandArguments(ARGETRANGE).key(key).add(start).add(end),
+        BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<List<Long>> argrep(String key, ArgrepParams params) {
+    return new CommandObject<>(commandArguments(ARGREP).key(key).addParams(params),
+        BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> argrep(byte[] key, ArgrepParams params) {
+    return new CommandObject<>(commandArguments(ARGREP).key(key).addParams(params),
+        BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<KeyValue<Long, String>>> argrepWithValues(String key, ArgrepParams params) {
+    return new CommandObject<>(commandArguments(ARGREP).key(key).addParams(params).add(WITHVALUES),
+        BuilderFactory.STRING_INDEXED_VALUE_LIST);
+  }
+
+  public final CommandObject<List<KeyValue<Long, byte[]>>> argrepWithValues(byte[] key, ArgrepParams params) {
+    return new CommandObject<>(commandArguments(ARGREP).key(key).addParams(params).add(WITHVALUES),
+        BuilderFactory.BINARY_INDEXED_VALUE_LIST);
+  }
+
+  public final CommandObject<ArrayInfo> arinfo(String key) {
+    return new CommandObject<>(commandArguments(ARINFO).key(key), BuilderFactory.ARRAY_INFO);
+  }
+
+  public final CommandObject<ArrayInfo> arinfo(byte[] key) {
+    return new CommandObject<>(commandArguments(ARINFO).key(key), BuilderFactory.ARRAY_INFO);
+  }
+
+  public final CommandObject<ArrayFullInfo> arinfoFull(String key) {
+    return new CommandObject<>(commandArguments(ARINFO).key(key).add(FULL), BuilderFactory.ARRAY_FULL_INFO);
+  }
+
+  public final CommandObject<ArrayFullInfo> arinfoFull(byte[] key) {
+    return new CommandObject<>(commandArguments(ARINFO).key(key).add(FULL), BuilderFactory.ARRAY_FULL_INFO);
+  }
+
+  public final CommandObject<Long> arinsert(String key, String... values) {
+    return new CommandObject<>(commandArguments(ARINSERT).key(key).addObjects((Object[]) values),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> arinsert(byte[] key, byte[]... values) {
+    return new CommandObject<>(commandArguments(ARINSERT).key(key).addObjects((Object[]) values),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> arinsert(String key, String value) {
+    return new CommandObject<>(commandArguments(ARINSERT).key(key).add(value), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> arinsert(byte[] key, byte[] value) {
+    return new CommandObject<>(commandArguments(ARINSERT).key(key).add(value), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<String>> arlastitems(String key, long count) {
+    return new CommandObject<>(commandArguments(ARLASTITEMS).key(key).add(count),
+        BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> arlastitems(byte[] key, long count) {
+    return new CommandObject<>(commandArguments(ARLASTITEMS).key(key).add(count),
+        BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<List<String>> arlastitems(String key, long count, boolean rev) {
+    CommandArguments args = commandArguments(ARLASTITEMS).key(key).add(count);
+    if (rev) {
+      args.add(REV);
+    }
+    return new CommandObject<>(args, BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> arlastitems(byte[] key, long count, boolean rev) {
+    CommandArguments args = commandArguments(ARLASTITEMS).key(key).add(count);
+    if (rev) {
+      args.add(REV);
+    }
+    return new CommandObject<>(args, BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<Long> arlen(String key) {
+    return new CommandObject<>(commandArguments(ARLEN).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> arlen(byte[] key) {
+    return new CommandObject<>(commandArguments(ARLEN).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<String>> armget(String key, long... indices) {
+    CommandArguments args = commandArguments(ARMGET).key(key);
+    for (long i : indices) {
+      args.add(i);
+    }
+    return new CommandObject<>(args, BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> armget(byte[] key, long... indices) {
+    CommandArguments args = commandArguments(ARMGET).key(key);
+    for (long i : indices) {
+      args.add(i);
+    }
+    return new CommandObject<>(args, BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<Long> armset(String key, Map<Long, String> indexValueMap) {
+    CommandArguments args = commandArguments(ARMSET).key(key);
+    for (Map.Entry<Long, String> e : indexValueMap.entrySet()) {
+      args.add(e.getKey()).add(e.getValue());
+    }
+    return new CommandObject<>(args, BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> armset(byte[] key, Map<Long, byte[]> indexValueMap) {
+    CommandArguments args = commandArguments(ARMSET).key(key);
+    for (Map.Entry<Long, byte[]> e : indexValueMap.entrySet()) {
+      args.add(e.getKey()).add(e.getValue());
+    }
+    return new CommandObject<>(args, BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> arnext(String key) {
+    return new CommandObject<>(commandArguments(ARNEXT).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> arnext(byte[] key) {
+    return new CommandObject<>(commandArguments(ARNEXT).key(key), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> aropBitwise(String key, long start, long end, ArrayBitwise op) {
+    return new CommandObject<>(commandArguments(AROP).key(key).add(start).add(end).add(op),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> aropBitwise(byte[] key, long start, long end, ArrayBitwise op) {
+    return new CommandObject<>(commandArguments(AROP).key(key).add(start).add(end).add(op),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<String> aropAggregate(String key, long start, long end, ArrayAggregate op) {
+    return new CommandObject<>(commandArguments(AROP).key(key).add(start).add(end).add(op),
+        BuilderFactory.STRING);
+  }
+
+  public final CommandObject<byte[]> aropAggregate(byte[] key, long start, long end, ArrayAggregate op) {
+    return new CommandObject<>(commandArguments(AROP).key(key).add(start).add(end).add(op),
+        BuilderFactory.BINARY);
+  }
+
+  public final CommandObject<Long> aropCount(String key, long start, long end) {
+    return new CommandObject<>(commandArguments(AROP).key(key).add(start).add(end).add(USED),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> aropCount(byte[] key, long start, long end) {
+    return new CommandObject<>(commandArguments(AROP).key(key).add(start).add(end).add(USED),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> aropCount(String key, long start, long end, String match) {
+    return new CommandObject<>(commandArguments(AROP).key(key).add(start).add(end).add(MATCH).add(match),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> aropCount(byte[] key, long start, long end, byte[] match) {
+    return new CommandObject<>(commandArguments(AROP).key(key).add(start).add(end).add(MATCH).add(match),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> arring(String key, long size, String... values) {
+    return new CommandObject<>(commandArguments(ARRING).key(key).add(size).addObjects((Object[]) values),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> arring(byte[] key, long size, byte[]... values) {
+    return new CommandObject<>(commandArguments(ARRING).key(key).add(size).addObjects((Object[]) values),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> arring(String key, long size, String value) {
+    return new CommandObject<>(commandArguments(ARRING).key(key).add(size).add(value),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> arring(byte[] key, long size, byte[] value) {
+    return new CommandObject<>(commandArguments(ARRING).key(key).add(size).add(value),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<List<KeyValue<Long, String>>> arscan(String key, long start, long end) {
+    return new CommandObject<>(commandArguments(ARSCAN).key(key).add(start).add(end),
+        BuilderFactory.STRING_INDEXED_VALUE_LIST);
+  }
+
+  public final CommandObject<List<KeyValue<Long, byte[]>>> arscan(byte[] key, long start, long end) {
+    return new CommandObject<>(commandArguments(ARSCAN).key(key).add(start).add(end),
+        BuilderFactory.BINARY_INDEXED_VALUE_LIST);
+  }
+
+  public final CommandObject<List<KeyValue<Long, String>>> arscan(String key, long start, long end, long limit) {
+    return new CommandObject<>(commandArguments(ARSCAN).key(key).add(start).add(end).add(LIMIT).add(limit),
+        BuilderFactory.STRING_INDEXED_VALUE_LIST);
+  }
+
+  public final CommandObject<List<KeyValue<Long, byte[]>>> arscan(byte[] key, long start, long end, long limit) {
+    return new CommandObject<>(commandArguments(ARSCAN).key(key).add(start).add(end).add(LIMIT).add(limit),
+        BuilderFactory.BINARY_INDEXED_VALUE_LIST);
+  }
+
+  public final CommandObject<Long> arseek(String key, long index) {
+    return new CommandObject<>(commandArguments(ARSEEK).key(key).add(index), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> arseek(byte[] key, long index) {
+    return new CommandObject<>(commandArguments(ARSEEK).key(key).add(index), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> arset(String key, long index, String... values) {
+    return new CommandObject<>(commandArguments(ARSET).key(key).add(index).addObjects((Object[]) values),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> arset(byte[] key, long index, byte[]... values) {
+    return new CommandObject<>(commandArguments(ARSET).key(key).add(index).addObjects((Object[]) values),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> arset(String key, long index, String value) {
+    return new CommandObject<>(commandArguments(ARSET).key(key).add(index).add(value),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> arset(byte[] key, long index, byte[] value) {
+    return new CommandObject<>(commandArguments(ARSET).key(key).add(index).add(value),
+        BuilderFactory.LONG);
+  }
+
+  private static void addLongRanges(CommandArguments args, LongRange[] ranges) {
+    for (LongRange r : ranges) {
+      if (r == null) {
+        throw new IllegalArgumentException("Range must not be null.");
+      }
+      args.add(r.start()).add(r.end());
+    }
+  }
+  // Array commands
+
   // Stream commands
   public final CommandObject<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash) {
     return new CommandObject<>(addFlatMapArgs(commandArguments(XADD).key(key).add(id == null ? StreamEntryID.NEW_ENTRY : id), hash),
@@ -2688,6 +3047,16 @@ public class CommandObjects {
 
   public final CommandObject<List<StreamEntryDeletionResult>> xackdel(byte[] key, byte[] group, StreamDeletionPolicy trimMode, byte[]... ids) {
     return new CommandObject<>(commandArguments(XACKDEL).key(key).add(group).add(trimMode).add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.STREAM_ENTRY_DELETION_RESULT_LIST);
+  }
+
+  public final CommandObject<Long> xnack(String key, String group, XNackMode mode, StreamEntryID... ids) {
+    return new CommandObject<>(commandArguments(XNACK).key(key).add(group).add(mode)
+        .add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> xnack(byte[] key, byte[] group, XNackMode mode, byte[]... ids) {
+    return new CommandObject<>(commandArguments(XNACK).key(key).add(group).add(mode)
+        .add("IDS").add(ids.length).addObjects((Object[]) ids), BuilderFactory.LONG);
   }
 
   public final CommandObject<String> xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
@@ -3988,7 +4357,7 @@ public class CommandObjects {
 
   public final CommandObject<List<Class<?>>> jsonType(String key, Path2 path) {
     return new CommandObject<>(commandArguments(JsonCommand.TYPE).key(key).add(path),
-        protocol != RedisProtocol.RESP3 ? JsonBuilderFactory.JSON_TYPE_LIST : JsonBuilderFactory.JSON_TYPE_RESPONSE_RESP3_COMPATIBLE);
+        protocol == RedisProtocol.RESP2 ? JsonBuilderFactory.JSON_TYPE_LIST : JsonBuilderFactory.JSON_TYPE_RESPONSE_RESP3_COMPATIBLE);
   }
 
   @Deprecated

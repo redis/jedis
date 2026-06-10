@@ -2,7 +2,7 @@ PATH := ./redis-git/src:${PATH}
 
 # Supported test env versions
 SUPPORTED_TEST_ENV_VERSIONS := 8.8 8.6 8.4 8.2 8.0 7.4 7.2 6.2
-DEFAULT_TEST_ENV_VERSION := 8.6
+DEFAULT_TEST_ENV_VERSION := 8.8
 REDIS_ENV_WORK_DIR := $(or ${REDIS_ENV_WORK_DIR},/tmp/redis-env-work)
 TOXIPROXY_IMAGE := ghcr.io/shopify/toxiproxy:2.8.0
 
@@ -130,13 +130,13 @@ start:
 	fi; \
 	rm -rf "$(REDIS_ENV_WORK_DIR)"; \
 	mkdir -p "$(REDIS_ENV_WORK_DIR)"; \
-	docker compose $$env_files -f src/test/resources/env/docker-compose.yml up -d --wait --quiet-pull; \
+	docker compose $$env_files -f src/test/resources/env/docker-compose.yml up -d --wait --quiet-pull && \
 	echo "Started test environment with Redis version $$version. "
 
 # Stop the test environment
 stop:
-	docker compose -f src/test/resources/env/docker-compose.yml down; \
-	rm -rf "$(REDIS_ENV_WORK_DIR)"; \
+	docker compose -f src/test/resources/env/docker-compose.yml down && \
+	rm -rf "$(REDIS_ENV_WORK_DIR)" && \
 	echo "Stopped test environment and performed cleanup."
 
 test: | start mvn-test stop

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
@@ -13,13 +14,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import redis.clients.jedis.BuilderFactory;
+import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.MultiDbClient;
 import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.ClientTestUtil;
 
 /**
@@ -149,5 +155,41 @@ public class MultiDbTransactionIntegrationTest {
     }
     assertEquals("1", client.get("a"));
     assertEquals(0, activePool().getNumActive());
+  }
+
+  @Test
+  public void exec_queuedCommandRejectedByServer_surfacesServerError() {
+    ConnectionPool pool = activePool();
+
+    try (MultiDbTransaction tx = client.multi()) {
+      // GET with no arguments: Redis rejects it at queue time with an arity error instead of
+      // replying QUEUED. Connection.getMany stores that error reply inline as a JedisDataException.
+      tx.appendCommand(
+        new CommandObject<>(new CommandArguments(Protocol.Command.GET), BuilderFactory.RAW_OBJECT));
+
+      // the original server error must propagate, not a ClassCastException
+      JedisDataException ex = assertThrows(JedisDataException.class, tx::exec);
+      assertTrue(ex.getMessage().toLowerCase().contains("wrong number of arguments"),
+        "expected arity error, got: " + ex.getMessage());
+    }
+
+    // connection is released back to the pool on the error path
+    assertEquals(0, pool.getNumActive(), "no active connections after a failed exec");
+  }
+
+  @Test
+  public void failedExec_doesNotPoisonPooledConnection() {
+    // A queue-time rejection aborts exec() before EXEC/DISCARD is sent, leaving the server
+    // mid-MULTI on the borrowed connection.
+    try (MultiDbTransaction tx = client.multi()) {
+      tx.appendCommand(
+        new CommandObject<>(new CommandArguments(Protocol.Command.GET), BuilderFactory.RAW_OBJECT));
+      assertThrows(JedisDataException.class, tx::exec);
+    }
+
+    // The connection that handled the failed transaction is back in the pool. A subsequent command
+    // must execute normally; if the connection were returned mid-MULTI, SET would reply QUEUED.
+    assertEquals("OK", client.set("x", "y"));
+    assertEquals("y", client.get("x"));
   }
 }

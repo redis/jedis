@@ -1,5 +1,6 @@
 package redis.clients.jedis.mcf;
 
+import static redis.clients.jedis.Protocol.Command.DISCARD;
 import static redis.clients.jedis.Protocol.Command.EXEC;
 import static redis.clients.jedis.Protocol.Command.MULTI;
 import static redis.clients.jedis.Protocol.Command.UNWATCH;
@@ -152,23 +153,47 @@ public class MultiDbTransaction extends AbstractTransaction {
             "Unexpected response: " + SafeEncoder.encode((byte[]) multiReply));
       }
 
-      commands.forEach((command) -> conn.sendCommand(command.getKey()));
-      // following connection.getMany(int) flushes anyway, so no flush here.
+      // From here until EXEC is written, the server is in MULTI state on this connection.
+      // Any exception that escapes this block must be paired with a DISCARD so the
+      // connection can be safely returned to the pool; otherwise the next borrower would
+      // receive QUEUED replies instead of their commands being executed.
+      try {
+        commands.forEach((command) -> conn.sendCommand(command.getKey()));
+        // following connection.getMany(int) flushes anyway, so no flush here.
 
-      // server replies QUEUED for each buffered command
-      List<Object> queuedCmdResponses = conn.getMany(commands.size());
-      queuedCmdResponses.forEach((rawReply) -> {
-        if (!bytesEquals(QUEUED_IN_BYTES, rawReply)) {
-          throw new JedisDataException(
-              "Unexpected response: " + SafeEncoder.encode((byte[]) rawReply));
+        // server replies QUEUED for each buffered command
+        List<Object> queuedCmdResponses = conn.getMany(commands.size());
+        queuedCmdResponses.forEach((rawReply) -> {
+          if (!bytesEquals(QUEUED_IN_BYTES, rawReply)) {
+            if (rawReply instanceof RuntimeException) {
+              throw (RuntimeException) rawReply;
+            }
+            if (rawReply instanceof byte[]) {
+              throw new JedisDataException(
+                  "Unexpected response: " + SafeEncoder.encode((byte[]) rawReply));
+            }
+            // this should not ever happen
+            throw new JedisDataException("Unexpected response: " + rawReply);
+          }
+        });
+
+        if (!connectionSupplier.isActiveDatabase(initialDatabase)) {
+          throw new JedisException("Active database has changed since transaction started");
         }
-      });
 
-      if (!connectionSupplier.isActiveDatabase(initialDatabase)) {
-        throw new JedisException("Active database has changed since transaction started");
+        conn.sendCommand(EXEC);
+      } catch (RuntimeException ex) {
+        if (!conn.isBroken()) {
+          try {
+            conn.sendCommand(DISCARD);
+            conn.getStatusCodeReply();
+          } catch (RuntimeException discardEx) {
+            ex.addSuppressed(discardEx);
+            conn.setBroken();
+          }
+        }
+        throw ex;
       }
-
-      conn.sendCommand(EXEC);
 
       List<Object> unformatted = conn.getObjectMultiBulkReply();
       if (unformatted == null) {

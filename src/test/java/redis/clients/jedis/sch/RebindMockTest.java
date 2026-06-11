@@ -1,4 +1,4 @@
-package redis.clients.jedis.upgrade;
+package redis.clients.jedis.sch;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
@@ -26,7 +26,7 @@ import redis.clients.jedis.util.server.TcpMockServer;
  * Uses mock TCP servers to simulate Redis cluster slot migration scenarios.
  */
 @Tag("sch")
-public class UnifiedJedisProactiveRebindTest {
+public class RebindMockTest {
 
   private TcpMockServer mockServer1;
   private TcpMockServer mockServer2;

@@ -169,8 +169,11 @@ public class MultiDbTransactionIntegrationTest {
 
       // the original server error must propagate, not a ClassCastException
       JedisDataException ex = assertThrows(JedisDataException.class, tx::exec);
-      assertTrue(ex.getMessage().toLowerCase().contains("wrong number of arguments"),
+      assertTrue(ex.getMessage().contains("EXECABORT"),
         "expected arity error, got: " + ex.getMessage());
+
+      assertTrue(ex.getSuppressed().length > 0);
+      assertTrue(ex.getSuppressed()[0].getMessage().contains("wrong number of arguments"));
     }
 
     // connection is released back to the pool on the error path

@@ -27,6 +27,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     private JedisSocketFactory jedisSocketFactory;
     private Cache cache;
     private HostAndPort hostAndPort;
+    private MaintenanceEventController maintenanceController;
 
     // Fluent API methods (preferred)
     public Builder clientConfig(JedisClientConfig clientConfig) {
@@ -54,6 +55,17 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       return this;
     }
 
+    /**
+     * Pool-owned maintenance controller propagated to the default socket factory (as the post-DNS
+     * address mapper for MOVING redirects) and to the default {@link Connection.Builder} (so each
+     * connection forwards push frames to it). Package-private parameter type keeps this off the
+     * public API. {@code null} disables maintenance for this factory.
+     */
+    Builder maintenanceController(MaintenanceEventController maintenanceController) {
+      this.maintenanceController = maintenanceController;
+      return this;
+    }
+
     public Connection.Builder getConnectionBuilder() {
       return connectionBuilder;
     }
@@ -68,6 +80,10 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
     public Cache getCache() {
       return cache;
+    }
+
+    MaintenanceEventController getMaintenanceController() {
+      return maintenanceController;
     }
 
     public ConnectionFactory build() {
@@ -92,12 +108,13 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       if (hostAndPort == null) {
         throw new IllegalStateException("HostAndPort is required when no socketFactory is provided");
       }
-      return new DefaultJedisSocketFactory(hostAndPort, clientConfig);
+      return new DefaultJedisSocketFactory(hostAndPort, clientConfig, maintenanceController);
     }
 
     private Connection.Builder createDefaultConnectionBuilder() {
       Connection.Builder connBuilder = cache == null ? Connection.builder() : CacheConnection.builder(cache);
-      connBuilder.socketFactory(jedisSocketFactory).clientConfig(clientConfig);
+      connBuilder.socketFactory(jedisSocketFactory).clientConfig(clientConfig)
+          .maintenanceController(maintenanceController);
       return connBuilder;
     }
   }
@@ -111,7 +128,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private final JedisClientConfig clientConfig;
   private Supplier<Connection> objectMaker;
   private Connection.Builder connectionBuilder;
-  private MaintenanceEventController maintenanceController;   // null = maintenance off
+  private final MaintenanceEventController maintenanceController;   // null = maintenance off
 
   private AuthXEventListener authXEventListener;
 
@@ -135,6 +152,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   public ConnectionFactory(Builder builder) {
     this.clientConfig = builder.getClientConfig();
     this.connectionBuilder = builder.getConnectionBuilder();
+    this.maintenanceController = builder.getMaintenanceController();
 
     initAuthXManager();
   }
@@ -143,23 +161,18 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     return clientConfig;
   }
 
-  /** Visible for testing: the attached controller, or {@code null} when maintenance is off. */
+  /**
+   * The maintenance controller wired at construction (see
+   * {@link Builder#maintenanceController(MaintenanceEventController)}), or {@code null} when
+   * maintenance is disabled for this factory.
+   */
   MaintenanceEventController getMaintenanceController() {
     return maintenanceController;
   }
 
-  /**
-   * Wires the pool-owned maintenance controller: injects it into built connections and installs it
-   * as the socket factory's post-DNS address mapper so new connections to an affected peer are
-   * redirected to the rebind target within the MOVING grace window.
-   */
-  void attachMaintenanceController(MaintenanceEventController controller) {
-    this.maintenanceController = controller;
-    connectionBuilder.maintenanceController(controller);
-    JedisSocketFactory socketFactory = connectionBuilder.getSocketFactory();
-    if (socketFactory instanceof DefaultJedisSocketFactory) {
-      ((DefaultJedisSocketFactory) socketFactory).setSocketAddressMapper(controller);
-    }
+  /** Visible for testing: the underlying connection builder (and via it, the socket factory). */
+  Connection.Builder getConnectionBuilder() {
+    return connectionBuilder;
   }
 
   private void initAuthXManager() {

@@ -249,29 +249,32 @@ public class MaintenanceEventControllerTest {
 
   @Test
   public void poolWiresControllerAsSocketAddressMapper() {
-    DefaultJedisSocketFactory sf = new DefaultJedisSocketFactory(
-        new HostAndPort("localhost", mockServer.getPort()));
+    HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
     JedisClientConfig config = DefaultJedisClientConfig.builder()
         .maintNotificationsConfig(MaintenanceNotificationsConfig.builder().build()).build();
-    ConnectionFactory factory = new ConnectionFactory(sf, config);
 
-    new ConnectionPool(factory); // constructing the pool wires the controller from the config
+    // Convenience constructor: the pool builds the ConnectionFactory and injects a controller into
+    // its default DefaultJedisSocketFactory at construction time.
+    ConnectionPool pool = new ConnectionPool(hp, config);
+    ConnectionFactory factory = (ConnectionFactory) pool.getFactory();
     MaintenanceEventController wired = factory.getMaintenanceController();
     assertNotNull(wired, "pool creates and attaches a controller when maintenance is enabled");
+    DefaultJedisSocketFactory sf = (DefaultJedisSocketFactory) factory.getConnectionBuilder()
+        .getSocketFactory();
     assertSame(wired, sf.getSocketAddressMapper(),
       "socket factory uses the controller as its post-DNS mapper");
   }
 
   @Test
   public void disabledMaintenance_leavesFactoryUnwired() {
+    HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
     JedisClientConfig config = DefaultJedisClientConfig.builder()
         .maintNotificationsConfig(MaintenanceNotificationsConfig.builder()
             .mode(MaintenanceNotificationsConfig.Mode.DISABLED).build())
         .build();
-    ConnectionFactory factory = new ConnectionFactory(
-        new DefaultJedisSocketFactory(new HostAndPort("localhost", mockServer.getPort())), config);
 
-    new ConnectionPool(factory);
+    ConnectionPool pool = new ConnectionPool(hp, config);
+    ConnectionFactory factory = (ConnectionFactory) pool.getFactory();
     assertNull(factory.getMaintenanceController());
   }
 
@@ -290,10 +293,9 @@ public class MaintenanceEventControllerTest {
         .protocol(RedisProtocol.RESP3).build();
     HostAndPort mock = new HostAndPort("127.0.0.1", mockServer.getPort());
 
-    DefaultJedisSocketFactory mockSocketFactory = new DefaultJedisSocketFactory(mock, clientConfig);
-    ConnectionFactory factory = new ConnectionFactory(mockSocketFactory, clientConfig);
     MaintenanceEventController poolCtl = MaintenanceEventController.from(maintConfig);
-    factory.attachMaintenanceController(poolCtl);
+    ConnectionFactory factory = ConnectionFactory.builder().hostAndPort(mock)
+        .clientConfig(clientConfig).maintenanceController(poolCtl).build();
 
     poolCtl.onMoving(new MovingEvent(1L, 100, mock), receiver);
 

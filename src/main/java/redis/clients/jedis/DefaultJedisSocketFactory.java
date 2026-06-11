@@ -33,22 +33,33 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   private HostnameVerifier hostnameVerifier = null;
   private HostAndPortMapper hostAndPortMapper = null;
 
-  // Optional post-DNS address mapper (e.g. maintenance MOVING rebind, owned by ConnectionFactory).
-  // Called once the configured host has been resolved, before Socket.connect.
-  private volatile SocketAddressMapper socketAddressMapper = null;
+  // Post-DNS address mapper (e.g. maintenance MOVING rebind). Set at construction by the internal
+  // ctor; null on the public ctors. Consulted after resolution, before Socket.connect.
+  private final SocketAddressMapper socketAddressMapper;
 
   public DefaultJedisSocketFactory() {
+    this(null, null, null);
   }
 
   public DefaultJedisSocketFactory(HostAndPort hostAndPort) {
-    this(hostAndPort, null);
+    this(hostAndPort, null, null);
   }
 
   public DefaultJedisSocketFactory(JedisClientConfig config) {
-    this(null, config);
+    this(null, config, null);
   }
 
   public DefaultJedisSocketFactory(HostAndPort hostAndPort, JedisClientConfig config) {
+    this(hostAndPort, config, null);
+  }
+
+  /**
+   * Internal ctor used by {@link ConnectionFactory.Builder} to inject a post-DNS address mapper
+   * at construction time. Package-private parameter type ({@link SocketAddressMapper}) makes this
+   * unreachable from outside {@code redis.clients.jedis}.
+   */
+  DefaultJedisSocketFactory(HostAndPort hostAndPort, JedisClientConfig config,
+      SocketAddressMapper socketAddressMapper) {
     if (hostAndPort != null) {
       this.hostAndPort = hostAndPort;
     }
@@ -62,6 +73,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
       this.hostnameVerifier = config.getHostnameVerifier();
       this.hostAndPortMapper = config.getHostAndPortMapper();
     }
+    this.socketAddressMapper = socketAddressMapper;
   }
 
   private Socket connectToFirstSuccessfulHost(HostAndPort hostAndPort) throws Exception {
@@ -84,9 +96,8 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
         // For machines with ipv4 and ipv6, but the startNode uses ipv4 to connect, the ipv6 connection may fail.
         InetSocketAddress resolved = new InetSocketAddress(host, hostAndPort.getPort());
         SocketAddress target = resolved;
-        SocketAddressMapper mapper = socketAddressMapper;
-        if (mapper != null) {
-          SocketAddress mapped = mapper.getSocketAddress(resolved);
+        if (socketAddressMapper != null) {
+          SocketAddress mapped = socketAddressMapper.getSocketAddress(resolved);
           if (mapped != null) {
             target = mapped;
           }
@@ -177,17 +188,7 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     this.hostAndPort = hostAndPort;
   }
 
-  /**
-   * Installs a post-DNS address mapper (e.g. the maintenance MOVING rebind, owned by
-   * {@link ConnectionFactory}). The mapper is called after the configured host has been resolved,
-   * before {@link Socket#connect(SocketAddress, int)}; it returns the address to connect to
-   * instead, or {@code null} to leave the resolved address unchanged.
-   */
-  void setSocketAddressMapper(SocketAddressMapper socketAddressMapper) {
-    this.socketAddressMapper = socketAddressMapper;
-  }
-
-  /** Visible for testing: the currently installed mapper, or {@code null}. */
+  /** Visible for testing: the address mapper installed at construction, or {@code null}. */
   SocketAddressMapper getSocketAddressMapper() {
     return socketAddressMapper;
   }

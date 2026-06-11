@@ -17,32 +17,29 @@ public class ConnectionPool extends Pool<Connection> {
   // Primary constructors using factory
   public ConnectionPool(PooledObjectFactory<Connection> factory) {
     super(factory);
-    wireMaintenance(factory);
+    installMaintenanceHooks(factory);
   }
 
   public ConnectionPool(PooledObjectFactory<Connection> factory,
       GenericObjectPoolConfig<Connection> poolConfig) {
     super(factory, poolConfig);
-    wireMaintenance(factory);
+    installMaintenanceHooks(factory);
   }
 
   /**
-   * Wire maintenance event controller. Entry point for all pool constructors (convenience, factory,
-   * and customer-supplied pools): when maintenance is enabled, create the pool-owned controller,
-   * hand it to the factory, install the rebind-aware eviction policy (wrapping the user's
-   * existing policy), and route handoffs to an immediate selective {@link #evict()}.
+   * Install pool-side maintenance hooks when the factory was constructed with a controller: wrap
+   * the existing eviction policy in a rebind-aware one and route MOVING handoffs to an immediate
+   * selective {@link #evict()}. Controller creation/injection happens upstream in the convenience
+   * constructors; this method only wires the pool-level pieces.
    */
-  private void wireMaintenance(PooledObjectFactory<Connection> factory) {
+  private void installMaintenanceHooks(PooledObjectFactory<Connection> factory) {
     if (!(factory instanceof ConnectionFactory)) {
       return;
     }
-    ConnectionFactory cf = (ConnectionFactory) factory;
-    MaintenanceNotificationsConfig maint = cf.getClientConfig().maintNotificationsConfig();
-    if (!maint.isEnabledOrAuto()) {
+    MaintenanceEventController controller = ((ConnectionFactory) factory).getMaintenanceController();
+    if (controller == null) {
       return;
     }
-    MaintenanceEventController controller = MaintenanceEventController.from(maint);
-    cf.attachMaintenanceController(controller);
     setEvictionPolicy(new RebindAwareEvictionPolicy(controller, getEvictionPolicy()));
     controller.addHandoffHook(handoff -> evictQuietly());
   }
@@ -58,28 +55,49 @@ public class ConnectionPool extends Pool<Connection> {
 
   // Convenience constructors
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-    this(new ConnectionFactory(hostAndPort, clientConfig));
+    this(buildFactoryWithMaintenance(hostAndPort, clientConfig, null));
     attachAuthenticationListener(clientConfig.getAuthXManager());
   }
 
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new ConnectionFactory(hostAndPort, clientConfig), poolConfig);
+    this(buildFactoryWithMaintenance(hostAndPort, clientConfig, null), poolConfig);
     attachAuthenticationListener(clientConfig.getAuthXManager());
   }
 
   @Experimental
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       Cache clientSideCache) {
-    this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache));
+    this(buildFactoryWithMaintenance(hostAndPort, clientConfig, clientSideCache));
     attachAuthenticationListener(clientConfig.getAuthXManager());
   }
 
   @Experimental
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache), poolConfig);
+    this(buildFactoryWithMaintenance(hostAndPort, clientConfig, clientSideCache), poolConfig);
     attachAuthenticationListener(clientConfig.getAuthXManager());
+  }
+
+  /**
+   * Build a {@link ConnectionFactory} for the convenience constructors, wiring a maintenance
+   * controller into it at construction when {@link MaintenanceNotificationsConfig#isEnabledOrAuto()}
+   * holds. The controller, when present, is injected into the default {@code Connection.Builder}
+   * (for push delivery) and into the default {@link DefaultJedisSocketFactory} (as the post-DNS
+   * address mapper for MOVING redirects).
+   */
+  private static ConnectionFactory buildFactoryWithMaintenance(HostAndPort hostAndPort,
+      JedisClientConfig clientConfig, Cache cache) {
+    ConnectionFactory.Builder b = ConnectionFactory.builder().hostAndPort(hostAndPort)
+        .clientConfig(clientConfig);
+    if (cache != null) {
+      b.cache(cache);
+    }
+    MaintenanceNotificationsConfig maint = clientConfig.maintNotificationsConfig();
+    if (maint != null && maint.isEnabledOrAuto()) {
+      b.maintenanceController(MaintenanceEventController.from(maint));
+    }
+    return b.build();
   }
 
   @Override

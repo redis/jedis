@@ -270,7 +270,7 @@
 			<plugin>
 				<groupId>org.jacoco</groupId>
 				<artifactId>jacoco-maven-plugin</artifactId>
-				<version>0.8.14</version>
+				<version>0.8.15</version>
 				<executions>
 					<!-- Collect coverage for unit tests -->
 					<execution>
@@ -798,7 +798,7 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
-						<version>3.1.1</version>
+						<version>3.6.3</version>
 						<executions>
 							<execution>
 								<id>run-benchmarks</id>

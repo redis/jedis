@@ -151,7 +151,19 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   }
 
   private Connection build() {
-    return connectionBuilder.build();
+    Connection conn = connectionBuilder.buildUninitialized();
+    initialize(conn);
+    return conn;
+  }
+
+  /**
+   * Initialize a freshly built {@link Connection}.
+   * <p>
+   * Subclasses may override to wrap initialization (for example, with cancellation tracking),
+   * but must ensure {@link Connection#initializeFromClientConfig()} is invoked exactly once.
+   */
+  protected void initialize(Connection conn) {
+      conn.initializeFromClientConfig();
   }
 
   @Override

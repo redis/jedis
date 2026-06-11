@@ -111,6 +111,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private final JedisClientConfig clientConfig;
   private Supplier<Connection> objectMaker;
   private Connection.Builder connectionBuilder;
+  private MaintenanceEventController maintenanceController;   // null = maintenance off
 
   private AuthXEventListener authXEventListener;
 
@@ -136,6 +137,29 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     this.connectionBuilder = builder.getConnectionBuilder();
 
     initAuthXManager();
+  }
+
+  JedisClientConfig getClientConfig() {
+    return clientConfig;
+  }
+
+  /** Visible for testing: the attached controller, or {@code null} when maintenance is off. */
+  MaintenanceEventController getMaintenanceController() {
+    return maintenanceController;
+  }
+
+  /**
+   * Wires the pool-owned maintenance controller: injects it into built connections and installs it
+   * as the socket factory's post-DNS address mapper so new connections to an affected peer are
+   * redirected to the rebind target within the MOVING grace window.
+   */
+  void attachMaintenanceController(MaintenanceEventController controller) {
+    this.maintenanceController = controller;
+    connectionBuilder.maintenanceController(controller);
+    JedisSocketFactory socketFactory = connectionBuilder.getSocketFactory();
+    if (socketFactory instanceof DefaultJedisSocketFactory) {
+      ((DefaultJedisSocketFactory) socketFactory).setSocketAddressMapper(controller);
+    }
   }
 
   private void initAuthXManager() {

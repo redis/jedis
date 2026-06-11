@@ -108,4 +108,38 @@ public final class PushMessageTypes {
    */
   public static final String SUNSUBSCRIBE = "sunsubscribe";
   public static final byte[] SUNSUBSCRIBE_BYTES = SafeEncoder.encode(SUNSUBSCRIBE);
+
+  // ==================== Maintenance Events ====================
+
+  /**
+   * Slot migration notification — server instructs the client to rebind to a new target.
+   * <p>
+   * Format: ["MOVING", slot, "host:port"]
+   */
+  public static final String MOVING = "MOVING";
+  public static final byte[] MOVING_BYTES = SafeEncoder.encode(MOVING);
+
+  /**
+   * Slot migration starting — relax client timeouts during migration.
+   */
+  public static final String MIGRATING = "MIGRATING";
+  public static final byte[] MIGRATING_BYTES = SafeEncoder.encode(MIGRATING);
+
+  /**
+   * Slot migration complete — restore client timeouts.
+   */
+  public static final String MIGRATED = "MIGRATED";
+  public static final byte[] MIGRATED_BYTES = SafeEncoder.encode(MIGRATED);
+
+  /**
+   * Failover starting — relax client timeouts during failover.
+   */
+  public static final String FAILING_OVER = "FAILING_OVER";
+  public static final byte[] FAILING_OVER_BYTES = SafeEncoder.encode(FAILING_OVER);
+
+  /**
+   * Failover complete — restore client timeouts.
+   */
+  public static final String FAILED_OVER = "FAILED_OVER";
+  public static final byte[] FAILED_OVER_BYTES = SafeEncoder.encode(FAILED_OVER);
 }

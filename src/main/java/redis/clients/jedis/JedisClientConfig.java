@@ -209,4 +209,15 @@ public interface JedisClientConfig {
   default int getSearchDialect() {
     return SearchProtocol.DEFAULT_DIALECT;
   }
+
+  /**
+   * Configure maintenance event notifications. When enabled, the client listens for server events
+   * indicating maintenance operations (migrations, failovers) and automatically applies timeout
+   * relaxation and proactive rebind to minimize failed commands during maintenance windows.
+   * @return maintenance notifications configuration
+   */
+  default MaintenanceNotificationsConfig maintNotificationsConfig() {
+    return MaintenanceNotificationsConfig.DEFAULT;
+  }
+
 }

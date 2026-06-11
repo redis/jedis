@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.security.GeneralSecurityException;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,6 +32,10 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
   private SSLParameters sslParameters = null;
   private HostnameVerifier hostnameVerifier = null;
   private HostAndPortMapper hostAndPortMapper = null;
+
+  // Optional post-DNS address mapper (e.g. maintenance MOVING rebind, owned by ConnectionFactory).
+  // Called once the configured host has been resolved, before Socket.connect.
+  private volatile SocketAddressMapper socketAddressMapper = null;
 
   public DefaultJedisSocketFactory() {
   }
@@ -77,7 +82,16 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
         // Passing 'host' directly will avoid another call to InetAddress.getByName() inside the InetSocketAddress constructor.
         // For machines with ipv4 and ipv6, but the startNode uses ipv4 to connect, the ipv6 connection may fail.
-        socket.connect(new InetSocketAddress(host, hostAndPort.getPort()), connectionTimeout);
+        InetSocketAddress resolved = new InetSocketAddress(host, hostAndPort.getPort());
+        SocketAddress target = resolved;
+        SocketAddressMapper mapper = socketAddressMapper;
+        if (mapper != null) {
+          SocketAddress mapped = mapper.getSocketAddress(resolved);
+          if (mapped != null) {
+            target = mapped;
+          }
+        }
+        socket.connect(target, connectionTimeout);
         return socket;
       } catch (Exception e) {
         jce.addSuppressed(e);
@@ -161,6 +175,21 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
 
   public void updateHostAndPort(HostAndPort hostAndPort) {
     this.hostAndPort = hostAndPort;
+  }
+
+  /**
+   * Installs a post-DNS address mapper (e.g. the maintenance MOVING rebind, owned by
+   * {@link ConnectionFactory}). The mapper is called after the configured host has been resolved,
+   * before {@link Socket#connect(SocketAddress, int)}; it returns the address to connect to
+   * instead, or {@code null} to leave the resolved address unchanged.
+   */
+  void setSocketAddressMapper(SocketAddressMapper socketAddressMapper) {
+    this.socketAddressMapper = socketAddressMapper;
+  }
+
+  /** Visible for testing: the currently installed mapper, or {@code null}. */
+  SocketAddressMapper getSocketAddressMapper() {
+    return socketAddressMapper;
   }
 
   public HostAndPort getHostAndPort() {

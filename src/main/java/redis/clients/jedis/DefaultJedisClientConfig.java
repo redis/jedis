@@ -43,6 +43,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   private final JsonObjectMapper jsonObjectMapper;
   private final int searchDialect;
 
+  private final MaintenanceNotificationsConfig maintNotificationsConfig;
+
   private DefaultJedisClientConfig(DefaultJedisClientConfig.Builder builder) {
     this.redisProtocol = builder.redisProtocol;
     this.autoNegotiateProtocol = builder.autoNegotiateProtocol;
@@ -64,6 +66,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.commandKeyArgumentPreProcessor = builder.commandKeyArgumentPreProcessor;
     this.jsonObjectMapper = builder.jsonObjectMapper;
     this.searchDialect = builder.searchDialect;
+    this.maintNotificationsConfig = builder.maintNotificationsConfig;
   }
 
   @Override
@@ -185,6 +188,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     return searchDialect;
   }
 
+  @Override
+  public MaintenanceNotificationsConfig maintNotificationsConfig() {
+    return maintNotificationsConfig;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -271,6 +279,8 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     private CommandKeyArgumentPreProcessor commandKeyArgumentPreProcessor = null;
     private JsonObjectMapper jsonObjectMapper = null;
     private int searchDialect = SearchProtocol.DEFAULT_DIALECT;
+
+    private MaintenanceNotificationsConfig maintNotificationsConfig = MaintenanceNotificationsConfig.DEFAULT;
 
     private Builder() {
     }
@@ -504,6 +514,12 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
+    public Builder maintNotificationsConfig(
+        MaintenanceNotificationsConfig maintNotificationsConfig) {
+      this.maintNotificationsConfig = maintNotificationsConfig;
+      return this;
+    }
+
     public Builder from(JedisClientConfig instance) {
       this.redisProtocol = instance.getRedisProtocol();
       this.autoNegotiateProtocol = instance.isAutoNegotiateProtocol();
@@ -525,6 +541,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.commandKeyArgumentPreProcessor = instance.getCommandKeyArgumentPreProcessor();
       this.jsonObjectMapper = instance.getJsonObjectMapper();
       this.searchDialect = instance.getSearchDialect();
+      this.maintNotificationsConfig = instance.maintNotificationsConfig();
       return this;
     }
   }
@@ -589,6 +606,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
 
     builder.authXManager(copy.getAuthXManager());
+    builder.maintNotificationsConfig(copy.maintNotificationsConfig());
 
     return builder.build();
   }

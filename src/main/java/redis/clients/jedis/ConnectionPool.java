@@ -17,11 +17,43 @@ public class ConnectionPool extends Pool<Connection> {
   // Primary constructors using factory
   public ConnectionPool(PooledObjectFactory<Connection> factory) {
     super(factory);
+    wireMaintenance(factory);
   }
 
   public ConnectionPool(PooledObjectFactory<Connection> factory,
       GenericObjectPoolConfig<Connection> poolConfig) {
     super(factory, poolConfig);
+    wireMaintenance(factory);
+  }
+
+  /**
+   * Wire maintenance event controller. Entry point for all pool constructors (convenience, factory,
+   * and customer-supplied pools): when maintenance is enabled, create the pool-owned controller,
+   * hand it to the factory, install the rebind-aware eviction policy (wrapping the user's
+   * existing policy), and route handoffs to an immediate selective {@link #evict()}.
+   */
+  private void wireMaintenance(PooledObjectFactory<Connection> factory) {
+    if (!(factory instanceof ConnectionFactory)) {
+      return;
+    }
+    ConnectionFactory cf = (ConnectionFactory) factory;
+    MaintenanceNotificationsConfig maint = cf.getClientConfig().maintNotificationsConfig();
+    if (!maint.isEnabledOrAuto()) {
+      return;
+    }
+    MaintenanceEventController controller = MaintenanceEventController.from(maint);
+    cf.attachMaintenanceController(controller);
+    setEvictionPolicy(new RebindAwareEvictionPolicy(controller, getEvictionPolicy()));
+    controller.addHandoffHook(handoff -> evictQuietly());
+  }
+
+  /** Wraps the checked-Exception {@link #evict()}. */
+  private void evictQuietly() {
+    try {
+      evict();
+    } catch (Exception e) {
+      throw new JedisException("Failed to evict pool on maintenance handoff", e);
+    }
   }
 
   // Convenience constructors

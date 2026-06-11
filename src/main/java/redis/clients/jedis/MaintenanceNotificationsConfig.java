@@ -68,7 +68,7 @@ public class MaintenanceNotificationsConfig {
    * relaxation and proactive rebind features are activated.
    * @return true if mode is ENABLED or AUTO, false if DISABLED
    */
-  public boolean isEnabled() {
+  public boolean isEnabledOrAuto() {
     return mode == Mode.ENABLED || mode == Mode.AUTO;
   }
 

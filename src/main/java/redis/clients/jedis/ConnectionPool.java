@@ -38,7 +38,7 @@ public class ConnectionPool extends Pool<Connection> {
     }
     ConnectionFactory cf = (ConnectionFactory) factory;
     MaintenanceNotificationsConfig maint = cf.getClientConfig().maintNotificationsConfig();
-    if (!maint.isEnabled()) {
+    if (!maint.isEnabledOrAuto()) {
       return;
     }
     MaintenanceEventController controller = MaintenanceEventController.from(maint);

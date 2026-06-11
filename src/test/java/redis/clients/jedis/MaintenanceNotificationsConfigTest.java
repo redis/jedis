@@ -15,7 +15,7 @@ public class MaintenanceNotificationsConfigTest {
   public void defaultModeIsAuto() {
     assertEquals(MaintenanceNotificationsConfig.Mode.AUTO,
       MaintenanceNotificationsConfig.DEFAULT.getMode());
-    assertTrue(MaintenanceNotificationsConfig.DEFAULT.isEnabled());
+    assertTrue(MaintenanceNotificationsConfig.DEFAULT.isEnabledOrAuto());
     assertNotNull(MaintenanceNotificationsConfig.DEFAULT.getTimeoutOptions());
   }
 
@@ -24,13 +24,13 @@ public class MaintenanceNotificationsConfigTest {
     MaintenanceNotificationsConfig built = MaintenanceNotificationsConfig.builder().build();
     assertEquals(MaintenanceNotificationsConfig.DEFAULT.getMode(), built.getMode());
     assertEquals(MaintenanceNotificationsConfig.DEFAULT.getEndpointType(), built.getEndpointType());
-    assertTrue(built.isEnabled());
+    assertTrue(built.isEnabledOrAuto());
   }
 
   @Test
   public void disabledModeReportsDisabled() {
     MaintenanceNotificationsConfig disabled = MaintenanceNotificationsConfig.builder()
         .mode(MaintenanceNotificationsConfig.Mode.DISABLED).build();
-    assertFalse(disabled.isEnabled());
+    assertFalse(disabled.isEnabledOrAuto());
   }
 }

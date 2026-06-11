@@ -260,18 +260,13 @@ public class Connection implements Closeable {
    *
    * @param config the client configuration; if {@code null}, only default consumers are registered
    */
-  protected void initPushConsumers(JedisClientConfig config) {
+    private void initPushConsumers(JedisClientConfig config) {
     /*
      * Default consumers to process push messages.
      * Marks all @{link PushMessages as processed, except for pub/sub.
      * Pub/sub messages are propagated to the client.
      */
     addPushConsumer(PushConsumerChainImpl.PUBSUB_CONSUMER);
-
-    if (config != null && config.maintNotificationsConfig().isEnabled()
-        && maintenanceController != null) {
-      addPushConsumer(new MaintenanceEventConsumer());
-    }
   }
 
   @Override
@@ -776,7 +771,7 @@ public class Connection implements Closeable {
 
       // Get timeout options from maintenance notifications config
       MaintenanceNotificationsConfig maintConfig = config.maintNotificationsConfig();
-      if (maintConfig.isEnabled()) {
+      if (maintConfig.isEnabledOrAuto()) {
         TimeoutOptions timeoutOptions = maintConfig.getTimeoutOptions();
         this.relaxedTimeout = NumberUtils.safeToInt(timeoutOptions.getRelaxedTimeout().toMillis());
         this.relaxedBlockingTimeout = NumberUtils.safeToInt(timeoutOptions.getRelaxedBlockingTimeout().toMillis());
@@ -849,36 +844,7 @@ public class Connection implements Closeable {
       }
       getMany(fireAndForgetMsg.size());
 
-      MaintenanceNotificationsConfig maintNotificationsConfig = config.maintNotificationsConfig();
-      if (maintNotificationsConfig.isEnabled()) {
-        // Maintenance push notifications are delivered as RESP3 push frames; the feature can't
-        // be activated on a RESP2 connection.
-        if (protocol != RedisProtocol.RESP3) {
-          if (maintNotificationsConfig.getMode() == MaintenanceNotificationsConfig.Mode.ENABLED) {
-            throw new JedisConnectionException(
-                "Maintenance notifications require RESP3 but the established protocol is "
-                    + (protocol == null ? "RESP2" : protocol));
-          }
-          logger.warn(
-            "Maintenance notifications disabled: RESP3 is required but the established protocol is {}.",
-            protocol == null ? "RESP2" : protocol);
-        } else {
-          sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
-            resolveEndpointType(maintNotificationsConfig.getEndpointType()));
-          try {
-            getStatusCodeReply();
-          } catch (JedisDataException e) {
-            // command not supported, fail connection
-            if (maintNotificationsConfig.getMode() == MaintenanceNotificationsConfig.Mode.ENABLED) {
-              throw e;
-            }
-            // auto mode - ignore error, fall back to a connection without maintenance support
-            logger.debug(
-              "Maintenance notifications disabled: server rejected CLIENT MAINT_NOTIFICATIONS ({}).",
-              e.getMessage());
-          }
-        }
-      }
+      enableMaintenanceNotifications(config.maintNotificationsConfig());
 
       int dbIndex = config.getDatabase();
       if (dbIndex > 0) {
@@ -892,6 +858,76 @@ public class Connection implements Closeable {
         // the first exception 'je' will be thrown
       }
       throw je;
+    }
+  }
+
+  /**
+   * Activates server-side maintenance notifications on this connection so the client can react to
+   * cluster maintenance events ({@code MIGRATING}, {@code MIGRATED}, {@code FAILING_OVER},
+   * {@code FAILED_OVER}, {@code MOVING}). Each event is forwarded to the attached
+   * {@link MaintenanceEventController}, which drives relaxed command timeouts and pool-wide
+   * rebind during the maintenance window.
+   *
+   * <p>Behavior by {@link MaintenanceNotificationsConfig.Mode Mode}:
+   *
+   * <ul>
+   *   <li>{@code DISABLED} — no-op.</li>
+   *   <li>{@code AUTO} — best-effort: silently falls back to a connection without maintenance
+   *       support when a prerequisite is not met (reason logged at debug).</li>
+   *   <li>{@code ENABLED} — strict: raises {@link JedisConnectionException}; the surrounding
+   *       initialization tears the connection down.</li>
+   * </ul>
+   *
+   * <p>Prerequisites: RESP3 established, a {@link MaintenanceEventController} is attached
+   * (pool-managed; non-pooled connections never have one), and the server accepts
+   * {@code CLIENT MAINT_NOTIFICATIONS ON}.
+   *
+   * @throws JedisConnectionException in {@code ENABLED} mode when a prerequisite is not met or the
+   *           server rejects the subscription
+   */
+  private void enableMaintenanceNotifications(MaintenanceNotificationsConfig config) {
+    MaintenanceNotificationsConfig.Mode mode = config.getMode();
+    if (mode == MaintenanceNotificationsConfig.Mode.DISABLED) return;
+    boolean strict = mode == MaintenanceNotificationsConfig.Mode.ENABLED;
+
+    // Maintenance push frames require RESP3.
+    if (protocol != RedisProtocol.RESP3) {
+      String reason = "RESP3 is required but the established protocol is "
+          + (protocol == null ? "RESP2" : protocol);
+      if (strict) {
+        throw new JedisConnectionException("Maintenance notifications: " + reason);
+      }
+      logger.debug("Maintenance notifications disabled: {}.", reason);
+      return;
+    }
+
+    // A maintenance controller must be attached (pool-managed feature).
+    if (maintenanceController == null) {
+      String reason = "no maintenance controller attached (pool-managed feature)";
+      if (strict) {
+        throw new JedisConnectionException("Maintenance notifications: " + reason);
+      }
+      logger.debug("Maintenance notifications disabled: {}.", reason);
+      return;
+    }
+
+    // The server must accept CLIENT MAINT_NOTIFICATIONS ON. Pre-register the consumer so a push
+    // frame the server emits immediately on accepting the subscription cannot race ahead.
+    MaintenanceEventConsumer consumer = new MaintenanceEventConsumer();
+    addPushConsumer(consumer);
+    sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
+      resolveEndpointType(config.getEndpointType()));
+    try {
+      getStatusCodeReply();
+    } catch (JedisDataException e) {
+      removePushConsumer(consumer);
+      if (strict) {
+        throw new JedisConnectionException(
+            "Maintenance notifications: events not supported on server", e);
+      }
+      logger.debug(
+        "Maintenance notifications disabled: server rejected CLIENT MAINT_NOTIFICATIONS ({}).",
+        e.getMessage());
     }
   }
 
@@ -1096,6 +1132,11 @@ public class Connection implements Closeable {
     this.pushConsumers.add(consumer);
   }
 
+  @Internal
+  protected void removePushConsumer(PushConsumer consumer) {
+    this.pushConsumers.remove(consumer);
+  }
+
   /**
    * {@code true} while this connection is operating with relaxed timeouts because a server-side
    * maintenance event is in progress on it (MIGRATING / FAILING_OVER, or a MOVING handoff
@@ -1202,7 +1243,7 @@ public class Connection implements Closeable {
         return context;
       }
       MaintenanceEvent event = MaintenanceEvent.parse(message);
-      if (event != null) {
+      if (event != null && maintenanceController != null) {
         event.accept(maintenanceController, Connection.this);
       }
       context.drop(); // a maintenance event is consumed even if malformed

@@ -16,7 +16,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.server.TcpMockServer;
 
@@ -75,7 +75,7 @@ public abstract class AbstractMaintenanceHandshakeTest {
         .maintNotificationsConfig(maint).build();
 
     HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
-    assertThrows(JedisDataException.class, () -> buildConnection(hp, cfg));
+    assertThrows(JedisConnectionException.class, () -> buildConnection(hp, cfg));
   }
 
   /** {@code Mode.AUTO} with the server rejecting {@code CLIENT MAINT_NOTIFICATIONS}: succeeds. */

@@ -38,9 +38,6 @@ public class TcpMockServer {
   /** Protocol assumed for a connection that never sent HELLO. Real Redis defaults to RESP2. */
   private volatile RedisProtocol defaultProtocol = RedisProtocol.RESP2;
 
-  /** Per-instance command response overrides; consulted before {@link #BUILTIN_RESPONSES}. */
-  private final Map<CommandKey, String> responseOverrides = new ConcurrentHashMap<>();
-
   /**
    * Start the server on an available port
    */
@@ -204,15 +201,6 @@ public class TcpMockServer {
    */
   public TcpMockServer defaultProtocol(RedisProtocol protocol) {
     this.defaultProtocol = protocol;
-    return this;
-  }
-
-  /**
-   * Override or add a per-instance command response, looked up before {@link #BUILTIN_RESPONSES}.
-   * Pass {@code null} for {@code subcommand} to match the command alone.
-   */
-  public TcpMockServer respondWith(String command, String subcommand, String resp) {
-    responseOverrides.put(new CommandKey(command, subcommand), resp);
     return this;
   }
 
@@ -473,29 +461,19 @@ public class TcpMockServer {
      */
     private void processCommand(CommandArguments commandArgs) throws IOException {
       String cmd = SafeEncoder.encode(commandArgs.getCommand().getRaw()).toUpperCase();
-      String sub = commandArgs.size() > 1
-          ? SafeEncoder.encode(commandArgs.get(1).getRaw()).toUpperCase()
-          : null;
 
       String response = null;
 
-      // HELLO is handled internally to track per-connection protocol negotiation, unless the test
-      // has installed an explicit override (e.g. to simulate -NOPROTO from an old server).
-      if ("HELLO".equals(cmd) && !responseOverrides.containsKey(new CommandKey(cmd, null))) {
-        response = handleHello(commandArgs);
-      }
-
-      // Per-instance overrides win over built-ins; check command+sub first, then command-only.
-      if (response == null && sub != null) {
-        response = responseOverrides.get(new CommandKey(cmd, sub));
-      }
-      if (response == null) {
-        response = responseOverrides.get(new CommandKey(cmd, null));
-      }
-
-      // Then a custom command handler if one was installed (Mockito mocks, etc.).
-      if (response == null && commandHandler != null) {
+      // User-installed command handler wins: a returning non-null reply lets the test observe and /
+      // or override any command including HELLO. Returning null falls through to defaults.
+      if (commandHandler != null) {
         response = commandHandler.handleCommand(commandArgs, clientId);
+      }
+
+      // HELLO is handled internally to track per-connection protocol negotiation when the handler
+      // did not return its own reply.
+      if (response == null && "HELLO".equals(cmd)) {
+        response = handleHello(commandArgs);
       }
 
       // Finally fall back to predefined built-in responses.

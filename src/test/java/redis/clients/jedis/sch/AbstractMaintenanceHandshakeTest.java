@@ -17,6 +17,7 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 /**
@@ -53,10 +54,20 @@ public abstract class AbstractMaintenanceHandshakeTest {
 
   // ---- Tests ---------------------------------------------------------------
 
+  /** Mocks {@code CLIENT MAINT_NOTIFICATIONS} with the {@code -ERR} reply; other commands default. */
+  private void rejectMaintNotifications() {
+    mockServer.setCommandHandler((args, clientId) -> {
+      if (args.size() < 2) return null;
+      String cmd = SafeEncoder.encode(args.getCommand().getRaw()).toUpperCase();
+      String sub = SafeEncoder.encode(args.get(1).getRaw()).toUpperCase();
+      return "CLIENT".equals(cmd) && "MAINT_NOTIFICATIONS".equals(sub) ? NOPROTO_MAINT_REPLY : null;
+    });
+  }
+
   /** {@code Mode.ENABLED} with the server rejecting {@code CLIENT MAINT_NOTIFICATIONS}: throws. */
   @Test
   public void enabledMode_overResp3_serverRejectsCommand_throws() {
-    mockServer.respondWith("CLIENT", "MAINT_NOTIFICATIONS", NOPROTO_MAINT_REPLY);
+    rejectMaintNotifications();
 
     MaintenanceNotificationsConfig maint = MaintenanceNotificationsConfig.builder()
         .mode(MaintenanceNotificationsConfig.Mode.ENABLED).build();
@@ -70,7 +81,7 @@ public abstract class AbstractMaintenanceHandshakeTest {
   /** {@code Mode.AUTO} with the server rejecting {@code CLIENT MAINT_NOTIFICATIONS}: succeeds. */
   @Test
   public void autoMode_overResp3_serverRejectsCommand_succeeds() {
-    mockServer.respondWith("CLIENT", "MAINT_NOTIFICATIONS", NOPROTO_MAINT_REPLY);
+    rejectMaintNotifications();
 
     JedisClientConfig cfg = DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3)
         .maintNotificationsConfig(MaintenanceNotificationsConfig.DEFAULT) // AUTO

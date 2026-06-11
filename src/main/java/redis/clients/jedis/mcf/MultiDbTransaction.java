@@ -149,53 +149,42 @@ public class MultiDbTransaction extends AbstractTransaction {
       Object multiReply = conn
           .executeCommand(new CommandObject<>(new CommandArguments(MULTI), NO_OP_BUILDER));
       if (!bytesEquals(OK_IN_BYTES, multiReply)) {
-        throw new JedisDataException(
-            "Unexpected response: " + SafeEncoder.encode((byte[]) multiReply));
+        Object response = multiReply instanceof byte[] ? SafeEncoder.encode((byte[]) multiReply)
+            : multiReply;
+        throw new JedisDataException("Unexpected response: " + response);
       }
 
-      // From here until EXEC is written, the server is in MULTI state on this connection.
-      // Any exception that escapes this block must be paired with a DISCARD so the
-      // connection can be safely returned to the pool; otherwise the next borrower would
-      // receive QUEUED replies instead of their commands being executed.
+      commands.forEach((command) -> conn.sendCommand(command.getKey()));
+      // following connection.getMany(int) flushes anyway, so no flush here.
+
+      // server replies QUEUED OR ERROR for each buffered command
+      List<Object> queuedCmdResponses = conn.getMany(commands.size());
+
+      if (!connectionSupplier.isActiveDatabase(initialDatabase)) {
+        JedisException dbSwitchException = new JedisException(
+            "Active database has changed since transaction started");
+        try {
+          conn.executeCommand(new CommandArguments(DISCARD));
+        } catch (Exception e) {
+          dbSwitchException.addSuppressed(e);
+        }
+        throw dbSwitchException;
+      }
+
+      conn.sendCommand(EXEC);
+
+      List<Object> unformatted;
       try {
-        commands.forEach((command) -> conn.sendCommand(command.getKey()));
-        // following connection.getMany(int) flushes anyway, so no flush here.
-
-        // server replies QUEUED for each buffered command
-        List<Object> queuedCmdResponses = conn.getMany(commands.size());
-        queuedCmdResponses.forEach((rawReply) -> {
-          if (!bytesEquals(QUEUED_IN_BYTES, rawReply)) {
-            if (rawReply instanceof RuntimeException) {
-              throw (RuntimeException) rawReply;
-            }
-            if (rawReply instanceof byte[]) {
-              throw new JedisDataException(
-                  "Unexpected response: " + SafeEncoder.encode((byte[]) rawReply));
-            }
-            // this should not ever happen
-            throw new JedisDataException("Unexpected response: " + rawReply);
-          }
-        });
-
-        if (!connectionSupplier.isActiveDatabase(initialDatabase)) {
-          throw new JedisException("Active database has changed since transaction started");
-        }
-
-        conn.sendCommand(EXEC);
-      } catch (RuntimeException ex) {
-        if (!conn.isBroken()) {
-          try {
-            conn.sendCommand(DISCARD);
-            conn.getStatusCodeReply();
-          } catch (RuntimeException discardEx) {
-            ex.addSuppressed(discardEx);
-            conn.setBroken();
-          }
-        }
-        throw ex;
+        unformatted = conn.getObjectMultiBulkReply();
+      } catch (JedisDataException jce) {
+        // A command may fail to be queued, so there may be an error before EXEC is called
+        // In this case, the server will discard all commands in the transaction and return the
+        // EXECABORT error.
+        // Enhance the final error with suppressed errors.
+        queuedCmdResponses.stream().filter(o -> o instanceof Exception).map(o -> (Exception) o)
+            .forEach(jce::addSuppressed);
+        throw jce;
       }
-
-      List<Object> unformatted = conn.getObjectMultiBulkReply();
       if (unformatted == null) {
         return null;
       }

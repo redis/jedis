@@ -80,7 +80,8 @@ public abstract class AbstractMaintenanceEventHandlingTest {
     DefaultJedisClientConfig config = DefaultJedisClientConfig.builder()
         .maintNotificationsConfig(enabledMaintConfig()).build();
 
-    try (Connection conn = buildDirect(new HostAndPort("localhost", mockServer.getPort()), config)) {
+    try (
+        Connection conn = buildDirect(new HostAndPort("localhost", mockServer.getPort()), config)) {
       assertThat(ConnectionTestHelper.getPushConsumers(conn), hasItem(isPubSubConsumer()));
       assertThat(ConnectionTestHelper.getPushConsumers(conn),
         not(hasItem(isMaintenanceConsumer())));
@@ -102,14 +103,15 @@ public abstract class AbstractMaintenanceEventHandlingTest {
   }
 
   /**
-   * Maintenance config left at the default (no explicit timeout options) on a direct
-   * (non-pooled) connection — still no maintenance consumer because no controller is wired.
+   * Maintenance config left at the default (no explicit timeout options) on a direct (non-pooled)
+   * connection — still no maintenance consumer because no controller is wired.
    */
   @Test
   public void maintenanceConsumerNotRegisteredWithDefaultConfigOnDirectConnection() {
     DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().build();
 
-    try (Connection conn = buildDirect(new HostAndPort("localhost", mockServer.getPort()), config)) {
+    try (
+        Connection conn = buildDirect(new HostAndPort("localhost", mockServer.getPort()), config)) {
       assertThat(ConnectionTestHelper.getPushConsumers(conn), hasItem(isPubSubConsumer()));
       assertThat(ConnectionTestHelper.getPushConsumers(conn),
         not(hasItem(isMaintenanceConsumer())));

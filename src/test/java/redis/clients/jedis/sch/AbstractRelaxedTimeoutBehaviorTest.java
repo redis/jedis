@@ -116,8 +116,8 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
     assertTrue(connection.isRelaxedTimeoutActive());
     assertEquals(RELAXED_TIMEOUT_MS, socket.getSoTimeout());
 
-    mockServer.sendPushMessageToAll(
-      MaintenanceEventMessages.migrated(1, Collections.singletonList("1")));
+    mockServer
+        .sendPushMessageToAll(MaintenanceEventMessages.migrated(1, Collections.singletonList("1")));
     assertTrue(connection.ping());
     assertFalse(connection.isRelaxedTimeoutActive());
     assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
@@ -203,10 +203,10 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
     assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
 
     // Three latches:
-    //  - blpopSent: counts down when mockHandler sees BLPOP (so we know BLPOP is in flight).
-    //  - blpopRelease: held by main thread; the mock answer waits on it before returning the
-    //    reply, so the worker stays parked in the blocking read while we assert.
-    //  - blpopFinished: counts down when executeCommand returns on the worker thread.
+    // - blpopSent: counts down when mockHandler sees BLPOP (so we know BLPOP is in flight).
+    // - blpopRelease: held by main thread; the mock answer waits on it before returning the
+    // reply, so the worker stays parked in the blocking read while we assert.
+    // - blpopFinished: counts down when executeCommand returns on the worker thread.
     CountDownLatch blpopSent = new CountDownLatch(1);
     CountDownLatch blpopRelease = new CountDownLatch(1);
     CountDownLatch blpopFinished = new CountDownLatch(1);
@@ -244,8 +244,8 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
     assertEquals(RELAXED_TIMEOUT_MS, socket.getSoTimeout(),
       "Socket timeout should be restored to relaxed (non-blocking) value");
 
-    mockServer.sendPushMessageToAll(
-      MaintenanceEventMessages.migrated(1, Collections.singletonList("1")));
+    mockServer
+        .sendPushMessageToAll(MaintenanceEventMessages.migrated(1, Collections.singletonList("1")));
     connection.executeCommand(commandObjects.ping());
 
     assertFalse(connection.isRelaxedTimeoutActive(),
@@ -254,7 +254,9 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
       "Socket timeout should be restored to baseline");
   }
 
-  /** Without a matching MIGRATED, the per-connection window reverts at the max-duration backstop. */
+  /**
+   * Without a matching MIGRATED, the per-connection window reverts at the max-duration backstop.
+   */
   @Test
   public void testMigratingWithoutMigratedRevertsAtMaxDuration() throws SocketException {
     Socket socket = ConnectionTestHelper.getSocket(connection);

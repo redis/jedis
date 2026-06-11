@@ -54,7 +54,9 @@ public abstract class AbstractMaintenanceHandshakeTest {
 
   // ---- Tests ---------------------------------------------------------------
 
-  /** Mocks {@code CLIENT MAINT_NOTIFICATIONS} with the {@code -ERR} reply; other commands default. */
+  /**
+   * Mocks {@code CLIENT MAINT_NOTIFICATIONS} with the {@code -ERR} reply; other commands default.
+   */
   private void rejectMaintNotifications() {
     mockServer.setCommandHandler((args, clientId) -> {
       if (args.size() < 2) return null;

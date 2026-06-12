@@ -125,5 +125,40 @@ class DefaultJedisClientConfigTest {
       assertThat(copied.getUser(), equalTo("testuser"));
       assertThat(copied.getPassword(), equalTo("testpass"));
     }
+
+    @Test
+    void builderUsesDefaultClientCapaConfig() {
+      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().build();
+
+      assertFalse(config.getClientCapaConfig().isRedirect());
+    }
+
+    @Test
+    void builderAppliesClientCapaConfig() {
+      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder()
+          .clientCapaConfig(ClientCapaConfig.withRedirect()).build();
+
+      assertTrue(config.getClientCapaConfig().isRedirect());
+    }
+
+    @Test
+    void builderFromCopiesClientCapaConfig() {
+      DefaultJedisClientConfig original = DefaultJedisClientConfig.builder()
+          .clientCapaConfig(ClientCapaConfig.withRedirect()).build();
+
+      DefaultJedisClientConfig copied = DefaultJedisClientConfig.builder().from(original).build();
+
+      assertTrue(copied.getClientCapaConfig().isRedirect());
+    }
+
+    @Test
+    void copyConfigCopiesClientCapaConfig() {
+      DefaultJedisClientConfig original = DefaultJedisClientConfig.builder()
+          .clientCapaConfig(ClientCapaConfig.withRedirect()).build();
+
+      JedisClientConfig copied = DefaultJedisClientConfig.copyConfig(original);
+
+      assertTrue(copied.getClientCapaConfig().isRedirect());
+    }
   }
 }

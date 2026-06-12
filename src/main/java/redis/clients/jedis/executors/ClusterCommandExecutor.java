@@ -4,10 +4,6 @@ import java.time.Duration;
 import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.TimeUnit;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.annots.VisibleForTesting;
@@ -17,9 +13,7 @@ import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.JedisAsserts;
 
-public class ClusterCommandExecutor implements CommandExecutor {
-
-  private final Logger log = LoggerFactory.getLogger(getClass());
+public class ClusterCommandExecutor extends ResilientCommandExecutor {
 
   /**
    * Connection resolver used for keyed commands, to acquire connection based on slot.
@@ -40,8 +34,6 @@ public class ClusterCommandExecutor implements CommandExecutor {
   private final ConnectionResolver replicaOnlyConnectionResolver;
 
   public final ClusterConnectionProvider provider;
-  protected final int maxAttempts;
-  protected final Duration maxTotalRetriesDuration;
   protected final CommandFlagsRegistry flags;
 
   /**
@@ -56,14 +48,11 @@ public class ClusterCommandExecutor implements CommandExecutor {
 
   public ClusterCommandExecutor(ClusterConnectionProvider provider, int maxAttempts,
       Duration maxTotalRetriesDuration, CommandFlagsRegistry flags) {
+    super(maxAttempts, maxTotalRetriesDuration);
     JedisAsserts.notNull(flags, "CommandFlagsRegistry must not be null");
     JedisAsserts.notNull(provider, "provider must not be null");
-    JedisAsserts.isTrue(maxAttempts > 0, "maxAttempts must be greater than 0");
-    JedisAsserts.notNull(maxTotalRetriesDuration, "maxTotalRetriesDuration must not be null");
 
     this.provider = provider;
-    this.maxAttempts = maxAttempts;
-    this.maxTotalRetriesDuration = maxTotalRetriesDuration;
     this.flags = flags;
 
     this.slotBasedConnectionResolver = ConnectionResolverFactory.createSlotBasedResolver(
@@ -332,39 +321,12 @@ public class ClusterCommandExecutor implements CommandExecutor {
       return false;
     }
 
-    sleep(getBackoffSleepMillis(attemptsLeft, doneDeadline));
+    sleep(computeBackoffMillis(attemptsLeft, doneDeadline));
     //We need this because if node is not reachable anymore - we need to finally initiate slots
     //renewing, or we can stuck with cluster state without one node in opposite case.
     //TODO make tracking of successful/unsuccessful operations for node - do renewing only
     //if there were no successful responses from this node last few seconds
     provider.renewSlotCache();
     return true;
-  }
-
-  private static long getBackoffSleepMillis(int attemptsLeft, Instant deadline) {
-    if (attemptsLeft <= 0) {
-      return 0;
-    }
-
-    long millisLeft = Duration.between(Instant.now(), deadline).toMillis();
-    if (millisLeft < 0) {
-      throw new JedisClusterOperationException("Cluster retry deadline exceeded.");
-    }
-
-    long maxBackOff = millisLeft / (attemptsLeft * attemptsLeft);
-    return ThreadLocalRandom.current().nextLong(maxBackOff + 1);
-  }
-
-  /**
-   * WARNING: This method is accessible for the purpose of testing.
-   * This should not be used or overriden.
-   */
-  @VisibleForTesting
-  protected void sleep(long sleepMillis) {
-    try {
-      TimeUnit.MILLISECONDS.sleep(sleepMillis);
-    } catch (InterruptedException e) {
-      throw new JedisClusterOperationException(e);
-    }
   }
 }

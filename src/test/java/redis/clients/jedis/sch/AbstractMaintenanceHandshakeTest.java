@@ -49,8 +49,13 @@ public abstract class AbstractMaintenanceHandshakeTest {
     }
   }
 
-  /** Build the connection under test (variant-specific: plain Connection or CacheConnection). */
-  protected abstract Connection buildConnection(HostAndPort hostAndPort, JedisClientConfig config);
+  /**
+   * Build the connection under test (variant-specific: plain Connection or CacheConnection). The
+   * maintenance config is passed separately since it no longer lives on {@link JedisClientConfig};
+   * subclasses turn it into a controller via {@code Connection.Builder.maintenanceNotifications()}.
+   */
+  protected abstract Connection buildConnection(HostAndPort hostAndPort, JedisClientConfig config,
+      MaintenanceNotificationsConfig maintConfig);
 
   // ---- Tests ---------------------------------------------------------------
 
@@ -74,10 +79,10 @@ public abstract class AbstractMaintenanceHandshakeTest {
     MaintenanceNotificationsConfig maint = MaintenanceNotificationsConfig.builder()
         .mode(MaintenanceNotificationsConfig.Mode.ENABLED).build();
     JedisClientConfig cfg = DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3)
-        .maintNotificationsConfig(maint).build();
+        .build();
 
     HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
-    assertThrows(JedisConnectionException.class, () -> buildConnection(hp, cfg));
+    assertThrows(JedisConnectionException.class, () -> buildConnection(hp, cfg, maint));
   }
 
   /** {@code Mode.AUTO} with the server rejecting {@code CLIENT MAINT_NOTIFICATIONS}: succeeds. */
@@ -86,11 +91,10 @@ public abstract class AbstractMaintenanceHandshakeTest {
     rejectMaintNotifications();
 
     JedisClientConfig cfg = DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3)
-        .maintNotificationsConfig(MaintenanceNotificationsConfig.DEFAULT) // AUTO
         .build();
 
     HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
-    try (Connection c = buildConnection(hp, cfg)) {
+    try (Connection c = buildConnection(hp, cfg, MaintenanceNotificationsConfig.DEFAULT)) {
       assertTrue(c.isConnected());
       assertEquals(RedisProtocol.RESP3, c.getRedisProtocol());
       assertTrue(c.ping());

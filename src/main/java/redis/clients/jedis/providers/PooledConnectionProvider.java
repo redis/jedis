@@ -11,6 +11,7 @@ import redis.clients.jedis.ConnectionFactory;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.MaintenanceEventController;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.util.Pool;
@@ -46,6 +47,20 @@ public class PooledConnectionProvider implements ConnectionProvider {
   public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache,
       GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ConnectionPool(hostAndPort, clientConfig, clientSideCache, poolConfig));
+    this.connectionMapKey = hostAndPort;
+  }
+
+  /**
+   * Convenience constructor for the {@code RedisClient} default-component path: delegates to the
+   * matching {@link ConnectionPool} ctor that wires the {@link MaintenanceEventController} into the
+   * factory and attaches the AuthX listener. {@code controller} may be {@code null} to disable
+   * maintenance.
+   */
+  @Experimental
+  public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+      Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig,
+      MaintenanceEventController controller) {
+    this(new ConnectionPool(hostAndPort, clientConfig, clientSideCache, poolConfig, controller));
     this.connectionMapKey = hostAndPort;
   }
 

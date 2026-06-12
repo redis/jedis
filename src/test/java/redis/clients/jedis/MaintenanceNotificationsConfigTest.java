@@ -16,7 +16,7 @@ public class MaintenanceNotificationsConfigTest {
     assertEquals(MaintenanceNotificationsConfig.Mode.AUTO,
       MaintenanceNotificationsConfig.DEFAULT.getMode());
     assertTrue(MaintenanceNotificationsConfig.DEFAULT.isEnabledOrAuto());
-    assertNotNull(MaintenanceNotificationsConfig.DEFAULT.getTimeoutOptions());
+    assertNotNull(MaintenanceNotificationsConfig.DEFAULT.getRelaxedWindowMaxDuration());
   }
 
   @Test

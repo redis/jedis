@@ -18,25 +18,47 @@ import org.slf4j.LoggerFactory;
 
 /**
  * Per-pool maintenance handler: owns the shared rebind overlay, the relax-window policy, and the
- * handoff hooks fired when a MOVING is applied.
+ * handoff hooks fired when a MOVING is applied. Created via {@link #from} from a
+ * {@link MaintenanceNotificationsConfig} and injected at builder time into the pool, connection
+ * factory, and default socket factory. Public so {@code RedisClient}-style builders outside the
+ * {@code redis.clients.jedis} package can wire it directly; the implemented
+ * {@link MaintenanceEvent.Handler} and {@link SocketAddressMapper} interfaces stay package-private,
+ * so the dispatch and remap entry points remain internal.
  */
-final class MaintenanceEventController implements MaintenanceEvent.Handler, SocketAddressMapper {
+public final class MaintenanceEventController
+    implements MaintenanceEvent.Handler, SocketAddressMapper {
 
   private static final Logger logger = LoggerFactory.getLogger(MaintenanceEventController.class);
 
+  private final MaintenanceNotificationsConfig config;
   private final long maxRelaxedDurationNanos; // MIGRATING/FAILING_OVER backstop window
   private LongSupplier clockNanos = System::nanoTime; // test seam
   private final AtomicReference<RebindState> rebind = new AtomicReference<>();
   /** Synchronous hooks fired once per applied MOVING handoff; see {@link #addHandoffHook}. */
   private final List<Consumer<MaintenanceHandoff>> handoffHooks = new CopyOnWriteArrayList<>();
 
-  private MaintenanceEventController(long maxRelaxedDurationNanos) {
-    this.maxRelaxedDurationNanos = maxRelaxedDurationNanos;
+  private MaintenanceEventController(MaintenanceNotificationsConfig config) {
+    this.config = config;
+    this.maxRelaxedDurationNanos = config.getRelaxedWindowMaxDuration().toNanos();
   }
 
-  static MaintenanceEventController from(MaintenanceNotificationsConfig cfg) {
-    return new MaintenanceEventController(
-        cfg.getTimeoutOptions().getRelaxedTimeoutMaxDuration().toNanos());
+  /**
+   * Construct a controller from the given config. Use this from a builder when the config
+   * {@link MaintenanceNotificationsConfig#isEnabledOrAuto()} — for DISABLED, leave the controller
+   * unset.
+   */
+  public static MaintenanceEventController from(MaintenanceNotificationsConfig cfg) {
+    return new MaintenanceEventController(cfg);
+  }
+
+  /** Mode the controller was built with: {@code AUTO} or {@code ENABLED}. */
+  public MaintenanceNotificationsConfig.Mode getMode() {
+    return config.getMode();
+  }
+
+  /** Endpoint type to negotiate in {@code CLIENT MAINT_NOTIFICATIONS ON moving-endpoint-type}. */
+  public MaintenanceNotificationsConfig.EndpointType getEndpointType() {
+    return config.getEndpointType();
   }
 
   /**

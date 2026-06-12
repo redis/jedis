@@ -30,7 +30,6 @@ import redis.clients.jedis.authentication.AuthXManager;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.util.IOUtils;
-import redis.clients.jedis.util.NumberUtils;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 
@@ -52,7 +51,7 @@ public class Connection implements Closeable {
       return this;
     }
 
-    Builder maintenanceController(MaintenanceEventController maintenanceController) {
+    public Builder maintenanceController(MaintenanceEventController maintenanceController) {
       this.maintenanceController = maintenanceController;
       return this;
     }
@@ -65,7 +64,7 @@ public class Connection implements Closeable {
       return clientConfig;
     }
 
-    MaintenanceEventController getMaintenanceController() {
+    public MaintenanceEventController getMaintenanceController() {
       return maintenanceController;
     }
 
@@ -153,27 +152,23 @@ public class Connection implements Closeable {
   private int infiniteSoTimeout = 0;
 
   /**
-   * Socket read timeout (SO_TIMEOUT) in milliseconds used for non-blocking commands
-   * while the connection is in a relaxed (maintenance) state.
-   *
-   * <p>If not set (see {@link TimeoutOptions#UNSET_TIMEOUT}), {@link #soTimeout}
-   * is inherited instead.</p>
+   * Socket read timeout (SO_TIMEOUT) in milliseconds used for non-blocking commands while the
+   * connection is in a relaxed (maintenance) state. {@link JedisClientConfig#UNSET_TIMEOUT_MS}
+   * means {@link #soTimeout} is inherited instead.
    */
-  private int relaxedTimeout = NumberUtils.safeToInt(TimeoutOptions.DEFAULT_RELAXED_TIMEOUT.toMillis());
+  private int relaxedTimeout = JedisClientConfig.DEFAULT_RELAXED_SOCKET_TIMEOUT_MS;
 
   /**
-   * Socket read timeout (SO_TIMEOUT) in milliseconds used for blocking commands
-   * while the connection is in a relaxed (maintenance) state.
-   *
-   * <p>If not set (see {@link TimeoutOptions#UNSET_TIMEOUT}), {@link #infiniteSoTimeout}
-   * is inherited instead.</p>
+   * Socket read timeout (SO_TIMEOUT) in milliseconds used for blocking commands while the
+   * connection is in a relaxed (maintenance) state. {@link JedisClientConfig#UNSET_TIMEOUT_MS}
+   * means {@link #infiniteSoTimeout} is inherited instead.
    */
-  private int relaxedBlockingTimeout =
-      NumberUtils.safeToInt(TimeoutOptions.DEFAULT_RELAXED_BLOCKING_TIMEOUT.toMillis());
+  private int relaxedBlockingTimeout = JedisClientConfig.DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS;
 
-  private boolean relaxedTimeoutConfigured = TimeoutOptions.isSet(relaxedTimeout);
+  private boolean relaxedTimeoutConfigured = JedisClientConfig.isTimeoutSet(relaxedTimeout);
 
-  private boolean relaxedBlockingTimeoutConfigured = TimeoutOptions.isSet(relaxedBlockingTimeout);
+  private boolean relaxedBlockingTimeoutConfigured = JedisClientConfig
+      .isTimeoutSet(relaxedBlockingTimeout);
 
   private boolean broken = false;
   private boolean strValActive;
@@ -253,9 +248,8 @@ public class Connection implements Closeable {
    *   <li><b>Pub/Sub consumer</b> – Handles Pub/Sub messages and propagates them back to the caller.
    *       All other message types are considered processed and are not propagated further.</li>
    *   <li><b>Maintenance event consumer</b> (optional) – Forwards server maintenance notifications
-   *       to the pool-owned {@link MaintenanceEventController}. Registered only when maintenance is
-   *       enabled via {@link JedisClientConfig#maintNotificationsConfig()} <em>and</em> a controller
-   *       was injected by the pool; non-pooled connections do not support maintenance events.</li>
+   *       to the pool-owned {@link MaintenanceEventController}. Registered only when a controller
+   *       was injected by the builder; non-pooled connections never have one.</li>
    * </ul>
    *
    * @param config the client configuration; if {@code null}, only default consumers are registered
@@ -769,15 +763,10 @@ public class Connection implements Closeable {
       this.soTimeout = config.getSocketTimeoutMillis();
       this.infiniteSoTimeout = config.getBlockingSocketTimeoutMillis();
 
-      // Get timeout options from maintenance notifications config
-      MaintenanceNotificationsConfig maintConfig = config.maintNotificationsConfig();
-      if (maintConfig.isEnabledOrAuto()) {
-        TimeoutOptions timeoutOptions = maintConfig.getTimeoutOptions();
-        this.relaxedTimeout = NumberUtils.safeToInt(timeoutOptions.getRelaxedTimeout().toMillis());
-        this.relaxedBlockingTimeout = NumberUtils.safeToInt(timeoutOptions.getRelaxedBlockingTimeout().toMillis());
-        this.relaxedTimeoutConfigured = TimeoutOptions.isSet(relaxedTimeout);
-        this.relaxedBlockingTimeoutConfigured = TimeoutOptions.isSet(relaxedBlockingTimeout);
-      }
+      this.relaxedTimeout = config.getRelaxedSocketTimeoutMillis();
+      this.relaxedBlockingTimeout = config.getRelaxedBlockingSocketTimeoutMillis();
+      this.relaxedTimeoutConfigured = JedisClientConfig.isTimeoutSet(relaxedTimeout);
+      this.relaxedBlockingTimeoutConfigured = JedisClientConfig.isTimeoutSet(relaxedBlockingTimeout);
 
       initPushConsumers(config);
 
@@ -844,7 +833,7 @@ public class Connection implements Closeable {
       }
       getMany(fireAndForgetMsg.size());
 
-      enableMaintenanceNotifications(config.maintNotificationsConfig());
+      enableMaintenanceNotifications();
 
       int dbIndex = config.getDatabase();
       if (dbIndex > 0) {
@@ -868,27 +857,22 @@ public class Connection implements Closeable {
    * {@link MaintenanceEventController}, which drives relaxed command timeouts and pool-wide
    * rebind during the maintenance window.
    *
-   * <p>Behavior by {@link MaintenanceNotificationsConfig.Mode Mode}:
+   * <p>Two gates remain at connection time; the third (controller-present) is now decided by the
+   * builder and reflected here by a non-null {@link #maintenanceController}:
    *
    * <ul>
-   *   <li>{@code DISABLED} — no-op.</li>
-   *   <li>{@code AUTO} — best-effort: silently falls back to a connection without maintenance
-   *       support when a prerequisite is not met (reason logged at debug).</li>
-   *   <li>{@code ENABLED} — strict: raises {@link JedisConnectionException}; the surrounding
-   *       initialization tears the connection down.</li>
+   *   <li>{@code maintenanceController == null} — builder decided maintenance is off; no-op.</li>
+   *   <li>negotiated protocol is not RESP3 — {@code ENABLED}: throws; {@code AUTO}: debug-log
+   *       and return.</li>
+   *   <li>server rejects {@code CLIENT MAINT_NOTIFICATIONS ON} — same strict/lax split.</li>
    * </ul>
-   *
-   * <p>Prerequisites: RESP3 established, a {@link MaintenanceEventController} is attached
-   * (pool-managed; non-pooled connections never have one), and the server accepts
-   * {@code CLIENT MAINT_NOTIFICATIONS ON}.
    *
    * @throws JedisConnectionException in {@code ENABLED} mode when a prerequisite is not met or the
    *           server rejects the subscription
    */
-  private void enableMaintenanceNotifications(MaintenanceNotificationsConfig config) {
-    MaintenanceNotificationsConfig.Mode mode = config.getMode();
-    if (mode == MaintenanceNotificationsConfig.Mode.DISABLED) return;
-    boolean strict = mode == MaintenanceNotificationsConfig.Mode.ENABLED;
+  private void enableMaintenanceNotifications() {
+    if (maintenanceController == null) return;
+    boolean strict = maintenanceController.getMode() == MaintenanceNotificationsConfig.Mode.ENABLED;
 
     // Maintenance push frames require RESP3.
     if (protocol != RedisProtocol.RESP3) {
@@ -901,22 +885,12 @@ public class Connection implements Closeable {
       return;
     }
 
-    // A maintenance controller must be attached (pool-managed feature).
-    if (maintenanceController == null) {
-      String reason = "no maintenance controller attached (pool-managed feature)";
-      if (strict) {
-        throw new JedisConnectionException("Maintenance notifications: " + reason);
-      }
-      logger.debug("Maintenance notifications disabled: {}.", reason);
-      return;
-    }
-
     // The server must accept CLIENT MAINT_NOTIFICATIONS ON. Pre-register the consumer so a push
     // frame the server emits immediately on accepting the subscription cannot race ahead.
     MaintenanceEventConsumer consumer = new MaintenanceEventConsumer();
     addPushConsumer(consumer);
     sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
-      resolveEndpointType(config.getEndpointType()));
+      resolveEndpointType(maintenanceController.getEndpointType()));
     try {
       getStatusCodeReply();
     } catch (JedisDataException e) {

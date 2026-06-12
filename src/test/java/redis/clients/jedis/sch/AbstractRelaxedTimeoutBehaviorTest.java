@@ -7,7 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doAnswer;
-import static redis.clients.jedis.TimeoutOptions.UNSET_TIMEOUT_MS;
+import static redis.clients.jedis.JedisClientConfig.UNSET_TIMEOUT_MS;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -31,7 +31,6 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.TimeoutOptions;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.server.CommandHandler;
 import redis.clients.jedis.util.server.MaintenanceEventMessages;
@@ -61,10 +60,12 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
   protected Connection connection;
 
   /** Build the pool used to borrow the connection under test (variant-specific). */
-  protected abstract ConnectionPool createPool(HostAndPort hostAndPort, JedisClientConfig config);
+  protected abstract ConnectionPool createPool(HostAndPort hostAndPort, JedisClientConfig config,
+      MaintenanceNotificationsConfig maintConfig);
 
   /** Build a connection via a public constructor (no pool) — for tests that exercise raw config. */
-  protected abstract Connection buildDirect(HostAndPort hostAndPort, JedisClientConfig config);
+  protected abstract Connection buildDirect(HostAndPort hostAndPort, JedisClientConfig config,
+      MaintenanceNotificationsConfig maintConfig);
 
   @BeforeEach
   public void schSetUp() throws IOException {
@@ -73,7 +74,8 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
     mockServer.setCommandHandler(mockHandler);
     mockServer.start();
 
-    pool = createPool(new HostAndPort("localhost", mockServer.getPort()), defaultRelaxedConfig());
+    pool = createPool(new HostAndPort("localhost", mockServer.getPort()), defaultClientConfig(),
+      defaultMaintConfig());
     connection = pool.getResource();
   }
 
@@ -90,15 +92,17 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
     }
   }
 
-  /** Default client config: relaxed timeouts enabled, RESP3, mock server's port. */
-  protected JedisClientConfig defaultRelaxedConfig() {
-    TimeoutOptions timeoutOptions = TimeoutOptions.builder()
-        .proactiveTimeoutsRelaxing(RELAXED_TIMEOUT)
-        .proactiveBlockingTimeoutsRelaxing(RELAXED_BLOCKING_TIMEOUT).build();
-    MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
-        .timeoutOptions(timeoutOptions).build();
+  /** Default client config: RESP3, mock server's port, with relaxed timeouts configured. */
+  protected JedisClientConfig defaultClientConfig() {
     return DefaultJedisClientConfig.builder().socketTimeoutMillis(SO_TIMEOUT_MS)
-        .maintNotificationsConfig(maintConfig).protocol(RedisProtocol.RESP3).build();
+        .relaxedSocketTimeoutMillis(RELAXED_TIMEOUT_MS)
+        .relaxedBlockingSocketTimeoutMillis(RELAXED_BLOCKING_TIMEOUT_MS)
+        .protocol(RedisProtocol.RESP3).build();
+  }
+
+  /** Default maintenance config: AUTO mode, default backstop window. */
+  protected MaintenanceNotificationsConfig defaultMaintConfig() {
+    return MaintenanceNotificationsConfig.builder().build();
   }
 
   // ---- Tests ---------------------------------------------------------------
@@ -147,16 +151,13 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
   /** Relaxed timeout unset (UNSET_TIMEOUT) falls back to the baseline socket timeout. */
   @Test
   public void testRelaxTimeoutsDisabledFallbackToSoTimeout() throws SocketException {
-    TimeoutOptions disabledTimeoutOptions = TimeoutOptions.builder()
-        .proactiveTimeoutsRelaxing(TimeoutOptions.UNSET_TIMEOUT).build();
-    MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
-        .timeoutOptions(disabledTimeoutOptions).build();
+    MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder().build();
     DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
-        .socketTimeoutMillis(SO_TIMEOUT_MS).maintNotificationsConfig(maintConfig)
+        .socketTimeoutMillis(SO_TIMEOUT_MS).relaxedSocketTimeoutMillis(UNSET_TIMEOUT_MS)
         .protocol(RedisProtocol.RESP3).build();
 
     try (Connection conn = buildDirect(new HostAndPort("localhost", mockServer.getPort()),
-      clientConfig)) {
+      clientConfig, maintConfig)) {
       Socket socket = ConnectionTestHelper.getSocket(conn);
       assertTrue(conn.isConnected());
       assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
@@ -173,12 +174,10 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
   @Test
   public void testDefaultTimeoutOptions() throws SocketException {
     DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
-        .socketTimeoutMillis(SO_TIMEOUT_MS)
-        .maintNotificationsConfig(MaintenanceNotificationsConfig.DEFAULT)
-        .protocol(RedisProtocol.RESP3).build();
+        .socketTimeoutMillis(SO_TIMEOUT_MS).protocol(RedisProtocol.RESP3).build();
 
     try (Connection conn = buildDirect(new HostAndPort("localhost", mockServer.getPort()),
-      clientConfig)) {
+      clientConfig, MaintenanceNotificationsConfig.DEFAULT)) {
       Socket socket = ConnectionTestHelper.getSocket(conn);
       assertTrue(conn.isConnected());
 

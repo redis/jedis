@@ -1,6 +1,5 @@
 package redis.clients.jedis.examples;
 
-import java.time.Duration;
 import java.util.Date;
 
 import redis.clients.jedis.Connection;
@@ -10,7 +9,6 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.TimeoutOptions;
 import redis.clients.jedis.exceptions.JedisException;
 
 /**
@@ -34,14 +32,10 @@ public class MaintenanceEventsExample {
     int durationSeconds = Integer.getInteger("example.durationSeconds", 300);
 
     MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
-        .mode(MaintenanceNotificationsConfig.Mode.ENABLED)
-        .timeoutOptions(
-          TimeoutOptions.builder().proactiveTimeoutsRelaxing(Duration.ofSeconds(20)).build())
-        .build();
+        .mode(MaintenanceNotificationsConfig.Mode.ENABLED).build();
 
     DefaultJedisClientConfig.Builder configBuilder = DefaultJedisClientConfig.builder()
-        .protocol(RedisProtocol.RESP3).socketTimeoutMillis(5000)
-        .maintNotificationsConfig(maintConfig);
+        .protocol(RedisProtocol.RESP3).socketTimeoutMillis(5000).relaxedSocketTimeoutMillis(20_000);
     if (System.getProperty("redis.username") != null) {
       configBuilder.user(System.getProperty("redis.username"));
     }
@@ -57,7 +51,7 @@ public class MaintenanceEventsExample {
 
     long deadline = System.currentTimeMillis() + durationSeconds * 1000L;
     try (RedisClient client = RedisClient.builder().hostAndPort(hostAndPort)
-        .clientConfig(clientConfig).build()) {
+        .clientConfig(clientConfig).maintenanceNotifications(maintConfig).build()) {
 
       String key = "maintenance-example:counter";
       client.set(key, "0");

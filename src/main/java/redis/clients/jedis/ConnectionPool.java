@@ -55,49 +55,44 @@ public class ConnectionPool extends Pool<Connection> {
 
   // Convenience constructors
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
-    this(buildFactoryWithMaintenance(hostAndPort, clientConfig, null));
+    this(new ConnectionFactory(hostAndPort, clientConfig));
     attachAuthenticationListener(clientConfig.getAuthXManager());
   }
 
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       GenericObjectPoolConfig<Connection> poolConfig) {
-    this(buildFactoryWithMaintenance(hostAndPort, clientConfig, null), poolConfig);
+    this(new ConnectionFactory(hostAndPort, clientConfig), poolConfig);
     attachAuthenticationListener(clientConfig.getAuthXManager());
   }
 
   @Experimental
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       Cache clientSideCache) {
-    this(buildFactoryWithMaintenance(hostAndPort, clientConfig, clientSideCache));
+    this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache));
     attachAuthenticationListener(clientConfig.getAuthXManager());
   }
 
   @Experimental
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig) {
-    this(buildFactoryWithMaintenance(hostAndPort, clientConfig, clientSideCache), poolConfig);
+    this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache), poolConfig);
     attachAuthenticationListener(clientConfig.getAuthXManager());
   }
 
   /**
-   * Build a {@link ConnectionFactory} for the convenience constructors, wiring a maintenance
-   * controller into it at construction when {@link MaintenanceNotificationsConfig#isEnabledOrAuto()}
-   * holds. The controller, when present, is injected into the default {@code Connection.Builder}
-   * (for push delivery) and into the default {@link DefaultJedisSocketFactory} (as the post-DNS
-   * address mapper for MOVING redirects).
+   * Convenience constructor for the {@code RedisClient} default-component path: builds the
+   * {@link ConnectionFactory} with the supplied {@link MaintenanceEventController} wired in (the
+   * controller becomes the socket factory's address mapper and the connection's push consumer),
+   * then attaches the AuthX listener so token rotation triggers pool eviction. {@code controller}
+   * may be {@code null} to disable maintenance for this pool.
    */
-  private static ConnectionFactory buildFactoryWithMaintenance(HostAndPort hostAndPort,
-      JedisClientConfig clientConfig, Cache cache) {
-    ConnectionFactory.Builder b = ConnectionFactory.builder().hostAndPort(hostAndPort)
-        .clientConfig(clientConfig);
-    if (cache != null) {
-      b.cache(cache);
-    }
-    MaintenanceNotificationsConfig maint = clientConfig.maintNotificationsConfig();
-    if (maint != null && maint.isEnabledOrAuto()) {
-      b.maintenanceController(MaintenanceEventController.from(maint));
-    }
-    return b.build();
+  @Experimental
+  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+      Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig,
+      MaintenanceEventController controller) {
+    this(ConnectionFactory.builder().hostAndPort(hostAndPort).clientConfig(clientConfig)
+        .cache(clientSideCache).maintenanceController(controller).build(), poolConfig);
+    attachAuthenticationListener(clientConfig.getAuthXManager());
   }
 
   @Override

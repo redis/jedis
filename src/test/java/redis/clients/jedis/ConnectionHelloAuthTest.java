@@ -128,21 +128,18 @@ public class ConnectionHelloAuthTest {
     }
   }
 
-  /** Maintenance off — keeps these handshake tests focused on HELLO/AUTH only. */
-  private static final MaintenanceNotificationsConfig MAINT_DISABLED = MaintenanceNotificationsConfig
-      .builder().mode(MaintenanceNotificationsConfig.Mode.DISABLED).build();
-
   private static JedisClientConfig noAuthConfig(RedisProtocol proto) {
     // Disable auto-negotiation so the legacy "no HELLO" path is exercised when proto is null.
+    // Direct Connection construction has no maintenance controller, so the maint handshake is
+    // skipped.
     return DefaultJedisClientConfig.builder().protocol(proto).autoNegotiateProtocol(false)
-        .clientSetInfoConfig(ClientSetInfoConfig.DISABLED).maintNotificationsConfig(MAINT_DISABLED)
-        .build();
+        .clientSetInfoConfig(ClientSetInfoConfig.DISABLED).build();
   }
 
   private static JedisClientConfig authConfig(RedisProtocol proto) {
     return DefaultJedisClientConfig.builder().protocol(proto).autoNegotiateProtocol(false)
         .user("default").password("secret").clientSetInfoConfig(ClientSetInfoConfig.DISABLED)
-        .maintNotificationsConfig(MAINT_DISABLED).build();
+        .build();
   }
 
   // ---------------------------------------------------------------------------
@@ -378,13 +375,12 @@ public class ConnectionHelloAuthTest {
 
   private static JedisClientConfig autoNegotiateNoAuthConfig() {
     return DefaultJedisClientConfig.builder().protocol(null).autoNegotiateProtocol(true)
-        .clientSetInfoConfig(ClientSetInfoConfig.DISABLED).maintNotificationsConfig(MAINT_DISABLED)
-        .build();
+        .clientSetInfoConfig(ClientSetInfoConfig.DISABLED).build();
   }
 
   private static JedisClientConfig autoNegotiateAuthConfig() {
     return DefaultJedisClientConfig.builder().protocol(null).autoNegotiateProtocol(true)
         .user("default").password("secret").clientSetInfoConfig(ClientSetInfoConfig.DISABLED)
-        .maintNotificationsConfig(MAINT_DISABLED).build();
+        .build();
   }
 }

@@ -1,6 +1,8 @@
 package redis.clients.jedis.builders;
 
 import java.net.URI;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.PooledConnectionProvider;
@@ -17,8 +19,11 @@ import redis.clients.jedis.util.JedisURIHelper;
 public abstract class StandaloneClientBuilder<C>
     extends AbstractClientBuilder<StandaloneClientBuilder<C>, C> {
 
+  private static final Logger logger = LoggerFactory.getLogger(StandaloneClientBuilder.class);
+
   // Standalone-specific configuration fields
   private HostAndPort hostAndPort = new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
+  private MaintenanceNotificationsConfig maintNotificationsConfig;
 
   /**
    * Sets the Redis server host and port.
@@ -41,6 +46,22 @@ public abstract class StandaloneClientBuilder<C>
     return this;
   }
 
+  /**
+   * Configures server-side maintenance notifications (MIGRATING, MIGRATED, FAILING_OVER,
+   * FAILED_OVER, MOVING). Supported only with the default {@link ConnectionProvider}: with a custom
+   * provider, {@code ENABLED} fails at {@link #build()} and {@code AUTO} silently disables
+   * (debug-logged).
+   * <p>
+   * If unset, defaults to {@link MaintenanceNotificationsConfig#DEFAULT} (AUTO).
+   * @param config maintenance notifications configuration; {@code null} keeps the default
+   * @return this builder
+   */
+  public StandaloneClientBuilder<C> maintenanceNotifications(
+      MaintenanceNotificationsConfig config) {
+    this.maintNotificationsConfig = config;
+    return this;
+  }
+
   @Override
   protected StandaloneClientBuilder<C> self() {
     return this;
@@ -48,8 +69,25 @@ public abstract class StandaloneClientBuilder<C>
 
   @Override
   protected ConnectionProvider createDefaultConnectionProvider() {
+    MaintenanceEventController controller = createMaintenanceController();
     return new PooledConnectionProvider(this.hostAndPort, this.clientConfig, this.cache,
-        this.poolConfig);
+        this.poolConfig, controller);
+  }
+
+  /**
+   * Build the maintenance controller for this client, or {@code null} when maintenance is off.
+   * {@link MaintenanceNotificationsConfig.Mode#DISABLED DISABLED} short-circuits;
+   * {@code AUTO}/{@code ENABLED} construct a controller. RESP3 / server-accept gates run later, at
+   * connection time.
+   */
+  private MaintenanceEventController createMaintenanceController() {
+    MaintenanceNotificationsConfig cfg = effectiveMaintNotificationsConfig();
+    return cfg.isEnabledOrAuto() ? MaintenanceEventController.from(cfg) : null;
+  }
+
+  private MaintenanceNotificationsConfig effectiveMaintNotificationsConfig() {
+    return maintNotificationsConfig != null ? maintNotificationsConfig
+        : MaintenanceNotificationsConfig.DEFAULT;
   }
 
   @Override
@@ -58,6 +96,17 @@ public abstract class StandaloneClientBuilder<C>
 
     if (hostAndPort == null) {
       throw new IllegalArgumentException("Either URI or host/port must be specified");
+    }
+
+    MaintenanceNotificationsConfig cfg = effectiveMaintNotificationsConfig();
+    if (this.connectionProvider != null && cfg.isEnabledOrAuto()) {
+      if (cfg.getMode() == MaintenanceNotificationsConfig.Mode.ENABLED) {
+        throw new IllegalArgumentException(
+            "Maintenance notifications ENABLED requires the default ConnectionProvider");
+      }
+      logger.debug(
+        "Maintenance notifications disabled: custom ConnectionProvider supplied (mode={}).",
+        cfg.getMode());
     }
   }
 

@@ -2,8 +2,6 @@ package redis.clients.jedis.sch;
 
 import static org.hamcrest.Matchers.is;
 
-import java.time.Duration;
-
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -12,7 +10,6 @@ import redis.clients.jedis.ConnectionTestHelper;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.PushConsumer;
 import redis.clients.jedis.PushConsumerChainImpl;
-import redis.clients.jedis.TimeoutOptions;
 
 /**
  * Shared helpers for SCH (Smart Client Handoff) abstract test bases. Centralizes config-builder
@@ -24,12 +21,9 @@ public final class MaintenanceEventTestSupport {
   private MaintenanceEventTestSupport() {
   }
 
-  /** Maintenance notifications enabled with a 10-second proactive relaxation. */
+  /** Maintenance notifications enabled (AUTO with default window backstop). */
   public static MaintenanceNotificationsConfig enabledMaintConfig() {
-    return MaintenanceNotificationsConfig.builder()
-        .timeoutOptions(
-          TimeoutOptions.builder().proactiveTimeoutsRelaxing(Duration.ofSeconds(10)).build())
-        .build();
+    return MaintenanceNotificationsConfig.builder().build();
   }
 
   /** Matches a {@link redis.clients.jedis.Connection.MaintenanceEventConsumer} instance. */

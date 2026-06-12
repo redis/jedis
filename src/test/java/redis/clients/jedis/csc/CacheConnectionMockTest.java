@@ -22,12 +22,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Connection;
+import redis.clients.jedis.ConnectionFactory;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.ConnectionTestHelper;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.DefaultJedisSocketFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.MaintenanceEventController;
+import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.PushConsumer;
 import redis.clients.jedis.PushConsumerChainImpl;
 import redis.clients.jedis.sch.AbstractMaintenanceEventHandlingTest;
@@ -158,12 +161,20 @@ public class CacheConnectionMockTest {
    * {@link CacheConnection}: pooled CSC connections must register the maintenance consumer; direct
    * and builder-built CSC connections must not.
    */
+  /** Test helper: build a controller iff the config wants maintenance, else {@code null}. */
+  private static MaintenanceEventController controllerFor(MaintenanceNotificationsConfig maint) {
+    return maint != null && maint.isEnabledOrAuto() ? MaintenanceEventController.from(maint) : null;
+  }
+
   @Nested
   class MaintenanceEventHandling extends AbstractMaintenanceEventHandlingTest {
 
     @Override
-    protected ConnectionPool createPool(HostAndPort hostAndPort, JedisClientConfig config) {
-      return new ConnectionPool(hostAndPort, config, cache);
+    protected ConnectionPool createPool(HostAndPort hp, JedisClientConfig cfg,
+        MaintenanceNotificationsConfig maint) {
+      ConnectionFactory factory = ConnectionFactory.builder().hostAndPort(hp).clientConfig(cfg)
+          .cache(cache).maintenanceController(controllerFor(maint)).build();
+      return new ConnectionPool(factory);
     }
 
     @Override
@@ -189,14 +200,18 @@ public class CacheConnectionMockTest {
   class RelaxedTimeoutTest extends AbstractRelaxedTimeoutBehaviorTest {
 
     @Override
-    protected ConnectionPool createPool(HostAndPort hostAndPort, JedisClientConfig config) {
-      return new ConnectionPool(hostAndPort, config, cache);
+    protected ConnectionPool createPool(HostAndPort hp, JedisClientConfig cfg,
+        MaintenanceNotificationsConfig maint) {
+      ConnectionFactory factory = ConnectionFactory.builder().hostAndPort(hp).clientConfig(cfg)
+          .cache(cache).maintenanceController(controllerFor(maint)).build();
+      return new ConnectionPool(factory);
     }
 
     @Override
-    protected Connection buildDirect(HostAndPort hostAndPort, JedisClientConfig config) {
-      DefaultJedisSocketFactory sf = new DefaultJedisSocketFactory(hostAndPort, config);
-      return new CacheConnection(sf, config, cache);
+    protected Connection buildDirect(HostAndPort hp, JedisClientConfig cfg,
+        MaintenanceNotificationsConfig maint) {
+      return CacheConnection.builder(cache).socketFactory(new DefaultJedisSocketFactory(hp, cfg))
+          .clientConfig(cfg).maintenanceController(controllerFor(maint)).build();
     }
   }
 
@@ -209,9 +224,10 @@ public class CacheConnectionMockTest {
   class MaintenanceHandshake extends AbstractMaintenanceHandshakeTest {
 
     @Override
-    protected Connection buildConnection(HostAndPort hostAndPort, JedisClientConfig config) {
-      DefaultJedisSocketFactory sf = new DefaultJedisSocketFactory(hostAndPort, config);
-      return new CacheConnection(sf, config, cache);
+    protected Connection buildConnection(HostAndPort hp, JedisClientConfig cfg,
+        MaintenanceNotificationsConfig maint) {
+      return CacheConnection.builder(cache).socketFactory(new DefaultJedisSocketFactory(hp, cfg))
+          .clientConfig(cfg).maintenanceController(controllerFor(maint)).build();
     }
   }
 }

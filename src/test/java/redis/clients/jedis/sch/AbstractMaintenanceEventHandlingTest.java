@@ -20,6 +20,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.DefaultJedisSocketFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 /**
@@ -45,7 +46,8 @@ public abstract class AbstractMaintenanceEventHandlingTest {
   }
 
   /** Build the pool used to borrow the connection under test. */
-  protected abstract ConnectionPool createPool(HostAndPort hostAndPort, JedisClientConfig config);
+  protected abstract ConnectionPool createPool(HostAndPort hostAndPort, JedisClientConfig config,
+      MaintenanceNotificationsConfig maintConfig);
 
   /** Build a connection via a public constructor (no pool, no injected controller). */
   protected abstract Connection buildDirect(HostAndPort hostAndPort, JedisClientConfig config);
@@ -59,11 +61,10 @@ public abstract class AbstractMaintenanceEventHandlingTest {
   /** A pooled connection registers the maintenance consumer alongside the pub/sub consumer. */
   @Test
   public void maintenanceConsumerRegisteredForPooledConnection() {
-    DefaultJedisClientConfig config = DefaultJedisClientConfig.builder()
-        .maintNotificationsConfig(enabledMaintConfig()).build();
+    DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().build();
 
     try (ConnectionPool pool = createPool(new HostAndPort("localhost", mockServer.getPort()),
-      config)) {
+      config, enabledMaintConfig())) {
       Connection conn = pool.getResource();
       try {
         assertThat(ConnectionTestHelper.getPushConsumers(conn), hasItem(isPubSubConsumer()));
@@ -77,8 +78,7 @@ public abstract class AbstractMaintenanceEventHandlingTest {
   /** A non-pooled (direct-constructor) connection has no controller — no maintenance consumer. */
   @Test
   public void maintenanceConsumerNotRegisteredForNonPooledConnection() {
-    DefaultJedisClientConfig config = DefaultJedisClientConfig.builder()
-        .maintNotificationsConfig(enabledMaintConfig()).build();
+    DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().build();
 
     try (
         Connection conn = buildDirect(new HostAndPort("localhost", mockServer.getPort()), config)) {
@@ -91,8 +91,7 @@ public abstract class AbstractMaintenanceEventHandlingTest {
   /** A builder-built connection (no injected controller) is non-pooled: no maintenance consumer. */
   @Test
   public void maintenanceConsumerNotRegisteredForConnectionBuilder() {
-    DefaultJedisClientConfig config = DefaultJedisClientConfig.builder()
-        .maintNotificationsConfig(enabledMaintConfig()).build();
+    DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().build();
     DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(
         new HostAndPort("localhost", mockServer.getPort()), config);
 

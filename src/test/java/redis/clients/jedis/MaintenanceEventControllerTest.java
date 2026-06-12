@@ -248,17 +248,16 @@ public class MaintenanceEventControllerTest {
   // --- Pool wiring ---
 
   @Test
-  public void poolWiresControllerAsSocketAddressMapper() {
+  public void factoryBuilderWiresControllerAsSocketAddressMapper() {
     HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
-    JedisClientConfig config = DefaultJedisClientConfig.builder()
-        .maintNotificationsConfig(MaintenanceNotificationsConfig.builder().build()).build();
+    JedisClientConfig config = DefaultJedisClientConfig.builder().build();
+    MaintenanceEventController wired = MaintenanceEventController
+        .from(MaintenanceNotificationsConfig.builder().build());
+    ConnectionFactory factory = ConnectionFactory.builder().hostAndPort(hp).clientConfig(config)
+        .maintenanceController(wired).build();
 
-    // Convenience constructor: the pool builds the ConnectionFactory and injects a controller into
-    // its default DefaultJedisSocketFactory at construction time.
-    ConnectionPool pool = new ConnectionPool(hp, config);
-    ConnectionFactory factory = (ConnectionFactory) pool.getFactory();
-    MaintenanceEventController wired = factory.getMaintenanceController();
-    assertNotNull(wired, "pool creates and attaches a controller when maintenance is enabled");
+    assertSame(wired, factory.getMaintenanceController(),
+      "factory carries the controller passed to its builder");
     DefaultJedisSocketFactory sf = (DefaultJedisSocketFactory) factory.getConnectionBuilder()
         .getSocketFactory();
     assertSame(wired, sf.getSocketAddressMapper(),
@@ -266,15 +265,12 @@ public class MaintenanceEventControllerTest {
   }
 
   @Test
-  public void disabledMaintenance_leavesFactoryUnwired() {
+  public void noControllerLeavesFactoryUnwired() {
     HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
-    JedisClientConfig config = DefaultJedisClientConfig.builder()
-        .maintNotificationsConfig(MaintenanceNotificationsConfig.builder()
-            .mode(MaintenanceNotificationsConfig.Mode.DISABLED).build())
+    ConnectionFactory factory = ConnectionFactory.builder().hostAndPort(hp)
+        .clientConfig(DefaultJedisClientConfig.builder().build()).maintenanceController(null)
         .build();
 
-    ConnectionPool pool = new ConnectionPool(hp, config);
-    ConnectionFactory factory = (ConnectionFactory) pool.getFactory();
     assertNull(factory.getMaintenanceController());
   }
 
@@ -284,12 +280,9 @@ public class MaintenanceEventControllerTest {
   public void borrowRelaxesConnection_duringRebindWindow() throws Exception {
     int soTimeoutMs = 2000;
     int relaxedTimeoutMs = 10000;
-    MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
-        .timeoutOptions(TimeoutOptions.builder()
-            .proactiveTimeoutsRelaxing(Duration.ofMillis(relaxedTimeoutMs)).build())
-        .build();
+    MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder().build();
     DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
-        .socketTimeoutMillis(soTimeoutMs).maintNotificationsConfig(maintConfig)
+        .socketTimeoutMillis(soTimeoutMs).relaxedSocketTimeoutMillis(relaxedTimeoutMs)
         .protocol(RedisProtocol.RESP3).build();
     HostAndPort mock = new HostAndPort("127.0.0.1", mockServer.getPort());
 
@@ -340,9 +333,7 @@ public class MaintenanceEventControllerTest {
     // Configure a 10s max-relax backstop.
     MaintenanceEventController capped = MaintenanceEventController
         .from(MaintenanceNotificationsConfig.builder()
-            .timeoutOptions(
-              TimeoutOptions.builder().relaxedTimeoutMaxDuration(Duration.ofSeconds(10)).build())
-            .build());
+            .relaxedWindowMaxDuration(Duration.ofSeconds(10)).build());
     capped.setClockNanos(now::get);
 
     // Server says 100s; the cap shortens it to 10s.

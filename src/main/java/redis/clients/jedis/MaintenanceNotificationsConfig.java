@@ -1,15 +1,13 @@
 package redis.clients.jedis;
 
+import java.time.Duration;
+
 public class MaintenanceNotificationsConfig {
 
-  public static final MaintenanceNotificationsConfig DEFAULT;
+  /** Default upper bound on the relaxed-timeout window started by MIGRATING/FAILING_OVER/MOVING. */
+  public static final Duration DEFAULT_RELAXED_WINDOW_MAX_DURATION = Duration.ofSeconds(60);
 
-  static {
-    DEFAULT = new MaintenanceNotificationsConfig();
-    DEFAULT.timeoutOptions = TimeoutOptions.create();
-    // mode is left at the field default (AUTO): negotiate maintenance notifications on connect,
-    // silently fall back if the server rejects them.
-  }
+  public static final MaintenanceNotificationsConfig DEFAULT = new MaintenanceNotificationsConfig();
 
   /**
    * Endpoint types for maintenance event notifications.
@@ -43,24 +41,25 @@ public class MaintenanceNotificationsConfig {
     ENABLED, DISABLED, AUTO
   }
 
-  // default to EndpointTypeExternalIP
   EndpointType endpointType = EndpointType.EXTERNAL_IP;
-
-  TimeoutOptions timeoutOptions;
-
-  // default to AUTO
   Mode mode = Mode.AUTO;
+  Duration relaxedWindowMaxDuration = DEFAULT_RELAXED_WINDOW_MAX_DURATION;
 
   public EndpointType getEndpointType() {
     return endpointType;
   }
 
-  public TimeoutOptions getTimeoutOptions() {
-    return timeoutOptions;
-  }
-
   public Mode getMode() {
     return mode;
+  }
+
+  /**
+   * Upper bound on the relaxed-timeout window started by MIGRATING/FAILING_OVER/MOVING. The window
+   * reverts automatically after this duration even if the matching closing notification is never
+   * received. Safety net against missed events or misbehaving servers.
+   */
+  public Duration getRelaxedWindowMaxDuration() {
+    return relaxedWindowMaxDuration;
   }
 
   /**
@@ -78,16 +77,11 @@ public class MaintenanceNotificationsConfig {
 
   public static class Builder {
     private EndpointType endpointType = EndpointType.EXTERNAL_IP;
-    private TimeoutOptions timeoutOptions = TimeoutOptions.create(); // Default timeout options
     private Mode mode = Mode.AUTO;
+    private Duration relaxedWindowMaxDuration = DEFAULT_RELAXED_WINDOW_MAX_DURATION;
 
     public Builder endpointType(EndpointType endpointType) {
       this.endpointType = endpointType;
-      return this;
-    }
-
-    public Builder timeoutOptions(TimeoutOptions timeoutOptions) {
-      this.timeoutOptions = timeoutOptions;
       return this;
     }
 
@@ -96,11 +90,22 @@ public class MaintenanceNotificationsConfig {
       return this;
     }
 
+    /**
+     * Upper bound on relaxation triggered by MIGRATING/FAILING_OVER/MOVING. Acts as a safety net:
+     * the relaxed window reverts after this duration even if the matching closing notification is
+     * lost. Defaults to {@link MaintenanceNotificationsConfig#DEFAULT_RELAXED_WINDOW_MAX_DURATION}.
+     */
+    public Builder relaxedWindowMaxDuration(Duration duration) {
+      if (duration == null) throw new IllegalArgumentException("duration must not be null");
+      this.relaxedWindowMaxDuration = duration;
+      return this;
+    }
+
     public MaintenanceNotificationsConfig build() {
       MaintenanceNotificationsConfig config = new MaintenanceNotificationsConfig();
       config.endpointType = this.endpointType;
-      config.timeoutOptions = this.timeoutOptions;
       config.mode = this.mode;
+      config.relaxedWindowMaxDuration = this.relaxedWindowMaxDuration;
       return config;
     }
   }

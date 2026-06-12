@@ -34,16 +34,10 @@ public class RebindMockTest {
   private final int socketTimeoutMs = 5000;
 
   DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
-      .socketTimeoutMillis(socketTimeoutMs).protocol(RedisProtocol.RESP3)
-      .maintNotificationsConfig(
-        MaintenanceNotificationsConfig.builder().mode(MaintenanceNotificationsConfig.Mode.AUTO) // Enable
-                                                                                                // maintenance
-                                                                                                // notifications
-                                                                                                // (includes
-                                                                                                // proactive
-                                                                                                // rebind)
-            .build())
-      .build();
+      .socketTimeoutMillis(socketTimeoutMs).protocol(RedisProtocol.RESP3).build();
+
+  MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
+      .mode(MaintenanceNotificationsConfig.Mode.AUTO).build();
 
   HostAndPort server1Address;
   HostAndPort server2Address;
@@ -86,7 +80,8 @@ public class RebindMockTest {
 
     // 1. Create UnifiedJedis client and connect it to mockedserver1=
     try (RedisClient unifiedJedis = RedisClient.builder().poolConfig(connectionPoolConfig)
-        .clientConfig(clientConfig).hostAndPort(server1Address).build()) {
+        .clientConfig(clientConfig).maintenanceNotifications(maintConfig)
+        .hostAndPort(server1Address).build()) {
 
       // 1. Perform a PING command to initiate a connection
       String response1 = unifiedJedis.ping();
@@ -132,7 +127,8 @@ public class RebindMockTest {
 
     // 1. Create UnifiedJedis client and connect it to mockedserver1
     try (RedisClient unifiedJedis = RedisClient.builder().poolConfig(connectionPoolConfig)
-        .clientConfig(clientConfig).hostAndPort(server1Address).build()) {
+        .clientConfig(clientConfig).maintenanceNotifications(maintConfig)
+        .hostAndPort(server1Address).build()) {
       Pool<Connection> pool = unifiedJedis.getPool();
 
       // 1. Test setup - 1 active connection, 0 idle connection
@@ -175,7 +171,8 @@ public class RebindMockTest {
     connectionPoolConfig.setMinIdle(1);
 
     try (RedisClient unifiedJedis = RedisClient.builder().poolConfig(connectionPoolConfig)
-        .clientConfig(clientConfig).hostAndPort(server1Address).build()) {
+        .clientConfig(clientConfig).maintenanceNotifications(maintConfig)
+        .hostAndPort(server1Address).build()) {
       Pool<Connection> pool = unifiedJedis.getPool();
 
       // 1. Test setup - 1 active connection, 1 idle connection
@@ -221,7 +218,8 @@ public class RebindMockTest {
 
     // Create UnifiedJedis with connection pooling enabled
     try (RedisClient unifiedJedis = RedisClient.builder().poolConfig(connectionPoolConfig)
-        .clientConfig(clientConfig).hostAndPort(server1Address).build()) {
+        .clientConfig(clientConfig).maintenanceNotifications(maintConfig)
+        .hostAndPort(server1Address).build()) {
 
       // 1. Test setup - 1 active connection
       Connection activeConnection = unifiedJedis.getPool().getResource();
@@ -254,14 +252,11 @@ public class RebindMockTest {
     ConnectionPoolConfig connectionPoolConfig = new ConnectionPoolConfig();
 
     // Verify that with maintenance notifications disabled, connections stay on original server
-    DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
-        .from(this.clientConfig)
-        .maintNotificationsConfig(MaintenanceNotificationsConfig.builder()
-            .mode(MaintenanceNotificationsConfig.Mode.DISABLED) // Disable maintenance notifications
-            .build())
-        .build();
+    MaintenanceNotificationsConfig disabledMaint = MaintenanceNotificationsConfig.builder()
+        .mode(MaintenanceNotificationsConfig.Mode.DISABLED).build();
     try (RedisClient unifiedJedis = RedisClient.builder().poolConfig(connectionPoolConfig)
-        .clientConfig(clientConfig).hostAndPort(server1Address).build()) {
+        .clientConfig(clientConfig).maintenanceNotifications(disabledMaint)
+        .hostAndPort(server1Address).build()) {
       Pool<Connection> pool = unifiedJedis.getPool();
 
       // 1. Test setup - 1 active connection, 1 idle connection
@@ -298,7 +293,8 @@ public class RebindMockTest {
     connectionPoolConfig.setMaxTotal(1);
 
     try (RedisClient unifiedJedis = RedisClient.builder().poolConfig(connectionPoolConfig)
-        .clientConfig(clientConfig).hostAndPort(server1Address).build()) {
+        .clientConfig(clientConfig).maintenanceNotifications(maintConfig)
+        .hostAndPort(server1Address).build()) {
 
       // 1. Initial connection on server1
       assertEquals("PONG", unifiedJedis.ping());

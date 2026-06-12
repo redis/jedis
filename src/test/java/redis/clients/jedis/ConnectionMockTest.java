@@ -16,7 +16,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static redis.clients.jedis.TimeoutOptions.UNSET_TIMEOUT_MS;
+import static redis.clients.jedis.JedisClientConfig.UNSET_TIMEOUT_MS;
 
 import java.io.IOException;
 import java.net.Socket;
@@ -131,12 +131,20 @@ public class ConnectionMockTest {
 
   }
 
+  /** Test helper: build a controller iff the config wants maintenance, else {@code null}. */
+  private static MaintenanceEventController controllerFor(MaintenanceNotificationsConfig maint) {
+    return maint != null && maint.isEnabledOrAuto() ? MaintenanceEventController.from(maint) : null;
+  }
+
   @Nested
   class MaintenanceEventHandling extends AbstractMaintenanceEventHandlingTest {
 
     @Override
-    protected ConnectionPool createPool(HostAndPort hostAndPort, JedisClientConfig config) {
-      return new ConnectionPool(hostAndPort, config);
+    protected ConnectionPool createPool(HostAndPort hp, JedisClientConfig cfg,
+        MaintenanceNotificationsConfig maint) {
+      ConnectionFactory factory = ConnectionFactory.builder().hostAndPort(hp).clientConfig(cfg)
+          .maintenanceController(controllerFor(maint)).build();
+      return new ConnectionPool(factory);
     }
 
     @Override
@@ -159,8 +167,10 @@ public class ConnectionMockTest {
   class MaintenanceHandshake extends AbstractMaintenanceHandshakeTest {
 
     @Override
-    protected Connection buildConnection(HostAndPort hostAndPort, JedisClientConfig config) {
-      return new Connection(hostAndPort, config);
+    protected Connection buildConnection(HostAndPort hp, JedisClientConfig cfg,
+        MaintenanceNotificationsConfig maint) {
+      return Connection.builder().socketFactory(new DefaultJedisSocketFactory(hp, cfg))
+          .clientConfig(cfg).maintenanceController(controllerFor(maint)).build();
     }
 
     @Test
@@ -168,11 +178,11 @@ public class ConnectionMockTest {
       MaintenanceNotificationsConfig maint = MaintenanceNotificationsConfig.builder()
           .mode(MaintenanceNotificationsConfig.Mode.ENABLED).build();
       JedisClientConfig cfg = DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP2)
-          .maintNotificationsConfig(maint).build();
+          .build();
 
       HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
       JedisConnectionException ex = assertThrows(JedisConnectionException.class,
-        () -> new Connection(hp, cfg));
+        () -> buildConnection(hp, cfg, maint));
       assertTrue(ex.getMessage().toUpperCase().contains("RESP3"),
         "exception message should mention RESP3 requirement, got: " + ex.getMessage());
     }
@@ -183,11 +193,10 @@ public class ConnectionMockTest {
       mockServer.setCommandHandler(localHandler);
 
       JedisClientConfig cfg = DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP2)
-          .maintNotificationsConfig(MaintenanceNotificationsConfig.DEFAULT) // AUTO
           .build();
 
       HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
-      try (Connection c = new Connection(hp, cfg)) {
+      try (Connection c = buildConnection(hp, cfg, MaintenanceNotificationsConfig.DEFAULT)) {
         assertTrue(c.isConnected());
         assertEquals(RedisProtocol.RESP2, c.getRedisProtocol());
       }
@@ -205,13 +214,17 @@ public class ConnectionMockTest {
   public class RelaxedTimeoutTest extends AbstractRelaxedTimeoutBehaviorTest {
 
     @Override
-    protected ConnectionPool createPool(HostAndPort hostAndPort, JedisClientConfig config) {
-      return new ConnectionPool(hostAndPort, config);
+    protected ConnectionPool createPool(HostAndPort hp, JedisClientConfig cfg,
+        MaintenanceNotificationsConfig maint) {
+      return new ConnectionPool(ConnectionFactory.builder().hostAndPort(hp).clientConfig(cfg)
+          .maintenanceController(controllerFor(maint)).build());
     }
 
     @Override
-    protected Connection buildDirect(HostAndPort hostAndPort, JedisClientConfig config) {
-      return new Connection(hostAndPort, config);
+    protected Connection buildDirect(HostAndPort hp, JedisClientConfig cfg,
+        MaintenanceNotificationsConfig maint) {
+      return Connection.builder().socketFactory(new DefaultJedisSocketFactory(hp, cfg))
+          .clientConfig(cfg).maintenanceController(controllerFor(maint)).build();
     }
   }
 }

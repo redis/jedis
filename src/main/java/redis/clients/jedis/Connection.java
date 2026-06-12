@@ -650,6 +650,13 @@ public class Connection implements Closeable {
         fireAndForgetMsg.add(new CommandArguments(Command.READONLY));
       }
 
+      ClientCapaConfig capaConfig = config.getClientCapaConfig();
+      if (capaConfig == null) capaConfig = ClientCapaConfig.DEFAULT;
+      if (capaConfig.isRedirect()) {
+        fireAndForgetMsg.add(new CommandArguments(Command.CLIENT).add(Keyword.CAPA)
+            .add(ClientAttributeOption.REDIRECT.getRaw()));
+      }
+
       for (CommandArguments arg : fireAndForgetMsg) {
         sendCommand(arg);
       }

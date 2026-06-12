@@ -17,31 +17,11 @@ public class ConnectionPool extends Pool<Connection> {
   // Primary constructors using factory
   public ConnectionPool(PooledObjectFactory<Connection> factory) {
     super(factory);
-    installMaintenanceHooks(factory);
   }
 
   public ConnectionPool(PooledObjectFactory<Connection> factory,
       GenericObjectPoolConfig<Connection> poolConfig) {
     super(factory, poolConfig);
-    installMaintenanceHooks(factory);
-  }
-
-  /**
-   * Install pool-side maintenance hooks when the factory was constructed with a controller: wrap
-   * the existing eviction policy in a rebind-aware one and route MOVING handoffs to an immediate
-   * selective {@link #evict()}. Controller creation/injection happens upstream in the convenience
-   * constructors; this method only wires the pool-level pieces.
-   */
-  private void installMaintenanceHooks(PooledObjectFactory<Connection> factory) {
-    if (!(factory instanceof ConnectionFactory)) {
-      return;
-    }
-    MaintenanceEventController controller = ((ConnectionFactory) factory).getMaintenanceController();
-    if (controller == null) {
-      return;
-    }
-    setEvictionPolicy(new RebindAwareEvictionPolicy(controller, getEvictionPolicy()));
-    controller.addHandoffHook(handoff -> evictQuietly());
   }
 
   /** Wraps the checked-Exception {@link #evict()}. */
@@ -79,13 +59,6 @@ public class ConnectionPool extends Pool<Connection> {
     attachAuthenticationListener(clientConfig.getAuthXManager());
   }
 
-  /**
-   * Convenience constructor for the {@code RedisClient} default-component path: builds the
-   * {@link ConnectionFactory} with the supplied {@link MaintenanceEventController} wired in (the
-   * controller becomes the socket factory's address mapper and the connection's push consumer),
-   * then attaches the AuthX listener so token rotation triggers pool eviction. {@code controller}
-   * may be {@code null} to disable maintenance for this pool.
-   */
   @Experimental
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig,
@@ -93,6 +66,10 @@ public class ConnectionPool extends Pool<Connection> {
     this(ConnectionFactory.builder().hostAndPort(hostAndPort).clientConfig(clientConfig)
         .cache(clientSideCache).maintenanceController(controller).build(), poolConfig);
     attachAuthenticationListener(clientConfig.getAuthXManager());
+    if (controller != null) {
+      setEvictionPolicy(new RebindAwareEvictionPolicy(controller, getEvictionPolicy()));
+      controller.addHandoffHook(handoff -> evictQuietly());
+    }
   }
 
   @Override

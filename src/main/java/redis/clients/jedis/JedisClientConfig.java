@@ -21,7 +21,7 @@ public interface JedisClientConfig {
   int DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS = UNSET_TIMEOUT_MS;
 
   /** True iff {@code millis} represents a configured timeout (not {@link #UNSET_TIMEOUT_MS}). */
-  static boolean  isTimeoutSet(int millis) {
+  static boolean isTimeoutSet(int millis) {
     return millis != UNSET_TIMEOUT_MS;
   }
 

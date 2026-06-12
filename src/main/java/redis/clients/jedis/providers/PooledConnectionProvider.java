@@ -50,12 +50,6 @@ public class PooledConnectionProvider implements ConnectionProvider {
     this.connectionMapKey = hostAndPort;
   }
 
-  /**
-   * Convenience constructor for the {@code RedisClient} default-component path: delegates to the
-   * matching {@link ConnectionPool} ctor that wires the {@link MaintenanceEventController} into the
-   * factory and attaches the AuthX listener. {@code controller} may be {@code null} to disable
-   * maintenance.
-   */
   @Experimental
   public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig,

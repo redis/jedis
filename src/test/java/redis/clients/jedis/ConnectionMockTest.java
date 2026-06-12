@@ -142,9 +142,8 @@ public class ConnectionMockTest {
     @Override
     protected ConnectionPool createPool(HostAndPort hp, JedisClientConfig cfg,
         MaintenanceNotificationsConfig maint) {
-      ConnectionFactory factory = ConnectionFactory.builder().hostAndPort(hp).clientConfig(cfg)
-          .maintenanceController(controllerFor(maint)).build();
-      return new ConnectionPool(factory);
+      return new ConnectionPool(hp, cfg, /* cache */ null, new ConnectionPoolConfig(),
+          controllerFor(maint));
     }
 
     @Override
@@ -216,8 +215,8 @@ public class ConnectionMockTest {
     @Override
     protected ConnectionPool createPool(HostAndPort hp, JedisClientConfig cfg,
         MaintenanceNotificationsConfig maint) {
-      return new ConnectionPool(ConnectionFactory.builder().hostAndPort(hp).clientConfig(cfg)
-          .maintenanceController(controllerFor(maint)).build());
+      return new ConnectionPool(hp, cfg, /* cache */ null, new ConnectionPoolConfig(),
+          controllerFor(maint));
     }
 
     @Override

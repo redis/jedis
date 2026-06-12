@@ -97,17 +97,6 @@ public abstract class StandaloneClientBuilder<C>
     if (hostAndPort == null) {
       throw new IllegalArgumentException("Either URI or host/port must be specified");
     }
-
-    MaintenanceNotificationsConfig cfg = effectiveMaintNotificationsConfig();
-    if (this.connectionProvider != null && cfg.isEnabledOrAuto()) {
-      if (cfg.getMode() == MaintenanceNotificationsConfig.Mode.ENABLED) {
-        throw new IllegalArgumentException(
-            "Maintenance notifications ENABLED requires the default ConnectionProvider");
-      }
-      logger.debug(
-        "Maintenance notifications disabled: custom ConnectionProvider supplied (mode={}).",
-        cfg.getMode());
-    }
   }
 
   /**

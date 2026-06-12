@@ -17,13 +17,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * Per-pool maintenance handler: owns the shared rebind overlay, the relax-window policy, and the
- * handoff hooks fired when a MOVING is applied. Created via {@link #from} from a
- * {@link MaintenanceNotificationsConfig} and injected at builder time into the pool, connection
- * factory, and default socket factory. Public so {@code RedisClient}-style builders outside the
- * {@code redis.clients.jedis} package can wire it directly; the implemented
- * {@link MaintenanceEvent.Handler} and {@link SocketAddressMapper} interfaces stay package-private,
- * so the dispatch and remap entry points remain internal.
+ * Maintenance handler: owns the shared rebind overlay, the relax-window policy, and the handoff
+ * hooks fired when a MOVING is applied.
  */
 public final class MaintenanceEventController
     implements MaintenanceEvent.Handler, SocketAddressMapper {

@@ -258,6 +258,47 @@ public class ConnectionErrorHandlingTest {
   }
 
   @Test
+  public void socketExceptionDuringSetSoTimeoutMarksConnectionBrokenAndWrapsCause() {
+    SocketException expected = new SocketException("set timeout failed");
+    CloseTrackingFakeSocket socket = new SocketExceptionOnSetSoTimeoutSocket(expected);
+    Connection conn = new Connection(() -> socket);
+    conn.connect();
+
+    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+      () -> conn.setSoTimeout(500));
+
+    assertSame(expected, thrown.getCause());
+    assertTrue(conn.isBroken());
+  }
+
+  @Test
+  public void socketExceptionDuringSetTimeoutInfiniteMarksConnectionBrokenAndWrapsCause() {
+    SocketException expected = new SocketException("set infinite timeout failed");
+    CloseTrackingFakeSocket socket = new SocketExceptionOnSetSoTimeoutSocket(expected);
+    Connection conn = new Connection(() -> socket);
+
+    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+      conn::setTimeoutInfinite);
+
+    assertSame(expected, thrown.getCause());
+    assertTrue(conn.isBroken());
+  }
+
+  @Test
+  public void socketExceptionDuringRollbackTimeoutMarksConnectionBrokenAndWrapsCause() {
+    SocketException expected = new SocketException("rollback timeout failed");
+    CloseTrackingFakeSocket socket = new SocketExceptionOnSetSoTimeoutSocket(expected);
+    Connection conn = new Connection(() -> socket);
+    conn.connect();
+
+    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+      conn::rollbackTimeout);
+
+    assertSame(expected, thrown.getCause());
+    assertTrue(conn.isBroken());
+  }
+
+  @Test
   public void alreadyBrokenConnectedConnectionRejectsCommandArgumentsWithoutWriting() {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
     Connection conn = new Connection(fakeSocketFactory(new byte[0], output));
@@ -1161,6 +1202,29 @@ public class ConnectionErrorHandlingTest {
   }
 
   @Test
+  public void socketExceptionDuringTimeoutChangeInvalidatesPooledConnectionOnClose() {
+    AtomicInteger destroyed = new AtomicInteger();
+    SocketException expected = new SocketException("set timeout failed");
+
+    try (ConnectionPool pool = newSingleConnectionPool(destroyed,
+      () -> new Connection(() -> new SocketExceptionOnSetSoTimeoutSocket(expected)))) {
+      Connection conn = pool.getResource();
+      conn.connect();
+
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+        () -> conn.setSoTimeout(500));
+      conn.close();
+
+      assertSame(expected, thrown.getCause());
+      assertEquals(1, destroyed.get());
+      Connection replacement = pool.getResource();
+      assertNotSame(conn, replacement);
+      assertFalse(replacement.isBroken());
+      replacement.close();
+    }
+  }
+
+  @Test
   public void alreadyBrokenPooledConnectionInvalidatesOnCloseWithoutWriting() {
     AtomicInteger destroyed = new AtomicInteger();
     ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -1384,7 +1448,7 @@ public class ConnectionErrorHandlingTest {
     }
 
     @Override
-    public void setSoTimeout(int timeout) {
+    public void setSoTimeout(int timeout) throws SocketException {
     }
   }
 
@@ -1541,6 +1605,21 @@ public class ConnectionErrorHandlingTest {
     @Override
     public InputStream getInputStream() {
       throw error;
+    }
+  }
+
+  private static final class SocketExceptionOnSetSoTimeoutSocket extends CloseTrackingFakeSocket {
+
+    private final SocketException exception;
+
+    private SocketExceptionOnSetSoTimeoutSocket(SocketException exception) {
+      super(new ByteArrayInputStream(new byte[0]), new ByteArrayOutputStream());
+      this.exception = exception;
+    }
+
+    @Override
+    public void setSoTimeout(int timeout) throws SocketException {
+      throw exception;
     }
   }
 

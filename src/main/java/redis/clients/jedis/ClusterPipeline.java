@@ -156,6 +156,28 @@ public class ClusterPipeline extends MultiNodePipelineBase {
     return provider.getConnection(nodeKey);
   }
 
+  @Override
+  protected Connection getConnection(HostAndPort nodeKey, boolean allowBlocking) {
+    if (allowBlocking) {
+      return getConnection(nodeKey);
+    }
+
+    try {
+      return provider.getConnection(nodeKey, Duration.ZERO);
+    } catch (JedisException ex) {
+      throw new JedisClusterOperationException(failFastConnectionMessage(nodeKey), ex, nodeKey);
+    }
+  }
+
+  private static String failFastConnectionMessage(HostAndPort nodeKey) {
+    return "Cluster pipeline could not acquire a connection for node "
+        + (nodeKey == null ? "<any>" : nodeKey)
+        + " without waiting because this pipeline already holds one or more node connections. "
+        + "Waiting here can deadlock when multiple pipelines hold different shard connections. "
+        + "Consider increasing per-node pool maxTotal, keeping maxWait bounded, or grouping/flushing "
+        + "pipeline commands by single shard.";
+  }
+
   public Response<Long> spublish(String channel, String message) {
     return appendCommand(commandObjects.spublish(channel, message));
   }

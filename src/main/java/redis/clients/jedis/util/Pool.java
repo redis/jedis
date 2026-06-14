@@ -1,5 +1,7 @@
 package redis.clients.jedis.util;
 
+import java.time.Duration;
+
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -36,6 +38,16 @@ public class Pool<T> extends GenericObjectPool<T> {
   public T getResource() {
     try {
       return super.borrowObject();
+    } catch (JedisException je) {
+      throw je;
+    } catch (Exception e) {
+      throw new JedisException("Could not get a resource from the pool", e);
+    }
+  }
+
+  public T getResource(Duration maxWait) {
+    try {
+      return super.borrowObject(maxWait);
     } catch (JedisException je) {
       throw je;
     } catch (Exception e) {

@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import java.time.Duration;
+
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
@@ -53,6 +55,12 @@ public class ConnectionPool extends Pool<Connection> {
   @Override
   public Connection getResource() {
     Connection conn = super.getResource();
+    conn.setHandlingPool(this);
+    return conn;
+  }
+
+  public Connection getResource(Duration maxWait) {
+    Connection conn = super.getResource(maxWait);
     conn.setHandlingPool(this);
     return conn;
   }

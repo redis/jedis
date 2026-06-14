@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.Socket;
+import java.net.SocketException;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.List;
@@ -70,6 +71,190 @@ public class ConnectionErrorHandlingTest {
     assertThrows(NullPointerException.class, () -> conn.sendCommand(args));
 
     assertTrue(conn.isBroken());
+  }
+
+  @Test
+  public void jedisConnectionExceptionDuringDirectConnectMarksConnectionBrokenAndRethrowsSameException() {
+    JedisConnectionException expected = new JedisConnectionException("connect failed");
+    Connection conn = new Connection(() -> {
+      throw expected;
+    });
+
+    JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::connect);
+
+    assertSame(expected, thrown);
+    assertTrue(conn.isBroken());
+  }
+
+  @Test
+  public void runtimeExceptionDuringDirectConnectMarksConnectionBrokenAndRethrowsSameException() {
+    RuntimeException expected = new IllegalStateException("connect failed");
+    Connection conn = new Connection(() -> {
+      throw expected;
+    });
+
+    RuntimeException thrown = assertThrows(RuntimeException.class, conn::connect);
+
+    assertSame(expected, thrown);
+    assertTrue(conn.isBroken());
+  }
+
+  @Test
+  public void errorDuringDirectConnectMarksConnectionBrokenAndRethrowsSameError() {
+    SyntheticError expected = new SyntheticError();
+    Connection conn = new Connection(() -> {
+      throw expected;
+    });
+
+    SyntheticError thrown = assertThrows(SyntheticError.class, conn::connect);
+
+    assertSame(expected, thrown);
+    assertTrue(conn.isBroken());
+  }
+
+  @Test
+  public void runtimeExceptionDuringSendCommandConnectMarksConnectionBrokenAndRethrowsSameException() {
+    RuntimeException expected = new IllegalStateException("connect failed");
+    Connection conn = new Connection(() -> {
+      throw expected;
+    });
+    CommandArguments args = new CommandArguments(Command.PING);
+
+    RuntimeException thrown = assertThrows(RuntimeException.class, () -> conn.sendCommand(args));
+
+    assertSame(expected, thrown);
+    assertTrue(conn.isBroken());
+  }
+
+  @Test
+  public void errorDuringSendCommandConnectMarksConnectionBrokenAndRethrowsSameError() {
+    SyntheticError expected = new SyntheticError();
+    Connection conn = new Connection(() -> {
+      throw expected;
+    });
+    CommandArguments args = new CommandArguments(Command.PING);
+
+    SyntheticError thrown = assertThrows(SyntheticError.class, () -> conn.sendCommand(args));
+
+    assertSame(expected, thrown);
+    assertTrue(conn.isBroken());
+  }
+
+  @Test
+  public void socketExceptionDuringSoTimeoutInitializationMarksConnectionBrokenAndClosesSocket() {
+    SocketException expected = new SocketException("timeout init failed");
+    CloseTrackingFakeSocket socket = new SocketExceptionOnGetSoTimeoutSocket(expected);
+    Connection conn = new Connection(() -> socket);
+
+    JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::connect);
+
+    assertSame(expected, thrown.getCause());
+    assertTrue(conn.isBroken());
+    assertTrue(socket.isClosed());
+  }
+
+  @Test
+  public void runtimeExceptionDuringSoTimeoutInitializationMarksConnectionBrokenAndClosesSocket() {
+    RuntimeException expected = new IllegalStateException("timeout init failed");
+    CloseTrackingFakeSocket socket = new RuntimeExceptionOnGetSoTimeoutSocket(expected);
+    Connection conn = new Connection(() -> socket);
+
+    RuntimeException thrown = assertThrows(RuntimeException.class, conn::connect);
+
+    assertSame(expected, thrown);
+    assertTrue(conn.isBroken());
+    assertTrue(socket.isClosed());
+  }
+
+  @Test
+  public void errorDuringSoTimeoutInitializationMarksConnectionBrokenAndClosesSocket() {
+    SyntheticError expected = new SyntheticError();
+    CloseTrackingFakeSocket socket = new ErrorOnGetSoTimeoutSocket(expected);
+    Connection conn = new Connection(() -> socket);
+
+    SyntheticError thrown = assertThrows(SyntheticError.class, conn::connect);
+
+    assertSame(expected, thrown);
+    assertTrue(conn.isBroken());
+    assertTrue(socket.isClosed());
+  }
+
+  @Test
+  public void ioExceptionDuringOutputStreamInitializationMarksConnectionBrokenAndClosesSocket() {
+    IOException expected = new IOException("output init failed");
+    CloseTrackingFakeSocket socket = new IOExceptionOnGetOutputStreamSocket(expected);
+    Connection conn = new Connection(() -> socket);
+
+    JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::connect);
+
+    assertSame(expected, thrown.getCause());
+    assertTrue(conn.isBroken());
+    assertTrue(socket.isClosed());
+  }
+
+  @Test
+  public void runtimeExceptionDuringOutputStreamInitializationMarksConnectionBrokenAndClosesSocket() {
+    RuntimeException expected = new IllegalStateException("output init failed");
+    CloseTrackingFakeSocket socket = new RuntimeExceptionOnGetOutputStreamSocket(expected);
+    Connection conn = new Connection(() -> socket);
+
+    RuntimeException thrown = assertThrows(RuntimeException.class, conn::connect);
+
+    assertSame(expected, thrown);
+    assertTrue(conn.isBroken());
+    assertTrue(socket.isClosed());
+  }
+
+  @Test
+  public void errorDuringOutputStreamInitializationMarksConnectionBrokenAndClosesSocket() {
+    SyntheticError expected = new SyntheticError();
+    CloseTrackingFakeSocket socket = new ErrorOnGetOutputStreamSocket(expected);
+    Connection conn = new Connection(() -> socket);
+
+    SyntheticError thrown = assertThrows(SyntheticError.class, conn::connect);
+
+    assertSame(expected, thrown);
+    assertTrue(conn.isBroken());
+    assertTrue(socket.isClosed());
+  }
+
+  @Test
+  public void ioExceptionDuringInputStreamInitializationMarksConnectionBrokenAndClosesSocket() {
+    IOException expected = new IOException("input init failed");
+    CloseTrackingFakeSocket socket = new IOExceptionOnGetInputStreamSocket(expected);
+    Connection conn = new Connection(() -> socket);
+
+    JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::connect);
+
+    assertSame(expected, thrown.getCause());
+    assertTrue(conn.isBroken());
+    assertTrue(socket.isClosed());
+  }
+
+  @Test
+  public void runtimeExceptionDuringInputStreamInitializationMarksConnectionBrokenAndClosesSocket() {
+    RuntimeException expected = new IllegalStateException("input init failed");
+    CloseTrackingFakeSocket socket = new RuntimeExceptionOnGetInputStreamSocket(expected);
+    Connection conn = new Connection(() -> socket);
+
+    RuntimeException thrown = assertThrows(RuntimeException.class, conn::connect);
+
+    assertSame(expected, thrown);
+    assertTrue(conn.isBroken());
+    assertTrue(socket.isClosed());
+  }
+
+  @Test
+  public void errorDuringInputStreamInitializationMarksConnectionBrokenAndClosesSocket() {
+    SyntheticError expected = new SyntheticError();
+    CloseTrackingFakeSocket socket = new ErrorOnGetInputStreamSocket(expected);
+    Connection conn = new Connection(() -> socket);
+
+    SyntheticError thrown = assertThrows(SyntheticError.class, conn::connect);
+
+    assertSame(expected, thrown);
+    assertTrue(conn.isBroken());
+    assertTrue(socket.isClosed());
   }
 
   @Test
@@ -863,6 +1048,119 @@ public class ConnectionErrorHandlingTest {
   }
 
   @Test
+  public void runtimeExceptionDuringConnectInvalidatesPooledConnectionOnClose() {
+    AtomicInteger destroyed = new AtomicInteger();
+    RuntimeException expected = new IllegalStateException("connect failed");
+
+    try (ConnectionPool pool = newSingleConnectionPool(destroyed, () -> new Connection(() -> {
+      throw expected;
+    }))) {
+      Connection conn = pool.getResource();
+      CommandArguments args = new CommandArguments(Command.PING);
+
+      RuntimeException thrown = assertThrows(RuntimeException.class, () -> conn.sendCommand(args));
+      conn.close();
+
+      assertSame(expected, thrown);
+      assertEquals(1, destroyed.get());
+      Connection replacement = pool.getResource();
+      assertNotSame(conn, replacement);
+      assertFalse(replacement.isBroken());
+      replacement.close();
+    }
+  }
+
+  @Test
+  public void errorDuringConnectInvalidatesPooledConnectionOnClose() {
+    AtomicInteger destroyed = new AtomicInteger();
+    SyntheticError expected = new SyntheticError();
+
+    try (ConnectionPool pool = newSingleConnectionPool(destroyed, () -> new Connection(() -> {
+      throw expected;
+    }))) {
+      Connection conn = pool.getResource();
+      CommandArguments args = new CommandArguments(Command.PING);
+
+      SyntheticError thrown = assertThrows(SyntheticError.class, () -> conn.sendCommand(args));
+      conn.close();
+
+      assertSame(expected, thrown);
+      assertEquals(1, destroyed.get());
+      Connection replacement = pool.getResource();
+      assertNotSame(conn, replacement);
+      assertFalse(replacement.isBroken());
+      replacement.close();
+    }
+  }
+
+  @Test
+  public void runtimeExceptionDuringDirectConnectInvalidatesPooledConnectionOnClose() {
+    AtomicInteger destroyed = new AtomicInteger();
+    RuntimeException expected = new IllegalStateException("connect failed");
+
+    try (ConnectionPool pool = newSingleConnectionPool(destroyed, () -> new Connection(() -> {
+      throw expected;
+    }))) {
+      Connection conn = pool.getResource();
+
+      RuntimeException thrown = assertThrows(RuntimeException.class, conn::connect);
+      conn.close();
+
+      assertSame(expected, thrown);
+      assertEquals(1, destroyed.get());
+      Connection replacement = pool.getResource();
+      assertNotSame(conn, replacement);
+      assertFalse(replacement.isBroken());
+      replacement.close();
+    }
+  }
+
+  @Test
+  public void errorDuringDirectConnectInvalidatesPooledConnectionOnClose() {
+    AtomicInteger destroyed = new AtomicInteger();
+    SyntheticError expected = new SyntheticError();
+
+    try (ConnectionPool pool = newSingleConnectionPool(destroyed, () -> new Connection(() -> {
+      throw expected;
+    }))) {
+      Connection conn = pool.getResource();
+
+      SyntheticError thrown = assertThrows(SyntheticError.class, conn::connect);
+      conn.close();
+
+      assertSame(expected, thrown);
+      assertEquals(1, destroyed.get());
+      Connection replacement = pool.getResource();
+      assertNotSame(conn, replacement);
+      assertFalse(replacement.isBroken());
+      replacement.close();
+    }
+  }
+
+  @Test
+  public void partialSocketConnectFailureInvalidatesPooledConnectionAndClosesSocket() {
+    AtomicInteger destroyed = new AtomicInteger();
+    RuntimeException expected = new IllegalStateException("input init failed");
+    CloseTrackingFakeSocket socket = new RuntimeExceptionOnGetInputStreamSocket(expected);
+
+    try (ConnectionPool pool = newSingleConnectionPool(destroyed,
+      () -> new Connection(() -> socket))) {
+      Connection conn = pool.getResource();
+
+      RuntimeException thrown = assertThrows(RuntimeException.class, conn::connect);
+      conn.close();
+
+      assertSame(expected, thrown);
+      assertTrue(socket.isClosed());
+      assertEquals(1, destroyed.get());
+      Connection replacement = pool.getResource();
+      assertNotSame(conn, replacement);
+      assertFalse(replacement.isBroken());
+      replacement.close();
+    }
+  }
+
+  @Test
   public void alreadyBrokenPooledConnectionInvalidatesOnCloseWithoutWriting() {
     AtomicInteger destroyed = new AtomicInteger();
     ByteArrayOutputStream output = new ByteArrayOutputStream();
@@ -1046,12 +1344,12 @@ public class ConnectionErrorHandlingTest {
     }
 
     @Override
-    public InputStream getInputStream() {
+    public InputStream getInputStream() throws IOException {
       return input;
     }
 
     @Override
-    public OutputStream getOutputStream() {
+    public OutputStream getOutputStream() throws IOException {
       return output;
     }
 
@@ -1081,7 +1379,7 @@ public class ConnectionErrorHandlingTest {
     }
 
     @Override
-    public int getSoTimeout() {
+    public int getSoTimeout() throws SocketException {
       return 0;
     }
 
@@ -1090,7 +1388,7 @@ public class ConnectionErrorHandlingTest {
     }
   }
 
-  private static final class CloseTrackingFakeSocket extends FakeSocket {
+  private static class CloseTrackingFakeSocket extends FakeSocket {
 
     private boolean closed;
 
@@ -1106,6 +1404,143 @@ public class ConnectionErrorHandlingTest {
     @Override
     public void close() {
       closed = true;
+    }
+  }
+
+  private static final class SocketExceptionOnGetSoTimeoutSocket extends CloseTrackingFakeSocket {
+
+    private final SocketException exception;
+
+    private SocketExceptionOnGetSoTimeoutSocket(SocketException exception) {
+      super(new ByteArrayInputStream(new byte[0]), new ByteArrayOutputStream());
+      this.exception = exception;
+    }
+
+    @Override
+    public int getSoTimeout() throws SocketException {
+      throw exception;
+    }
+  }
+
+  private static final class RuntimeExceptionOnGetSoTimeoutSocket extends CloseTrackingFakeSocket {
+
+    private final RuntimeException exception;
+
+    private RuntimeExceptionOnGetSoTimeoutSocket(RuntimeException exception) {
+      super(new ByteArrayInputStream(new byte[0]), new ByteArrayOutputStream());
+      this.exception = exception;
+    }
+
+    @Override
+    public int getSoTimeout() {
+      throw exception;
+    }
+  }
+
+  private static final class ErrorOnGetSoTimeoutSocket extends CloseTrackingFakeSocket {
+
+    private final Error error;
+
+    private ErrorOnGetSoTimeoutSocket(Error error) {
+      super(new ByteArrayInputStream(new byte[0]), new ByteArrayOutputStream());
+      this.error = error;
+    }
+
+    @Override
+    public int getSoTimeout() {
+      throw error;
+    }
+  }
+
+  private static final class IOExceptionOnGetOutputStreamSocket extends CloseTrackingFakeSocket {
+
+    private final IOException exception;
+
+    private IOExceptionOnGetOutputStreamSocket(IOException exception) {
+      super(new ByteArrayInputStream(new byte[0]), new ByteArrayOutputStream());
+      this.exception = exception;
+    }
+
+    @Override
+    public OutputStream getOutputStream() throws IOException {
+      throw exception;
+    }
+  }
+
+  private static final class RuntimeExceptionOnGetOutputStreamSocket
+      extends CloseTrackingFakeSocket {
+
+    private final RuntimeException exception;
+
+    private RuntimeExceptionOnGetOutputStreamSocket(RuntimeException exception) {
+      super(new ByteArrayInputStream(new byte[0]), new ByteArrayOutputStream());
+      this.exception = exception;
+    }
+
+    @Override
+    public OutputStream getOutputStream() {
+      throw exception;
+    }
+  }
+
+  private static final class ErrorOnGetOutputStreamSocket extends CloseTrackingFakeSocket {
+
+    private final Error error;
+
+    private ErrorOnGetOutputStreamSocket(Error error) {
+      super(new ByteArrayInputStream(new byte[0]), new ByteArrayOutputStream());
+      this.error = error;
+    }
+
+    @Override
+    public OutputStream getOutputStream() {
+      throw error;
+    }
+  }
+
+  private static final class IOExceptionOnGetInputStreamSocket extends CloseTrackingFakeSocket {
+
+    private final IOException exception;
+
+    private IOExceptionOnGetInputStreamSocket(IOException exception) {
+      super(new ByteArrayInputStream(new byte[0]), new ByteArrayOutputStream());
+      this.exception = exception;
+    }
+
+    @Override
+    public InputStream getInputStream() throws IOException {
+      throw exception;
+    }
+  }
+
+  private static final class RuntimeExceptionOnGetInputStreamSocket
+      extends CloseTrackingFakeSocket {
+
+    private final RuntimeException exception;
+
+    private RuntimeExceptionOnGetInputStreamSocket(RuntimeException exception) {
+      super(new ByteArrayInputStream(new byte[0]), new ByteArrayOutputStream());
+      this.exception = exception;
+    }
+
+    @Override
+    public InputStream getInputStream() {
+      throw exception;
+    }
+  }
+
+  private static final class ErrorOnGetInputStreamSocket extends CloseTrackingFakeSocket {
+
+    private final Error error;
+
+    private ErrorOnGetInputStreamSocket(Error error) {
+      super(new ByteArrayInputStream(new byte[0]), new ByteArrayOutputStream());
+      this.error = error;
+    }
+
+    @Override
+    public InputStream getInputStream() {
+      throw error;
     }
   }
 

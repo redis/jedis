@@ -373,6 +373,16 @@ public class Connection implements Closeable {
         setBroken();
         throw new JedisConnectionException("Failed to create input/output stream", ioe);
 
+      } catch (RuntimeException ex) {
+
+        setBroken();
+        throw ex;
+
+      } catch (Error err) {
+
+        setBroken();
+        throw err;
+
       } finally {
 
         if (broken) {

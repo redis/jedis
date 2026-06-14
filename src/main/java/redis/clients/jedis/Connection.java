@@ -247,8 +247,7 @@ public class Connection implements Closeable {
       try {
         this.socket.setSoTimeout(soTimeout);
       } catch (SocketException ex) {
-        setBroken();
-        throw new JedisConnectionException(ex);
+        throw markBroken(new JedisConnectionException(ex));
       }
     }
   }
@@ -260,8 +259,7 @@ public class Connection implements Closeable {
       }
       socket.setSoTimeout(infiniteSoTimeout);
     } catch (SocketException ex) {
-      setBroken();
-      throw new JedisConnectionException(ex);
+      throw markBroken(new JedisConnectionException(ex));
     }
   }
 
@@ -269,8 +267,7 @@ public class Connection implements Closeable {
     try {
       socket.setSoTimeout(this.soTimeout);
     } catch (SocketException ex) {
-      setBroken();
-      throw new JedisConnectionException(ex);
+      throw markBroken(new JedisConnectionException(ex));
     }
   }
 
@@ -323,8 +320,7 @@ public class Connection implements Closeable {
     try {
       Protocol.sendCommand(outputStream, args);
     } catch (JedisConnectionException ex) {
-      setBroken();
-      throw enrichWithRedisErrorLine(ex);
+      throw enrichWithRedisErrorLine(markBroken(ex));
     } catch (RuntimeException ex) {
       throw markBroken(ex);
     } catch (Error err) {
@@ -365,23 +361,19 @@ public class Connection implements Closeable {
 
       } catch (JedisConnectionException jce) {
 
-        setBroken();
-        throw jce;
+        throw markBroken(jce);
 
       } catch (IOException ioe) {
 
-        setBroken();
-        throw new JedisConnectionException("Failed to create input/output stream", ioe);
+        throw markBroken(new JedisConnectionException("Failed to create input/output stream", ioe));
 
       } catch (RuntimeException ex) {
 
-        setBroken();
-        throw ex;
+        throw markBroken(ex);
 
       } catch (Error err) {
 
-        setBroken();
-        throw err;
+        throw markBroken(err);
 
       } finally {
 
@@ -444,6 +436,11 @@ public class Connection implements Closeable {
 
   public void setBroken() {
     broken = true;
+  }
+
+  private JedisConnectionException markBroken(JedisConnectionException ex) {
+    setBroken();
+    return ex;
   }
 
   private RuntimeException markBroken(RuntimeException ex) {

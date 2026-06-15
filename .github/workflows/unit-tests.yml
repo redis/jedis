@@ -21,8 +21,12 @@ on:
 
 jobs:
   unit-tests:
-    name: Unit Tests
+    name: Unit Tests (JDK ${{ matrix.java }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: ['8', '25']
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
@@ -30,7 +34,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v5
         with:
-          java-version: '8'
+          java-version: ${{ matrix.java }}
           distribution: 'temurin'
 
       - name: Cache dependencies
@@ -38,7 +42,7 @@ jobs:
         with:
           path: |
             ~/.m2/repository
-          key: jedis-${{hashFiles('**/pom.xml')}}
+          key: jedis-jdk${{ matrix.java }}-${{ hashFiles('**/pom.xml') }}
 
       - name: Maven offline
         run: |
@@ -56,10 +60,12 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always() && github.actor != 'dependabot[bot]'
         with:
+          check_name: "Unit Test Results (JDK ${{ matrix.java }})"
           files: |
             target/surefire-reports/**/*.xml
 
       - name: Upload coverage to Codecov
+        if: matrix.java == '8'
         uses: codecov/codecov-action@v5
         with:
           files: ./target/site/jacoco/jacoco.xml

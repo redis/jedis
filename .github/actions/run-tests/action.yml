@@ -120,7 +120,7 @@ runs:
         path: |
           ~/.m2/repository
           /var/cache/apt
-        key: jedis-${{hashFiles('**/pom.xml')}}
+        key: jedis-jdk${{ inputs.java_version }}-${{ hashFiles('**/pom.xml') }}
 
     - name: Set up Docker Compose environment
       shell: bash

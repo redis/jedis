@@ -40,6 +40,7 @@ public class Connection implements Closeable {
     private JedisSocketFactory socketFactory;
     private JedisClientConfig clientConfig;
     private MaintenanceEventController maintenanceController;
+    private SoTimeoutSupplier soTimeoutSupplier;
 
     public Builder socketFactory(JedisSocketFactory socketFactory) {
       this.socketFactory = socketFactory;
@@ -56,6 +57,15 @@ public class Connection implements Closeable {
       return this;
     }
 
+    /**
+     * Installs a per-operation {@code SO_TIMEOUT} override (see {@link SoTimeoutSupplier}). Absent a
+     * supplier the connection uses its configured timeouts unchanged.
+     */
+    Builder soTimeoutSupplier(SoTimeoutSupplier soTimeoutSupplier) {
+      this.soTimeoutSupplier = soTimeoutSupplier;
+      return this;
+    }
+
     public JedisSocketFactory getSocketFactory() {
       return socketFactory;
     }
@@ -66,6 +76,10 @@ public class Connection implements Closeable {
 
     public MaintenanceEventController getMaintenanceController() {
       return maintenanceController;
+    }
+
+    SoTimeoutSupplier getSoTimeoutSupplier() {
+      return soTimeoutSupplier;
     }
 
     public Connection build() {
@@ -192,6 +206,9 @@ public class Connection implements Closeable {
   /** Maintenance handler (pool-injected; {@code null} when non-pooled or maintenance disabled). */
   private MaintenanceEventController maintenanceController;
 
+  /** Per-operation SO_TIMEOUT override; {@code null} = use configured timeouts unchanged. */
+  private SoTimeoutSupplier soTimeoutSupplier;
+
   /**
    * Cache of the SO_TIMEOUT value currently applied to {@link #socket}. Lets {@link #applyTimeout}
    * skip the {@code setSoTimeout} syscall when the desired value already matches. Initialized in
@@ -237,6 +254,7 @@ public class Connection implements Closeable {
     this.socketFactory = builder.getSocketFactory();
     this.clientConfig = builder.getClientConfig();
     this.maintenanceController = builder.getMaintenanceController(); // pool-injected (may be null)
+    this.soTimeoutSupplier = builder.getSoTimeoutSupplier();         // pool-injected (may be null)
   }
 
   /**
@@ -393,7 +411,7 @@ public class Connection implements Closeable {
    */
   public void setSoTimeout(int soTimeout) {
     this.soTimeout = soTimeout;
-    applyTimeout(desiredSoTimeout(isBlocking, isCurrentlyRelaxed()));
+    applyTimeout(effectiveSoTimeout());
   }
 
   /**
@@ -418,7 +436,7 @@ public class Connection implements Closeable {
       connect();
     }
     isBlocking = true;
-    applyTimeout(desiredSoTimeout(true, isCurrentlyRelaxed()));
+    applyTimeout(effectiveSoTimeout());
   }
 
   /**
@@ -438,7 +456,7 @@ public class Connection implements Closeable {
    */
   public void rollbackTimeout() {
     isBlocking = false;
-    applyTimeout(desiredSoTimeout(false, isCurrentlyRelaxed()));
+    applyTimeout(effectiveSoTimeout());
   }
 
   public Object executeCommand(final ProtocolCommand cmd) {
@@ -463,7 +481,7 @@ public class Connection implements Closeable {
       isBlocking = false;
       // Restore the non-blocking socket timeout so observers (and the next, possibly non-blocking,
       // command) see a coherent value immediately. Cache-checked → no syscall when unchanged.
-      applyTimeout(desiredSoTimeout(false, isCurrentlyRelaxed()));
+      applyTimeout(effectiveSoTimeout());
     }
   }
 
@@ -695,8 +713,8 @@ public class Connection implements Closeable {
     // {@link #connect()} and maintained by {@link #applyTimeout}). Avoid the apply machinery in
     // that overwhelming common case. Otherwise, align the socket to the current blocking /
     // relaxation state — cache-checked, so a syscall fires only on a transition.
-    if (relaxedUntilNanos != 0 || isBlocking || maintenanceController != null) {
-      applyTimeout(desiredSoTimeout(isBlocking, isCurrentlyRelaxed()));
+    if (relaxedUntilNanos != 0 || isBlocking || soTimeoutSupplier != null) {
+      applyTimeout(effectiveSoTimeout());
     }
     try {
       return protocolRead(inputStream, pushConsumers);
@@ -1127,13 +1145,19 @@ public class Connection implements Closeable {
   }
 
   /**
-   * Whether the next command should run with relaxed timeouts: either this connection has its own
-   * receiver-local window open (MIGRATING / FAILING_OVER / MOVING-receiver) or the pool is in an
-   * active MOVING rebind window.
+   * The {@code SO_TIMEOUT} to apply for the next operation. Consults the {@link #soTimeoutSupplier}
+   * first (e.g. a pool-injected MOVING-rebind override); when it has no opinion
+   * ({@link JedisClientConfig#UNSET_TIMEOUT_MS}) or is absent, falls back to this connection's own
+   * calculation based on its blocking mode and per-receiver relaxation window.
    */
-  private boolean isCurrentlyRelaxed() {
-    return isRelaxedTimeoutActive()
-        || (maintenanceController != null && maintenanceController.isRebindActive());
+  private int effectiveSoTimeout() {
+    if (soTimeoutSupplier != null) {
+      int v = soTimeoutSupplier.getSoTimeout(isBlocking);
+      if (JedisClientConfig.isTimeoutSet(v)) {
+        return v;
+      }
+    }
+    return desiredSoTimeout(isBlocking, isRelaxedTimeoutActive());
   }
 
   /**
@@ -1180,14 +1204,14 @@ public class Connection implements Closeable {
     if (relaxedUntilNanos == 0 || deadline - relaxedUntilNanos > 0) {
       relaxedUntilNanos = deadline;
     }
-    applyTimeout(desiredSoTimeout(isBlocking, isCurrentlyRelaxed()));
+    applyTimeout(effectiveSoTimeout());
   }
 
   /** Clears the per-receiver relaxation deadline and eagerly realigns the socket (cache-checked). */
   @Experimental
   public void resetRelaxedTimeouts() {
     relaxedUntilNanos = 0;
-    applyTimeout(desiredSoTimeout(isBlocking, isCurrentlyRelaxed()));
+    applyTimeout(effectiveSoTimeout());
   }
 
   void setClockNanos(LongSupplier clockNanos) {

@@ -114,7 +114,25 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       Connection.Builder connBuilder = cache == null ? Connection.builder() : CacheConnection.builder(cache);
       connBuilder.socketFactory(jedisSocketFactory).clientConfig(clientConfig)
           .maintenanceController(maintenanceController);
+      if (maintenanceController != null) {
+        connBuilder.soTimeoutSupplier(rebindSoTimeoutSupplier(maintenanceController, clientConfig));
+      }
       return connBuilder;
+    }
+
+    /**
+     * SO_TIMEOUT override that relaxes a connection's timeout while a MOVING rebind window is active
+     * in the pool, and defers ({@link JedisClientConfig#UNSET_TIMEOUT_MS}) otherwise so the
+     * connection falls back to its own per-receiver / configured calculation. Relaxed values are
+     * captured from the (immutable) client config at wiring time; an unset relaxed value is itself
+     * {@code UNSET_TIMEOUT_MS}, so it naturally defers.
+     */
+    private static SoTimeoutSupplier rebindSoTimeoutSupplier(MaintenanceEventController controller,
+        JedisClientConfig clientConfig) {
+      int relaxed = clientConfig.getRelaxedSocketTimeoutMillis();
+      int relaxedBlocking = clientConfig.getRelaxedBlockingSocketTimeoutMillis();
+      return blocking -> controller.isRebindActive() ? (blocking ? relaxedBlocking : relaxed)
+          : JedisClientConfig.UNSET_TIMEOUT_MS;
     }
   }
 

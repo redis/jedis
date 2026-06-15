@@ -61,3 +61,4 @@ jobs:
         env:
           JVM_OPTS: -Xmx3200m
           TERM: dumb
+          MAVEN_ARGS: ${{ matrix.java == '25' && '-DJVM_OPTS=-Dnet.bytebuddy.experimental=true' || '' }}

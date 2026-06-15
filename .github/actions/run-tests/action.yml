@@ -31,6 +31,10 @@ inputs:
     description: 'Codecov token for uploading coverage'
     required: false
     default: ''
+  maven_extra_args:
+    description: 'Extra Maven CLI args (forwarded via MAVEN_ARGS, e.g. -DJVM_OPTS=...)'
+    required: false
+    default: ''
   # repository and ref are reqired for correct checkout when using action
   # externally (e.g.: in redis-developer/redis-oss-release-automation)
   repository:
@@ -152,6 +156,7 @@ runs:
       env:
         REDIS_ENV_WORK_DIR: ${{ steps.args.outputs.redis_env_work_dir }}
         JVM_OPTS: "-XX:+HeapDumpOnOutOfMemoryError -XX:+ExitOnOutOfMemoryError -XX:HeapDumpPath=${{ runner.temp }}/heapdump-${{ steps.args.outputs.redis_version_label }}.hprof"
+        MAVEN_ARGS: ${{ inputs.maven_extra_args }}
         TESTS: ${{ inputs.specific_test }}
 
     - name: Upload Heap Dumps

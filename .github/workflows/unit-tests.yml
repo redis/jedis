@@ -53,6 +53,8 @@ jobs:
           mvn javadoc:jar
 
       - name: Run Unit Tests
+        env:
+          MAVEN_ARGS: ${{ matrix.java == '25' && '-DJVM_OPTS=-Dnet.bytebuddy.experimental=true' || '' }}
         run: |
           mvn -B -Dwith-param-names=true clean test jacoco:report -Djacoco.dataFile=target/jacoco-ut.exec
 

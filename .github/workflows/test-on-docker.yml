@@ -75,6 +75,7 @@ jobs:
           specific_test: ${{ github.event.inputs.specific_test || '' }}
           # codecov upload skipped for JDK 25 (canonical coverage comes from JDK 8)
           codecov_token: ''
+          maven_extra_args: '-DJVM_OPTS=-Dnet.bytebuddy.experimental=true'
           redis_env_work_dir: ${{ github.workspace }}/redis-env-work
           redis_env_conf_dir: ${{ github.workspace }}/src/test/resources/env
 

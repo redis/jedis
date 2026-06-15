@@ -169,7 +169,7 @@ public class ConnectionMockTest {
     protected Connection buildConnection(HostAndPort hp, JedisClientConfig cfg,
         MaintenanceNotificationsConfig maint) {
       return Connection.builder().socketFactory(new DefaultJedisSocketFactory(hp, cfg))
-          .clientConfig(cfg).maintenanceController(controllerFor(maint)).build();
+          .clientConfig(cfg).maintenanceConfig(maint).build();
     }
 
     @Test
@@ -223,7 +223,7 @@ public class ConnectionMockTest {
     protected Connection buildDirect(HostAndPort hp, JedisClientConfig cfg,
         MaintenanceNotificationsConfig maint) {
       return Connection.builder().socketFactory(new DefaultJedisSocketFactory(hp, cfg))
-          .clientConfig(cfg).maintenanceController(controllerFor(maint)).build();
+          .clientConfig(cfg).maintenanceConfig(maint).build();
     }
   }
 }

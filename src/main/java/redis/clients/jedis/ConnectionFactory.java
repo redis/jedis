@@ -112,10 +112,11 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
     private Connection.Builder createDefaultConnectionBuilder() {
       Connection.Builder connBuilder = cache == null ? Connection.builder() : CacheConnection.builder(cache);
-      connBuilder.socketFactory(jedisSocketFactory).clientConfig(clientConfig)
-          .maintenanceController(maintenanceController);
+      connBuilder.socketFactory(jedisSocketFactory).clientConfig(clientConfig);
       if (maintenanceController != null) {
-        connBuilder.soTimeoutSupplier(rebindSoTimeoutSupplier(maintenanceController, clientConfig));
+        connBuilder.maintenanceConfig(maintenanceController.getConfig())
+            .addMaintenanceEventListener(maintenanceController)
+            .soTimeoutSupplier(rebindSoTimeoutSupplier(maintenanceController, clientConfig));
       }
       return connBuilder;
     }

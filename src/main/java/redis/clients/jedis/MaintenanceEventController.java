@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory;
  * hooks fired when a MOVING is applied.
  */
 public final class MaintenanceEventController
-    implements MaintenanceEvent.Handler, SocketAddressMapper {
+    implements MaintenanceEventListener, SocketAddressMapper {
 
   private static final Logger logger = LoggerFactory.getLogger(MaintenanceEventController.class);
 
@@ -54,6 +54,14 @@ public final class MaintenanceEventController
   /** Endpoint type to negotiate in {@code CLIENT MAINT_NOTIFICATIONS ON moving-endpoint-type}. */
   public MaintenanceNotificationsConfig.EndpointType getEndpointType() {
     return config.getEndpointType();
+  }
+
+  /**
+   * The config this controller was built from; drives the connection's MAINT_NOTIFICATIONS
+   * handshake.
+   */
+  MaintenanceNotificationsConfig getConfig() {
+    return config;
   }
 
   /**

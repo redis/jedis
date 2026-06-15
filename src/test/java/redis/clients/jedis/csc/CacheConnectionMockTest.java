@@ -208,7 +208,7 @@ public class CacheConnectionMockTest {
     protected Connection buildDirect(HostAndPort hp, JedisClientConfig cfg,
         MaintenanceNotificationsConfig maint) {
       return CacheConnection.builder(cache).socketFactory(new DefaultJedisSocketFactory(hp, cfg))
-          .clientConfig(cfg).maintenanceController(controllerFor(maint)).build();
+          .clientConfig(cfg).maintenanceConfig(maint).build();
     }
   }
 
@@ -224,7 +224,7 @@ public class CacheConnectionMockTest {
     protected Connection buildConnection(HostAndPort hp, JedisClientConfig cfg,
         MaintenanceNotificationsConfig maint) {
       return CacheConnection.builder(cache).socketFactory(new DefaultJedisSocketFactory(hp, cfg))
-          .clientConfig(cfg).maintenanceController(controllerFor(maint)).build();
+          .clientConfig(cfg).maintenanceConfig(maint).build();
     }
   }
 }

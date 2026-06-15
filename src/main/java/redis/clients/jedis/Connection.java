@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.LongSupplier;
 import java.util.function.Supplier;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
@@ -39,7 +40,8 @@ public class Connection implements Closeable {
   public static class Builder {
     private JedisSocketFactory socketFactory;
     private JedisClientConfig clientConfig;
-    private MaintenanceEventController maintenanceController;
+    private MaintenanceNotificationsConfig maintenanceConfig;
+    private final List<MaintenanceEventListener> maintenanceEventListeners = new ArrayList<>();
     private SoTimeoutSupplier soTimeoutSupplier;
 
     public Builder socketFactory(JedisSocketFactory socketFactory) {
@@ -52,8 +54,18 @@ public class Connection implements Closeable {
       return this;
     }
 
-    public Builder maintenanceController(MaintenanceEventController maintenanceController) {
-      this.maintenanceController = maintenanceController;
+    /**
+     * Configuration that drives the {@code CLIENT MAINT_NOTIFICATIONS} handshake (mode, endpoint
+     * type). {@code null} (or {@code DISABLED}) skips the handshake.
+     */
+    public Builder maintenanceConfig(MaintenanceNotificationsConfig maintenanceConfig) {
+      this.maintenanceConfig = maintenanceConfig;
+      return this;
+    }
+
+    /** Registers a listener notified synchronously of this connection's maintenance events. */
+    Builder addMaintenanceEventListener(MaintenanceEventListener listener) {
+      this.maintenanceEventListeners.add(listener);
       return this;
     }
 
@@ -74,8 +86,12 @@ public class Connection implements Closeable {
       return clientConfig;
     }
 
-    public MaintenanceEventController getMaintenanceController() {
-      return maintenanceController;
+    MaintenanceNotificationsConfig getMaintenanceConfig() {
+      return maintenanceConfig;
+    }
+
+    List<MaintenanceEventListener> getMaintenanceEventListeners() {
+      return maintenanceEventListeners;
     }
 
     SoTimeoutSupplier getSoTimeoutSupplier() {
@@ -203,8 +219,14 @@ public class Connection implements Closeable {
   /** Monotonic clock for relaxed-timeout expiry; overridable for tests. */
   private LongSupplier clockNanos = System::nanoTime;
 
-  /** Maintenance handler (pool-injected; {@code null} when non-pooled or maintenance disabled). */
-  private MaintenanceEventController maintenanceController;
+  /**
+   * Maintenance configuration driving the {@code CLIENT MAINT_NOTIFICATIONS} handshake; {@code null}
+   * when non-pooled or maintenance disabled.
+   */
+  private MaintenanceNotificationsConfig maintenanceConfig;
+
+  /** Listeners notified synchronously of this connection's maintenance events (pool-injected). */
+  private final List<MaintenanceEventListener> maintenanceEventListeners = new CopyOnWriteArrayList<>();
 
   /** Per-operation SO_TIMEOUT override; {@code null} = use configured timeouts unchanged. */
   private SoTimeoutSupplier soTimeoutSupplier;
@@ -253,8 +275,9 @@ public class Connection implements Closeable {
   protected Connection(Builder builder) {
     this.socketFactory = builder.getSocketFactory();
     this.clientConfig = builder.getClientConfig();
-    this.maintenanceController = builder.getMaintenanceController(); // pool-injected (may be null)
-    this.soTimeoutSupplier = builder.getSoTimeoutSupplier();         // pool-injected (may be null)
+    this.maintenanceConfig = builder.getMaintenanceConfig();              // pool-injected (may be null)
+    this.maintenanceEventListeners.addAll(builder.getMaintenanceEventListeners());
+    this.soTimeoutSupplier = builder.getSoTimeoutSupplier();              // pool-injected (may be null)
   }
 
   /**
@@ -265,9 +288,9 @@ public class Connection implements Closeable {
    * <ul>
    *   <li><b>Pub/Sub consumer</b> – Handles Pub/Sub messages and propagates them back to the caller.
    *       All other message types are considered processed and are not propagated further.</li>
-   *   <li><b>Maintenance event consumer</b> (optional) – Forwards server maintenance notifications
-   *       to the pool-owned {@link MaintenanceEventController}. Registered only when a controller
-   *       was injected by the builder; non-pooled connections never have one.</li>
+   *   <li><b>Maintenance event consumer</b> (optional) – Dispatches server maintenance
+   *       notifications to the registered {@link MaintenanceEventListener}s. Registered only when
+   *       maintenance is configured on the builder; non-pooled connections never have it.</li>
    * </ul>
    *
    * @param config the client configuration; if {@code null}, only default consumers are registered
@@ -871,15 +894,13 @@ public class Connection implements Closeable {
   /**
    * Activates server-side maintenance notifications on this connection so the client can react to
    * cluster maintenance events ({@code MIGRATING}, {@code MIGRATED}, {@code FAILING_OVER},
-   * {@code FAILED_OVER}, {@code MOVING}). Each event is forwarded to the attached
-   * {@link MaintenanceEventController}, which drives relaxed command timeouts and pool-wide
-   * rebind during the maintenance window.
+   * {@code FAILED_OVER}, {@code MOVING}). Each parsed event is dispatched synchronously to the
+   * registered {@link MaintenanceEventListener}s.
    *
-   * <p>Two gates remain at connection time; the third (controller-present) is now decided by the
-   * builder and reflected here by a non-null {@link #maintenanceController}:
+   * <p>Gated by {@link #maintenanceConfig}, set by the builder:
    *
    * <ul>
-   *   <li>{@code maintenanceController == null} — builder decided maintenance is off; no-op.</li>
+   *   <li>{@code null} or {@code DISABLED} — maintenance off; no-op.</li>
    *   <li>negotiated protocol is not RESP3 — {@code ENABLED}: throws; {@code AUTO}: debug-log
    *       and return.</li>
    *   <li>server rejects {@code CLIENT MAINT_NOTIFICATIONS ON} — same strict/lax split.</li>
@@ -889,8 +910,11 @@ public class Connection implements Closeable {
    *           server rejects the subscription
    */
   private void enableMaintenanceNotifications() {
-    if (maintenanceController == null) return;
-    boolean strict = maintenanceController.getMode() == MaintenanceNotificationsConfig.Mode.ENABLED;
+    if (maintenanceConfig == null
+        || maintenanceConfig.getMode() == MaintenanceNotificationsConfig.Mode.DISABLED) {
+      return;
+    }
+    boolean strict = maintenanceConfig.getMode() == MaintenanceNotificationsConfig.Mode.ENABLED;
 
     // Maintenance push frames require RESP3.
     if (protocol != RedisProtocol.RESP3) {
@@ -908,7 +932,7 @@ public class Connection implements Closeable {
     MaintenanceEventConsumer consumer = new MaintenanceEventConsumer();
     addPushConsumer(consumer);
     sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
-      resolveEndpointType(maintenanceController.getEndpointType()));
+      resolveEndpointType(maintenanceConfig.getEndpointType()));
     try {
       getStatusCodeReply();
     } catch (JedisDataException e) {
@@ -1228,9 +1252,20 @@ public class Connection implements Closeable {
     return socket == null ? null : socket.getRemoteSocketAddress();
   }
 
+  /** Registers a listener notified synchronously of this connection's maintenance events. */
+  void addMaintenanceEventListener(MaintenanceEventListener listener) {
+    maintenanceEventListeners.add(listener);
+  }
+
+  /** Removes a previously registered maintenance event listener. */
+  void removeMaintenanceEventListener(MaintenanceEventListener listener) {
+    maintenanceEventListeners.remove(listener);
+  }
+
   /**
    * Push consumer for server maintenance events: parses each frame into a typed
-   * {@link MaintenanceEvent} and forwards it to the {@link MaintenanceEventController}
+   * {@link MaintenanceEvent} and dispatches it to the registered {@link MaintenanceEventListener}s
+   * on this connection's read thread. Listener exceptions propagate to the read loop.
    */
   class MaintenanceEventConsumer implements PushConsumer {
 
@@ -1241,8 +1276,10 @@ public class Connection implements Closeable {
         return context;
       }
       MaintenanceEvent event = MaintenanceEvent.parse(message);
-      if (event != null && maintenanceController != null) {
-        event.accept(maintenanceController, Connection.this);
+      if (event != null) {
+        for (MaintenanceEventListener listener : maintenanceEventListeners) {
+          event.accept(listener, Connection.this);
+        }
       }
       context.drop(); // a maintenance event is consumed even if malformed
       return context;

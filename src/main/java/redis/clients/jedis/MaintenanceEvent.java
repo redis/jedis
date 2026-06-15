@@ -9,7 +9,8 @@ import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * A parsed server maintenance push notification. One subclass per type; each carries the fields
- * relevant to that type. Dispatched to a {@link Handler} via the visitor {@link #accept}.
+ * relevant to that type. Dispatched to a {@link MaintenanceEventListener} via the visitor
+ * {@link #accept}.
  */
 abstract class MaintenanceEvent {
 
@@ -21,20 +22,7 @@ abstract class MaintenanceEvent {
     this.seq = seq;
   }
 
-  abstract void accept(Handler handler, Connection conn);
-
-  /** Typed visitor for maintenance events. */
-  interface Handler {
-    void onMoving(MovingEvent e, Connection c);
-
-    void onMigrating(MigratingEvent e, Connection c);
-
-    void onMigrated(MigratedEvent e, Connection c);
-
-    void onFailingOver(FailingOverEvent e, Connection c);
-
-    void onFailedOver(FailedOverEvent e, Connection c);
-  }
+  abstract void accept(MaintenanceEventListener listener, Connection conn);
 
   /**
    * Returns {@code true} iff {@code t} is a maintenance push type. Lets the consumer skip
@@ -156,8 +144,8 @@ final class MovingEvent extends MaintenanceEvent {
   }
 
   @Override
-  void accept(Handler h, Connection c) {
-    h.onMoving(this, c);
+  void accept(MaintenanceEventListener l, Connection c) {
+    l.onMoving(this, c);
   }
 }
 
@@ -176,8 +164,8 @@ final class MigratingEvent extends MaintenanceEvent {
   }
 
   @Override
-  void accept(Handler h, Connection c) {
-    h.onMigrating(this, c);
+  void accept(MaintenanceEventListener l, Connection c) {
+    l.onMigrating(this, c);
   }
 }
 
@@ -196,8 +184,8 @@ final class FailingOverEvent extends MaintenanceEvent {
   }
 
   @Override
-  void accept(Handler h, Connection c) {
-    h.onFailingOver(this, c);
+  void accept(MaintenanceEventListener l, Connection c) {
+    l.onFailingOver(this, c);
   }
 }
 
@@ -211,8 +199,8 @@ final class MigratedEvent extends MaintenanceEvent {
   }
 
   @Override
-  void accept(Handler h, Connection c) {
-    h.onMigrated(this, c);
+  void accept(MaintenanceEventListener l, Connection c) {
+    l.onMigrated(this, c);
   }
 }
 
@@ -226,7 +214,7 @@ final class FailedOverEvent extends MaintenanceEvent {
   }
 
   @Override
-  void accept(Handler h, Connection c) {
-    h.onFailedOver(this, c);
+  void accept(MaintenanceEventListener l, Connection c) {
+    l.onFailedOver(this, c);
   }
 }

@@ -4,8 +4,6 @@ import java.net.Socket;
 import java.util.List;
 import java.util.function.LongSupplier;
 
-import org.apache.commons.pool2.PooledObjectFactory;
-
 import redis.clients.jedis.util.ReflectionTestUtil;
 
 /**
@@ -55,11 +53,8 @@ public class ConnectionTestHelper {
    */
   public static void setClockNanos(ConnectionPool pool, Connection conn, LongSupplier clock) {
     conn.setClockNanos(clock);
-    PooledObjectFactory<Connection> factory = pool.getFactory();
-    if (factory instanceof ConnectionFactory) {
-      MaintenanceEventController ctrl = ((ConnectionFactory) factory).getMaintenanceController();
-      if (ctrl != null) ctrl.setClockNanos(clock);
-    }
+    MaintenanceEventController ctrl = pool.getMaintenanceController();
+    if (ctrl != null) ctrl.setClockNanos(clock);
   }
 
   private ConnectionTestHelper() {

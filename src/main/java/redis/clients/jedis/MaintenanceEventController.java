@@ -45,16 +45,6 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     return new MaintenanceEventController(cfg);
   }
 
-  /** Mode the controller was built with: {@code AUTO} or {@code ENABLED}. */
-  public MaintenanceNotificationsConfig.Mode getMode() {
-    return config.getMode();
-  }
-
-  /** Endpoint type to negotiate in {@code CLIENT MAINT_NOTIFICATIONS ON moving-endpoint-type}. */
-  public MaintenanceNotificationsConfig.EndpointType getEndpointType() {
-    return config.getEndpointType();
-  }
-
   /**
    * The config this controller was built from; drives the connection's MAINT_NOTIFICATIONS
    * handshake.
@@ -95,27 +85,18 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   }
 
   /** True iff {@code peer} is one of the active rebind's affected sources. */
-  boolean isAffected(SocketAddress peer) {
+  public boolean isAffected(SocketAddress peer) {
     RebindState s = rebind.get();
     return s != null && s.deadlineNanos - clockNanos.getAsLong() > 0 && s.affected.contains(peer);
   }
 
   /** True iff there is an active MOVING rebind window in the pool right now. */
-  boolean isRebindActive() {
+  public boolean isRebindActive() {
     RebindState s = rebind.get();
     if (s == null) return false;
     if (s.deadlineNanos - clockNanos.getAsLong() > 0) return true;
-    rebind.compareAndSet(s, null); // lazy cleanup past deadline; loser silently skips
+    rebind.compareAndSet(s, null);
     return false;
-  }
-
-  /**
-   * True iff {@code conn}'s next command should run with relaxed timeouts: either the connection
-   * itself is in a per-receiver relaxation window (MIGRATING / FAILING_OVER / MOVING receiver) or a
-   * pool-wide MOVING rebind window is currently active.
-   */
-  public boolean isTimeoutRelaxed(Connection conn) {
-    return conn.isRelaxedTimeoutActive() || isRebindActive();
   }
 
   @Override

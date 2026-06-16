@@ -188,11 +188,6 @@ public class DefaultJedisSocketFactory implements JedisSocketFactory {
     this.hostAndPort = hostAndPort;
   }
 
-  /** Visible for testing: the address mapper installed at construction, or {@code null}. */
-  SocketAddressMapper getSocketAddressMapper() {
-    return socketAddressMapper;
-  }
-
   public HostAndPort getHostAndPort() {
     return this.hostAndPort;
   }

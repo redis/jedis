@@ -13,6 +13,7 @@ import redis.clients.jedis.util.Pool;
 public class ConnectionPool extends Pool<Connection> {
 
   private AuthXManager authXManager;
+  private MaintenanceEventController maintenanceController; // null = maintenance off
 
   // Primary constructors using factory
   public ConnectionPool(PooledObjectFactory<Connection> factory) {
@@ -77,11 +78,17 @@ public class ConnectionPool extends Pool<Connection> {
       GenericObjectPoolConfig<Connection> poolConfig) {
     this(ConnectionFactory.builder().hostAndPort(hostAndPort).clientConfig(clientConfig)
         .cache(clientSideCache).maintenanceController(controller).build(), poolConfig);
+    this.maintenanceController = controller;
     attachAuthenticationListener(clientConfig.getAuthXManager());
     if (controller != null) {
       setEvictionPolicy(new RebindAwareEvictionPolicy(controller, getEvictionPolicy()));
       controller.addHandoffHook(handoff -> evictQuietly());
     }
+  }
+
+  /** The pool's maintenance controller, or {@code null} when maintenance is off. */
+  MaintenanceEventController getMaintenanceController() {
+    return maintenanceController;
   }
 
   @Override

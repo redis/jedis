@@ -4,11 +4,9 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.SocketAddress;
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
@@ -245,35 +243,6 @@ public class MaintenanceEventControllerTest {
     assertEquals(1, fires.get(), "removed hook should not fire on subsequent handoffs");
   }
 
-  // --- Pool wiring ---
-
-  @Test
-  public void factoryBuilderWiresControllerAsSocketAddressMapper() {
-    HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
-    JedisClientConfig config = DefaultJedisClientConfig.builder().build();
-    MaintenanceEventController wired = MaintenanceEventController
-        .from(MaintenanceNotificationsConfig.builder().build());
-    ConnectionFactory factory = ConnectionFactory.builder().hostAndPort(hp).clientConfig(config)
-        .maintenanceController(wired).build();
-
-    assertSame(wired, factory.getMaintenanceController(),
-      "factory carries the controller passed to its builder");
-    DefaultJedisSocketFactory sf = (DefaultJedisSocketFactory) factory.getConnectionBuilder()
-        .getSocketFactory();
-    assertSame(wired, sf.getSocketAddressMapper(),
-      "socket factory uses the controller as its post-DNS mapper");
-  }
-
-  @Test
-  public void noControllerLeavesFactoryUnwired() {
-    HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
-    ConnectionFactory factory = ConnectionFactory.builder().hostAndPort(hp)
-        .clientConfig(DefaultJedisClientConfig.builder().build()).maintenanceController(null)
-        .build();
-
-    assertNull(factory.getMaintenanceController());
-  }
-
   // --- Relax-on-borrow ---
 
   @Test
@@ -297,34 +266,13 @@ public class MaintenanceEventControllerTest {
       factory.activateObject(pooled); // borrow-time hook is now a no-op
       Connection borrowed = pooled.getObject();
       // The lazy/sticky model applies the relaxed timeout on the next command, not at borrow time.
-      // The controller's per-connection query is what executeCommand consults.
-      assertTrue(poolCtl.isTimeoutRelaxed(borrowed),
-        "controller reports relaxed for any connection during an active rebind window");
+      // A pool-wide rebind window is what the connection's soTimeoutSupplier consults.
+      assertFalse(borrowed.isRelaxedTimeoutActive(),
+        "borrowed connection never received a MOVING, so it has no per-connection window");
+      assertTrue(poolCtl.isRebindActive(),
+        "an active pool-wide rebind window relaxes any borrowed connection's next command");
     } finally {
       pooled.getObject().close();
-    }
-  }
-
-  @Test
-  public void isTimeoutRelaxed_trueForAnyConnectionWhileRebindActive() throws Exception {
-    moving(1L, TARGET_B, 100);
-
-    // A peer that never received a MOVING is still reported relaxed while a rebind window is open.
-    TcpMockServer other = new TcpMockServer();
-    other.start();
-    try {
-      Connection peer = new Connection(new HostAndPort("127.0.0.1", other.getPort()));
-      peer.connect();
-      try {
-        assertFalse(peer.isRelaxedTimeoutActive(),
-          "this connection never got a MOVING, so it should have no relaxation window of its own");
-        assertTrue(controller.isTimeoutRelaxed(peer),
-          "controller should still flag the connection as relaxed while a pool-wide MOVING window is open");
-      } finally {
-        peer.close();
-      }
-    } finally {
-      other.stop();
     }
   }
 

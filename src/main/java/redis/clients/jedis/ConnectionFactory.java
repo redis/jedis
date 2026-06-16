@@ -81,10 +81,6 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       return cache;
     }
 
-    MaintenanceEventController getMaintenanceController() {
-      return maintenanceController;
-    }
-
     public ConnectionFactory build() {
       withDefaults();
       return new ConnectionFactory(this);
@@ -146,7 +142,6 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private final JedisClientConfig clientConfig;
   private Supplier<Connection> objectMaker;
   private Connection.Builder connectionBuilder;
-  private final MaintenanceEventController maintenanceController;   // null = maintenance off
 
   private AuthXEventListener authXEventListener;
 
@@ -170,17 +165,12 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   public ConnectionFactory(Builder builder) {
     this.clientConfig = builder.getClientConfig();
     this.connectionBuilder = builder.getConnectionBuilder();
-    this.maintenanceController = builder.getMaintenanceController();
 
     initAuthXManager();
   }
 
   JedisClientConfig getClientConfig() {
     return clientConfig;
-  }
-
-  MaintenanceEventController getMaintenanceController() {
-    return maintenanceController;
   }
 
   /** Visible for testing: the underlying connection builder (and via it, the socket factory). */

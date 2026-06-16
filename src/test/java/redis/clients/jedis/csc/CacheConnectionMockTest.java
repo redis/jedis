@@ -30,7 +30,6 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.DefaultJedisSocketFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.MaintenanceEventController;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.PushConsumer;
 import redis.clients.jedis.PushConsumerChainImpl;
@@ -162,18 +161,13 @@ public class CacheConnectionMockTest {
    * {@link CacheConnection}: pooled CSC connections must register the maintenance consumer; direct
    * and builder-built CSC connections must not.
    */
-  /** Test helper: build a controller iff the config wants maintenance, else {@code null}. */
-  private static MaintenanceEventController controllerFor(MaintenanceNotificationsConfig maint) {
-    return maint != null && maint.isEnabledOrAuto() ? MaintenanceEventController.from(maint) : null;
-  }
-
   @Nested
   class MaintenanceEventHandling extends AbstractMaintenanceEventHandlingTest {
 
     @Override
     protected ConnectionPool createPool(HostAndPort hp, JedisClientConfig cfg,
         MaintenanceNotificationsConfig maint) {
-      return new ConnectionPool(hp, cfg, cache, new ConnectionPoolConfig(), controllerFor(maint));
+      return new ConnectionPool(hp, cfg, cache, new ConnectionPoolConfig(), maint);
     }
 
     @Override
@@ -201,7 +195,7 @@ public class CacheConnectionMockTest {
     @Override
     protected ConnectionPool createPool(HostAndPort hp, JedisClientConfig cfg,
         MaintenanceNotificationsConfig maint) {
-      return new ConnectionPool(hp, cfg, cache, new ConnectionPoolConfig(), controllerFor(maint));
+      return new ConnectionPool(hp, cfg, cache, new ConnectionPoolConfig(), maint);
     }
 
     @Override

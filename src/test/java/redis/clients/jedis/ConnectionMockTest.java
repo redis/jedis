@@ -131,19 +131,13 @@ public class ConnectionMockTest {
 
   }
 
-  /** Test helper: build a controller iff the config wants maintenance, else {@code null}. */
-  private static MaintenanceEventController controllerFor(MaintenanceNotificationsConfig maint) {
-    return maint != null && maint.isEnabledOrAuto() ? MaintenanceEventController.from(maint) : null;
-  }
-
   @Nested
   class MaintenanceEventHandling extends AbstractMaintenanceEventHandlingTest {
 
     @Override
     protected ConnectionPool createPool(HostAndPort hp, JedisClientConfig cfg,
         MaintenanceNotificationsConfig maint) {
-      return new ConnectionPool(hp, cfg, /* cache */ null, new ConnectionPoolConfig(),
-          controllerFor(maint));
+      return new ConnectionPool(hp, cfg, /* cache */ null, new ConnectionPoolConfig(), maint);
     }
 
     @Override
@@ -215,8 +209,7 @@ public class ConnectionMockTest {
     @Override
     protected ConnectionPool createPool(HostAndPort hp, JedisClientConfig cfg,
         MaintenanceNotificationsConfig maint) {
-      return new ConnectionPool(hp, cfg, /* cache */ null, new ConnectionPoolConfig(),
-          controllerFor(maint));
+      return new ConnectionPool(hp, cfg, /* cache */ null, new ConnectionPoolConfig(), maint);
     }
 
     @Override

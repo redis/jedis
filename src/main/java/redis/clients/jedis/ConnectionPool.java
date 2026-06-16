@@ -59,10 +59,22 @@ public class ConnectionPool extends Pool<Connection> {
     attachAuthenticationListener(clientConfig.getAuthXManager());
   }
 
+
   @Experimental
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig,
-      MaintenanceEventController controller) {
+      MaintenanceNotificationsConfig maintConfig) {
+    this(controllerFor(maintConfig), hostAndPort, clientConfig, clientSideCache, poolConfig);
+  }
+
+  private static MaintenanceEventController controllerFor(MaintenanceNotificationsConfig config) {
+    return config != null && config.isEnabledOrAuto() ? MaintenanceEventController.from(config)
+        : null;
+  }
+
+  private ConnectionPool(MaintenanceEventController controller, HostAndPort hostAndPort,
+      JedisClientConfig clientConfig, Cache clientSideCache,
+      GenericObjectPoolConfig<Connection> poolConfig) {
     this(ConnectionFactory.builder().hostAndPort(hostAndPort).clientConfig(clientConfig)
         .cache(clientSideCache).maintenanceController(controller).build(), poolConfig);
     attachAuthenticationListener(clientConfig.getAuthXManager());

@@ -56,11 +56,11 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     }
 
     /**
-     * Pool-owned maintenance controller propagated to the default socket factory (as the post-DNS
+     * Maintenance controller propagated to the default socket factory (as the post-DNS
      * address mapper for MOVING redirects) and to the default {@link Connection.Builder} (so each
      * connection forwards push frames to it). {@code null} disables maintenance for this factory.
      */
-    public Builder maintenanceController(MaintenanceEventController maintenanceController) {
+    Builder maintenanceController(MaintenanceEventController maintenanceController) {
       this.maintenanceController = maintenanceController;
       return this;
     }
@@ -81,7 +81,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       return cache;
     }
 
-    public MaintenanceEventController getMaintenanceController() {
+    MaintenanceEventController getMaintenanceController() {
       return maintenanceController;
     }
 
@@ -179,12 +179,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     return clientConfig;
   }
 
-  /**
-   * The maintenance controller wired at construction (see
-   * {@link Builder#maintenanceController(MaintenanceEventController)}), or {@code null} when
-   * maintenance is disabled for this factory.
-   */
-  public MaintenanceEventController getMaintenanceController() {
+  MaintenanceEventController getMaintenanceController() {
     return maintenanceController;
   }
 

@@ -1,8 +1,6 @@
 package redis.clients.jedis.builders;
 
 import java.net.URI;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.PooledConnectionProvider;
@@ -18,8 +16,6 @@ import redis.clients.jedis.util.JedisURIHelper;
  */
 public abstract class StandaloneClientBuilder<C>
     extends AbstractClientBuilder<StandaloneClientBuilder<C>, C> {
-
-  private static final Logger logger = LoggerFactory.getLogger(StandaloneClientBuilder.class);
 
   // Standalone-specific configuration fields
   private HostAndPort hostAndPort = new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -69,20 +65,8 @@ public abstract class StandaloneClientBuilder<C>
 
   @Override
   protected ConnectionProvider createDefaultConnectionProvider() {
-    MaintenanceEventController controller = createMaintenanceController();
     return new PooledConnectionProvider(this.hostAndPort, this.clientConfig, this.cache,
-        this.poolConfig, controller);
-  }
-
-  /**
-   * Build the maintenance controller for this client, or {@code null} when maintenance is off.
-   * {@link MaintenanceNotificationsConfig.Mode#DISABLED DISABLED} short-circuits;
-   * {@code AUTO}/{@code ENABLED} construct a controller. RESP3 / server-accept gates run later, at
-   * connection time.
-   */
-  private MaintenanceEventController createMaintenanceController() {
-    MaintenanceNotificationsConfig cfg = effectiveMaintNotificationsConfig();
-    return cfg.isEnabledOrAuto() ? MaintenanceEventController.from(cfg) : null;
+        this.poolConfig, effectiveMaintNotificationsConfig());
   }
 
   private MaintenanceNotificationsConfig effectiveMaintNotificationsConfig() {

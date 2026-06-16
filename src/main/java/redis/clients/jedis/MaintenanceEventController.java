@@ -20,8 +20,7 @@ import org.slf4j.LoggerFactory;
  * Maintenance handler: owns the shared rebind overlay, the relax-window policy, and the handoff
  * hooks fired when a MOVING is applied.
  */
-public final class MaintenanceEventController
-    implements MaintenanceEventListener, SocketAddressMapper {
+final class MaintenanceEventController implements MaintenanceEventListener, SocketAddressMapper {
 
   private static final Logger logger = LoggerFactory.getLogger(MaintenanceEventController.class);
 

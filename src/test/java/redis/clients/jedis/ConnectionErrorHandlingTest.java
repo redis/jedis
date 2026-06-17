@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -42,311 +43,337 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void errorDuringCommandSerializationMarksConnectionBrokenAndRethrowsSameError() {
     SyntheticError expected = new SyntheticError();
-    Connection conn = new Connection(fakeSocketFactory(new byte[0], new ByteArrayOutputStream()));
-    CommandArguments args = new CommandArguments(Command.SET).add(new ErrorRawable(expected));
+    try (Connection conn = new Connection(
+        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()))) {
+      CommandArguments args = new CommandArguments(Command.SET).add(new ErrorRawable(expected));
 
-    SyntheticError thrown = assertThrows(SyntheticError.class, () -> conn.sendCommand(args));
+      SyntheticError thrown = assertThrows(SyntheticError.class, () -> conn.sendCommand(args));
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void runtimeExceptionDuringCommandSerializationMarksConnectionBroken() {
     RuntimeException expected = new IllegalStateException("raw argument failed");
-    Connection conn = new Connection(fakeSocketFactory(new byte[0], new ByteArrayOutputStream()));
-    CommandArguments args = new CommandArguments(Command.SET).add(new RuntimeRawable(expected));
+    try (Connection conn = new Connection(
+        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()))) {
+      CommandArguments args = new CommandArguments(Command.SET).add(new RuntimeRawable(expected));
 
-    RuntimeException thrown = assertThrows(RuntimeException.class, () -> conn.sendCommand(args));
+      RuntimeException thrown = assertThrows(RuntimeException.class, () -> conn.sendCommand(args));
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void nullRawCommandArgumentMarksConnectionBroken() {
-    Connection conn = new Connection(fakeSocketFactory(new byte[0], new ByteArrayOutputStream()));
-    CommandArguments args = new CommandArguments(Command.SET).add(new NullRawable());
+    try (Connection conn = new Connection(
+        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()))) {
+      CommandArguments args = new CommandArguments(Command.SET).add(new NullRawable());
 
-    assertThrows(NullPointerException.class, () -> conn.sendCommand(args));
+      assertThrows(NullPointerException.class, () -> conn.sendCommand(args));
 
-    assertTrue(conn.isBroken());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void jedisConnectionExceptionDuringDirectConnectMarksConnectionBrokenAndRethrowsSameException() {
     JedisConnectionException expected = new JedisConnectionException("connect failed");
-    Connection conn = new Connection(() -> {
+    try (Connection conn = new Connection(() -> {
       throw expected;
-    });
+    })) {
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::connect);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::connect);
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void runtimeExceptionDuringDirectConnectMarksConnectionBrokenAndRethrowsSameException() {
     RuntimeException expected = new IllegalStateException("connect failed");
-    Connection conn = new Connection(() -> {
+    try (Connection conn = new Connection(() -> {
       throw expected;
-    });
+    })) {
 
-    RuntimeException thrown = assertThrows(RuntimeException.class, conn::connect);
+      RuntimeException thrown = assertThrows(RuntimeException.class, conn::connect);
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void errorDuringDirectConnectMarksConnectionBrokenAndRethrowsSameError() {
     SyntheticError expected = new SyntheticError();
-    Connection conn = new Connection(() -> {
+    try (Connection conn = new Connection(() -> {
       throw expected;
-    });
+    })) {
 
-    SyntheticError thrown = assertThrows(SyntheticError.class, conn::connect);
+      SyntheticError thrown = assertThrows(SyntheticError.class, conn::connect);
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void runtimeExceptionDuringSendCommandConnectMarksConnectionBrokenAndRethrowsSameException() {
     RuntimeException expected = new IllegalStateException("connect failed");
-    Connection conn = new Connection(() -> {
+    try (Connection conn = new Connection(() -> {
       throw expected;
-    });
-    CommandArguments args = new CommandArguments(Command.PING);
+    })) {
+      CommandArguments args = new CommandArguments(Command.PING);
 
-    RuntimeException thrown = assertThrows(RuntimeException.class, () -> conn.sendCommand(args));
+      RuntimeException thrown = assertThrows(RuntimeException.class, () -> conn.sendCommand(args));
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void errorDuringSendCommandConnectMarksConnectionBrokenAndRethrowsSameError() {
     SyntheticError expected = new SyntheticError();
-    Connection conn = new Connection(() -> {
+    try (Connection conn = new Connection(() -> {
       throw expected;
-    });
-    CommandArguments args = new CommandArguments(Command.PING);
+    })) {
+      CommandArguments args = new CommandArguments(Command.PING);
 
-    SyntheticError thrown = assertThrows(SyntheticError.class, () -> conn.sendCommand(args));
+      SyntheticError thrown = assertThrows(SyntheticError.class, () -> conn.sendCommand(args));
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void socketExceptionDuringSoTimeoutInitializationMarksConnectionBrokenAndClosesSocket() {
     SocketException expected = new SocketException("timeout init failed");
     CloseTrackingFakeSocket socket = new SocketExceptionOnGetSoTimeoutSocket(expected);
-    Connection conn = new Connection(() -> socket);
+    try (Connection conn = new Connection(() -> socket)) {
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::connect);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::connect);
 
-    assertSame(expected, thrown.getCause());
-    assertTrue(conn.isBroken());
-    assertTrue(socket.isClosed());
+      assertSame(expected, thrown.getCause());
+      assertTrue(conn.isBroken());
+      assertTrue(socket.isClosed());
+    }
   }
 
   @Test
   public void runtimeExceptionDuringSoTimeoutInitializationMarksConnectionBrokenAndClosesSocket() {
     RuntimeException expected = new IllegalStateException("timeout init failed");
     CloseTrackingFakeSocket socket = new RuntimeExceptionOnGetSoTimeoutSocket(expected);
-    Connection conn = new Connection(() -> socket);
+    try (Connection conn = new Connection(() -> socket)) {
 
-    RuntimeException thrown = assertThrows(RuntimeException.class, conn::connect);
+      RuntimeException thrown = assertThrows(RuntimeException.class, conn::connect);
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
-    assertTrue(socket.isClosed());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+      assertTrue(socket.isClosed());
+    }
   }
 
   @Test
   public void errorDuringSoTimeoutInitializationMarksConnectionBrokenAndClosesSocket() {
     SyntheticError expected = new SyntheticError();
     CloseTrackingFakeSocket socket = new ErrorOnGetSoTimeoutSocket(expected);
-    Connection conn = new Connection(() -> socket);
+    try (Connection conn = new Connection(() -> socket)) {
 
-    SyntheticError thrown = assertThrows(SyntheticError.class, conn::connect);
+      SyntheticError thrown = assertThrows(SyntheticError.class, conn::connect);
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
-    assertTrue(socket.isClosed());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+      assertTrue(socket.isClosed());
+    }
   }
 
   @Test
   public void ioExceptionDuringOutputStreamInitializationMarksConnectionBrokenAndClosesSocket() {
     IOException expected = new IOException("output init failed");
     CloseTrackingFakeSocket socket = new IOExceptionOnGetOutputStreamSocket(expected);
-    Connection conn = new Connection(() -> socket);
+    try (Connection conn = new Connection(() -> socket)) {
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::connect);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::connect);
 
-    assertSame(expected, thrown.getCause());
-    assertTrue(conn.isBroken());
-    assertTrue(socket.isClosed());
+      assertSame(expected, thrown.getCause());
+      assertTrue(conn.isBroken());
+      assertTrue(socket.isClosed());
+    }
   }
 
   @Test
   public void runtimeExceptionDuringOutputStreamInitializationMarksConnectionBrokenAndClosesSocket() {
     RuntimeException expected = new IllegalStateException("output init failed");
     CloseTrackingFakeSocket socket = new RuntimeExceptionOnGetOutputStreamSocket(expected);
-    Connection conn = new Connection(() -> socket);
+    try (Connection conn = new Connection(() -> socket)) {
 
-    RuntimeException thrown = assertThrows(RuntimeException.class, conn::connect);
+      RuntimeException thrown = assertThrows(RuntimeException.class, conn::connect);
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
-    assertTrue(socket.isClosed());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+      assertTrue(socket.isClosed());
+    }
   }
 
   @Test
   public void errorDuringOutputStreamInitializationMarksConnectionBrokenAndClosesSocket() {
     SyntheticError expected = new SyntheticError();
     CloseTrackingFakeSocket socket = new ErrorOnGetOutputStreamSocket(expected);
-    Connection conn = new Connection(() -> socket);
+    try (Connection conn = new Connection(() -> socket)) {
 
-    SyntheticError thrown = assertThrows(SyntheticError.class, conn::connect);
+      SyntheticError thrown = assertThrows(SyntheticError.class, conn::connect);
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
-    assertTrue(socket.isClosed());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+      assertTrue(socket.isClosed());
+    }
   }
 
   @Test
   public void ioExceptionDuringInputStreamInitializationMarksConnectionBrokenAndClosesSocket() {
     IOException expected = new IOException("input init failed");
     CloseTrackingFakeSocket socket = new IOExceptionOnGetInputStreamSocket(expected);
-    Connection conn = new Connection(() -> socket);
+    try (Connection conn = new Connection(() -> socket)) {
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::connect);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::connect);
 
-    assertSame(expected, thrown.getCause());
-    assertTrue(conn.isBroken());
-    assertTrue(socket.isClosed());
+      assertSame(expected, thrown.getCause());
+      assertTrue(conn.isBroken());
+      assertTrue(socket.isClosed());
+    }
   }
 
   @Test
   public void runtimeExceptionDuringInputStreamInitializationMarksConnectionBrokenAndClosesSocket() {
     RuntimeException expected = new IllegalStateException("input init failed");
     CloseTrackingFakeSocket socket = new RuntimeExceptionOnGetInputStreamSocket(expected);
-    Connection conn = new Connection(() -> socket);
+    try (Connection conn = new Connection(() -> socket)) {
 
-    RuntimeException thrown = assertThrows(RuntimeException.class, conn::connect);
+      RuntimeException thrown = assertThrows(RuntimeException.class, conn::connect);
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
-    assertTrue(socket.isClosed());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+      assertTrue(socket.isClosed());
+    }
   }
 
   @Test
   public void errorDuringInputStreamInitializationMarksConnectionBrokenAndClosesSocket() {
     SyntheticError expected = new SyntheticError();
     CloseTrackingFakeSocket socket = new ErrorOnGetInputStreamSocket(expected);
-    Connection conn = new Connection(() -> socket);
+    try (Connection conn = new Connection(() -> socket)) {
 
-    SyntheticError thrown = assertThrows(SyntheticError.class, conn::connect);
+      SyntheticError thrown = assertThrows(SyntheticError.class, conn::connect);
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
-    assertTrue(socket.isClosed());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+      assertTrue(socket.isClosed());
+    }
   }
 
   @Test
   public void socketExceptionDuringSetSoTimeoutMarksConnectionBrokenAndWrapsCause() {
     SocketException expected = new SocketException("set timeout failed");
     CloseTrackingFakeSocket socket = new SocketExceptionOnSetSoTimeoutSocket(expected);
-    Connection conn = new Connection(() -> socket);
-    conn.connect();
+    try (Connection conn = new Connection(() -> socket)) {
+      conn.connect();
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
-      () -> conn.setSoTimeout(500));
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+        () -> conn.setSoTimeout(500));
 
-    assertSame(expected, thrown.getCause());
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown.getCause());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void socketExceptionDuringSetTimeoutInfiniteMarksConnectionBrokenAndWrapsCause() {
     SocketException expected = new SocketException("set infinite timeout failed");
     CloseTrackingFakeSocket socket = new SocketExceptionOnSetSoTimeoutSocket(expected);
-    Connection conn = new Connection(() -> socket);
+    try (Connection conn = new Connection(() -> socket)) {
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
-      conn::setTimeoutInfinite);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+        conn::setTimeoutInfinite);
 
-    assertSame(expected, thrown.getCause());
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown.getCause());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void socketExceptionDuringRollbackTimeoutMarksConnectionBrokenAndWrapsCause() {
     SocketException expected = new SocketException("rollback timeout failed");
     CloseTrackingFakeSocket socket = new SocketExceptionOnSetSoTimeoutSocket(expected);
-    Connection conn = new Connection(() -> socket);
-    conn.connect();
+    try (Connection conn = new Connection(() -> socket)) {
+      conn.connect();
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
-      conn::rollbackTimeout);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+        conn::rollbackTimeout);
 
-    assertSame(expected, thrown.getCause());
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown.getCause());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void alreadyBrokenConnectedConnectionRejectsCommandArgumentsWithoutWriting() {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
-    Connection conn = new Connection(fakeSocketFactory(new byte[0], output));
-    conn.connect();
-    conn.setBroken();
-    CommandArguments args = new CommandArguments(Command.SET).add("key").add(new byte[9000]);
+    try (Connection conn = new Connection(fakeSocketFactory(new byte[0], output))) {
+      conn.connect();
+      conn.setBroken();
+      CommandArguments args = new CommandArguments(Command.SET).add("key").add(new byte[9000]);
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
-      () -> conn.sendCommand(args));
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+        () -> conn.sendCommand(args));
 
-    assertEquals("Attempting to write to a broken connection.", thrown.getMessage());
-    assertEquals(0, output.size());
-    assertTrue(conn.isBroken());
+      assertEquals("Attempting to write to a broken connection.", thrown.getMessage());
+      assertEquals(0, output.size());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void alreadyBrokenConnectedConnectionRejectsBeforeArgumentSerialization() {
     SyntheticError unexpected = new SyntheticError();
     ByteArrayOutputStream output = new ByteArrayOutputStream();
-    Connection conn = new Connection(fakeSocketFactory(new byte[0], output));
-    conn.connect();
-    conn.setBroken();
-    CommandArguments args = new CommandArguments(Command.SET).add(new ErrorRawable(unexpected));
+    try (Connection conn = new Connection(fakeSocketFactory(new byte[0], output))) {
+      conn.connect();
+      conn.setBroken();
+      CommandArguments args = new CommandArguments(Command.SET).add(new ErrorRawable(unexpected));
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
-      () -> conn.sendCommand(args));
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+        () -> conn.sendCommand(args));
 
-    assertEquals("Attempting to write to a broken connection.", thrown.getMessage());
-    assertEquals(0, output.size());
-    assertTrue(conn.isBroken());
+      assertEquals("Attempting to write to a broken connection.", thrown.getMessage());
+      assertEquals(0, output.size());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void alreadyBrokenConnectedConnectionDoesNotAttemptDiagnosticRedisErrorRead() {
     ByteArrayOutputStream output = new ByteArrayOutputStream();
-    Connection conn = new Connection(
-        fakeSocketFactory("-ERR should not be read\r\n".getBytes(StandardCharsets.UTF_8), output));
-    conn.connect();
-    conn.setBroken();
-    CommandArguments args = new CommandArguments(Command.SET).add("key").add(new byte[9000]);
+    try (Connection conn = new Connection(fakeSocketFactory(
+      "-ERR should not be read\r\n".getBytes(StandardCharsets.UTF_8), output))) {
+      conn.connect();
+      conn.setBroken();
+      CommandArguments args = new CommandArguments(Command.SET).add("key").add(new byte[9000]);
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
-      () -> conn.sendCommand(args));
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+        () -> conn.sendCommand(args));
 
-    assertEquals("Attempting to write to a broken connection.", thrown.getMessage());
-    assertNull(thrown.getCause());
-    assertEquals(0, output.size());
-    assertTrue(conn.isBroken());
+      assertEquals("Attempting to write to a broken connection.", thrown.getMessage());
+      assertNull(thrown.getCause());
+      assertEquals(0, output.size());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
@@ -354,23 +381,25 @@ public class ConnectionErrorHandlingTest {
     AtomicInteger sockets = new AtomicInteger();
     ByteArrayOutputStream firstOutput = new ByteArrayOutputStream();
     ByteArrayOutputStream replacementOutput = new ByteArrayOutputStream();
-    Connection conn = new Connection(() -> sockets.getAndIncrement() == 0
+    try (Connection conn = new Connection(() -> sockets.getAndIncrement() == 0
         ? new CloseTrackingFakeSocket(new ByteArrayInputStream(new byte[0]), firstOutput)
-        : new CloseTrackingFakeSocket(new ByteArrayInputStream(new byte[0]), replacementOutput));
-    conn.connect();
-    conn.setBroken();
-    conn.disconnect();
-    CommandArguments args = new CommandArguments(Command.SET).add("key").add(new byte[9000]);
+        : new CloseTrackingFakeSocket(new ByteArrayInputStream(new byte[0]), replacementOutput))) {
+      conn.connect();
+      conn.setBroken();
+      conn.disconnect();
+      CommandArguments args = new CommandArguments(Command.SET).add("key").add(new byte[9000]);
 
-    conn.sendCommand(args);
+      conn.sendCommand(args);
 
-    assertFalse(conn.isBroken());
-    assertEquals(0, firstOutput.size());
-    assertTrue(replacementOutput.size() > 0);
-    assertEquals(2, sockets.get());
+      assertFalse(conn.isBroken());
+      assertEquals(0, firstOutput.size());
+      assertTrue(replacementOutput.size() > 0);
+      assertEquals(2, sockets.get());
+    }
   }
 
   @Test
+  @SuppressWarnings("resource")
   public void errorDuringCommandOutputWriteMarksConnectionBrokenAndRethrowsSameError() {
     SyntheticError expected = new SyntheticError();
     Connection conn = new Connection(
@@ -384,6 +413,7 @@ public class ConnectionErrorHandlingTest {
   }
 
   @Test
+  @SuppressWarnings("resource")
   public void commandWriteFailureReadsRedisErrorLineAndStillMarksConnectionBroken() {
     IOException expected = new IOException("write failed");
     Connection conn = new Connection(
@@ -400,6 +430,7 @@ public class ConnectionErrorHandlingTest {
   }
 
   @Test
+  @SuppressWarnings("resource")
   public void commandWriteFailureIgnoresNonErrorDiagnosticReplyAndPreservesCause() {
     IOException expected = new IOException("write failed");
     Connection conn = new Connection(fakeSocketFactory("+OK\r\n".getBytes(StandardCharsets.UTF_8),
@@ -414,6 +445,7 @@ public class ConnectionErrorHandlingTest {
   }
 
   @Test
+  @SuppressWarnings("resource")
   public void commandWriteFailureSwallowsDiagnosticReadFailureAndPreservesCause() {
     IOException expected = new IOException("write failed");
     IOException diagnosticFailure = new IOException("diagnostic read failed");
@@ -430,6 +462,7 @@ public class ConnectionErrorHandlingTest {
   }
 
   @Test
+  @SuppressWarnings("resource")
   public void commandWriteFailureMarksConnectionBrokenWhenDiagnosticReadThrowsError() {
     IOException expected = new IOException("write failed");
     SyntheticError diagnosticFailure = new SyntheticError();
@@ -448,203 +481,219 @@ public class ConnectionErrorHandlingTest {
   public void executeCommandMarksConnectionBrokenWhenReplyReadFailsAfterCommandIsFlushed() {
     SyntheticError expected = new SyntheticError();
     ByteArrayOutputStream output = new ByteArrayOutputStream();
-    Connection conn = new ProtocolReadErrorConnection(expected,
-        fakeSocketFactory(new byte[0], output));
+    try (Connection conn = new ProtocolReadErrorConnection(expected,
+        fakeSocketFactory(new byte[0], output))) {
 
-    SyntheticError thrown = assertThrows(SyntheticError.class,
-      () -> conn.executeCommand(Command.PING));
+      SyntheticError thrown = assertThrows(SyntheticError.class,
+        () -> conn.executeCommand(Command.PING));
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
-    assertArrayEquals(PING_COMMAND, output.toByteArray());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+      assertArrayEquals(PING_COMMAND, output.toByteArray());
+    }
   }
 
   @Test
   public void commandObjectBuilderErrorAfterSuccessfulReadDoesNotMarkConnectionBroken() {
     SyntheticError expected = new SyntheticError();
-    Connection conn = new Connection(
-        fakeSocketFactory("+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
-    CommandObject<String> commandObject = new CommandObject<>(new CommandArguments(Command.PING),
-        new ErrorBuilder<>(expected));
+    try (Connection conn = new Connection(fakeSocketFactory(
+      "+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()))) {
+      CommandObject<String> commandObject = new CommandObject<>(new CommandArguments(Command.PING),
+          new ErrorBuilder<>(expected));
 
-    SyntheticError thrown = assertThrows(SyntheticError.class,
-      () -> conn.executeCommand(commandObject));
+      SyntheticError thrown = assertThrows(SyntheticError.class,
+        () -> conn.executeCommand(commandObject));
 
-    assertSame(expected, thrown);
-    assertFalse(conn.isBroken());
+      assertSame(expected, thrown);
+      assertFalse(conn.isBroken());
+    }
   }
 
   @Test
   public void blockingCommandReadErrorMarksConnectionBroken() {
     SyntheticError expected = new SyntheticError();
-    Connection conn = new ProtocolReadErrorConnection(expected,
-        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()));
-    CommandObject<Object> commandObject = new CommandObject<>(
-        new CommandArguments(Command.BLPOP).add("queue").add("0").blocking(),
-        BuilderFactory.RAW_OBJECT);
+    try (Connection conn = new ProtocolReadErrorConnection(expected,
+        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()))) {
+      CommandObject<Object> commandObject = new CommandObject<>(
+          new CommandArguments(Command.BLPOP).add("queue").add("0").blocking(),
+          BuilderFactory.RAW_OBJECT);
 
-    SyntheticError thrown = assertThrows(SyntheticError.class,
-      () -> conn.executeCommand(commandObject));
+      SyntheticError thrown = assertThrows(SyntheticError.class,
+        () -> conn.executeCommand(commandObject));
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void blockingCommandBuilderErrorAfterSuccessfulReadDoesNotMarkConnectionBroken() {
     SyntheticError expected = new SyntheticError();
-    Connection conn = new Connection(
-        fakeSocketFactory("+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
-    CommandObject<String> commandObject = new CommandObject<>(
-        new CommandArguments(Command.BLPOP).add("queue").add("0").blocking(),
-        new ErrorBuilder<>(expected));
+    try (Connection conn = new Connection(fakeSocketFactory(
+      "+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()))) {
+      CommandObject<String> commandObject = new CommandObject<>(
+          new CommandArguments(Command.BLPOP).add("queue").add("0").blocking(),
+          new ErrorBuilder<>(expected));
 
-    SyntheticError thrown = assertThrows(SyntheticError.class,
-      () -> conn.executeCommand(commandObject));
+      SyntheticError thrown = assertThrows(SyntheticError.class,
+        () -> conn.executeCommand(commandObject));
 
-    assertSame(expected, thrown);
-    assertFalse(conn.isBroken());
+      assertSame(expected, thrown);
+      assertFalse(conn.isBroken());
+    }
   }
 
   @Test
   public void malformedReplyDuringPublicReadMarksConnectionBroken() {
-    Connection conn = new Connection(
-        fakeSocketFactory("?\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
-    conn.connect();
+    try (Connection conn = new Connection(
+        fakeSocketFactory("?\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
 
-    assertEquals("Unknown reply: ?", thrown.getMessage());
-    assertTrue(conn.isBroken());
+      assertEquals("Unknown reply: ?", thrown.getMessage());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void truncatedBulkReplyDuringPublicReadMarksConnectionBroken() {
-    Connection conn = new Connection(fakeSocketFactory("$5\r\nabc".getBytes(StandardCharsets.UTF_8),
-      new ByteArrayOutputStream()));
-    conn.connect();
+    try (Connection conn = new Connection(fakeSocketFactory(
+      "$5\r\nabc".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
 
-    assertEquals("Unexpected end of stream.", thrown.getMessage());
-    assertTrue(conn.isBroken());
+      assertEquals("Unexpected end of stream.", thrown.getMessage());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void truncatedArrayReplyDuringPublicReadMarksConnectionBroken() {
-    Connection conn = new Connection(fakeSocketFactory(
-      "*2\r\n+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
-    conn.connect();
+    try (Connection conn = new Connection(fakeSocketFactory(
+      "*2\r\n+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
 
-    assertEquals("Unexpected end of stream.", thrown.getMessage());
-    assertTrue(conn.isBroken());
+      assertEquals("Unexpected end of stream.", thrown.getMessage());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void truncatedErrorReplyDuringPublicReadMarksConnectionBroken() {
-    Connection conn = new Connection(fakeSocketFactory(
-      "-ERR wrong type".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
-    conn.connect();
+    try (Connection conn = new Connection(fakeSocketFactory(
+      "-ERR wrong type".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
 
-    assertEquals("Unexpected end of stream.", thrown.getMessage());
-    assertTrue(conn.isBroken());
+      assertEquals("Unexpected end of stream.", thrown.getMessage());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void ioExceptionDuringPublicReadMarksConnectionBrokenAndWrapsCause() {
     IOException expected = new IOException("read failed");
-    Connection conn = new Connection(() -> new FakeSocket(
-        new IOExceptionOnReadInputStream(expected), new ByteArrayOutputStream()));
-    conn.connect();
+    try (Connection conn = new Connection(() -> new FakeSocket(
+        new IOExceptionOnReadInputStream(expected), new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
 
-    assertSame(expected, thrown.getCause());
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown.getCause());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void invalidBooleanReplyDuringPublicReadMarksConnectionBroken() {
-    Connection conn = new Connection(
-        fakeSocketFactory("#x\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
-    conn.connect();
+    try (Connection conn = new Connection(fakeSocketFactory(
+      "#x\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
 
-    assertEquals("Unexpected character!", thrown.getMessage());
-    assertTrue(conn.isBroken());
+      assertEquals("Unexpected character!", thrown.getMessage());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void invalidVerbatimStringLengthDuringPublicReadMarksConnectionBroken() {
-    Connection conn = new Connection(fakeSocketFactory(
-      "=3\r\ntxt\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
-    conn.connect();
+    try (Connection conn = new Connection(fakeSocketFactory(
+      "=3\r\ntxt\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::getOne);
 
-    assertEquals("Bulk reply length 3 is less than expected 4", thrown.getMessage());
-    assertTrue(conn.isBroken());
+      assertEquals("Bulk reply length 3 is less than expected 4", thrown.getMessage());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void nullBulkReplyDuringPublicReadDoesNotMarkConnectionBroken() {
-    Connection conn = new Connection(fakeSocketFactory(
-      "$-1\r\n+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
-    conn.connect();
+    try (Connection conn = new Connection(fakeSocketFactory(
+      "$-1\r\n+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    assertNull(conn.getOne());
+      assertNull(conn.getOne());
 
-    assertFalse(conn.isBroken());
-    assertArrayEquals("OK".getBytes(StandardCharsets.UTF_8), (byte[]) conn.getOne());
-    assertFalse(conn.isBroken());
+      assertFalse(conn.isBroken());
+      assertArrayEquals("OK".getBytes(StandardCharsets.UTF_8), (byte[]) conn.getOne());
+      assertFalse(conn.isBroken());
+    }
   }
 
   @Test
   public void nullArrayReplyDuringPublicReadDoesNotMarkConnectionBroken() {
-    Connection conn = new Connection(fakeSocketFactory(
-      "*-1\r\n+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
-    conn.connect();
+    try (Connection conn = new Connection(fakeSocketFactory(
+      "*-1\r\n+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    assertNull(conn.getOne());
+      assertNull(conn.getOne());
 
-    assertFalse(conn.isBroken());
-    assertArrayEquals("OK".getBytes(StandardCharsets.UTF_8), (byte[]) conn.getOne());
-    assertFalse(conn.isBroken());
+      assertFalse(conn.isBroken());
+      assertArrayEquals("OK".getBytes(StandardCharsets.UTF_8), (byte[]) conn.getOne());
+      assertFalse(conn.isBroken());
+    }
   }
 
   @Test
   public void redisErrorReplyDuringPublicReadDoesNotMarkConnectionBroken() {
-    Connection conn = new Connection(fakeSocketFactory(
-      "-ERR wrong type\r\n+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
-    conn.connect();
+    try (Connection conn = new Connection(
+        fakeSocketFactory("-ERR wrong type\r\n+OK\r\n".getBytes(StandardCharsets.UTF_8),
+          new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    JedisDataException thrown = assertThrows(JedisDataException.class, conn::getOne);
+      JedisDataException thrown = assertThrows(JedisDataException.class, conn::getOne);
 
-    assertEquals("ERR wrong type", thrown.getMessage());
-    assertFalse(conn.isBroken());
-    assertArrayEquals("OK".getBytes(StandardCharsets.UTF_8), (byte[]) conn.getOne());
-    assertFalse(conn.isBroken());
+      assertEquals("ERR wrong type", thrown.getMessage());
+      assertFalse(conn.isBroken());
+      assertArrayEquals("OK".getBytes(StandardCharsets.UTF_8), (byte[]) conn.getOne());
+      assertFalse(conn.isBroken());
+    }
   }
 
   @Test
   public void redisErrorInsideArrayReplyIsReturnedAndDoesNotMarkConnectionBroken() {
-    Connection conn = new Connection(
+    try (Connection conn = new Connection(
         fakeSocketFactory("*2\r\n-ERR wrong type\r\n+OK\r\n".getBytes(StandardCharsets.UTF_8),
-          new ByteArrayOutputStream()));
-    conn.connect();
+          new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    List<Object> replies = conn.getObjectMultiBulkReply();
+      List<Object> replies = conn.getObjectMultiBulkReply();
 
-    assertEquals(2, replies.size());
-    assertTrue(replies.get(0) instanceof JedisDataException);
-    assertEquals("ERR wrong type", ((JedisDataException) replies.get(0)).getMessage());
-    assertArrayEquals("OK".getBytes(StandardCharsets.UTF_8), (byte[]) replies.get(1));
-    assertFalse(conn.isBroken());
+      assertEquals(2, replies.size());
+      assertInstanceOf(JedisDataException.class, replies.get(0));
+      assertEquals("ERR wrong type", ((JedisDataException) replies.get(0)).getMessage());
+      assertArrayEquals("OK".getBytes(StandardCharsets.UTF_8), (byte[]) replies.get(1));
+      assertFalse(conn.isBroken());
+    }
   }
 
   @Test
@@ -665,19 +714,21 @@ public class ConnectionErrorHandlingTest {
 
     for (ReadOperationCase operation : operations) {
       SyntheticError expected = new SyntheticError();
-      Connection conn = new ProtocolReadErrorConnection(expected,
-          fakeSocketFactory(new byte[0], new ByteArrayOutputStream()));
-      conn.connect();
+      try (Connection conn = new ProtocolReadErrorConnection(expected,
+          fakeSocketFactory(new byte[0], new ByteArrayOutputStream()))) {
+        conn.connect();
 
-      SyntheticError thrown = assertThrows(SyntheticError.class, () -> operation.run(conn),
-        operation.name);
+        SyntheticError thrown = assertThrows(SyntheticError.class, () -> operation.run(conn),
+          operation.name);
 
-      assertSame(expected, thrown, operation.name);
-      assertTrue(conn.isBroken(), operation.name);
+        assertSame(expected, thrown, operation.name);
+        assertTrue(conn.isBroken(), operation.name);
+      }
     }
   }
 
   @Test
+  @SuppressWarnings("resource")
   public void publicReplyHelpersMarkConnectionBrokenWhenFlushFailsWithoutProtocolRead() {
     List<ReadOperationCase> operations = Arrays.asList(
       new ReadOperationCase("getOne", Connection::getOne),
@@ -707,6 +758,7 @@ public class ConnectionErrorHandlingTest {
   }
 
   @Test
+  @SuppressWarnings("resource")
   public void errorDuringFlushMarksConnectionBrokenAndRethrowsSameError() {
     SyntheticError expected = new SyntheticError();
     Connection conn = new Connection(
@@ -720,6 +772,7 @@ public class ConnectionErrorHandlingTest {
   }
 
   @Test
+  @SuppressWarnings("resource")
   public void ioExceptionDuringFlushMarksConnectionBrokenAndWrapsCause() {
     IOException expected = new IOException("flush failed");
     Connection conn = new Connection(
@@ -733,43 +786,74 @@ public class ConnectionErrorHandlingTest {
   }
 
   @Test
-  public void errorDuringProtocolReadMarksConnectionBrokenAndRethrowsSameError() {
+  @SuppressWarnings("resource")
+  public void closeRethrowsErrorWhenDisconnectFlushFailsOnBrokenConnection() {
     SyntheticError expected = new SyntheticError();
-    Connection conn = new ProtocolReadErrorConnection(expected);
+    Connection conn = new Connection(
+        fakeSocketFactory(new byte[0], new ErrorOnFlushOutputStream(expected)));
+    conn.connect();
+    conn.setBroken();
 
-    SyntheticError thrown = assertThrows(SyntheticError.class,
-      conn::readProtocolWithCheckingBroken);
+    SyntheticError thrown = assertThrows(SyntheticError.class, conn::close);
 
     assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
+  }
+
+  @Test
+  @SuppressWarnings("resource")
+  public void closeWrapsIOExceptionWhenDisconnectFlushFailsOnBrokenConnection() {
+    IOException expected = new IOException("flush failed");
+    Connection conn = new Connection(
+        fakeSocketFactory(new byte[0], new IOExceptionOnFlushOutputStream(expected)));
+    conn.connect();
+    conn.setBroken();
+
+    JedisConnectionException thrown = assertThrows(JedisConnectionException.class, conn::close);
+
+    assertSame(expected, thrown.getCause());
+  }
+
+  @Test
+  public void errorDuringProtocolReadMarksConnectionBrokenAndRethrowsSameError() {
+    SyntheticError expected = new SyntheticError();
+    try (Connection conn = new ProtocolReadErrorConnection(expected)) {
+
+      SyntheticError thrown = assertThrows(SyntheticError.class,
+        conn::readProtocolWithCheckingBroken);
+
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void runtimeExceptionDuringProtocolReadIsNotTreatedAsBrokenConnection() {
     RuntimeException expected = new IllegalStateException("builder bug");
-    Connection conn = new ProtocolReadRuntimeExceptionConnection(expected);
+    try (Connection conn = new ProtocolReadRuntimeExceptionConnection(expected)) {
+      RuntimeException thrown = assertThrows(RuntimeException.class,
+        conn::readProtocolWithCheckingBroken);
 
-    RuntimeException thrown = assertThrows(RuntimeException.class,
-      conn::readProtocolWithCheckingBroken);
-
-    assertSame(expected, thrown);
-    assertFalse(conn.isBroken());
+      assertSame(expected, thrown);
+      assertFalse(conn.isBroken());
+    }
   }
 
   @Test
   public void alreadyBrokenConnectionRejectsProtocolReadWithoutReadingAgain() {
-    CountingSuccessfulReadConnection conn = new CountingSuccessfulReadConnection();
-    conn.setBroken();
+    try (CountingSuccessfulReadConnection conn = new CountingSuccessfulReadConnection()) {
+      conn.setBroken();
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
-      conn::readProtocolWithCheckingBroken);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+        conn::readProtocolWithCheckingBroken);
 
-    assertEquals("Attempting to read from a broken connection.", thrown.getMessage());
-    assertEquals(0, conn.reads());
-    assertTrue(conn.isBroken());
+      assertEquals("Attempting to read from a broken connection.", thrown.getMessage());
+      assertEquals(0, conn.reads());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
+  @SuppressWarnings("resource")
   public void alreadyBrokenPublicReplyHelperRejectsBeforeFlushOrRead() {
     SyntheticError unexpected = new SyntheticError();
     CountingSuccessfulReadConnection conn = new CountingSuccessfulReadConnection(
@@ -787,17 +871,19 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void errorDuringGetManyReadLoopMarksConnectionBrokenAndRethrowsSameError() {
     SyntheticError expected = new SyntheticError();
-    Connection conn = new CountingReadConnection(
-        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()), expected);
-    conn.connect();
+    try (Connection conn = new CountingReadConnection(
+        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()), expected)) {
+      conn.connect();
 
-    SyntheticError thrown = assertThrows(SyntheticError.class, () -> conn.getMany(2));
+      SyntheticError thrown = assertThrows(SyntheticError.class, () -> conn.getMany(2));
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
+  @SuppressWarnings("resource")
   public void errorDuringGetManyFlushPreventsAnyProtocolReadAndMarksConnectionBroken() {
     SyntheticError expected = new SyntheticError();
     CountingSuccessfulReadConnection conn = new CountingSuccessfulReadConnection(
@@ -814,186 +900,202 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void jedisDataExceptionDuringGetManyIsReturnedAsReplyAndDoesNotBreakConnection() {
     JedisDataException expected = new JedisDataException("ERR wrong type");
-    Connection conn = new DataExceptionThenValueConnection(
-        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()), expected);
-    conn.connect();
+    try (Connection conn = new DataExceptionThenValueConnection(
+        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()), expected)) {
+      conn.connect();
 
-    List<Object> replies = conn.getMany(2);
+      List<Object> replies = conn.getMany(2);
 
-    assertEquals(2, replies.size());
-    assertSame(expected, replies.get(0));
-    assertEquals("OK", replies.get(1));
-    assertFalse(conn.isBroken());
+      assertEquals(2, replies.size());
+      assertSame(expected, replies.get(0));
+      assertEquals("OK", replies.get(1));
+      assertFalse(conn.isBroken());
+    }
   }
 
   @Test
   public void jedisConnectionExceptionDuringGetManyReadLoopMarksConnectionBroken() {
     JedisConnectionException expected = new JedisConnectionException("read failed");
-    Connection conn = new ConnectionExceptionThenValueConnection(
-        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()), expected);
-    conn.connect();
+    try (Connection conn = new ConnectionExceptionThenValueConnection(
+        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()), expected)) {
+      conn.connect();
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
-      () -> conn.getMany(2));
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+        () -> conn.getMany(2));
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void errorDuringPushReadMarksConnectionBrokenAndRethrowsSameError() {
     SyntheticError expected = new SyntheticError();
-    Connection conn = new PushReadErrorConnection(expected);
-    conn.connect();
+    try (Connection conn = new PushReadErrorConnection(expected)) {
+      conn.connect();
 
-    SyntheticError thrown = assertThrows(SyntheticError.class, conn::readPushesWithCheckingBroken);
+      SyntheticError thrown = assertThrows(SyntheticError.class,
+        conn::readPushesWithCheckingBroken);
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void jedisConnectionExceptionDuringPushReadMarksConnectionBroken() {
     JedisConnectionException expected = new JedisConnectionException("push failed");
-    Connection conn = new PushReadConnectionExceptionConnection(expected);
-    conn.connect();
+    try (Connection conn = new PushReadConnectionExceptionConnection(expected)) {
+      conn.connect();
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
-      conn::readPushesWithCheckingBroken);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+        conn::readPushesWithCheckingBroken);
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void runtimeExceptionDuringPushReadIsNotTreatedAsBrokenConnection() {
     RuntimeException expected = new IllegalStateException("consumer bug");
-    Connection conn = new PushReadRuntimeExceptionConnection(expected);
-    conn.connect();
+    try (Connection conn = new PushReadRuntimeExceptionConnection(expected)) {
+      conn.connect();
 
-    RuntimeException thrown = assertThrows(RuntimeException.class,
-      conn::readPushesWithCheckingBroken);
+      RuntimeException thrown = assertThrows(RuntimeException.class,
+        conn::readPushesWithCheckingBroken);
 
-    assertSame(expected, thrown);
-    assertFalse(conn.isBroken());
+      assertSame(expected, thrown);
+      assertFalse(conn.isBroken());
+    }
   }
 
   @Test
   public void errorDuringPushAvailabilityCheckMarksConnectionBrokenAndRethrowsSameError() {
     SyntheticError expected = new SyntheticError();
-    Connection conn = new Connection(() -> new FakeSocket(new ErrorOnAvailableInputStream(expected),
-        new ByteArrayOutputStream()));
-    conn.connect();
+    try (Connection conn = new Connection(() -> new FakeSocket(
+        new ErrorOnAvailableInputStream(expected), new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    SyntheticError thrown = assertThrows(SyntheticError.class, conn::readPushesWithCheckingBroken);
+      SyntheticError thrown = assertThrows(SyntheticError.class,
+        conn::readPushesWithCheckingBroken);
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void ioExceptionDuringPushAvailabilityCheckMarksConnectionBrokenAndWrapsCause() {
     IOException expected = new IOException("available failed");
-    Connection conn = new Connection(() -> new FakeSocket(
-        new IOExceptionOnAvailableInputStream(expected), new ByteArrayOutputStream()));
-    conn.connect();
+    try (Connection conn = new Connection(() -> new FakeSocket(
+        new IOExceptionOnAvailableInputStream(expected), new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
-      conn::readPushesWithCheckingBroken);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+        conn::readPushesWithCheckingBroken);
 
-    assertSame(expected, thrown.getCause());
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown.getCause());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void readPushesDoesNothingWhenNoPushBytesAreBuffered() {
-    CountingPushReadConnection conn = new CountingPushReadConnection(
-        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()));
-    conn.connect();
+    try (CountingPushReadConnection conn = new CountingPushReadConnection(
+        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    conn.readPushesWithCheckingBroken();
+      conn.readPushesWithCheckingBroken();
 
-    assertEquals(0, conn.pushReads());
-    assertFalse(conn.isBroken());
+      assertEquals(0, conn.pushReads());
+      assertFalse(conn.isBroken());
+    }
   }
 
   @Test
   public void successfulPushReadLeavesConnectionHealthyAndReadsOnePushBatch() {
-    CountingPushReadConnection conn = new CountingPushReadConnection(
-        fakeSocketFactory(new byte[] { 1 }, new ByteArrayOutputStream()));
-    conn.connect();
+    try (CountingPushReadConnection conn = new CountingPushReadConnection(
+        fakeSocketFactory(new byte[] { 1 }, new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    conn.readPushesWithCheckingBroken();
+      conn.readPushesWithCheckingBroken();
 
-    assertEquals(1, conn.pushReads());
-    assertFalse(conn.isBroken());
+      assertEquals(1, conn.pushReads());
+      assertFalse(conn.isBroken());
+    }
   }
 
   @Test
   public void malformedBufferedPushReplyMarksConnectionBroken() {
-    Connection conn = new RealPushParsingConnection(
+    try (Connection conn = new RealPushParsingConnection(
         fakeSocketFactory(">2\r\n$10\r\ninvalidate\r\n$3\r\nab".getBytes(StandardCharsets.UTF_8),
-          new ByteArrayOutputStream()));
-    conn.connect();
+          new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
-      conn::readPushesWithCheckingBroken);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+        conn::readPushesWithCheckingBroken);
 
-    assertEquals("Unexpected end of stream.", thrown.getMessage());
-    assertTrue(conn.isBroken());
+      assertEquals("Unexpected end of stream.", thrown.getMessage());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void malformedBufferedPushElementMarksConnectionBroken() {
-    Connection conn = new RealPushParsingConnection(fakeSocketFactory(
-      ">1\r\n?\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
-    conn.connect();
+    try (Connection conn = new RealPushParsingConnection(fakeSocketFactory(
+      ">1\r\n?\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
-      conn::readPushesWithCheckingBroken);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+        conn::readPushesWithCheckingBroken);
 
-    assertEquals("Unknown reply: ?", thrown.getMessage());
-    assertTrue(conn.isBroken());
+      assertEquals("Unknown reply: ?", thrown.getMessage());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void redisErrorInsideBufferedPushReplyDoesNotMarkConnectionBroken() {
-    Connection conn = new RealPushParsingConnection(fakeSocketFactory(
+    try (Connection conn = new RealPushParsingConnection(fakeSocketFactory(
       ">2\r\n$9\r\narbitrary\r\n-ERR payload failed\r\n".getBytes(StandardCharsets.UTF_8),
-      new ByteArrayOutputStream()));
-    conn.connect();
+      new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    conn.readPushesWithCheckingBroken();
+      conn.readPushesWithCheckingBroken();
 
-    assertFalse(conn.isBroken());
+      assertFalse(conn.isBroken());
+    }
   }
 
   @Test
   public void bufferedNonPushReplyIsNotConsumedAndDoesNotBreakConnection() {
-    Connection conn = new RealPushParsingConnection(
-        fakeSocketFactory("+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()));
-    conn.connect();
+    try (Connection conn = new RealPushParsingConnection(fakeSocketFactory(
+      "+OK\r\n".getBytes(StandardCharsets.UTF_8), new ByteArrayOutputStream()))) {
+      conn.connect();
 
-    conn.readPushesWithCheckingBroken();
+      conn.readPushesWithCheckingBroken();
 
-    assertFalse(conn.isBroken());
-    assertArrayEquals("OK".getBytes(StandardCharsets.UTF_8), (byte[]) conn.getOne());
-    assertFalse(conn.isBroken());
+      assertFalse(conn.isBroken());
+      assertArrayEquals("OK".getBytes(StandardCharsets.UTF_8), (byte[]) conn.getOne());
+      assertFalse(conn.isBroken());
+    }
   }
 
   @Test
   public void alreadyBrokenConnectionRejectsPushReadWithoutCheckingAvailability() {
     SyntheticError unexpected = new SyntheticError();
-    Connection conn = new Connection(() -> new FakeSocket(
-        new ErrorOnAvailableInputStream(unexpected), new ByteArrayOutputStream()));
-    conn.connect();
-    conn.setBroken();
+    try (Connection conn = new Connection(() -> new FakeSocket(
+        new ErrorOnAvailableInputStream(unexpected), new ByteArrayOutputStream()))) {
+      conn.connect();
+      conn.setBroken();
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
-      conn::readPushesWithCheckingBroken);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+        conn::readPushesWithCheckingBroken);
 
-    assertEquals("Attempting to read from a broken connection.", thrown.getMessage());
-    assertTrue(conn.isBroken());
+      assertEquals("Attempting to read from a broken connection.", thrown.getMessage());
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
@@ -1342,25 +1444,26 @@ public class ConnectionErrorHandlingTest {
   @Test
   public void jedisConnectionExceptionDuringProtocolReadMarksConnectionBroken() {
     JedisConnectionException expected = new JedisConnectionException("boom");
-    Connection conn = new ProtocolReadConnectionExceptionConnection(expected);
+    try (Connection conn = new ProtocolReadConnectionExceptionConnection(expected)) {
 
-    JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
-      conn::readProtocolWithCheckingBroken);
+      JedisConnectionException thrown = assertThrows(JedisConnectionException.class,
+        conn::readProtocolWithCheckingBroken);
 
-    assertSame(expected, thrown);
-    assertTrue(conn.isBroken());
+      assertSame(expected, thrown);
+      assertTrue(conn.isBroken());
+    }
   }
 
   @Test
   public void jedisDataExceptionDuringProtocolReadDoesNotMarkConnectionBroken() {
     JedisDataException expected = new JedisDataException("ERR wrong type");
-    Connection conn = new ProtocolReadDataExceptionConnection(expected);
+    try (Connection conn = new ProtocolReadDataExceptionConnection(expected)) {
+      JedisDataException thrown = assertThrows(JedisDataException.class,
+        conn::readProtocolWithCheckingBroken);
 
-    JedisDataException thrown = assertThrows(JedisDataException.class,
-      conn::readProtocolWithCheckingBroken);
-
-    assertSame(expected, thrown);
-    assertFalse(conn.isBroken());
+      assertSame(expected, thrown);
+      assertFalse(conn.isBroken());
+    }
   }
 
   @SuppressWarnings("deprecation")

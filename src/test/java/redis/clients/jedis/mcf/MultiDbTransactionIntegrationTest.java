@@ -26,6 +26,7 @@ import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.ClientTestUtil;
 
 /**
@@ -38,11 +39,13 @@ import redis.clients.jedis.util.ClientTestUtil;
 public class MultiDbTransactionIntegrationTest {
 
   private static EndpointConfig endpoint;
+  private static EndpointConfig endpoint2;
   private MultiDbClient client;
 
   @BeforeAll
   public static void prepareEndpoints() {
     endpoint = Endpoints.getRedisEndpoint("standalone0");
+    endpoint2 = Endpoints.getRedisEndpoint("standalone1");
   }
 
   @BeforeEach
@@ -194,5 +197,69 @@ public class MultiDbTransactionIntegrationTest {
     // must execute normally; if the connection were returned mid-MULTI, SET would reply QUEUED.
     assertEquals("OK", client.set("x", "y"));
     assertEquals("y", client.get("x"));
+  }
+
+  /**
+   * Builds a client over two databases with the first ({@code standalone0}, higher weight) active.
+   */
+  private MultiDbClient newTwoDatabaseClient() {
+    DatabaseConfig a = DatabaseConfig
+        .builder(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build()).weight(1.0f)
+        .build();
+    DatabaseConfig b = DatabaseConfig
+        .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
+        .weight(0.5f).build();
+    return MultiDbClient.builder()
+        .multiDbConfig(new MultiDbConfig.Builder(new DatabaseConfig[] { a, b }).build()).build();
+  }
+
+  /**
+   * A pre-MULTI command pins the active database. If a failover switches the active database before
+   * the next pre-MULTI command, the transaction must fail fast instead of silently spanning two
+   * databases.
+   */
+  @Test
+  public void preMulti_activeDatabaseSwitched_failsFast() {
+    try (MultiDbClient twoDbClient = newTwoDatabaseClient()) {
+      MultiDbConnectionProvider provider = ClientTestUtil.getConnectionProvider(twoDbClient);
+
+      try (MultiDbTransaction tx = twoDbClient.transaction(false)) {
+        tx.set("k", "v"); // executes on the active database and pins it
+
+        provider.setActiveDatabase(endpoint2.getHostAndPort()); // manual failover
+
+        JedisException ex = assertThrows(JedisException.class, () -> tx.get("k"));
+        assertTrue(ex.getMessage().contains("Active database has changed"));
+      }
+    }
+  }
+
+  /**
+   * WATCH acquires and pins the connection before MULTI. If the active database switches
+   * afterwards, exec() must detect the change, DISCARD the server-side transaction and fail fast,
+   * returning the connection cleanly to the original pool.
+   */
+  @Test
+  public void exec_activeDatabaseSwitchedAfterWatch_discardsAndFailsFast() {
+    try (MultiDbClient twoDbClient = newTwoDatabaseClient()) {
+      MultiDbConnectionProvider provider = ClientTestUtil.getConnectionProvider(twoDbClient);
+      ConnectionPool initialPool = provider.getDatabase().getConnectionPool();
+
+      try (MultiDbTransaction tx = twoDbClient.transaction(false)) {
+        assertEquals("OK", tx.watch("k")); // acquires connection on the active database and pins it
+
+        provider.setActiveDatabase(endpoint2.getHostAndPort()); // manual failover
+
+        tx.multi();
+        tx.set("k", "v");
+
+        JedisException ex = assertThrows(JedisException.class, tx::exec);
+        assertTrue(ex.getMessage().contains("Active database has changed"));
+      }
+
+      // DISCARD was issued on the switch path, so the connection returns clean to the original
+      // pool.
+      assertEquals(0, initialPool.getNumActive(), "connection not released after failed exec");
+    }
   }
 }

@@ -42,9 +42,11 @@ public class MultiDbPipelineIntegrationTest {
 
   @BeforeEach
   public void setUp() {
+    // Health checks add a ~1s blocking startup wait; these tests don't exercise failover, so skip
+    // it.
     DatabaseConfig db = DatabaseConfig
-        .builder(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build()).weight(1.0f)
-        .build();
+        .builder(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build())
+        .healthCheckEnabled(false).weight(1.0f).build();
     client = MultiDbClient.builder()
         .multiDbConfig(new MultiDbConfig.Builder(new DatabaseConfig[] { db }).build()).build();
     client.flushAll();

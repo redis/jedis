@@ -50,9 +50,11 @@ public class MultiDbTransactionIntegrationTest {
 
   @BeforeEach
   public void setUp() {
+    // Health checks add a ~1s blocking startup wait; these tests don't exercise failover, so skip
+    // it.
     DatabaseConfig db = DatabaseConfig
-        .builder(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build()).weight(1.0f)
-        .build();
+        .builder(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build())
+        .healthCheckEnabled(false).weight(1.0f).build();
     client = MultiDbClient.builder()
         .multiDbConfig(new MultiDbConfig.Builder(new DatabaseConfig[] { db }).build()).build();
     client.flushAll();
@@ -203,12 +205,14 @@ public class MultiDbTransactionIntegrationTest {
    * Builds a client over two databases with the first ({@code standalone0}, higher weight) active.
    */
   private MultiDbClient newTwoDatabaseClient() {
+    // Health checks are disabled: the switch is driven manually via setActiveDatabase(), so the
+    // blocking initial health check (~1s) would add latency without covering anything.
     DatabaseConfig a = DatabaseConfig
-        .builder(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build()).weight(1.0f)
-        .build();
+        .builder(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build())
+        .healthCheckEnabled(false).weight(1.0f).build();
     DatabaseConfig b = DatabaseConfig
         .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
-        .weight(0.5f).build();
+        .healthCheckEnabled(false).weight(0.5f).build();
     return MultiDbClient.builder()
         .multiDbConfig(new MultiDbConfig.Builder(new DatabaseConfig[] { a, b }).build()).build();
   }

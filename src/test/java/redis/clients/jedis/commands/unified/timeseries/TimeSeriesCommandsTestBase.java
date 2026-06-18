@@ -520,11 +520,10 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
   }
 
   @Test
-  @SinceRedisVersion(value = "8.10.0",
-      message = "Requires the RedisTimeSeries TS.RANGE option-parsing fix "
-          + "(RedisTimeSeries PR #2052). Before it, a series key named like an option keyword "
-          + "(here \"align\") was matched as the ALIGN option, so the alignment was silently "
-          + "taken from the fromTimestamp and every ALIGN mode returned the same buckets.")
+  @SinceRedisVersion(value = "8.10.0", message = "Requires the RedisTimeSeries TS.RANGE option-parsing fix "
+      + "(RedisTimeSeries PR #2052). Before it, a series key named like an option keyword "
+      + "(here \"align\") was matched as the ALIGN option, so the alignment was silently "
+      + "taken from the fromTimestamp and every ALIGN mode returned the same buckets.")
   public void align() {
     // The series key is intentionally named "align" to guard against the option-keyword
     // shadowing regression fixed in RedisTimeSeries PR #2052: option parsing must start after

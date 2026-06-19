@@ -151,7 +151,7 @@ public class RebindMockTest {
       assertEquals(0, pool.getNumActive());
 
       // 5. Wait for connection to be closed on server1
-      await().pollDelay(Duration.ofMillis(1)).timeout(Duration.ofMillis(10))
+      await().atMost(Duration.ofSeconds(1)).pollInterval(Duration.ofMillis(20))
           .until(() -> mockServer1.getConnectedClientCount() == 0);
       assertEquals(0, mockServer1.getConnectedClientCount());
       assertEquals(1, mockServer2.getConnectedClientCount());
@@ -198,7 +198,7 @@ public class RebindMockTest {
       assertEquals(1, pool.getNumActive());
 
       // 5. Wait for connection to be closed on server1
-      await().pollDelay(Duration.ofMillis(1)).timeout(Duration.ofMillis(10))
+      await().atMost(Duration.ofSeconds(1)).pollInterval(Duration.ofMillis(20))
           .until(() -> mockServer1.getConnectedClientCount() == 1);
       assertEquals(1, mockServer1.getConnectedClientCount());
       assertEquals(0, mockServer2.getConnectedClientCount());

@@ -60,12 +60,12 @@ public class ConnectionPool extends Pool<Connection> {
     attachAuthenticationListener(clientConfig.getAuthXManager());
   }
 
-
   @Experimental
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig,
       MaintenanceNotificationsConfig maintConfig) {
-    this(controllerFor(maintConfig), hostAndPort, clientConfig, clientSideCache, poolConfig);
+    this(ConnectionFactory.builder().hostAndPort(hostAndPort).clientConfig(clientConfig)
+        .cache(clientSideCache), poolConfig, maintConfig);
   }
 
   private static MaintenanceEventController controllerFor(MaintenanceNotificationsConfig config) {
@@ -73,13 +73,17 @@ public class ConnectionPool extends Pool<Connection> {
         : null;
   }
 
-  private ConnectionPool(MaintenanceEventController controller, HostAndPort hostAndPort,
-      JedisClientConfig clientConfig, Cache clientSideCache,
-      GenericObjectPoolConfig<Connection> poolConfig) {
-    this(ConnectionFactory.builder().hostAndPort(hostAndPort).clientConfig(clientConfig)
-        .cache(clientSideCache).maintenanceController(controller).build(), poolConfig);
+  @Experimental
+  public ConnectionPool(ConnectionFactory.Builder factoryBuilder,
+      GenericObjectPoolConfig<Connection> poolConfig, MaintenanceNotificationsConfig maintConfig) {
+    this(factoryBuilder, poolConfig, controllerFor(maintConfig));
+  }
+
+  private ConnectionPool(ConnectionFactory.Builder factoryBuilder,
+      GenericObjectPoolConfig<Connection> poolConfig, MaintenanceEventController controller) {
+    this(factoryBuilder.maintenanceController(controller).build(), poolConfig);
     this.maintenanceController = controller;
-    attachAuthenticationListener(clientConfig.getAuthXManager());
+    attachAuthenticationListener(factoryBuilder.getClientConfig().getAuthXManager());
     if (controller != null) {
       setEvictionPolicy(new RebindAwareEvictionPolicy(controller, getEvictionPolicy()));
       controller.addHandoffHook(handoff -> evictQuietly());

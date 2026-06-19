@@ -862,6 +862,9 @@ public final class MultiDbConfig {
     /** Jedis client configuration containing connection settings and authentication. */
     private final JedisClientConfig jedisClientConfig;
 
+    /** Maintenance notifications configuration for this database. */
+    private final MaintenanceNotificationsConfig maintenanceNotificationsConfig;
+
     /** Optional connection pool configuration for managing connections to this database. */
     private GenericObjectPoolConfig<Connection> connectionPoolConfig;
 
@@ -894,6 +897,7 @@ public final class MultiDbConfig {
     public DatabaseConfig(Endpoint endpoint, JedisClientConfig clientConfig) {
       this.endpoint = endpoint;
       this.jedisClientConfig = clientConfig;
+      this.maintenanceNotificationsConfig = null;
     }
 
     /**
@@ -907,6 +911,7 @@ public final class MultiDbConfig {
       this.weight = builder.weight;
       this.healthCheckEnabled = builder.healthCheckEnabled;
       this.healthCheckStrategySupplier = builder.healthCheckStrategySupplier;
+      this.maintenanceNotificationsConfig = builder.maintenanceNotificationsConfig;
     }
 
     /**
@@ -935,6 +940,14 @@ public final class MultiDbConfig {
      */
     public JedisClientConfig getJedisClientConfig() {
       return jedisClientConfig;
+    }
+
+    /**
+     * Returns the maintenance notifications configuration for this database.
+     * @return the maintenance notifications configuration, may be null if not specified
+     */
+    public MaintenanceNotificationsConfig getMaintenanceNotificationsConfig() {
+      return maintenanceNotificationsConfig;
     }
 
     /**
@@ -1017,6 +1030,9 @@ public final class MultiDbConfig {
       /** Health check strategy supplier. Default: PingStrategy.DEFAULT */
       private StrategySupplier healthCheckStrategySupplier = PingStrategy.DEFAULT;
 
+      /** Maintenance notifications configuration. */
+      public MaintenanceNotificationsConfig maintenanceNotificationsConfig = null;
+
       /**
        * Constructs a new Builder with required endpoint and client configuration.
        * @param endpoint the Redis endpoint (host and port)
@@ -1040,6 +1056,17 @@ public final class MultiDbConfig {
       public Builder connectionPoolConfig(
           GenericObjectPoolConfig<Connection> connectionPoolConfig) {
         this.connectionPoolConfig = connectionPoolConfig;
+        return this;
+      }
+
+      /**
+       * Sets the maintenance notifications configuration for this database.
+       * @param maintenanceNotificationsConfig the maintenance notifications configuration
+       * @return this builder instance for method chaining
+       */
+      public Builder maintenanceNotificationsConfig(
+          MaintenanceNotificationsConfig maintenanceNotificationsConfig) {
+        this.maintenanceNotificationsConfig = maintenanceNotificationsConfig;
         return this;
       }
 

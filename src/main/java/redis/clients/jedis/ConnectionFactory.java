@@ -83,6 +83,10 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
     public ConnectionFactory build() {
       withDefaults();
+      return create();
+    }
+
+    protected ConnectionFactory create() {
       return new ConnectionFactory(this);
     }
 

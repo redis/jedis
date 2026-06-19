@@ -23,6 +23,7 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionTestHelper;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.PushConsumer;
 import redis.clients.jedis.PushConsumerChainImpl;
 import redis.clients.jedis.util.server.TcpMockServer;
@@ -58,7 +59,8 @@ public class TrackingConnectionPoolInitTest {
 
     try (
         TrackingConnectionPool pool = TrackingConnectionPool.builder().hostAndPort(hostAndPort)
-            .clientConfig(config).build();
+            .clientConfig(config)
+            .maintenanceNotificationsConfig(MaintenanceNotificationsConfig.DEFAULT).build();
         Connection conn = pool.getResource()) {
 
       List<PushConsumer> consumers = ConnectionTestHelper.getPushConsumers(conn);

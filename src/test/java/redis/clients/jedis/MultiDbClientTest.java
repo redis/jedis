@@ -17,6 +17,8 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.*;
 
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
+import redis.clients.jedis.csc.Cache;
+import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.DatabaseSwitchEvent;
 import redis.clients.jedis.mcf.SwitchReason;
@@ -251,6 +253,49 @@ public class MultiDbClientTest {
 
     client.setWeight(endpoint, 1.0f);
     assertEquals(1.0f, client.getWeight(endpoint));
+  }
+
+  @Test
+  void testCacheWithMultiDbClient() {
+    // Create MultiDbClient with cache enabled
+    MultiDbConfig clientConfig = MultiDbConfig.builder()
+        .database(endpoint1.getHostAndPort(), 100.0f, endpoint1.getClientConfigBuilder().build())
+        .database(endpoint2.getHostAndPort(), 50.0f, endpoint2.getClientConfigBuilder().build())
+        .build();
+
+    try (MultiDbClient cachedClient = MultiDbClient.builder().multiDbConfig(clientConfig)
+        .cacheConfig(CacheConfig.builder().build()).build()) {
+
+      // Verify cache is available
+      Cache cache = cachedClient.getCache();
+      assertNotNull(cache, "Cache should be available");
+      assertEquals(0, cache.getSize(), "Cache should be empty initially");
+
+      // Set some values
+      cachedClient.set("key1", "value1");
+      cachedClient.set("key2", "value2");
+      cachedClient.set("key3", "value3");
+
+      // First read - should cache the values
+      assertEquals("value1", cachedClient.get("key1"));
+      assertEquals("value2", cachedClient.get("key2"));
+      assertEquals("value3", cachedClient.get("key3"));
+
+      // Verify cache has entries
+      assertEquals(3, cache.getSize(), "Cache should contain 3 entries");
+
+      // Second read - should hit the cache
+      assertEquals("value1", cachedClient.get("key1"));
+      assertEquals("value2", cachedClient.get("key2"));
+
+      // Flush the cache
+      cache.flush();
+      assertEquals(0, cache.getSize(), "Cache should be empty after flush");
+
+      // Read again - should populate cache again
+      assertEquals("value1", cachedClient.get("key1"));
+      assertEquals(1, cache.getSize(), "Cache should contain 1 entry after reading");
+    }
   }
 
   private void awaitIsHealthy(HostAndPort hostAndPort) {

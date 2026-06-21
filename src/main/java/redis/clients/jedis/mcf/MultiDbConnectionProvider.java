@@ -36,6 +36,7 @@ import redis.clients.jedis.*;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.VisibleForTesting;
+import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.exceptions.JedisValidationException;
@@ -107,13 +108,29 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
   private final AtomicLong failoverFreezeUntil = new AtomicLong(0);
   private final AtomicInteger failoverAttemptCount = new AtomicInteger(0);
+  private final Cache cache;
 
+  /*
+   * Constructor for MultiDbConnectionProvider. For the case where client side cache is not used.
+   * Check other constructor where client side cache is demanded.
+   * @param multiDbConfig the multi-database configuration
+   */
   public MultiDbConnectionProvider(MultiDbConfig multiDbConfig) {
+    this(multiDbConfig, null);
+  }
+
+  /**
+   * Constructor for MultiDbConnectionProvider. For the case where client side cache is used.
+   * @param multiDbConfig the multi-database configuration
+   * @param cache the client-side cache
+   */
+  public MultiDbConnectionProvider(MultiDbConfig multiDbConfig, Cache cache) {
 
     if (multiDbConfig == null) throw new JedisValidationException(
         "MultiDbConfig must not be NULL for MultiDbConnectionProvider");
 
     this.multiDbConfig = multiDbConfig;
+    this.cache = cache;
 
     ////////////// Configure Retry ////////////////////
     MultiDbConfig.RetryConfig commandRetry = multiDbConfig.getCommandRetry();
@@ -326,7 +343,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
     TrackingConnectionPool pool = TrackingConnectionPool.builder()
         .hostAndPort(hostPort(config.getEndpoint())).clientConfig(config.getJedisClientConfig())
-        .poolConfig(config.getConnectionPoolConfig()).build();
+        .poolConfig(config.getConnectionPoolConfig()).cache(cache).build();
 
     Database database;
     StrategySupplier strategySupplier = config.getHealthCheckStrategySupplier();

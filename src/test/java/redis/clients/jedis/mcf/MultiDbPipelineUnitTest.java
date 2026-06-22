@@ -126,7 +126,7 @@ public class MultiDbPipelineUnitTest {
    * an intermittent ping failure is recovered and the pipeline completes successfully.
    */
   @Test
-  public void sync_pingFailsThenSucceeds_pipelineRecoversWithRetry() throws Exception {
+  public void sync_transientConnectionValidationFailure_recoversViaRetry() throws Exception {
     MultiDbConfig cfg = MultiDbConfig
         .builder(new DatabaseConfig[] {
             DatabaseConfig.builder(fakeEndpoint, DefaultJedisClientConfig.builder().build())
@@ -163,7 +163,7 @@ public class MultiDbPipelineUnitTest {
    * attempt, every borrowed connection must be returned to the pool (i.e. closed).
    */
   @Test
-  public void sync_pingFailsMultipleTimes_allAcquiredConnectionsReturnedToPool() throws Exception {
+  public void sync_connectionValidationAlwaysFails_allAcquiredConnectionsReturnedToPool() throws Exception {
     MultiDbConfig cfg = MultiDbConfig
         .builder(new DatabaseConfig[] {
             DatabaseConfig.builder(fakeEndpoint, DefaultJedisClientConfig.builder().build())

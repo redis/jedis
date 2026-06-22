@@ -30,7 +30,7 @@ import redis.clients.jedis.util.ClientTestUtil;
  * {@link MultiDbPipeline#sync()} / {@link MultiDbPipeline#close()}.
  */
 @Tag("integration")
-public class MultiDbPipelineIntegrationTest {
+public class MultiDbPipelineIT {
 
   private static EndpointConfig endpoint;
   private MultiDbClient client;
@@ -115,7 +115,7 @@ public class MultiDbPipelineIntegrationTest {
     int activeBefore = pool.getNumActive();
 
     try (MultiDbPipeline p = client.pipelined()) {
-      // no commands appended
+      assertEquals(activeBefore, pool.getNumActive());
     }
 
     assertEquals(activeBefore, pool.getNumActive());

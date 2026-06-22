@@ -35,7 +35,7 @@ import redis.clients.jedis.util.ClientTestUtil;
  * {@link MultiDbTransaction#close()}.
  */
 @Tag("integration")
-public class MultiDbTransactionIntegrationTest {
+public class MultiDbTransactionIT {
 
   private static EndpointConfig endpoint;
   private MultiDbClient client;

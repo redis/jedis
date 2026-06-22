@@ -8,6 +8,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 
 import static org.awaitility.Awaitility.await;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -15,6 +17,7 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.csc.Cache;
@@ -30,10 +33,15 @@ import java.util.List;
 import java.util.function.Consumer;
 
 /**
- * Basic tests for MultiDbClient functionality.
+ * Basic tests for MultiDbClient functionality. Tests are parameterized to run against both RESP2
+ * and RESP3 protocols. Cache-related tests only run on RESP3 as client-side caching requires RESP3.
  */
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 @Tag("integration")
 public class MultiDbClientTest {
+
+  protected final RedisProtocol protocol;
 
   private MultiDbClient client;
   private static EndpointConfig endpoint1;
@@ -42,6 +50,10 @@ public class MultiDbClientTest {
   private static final ToxiproxyClient tp = new ToxiproxyClient("localhost", 8474);
   private static Proxy redisProxy1;
   private static Proxy redisProxy2;
+
+  public MultiDbClientTest(RedisProtocol protocol) {
+    this.protocol = protocol;
+  }
 
   @BeforeAll
   public static void setupAdminClients() throws IOException {
@@ -70,10 +82,12 @@ public class MultiDbClientTest {
     // Disable health checks for faster test execution
     MultiDbConfig clientConfig = MultiDbConfig.builder()
         .database(DatabaseConfig
-            .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())
+            .builder(endpoint1.getHostAndPort(),
+              endpoint1.getClientConfigBuilder().protocol(protocol).build())
             .weight(100.0f).healthCheckEnabled(false).build())
         .database(DatabaseConfig
-            .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
+            .builder(endpoint2.getHostAndPort(),
+              endpoint2.getClientConfigBuilder().protocol(protocol).build())
             .weight(50.0f).healthCheckEnabled(false).build())
         .build();
 
@@ -91,8 +105,8 @@ public class MultiDbClientTest {
   void testAddRemoveDatabaseWithEndpointInterface() {
     Endpoint newEndpoint = new HostAndPort("unavailable", 6381);
 
-    assertDoesNotThrow(
-      () -> client.addDatabase(newEndpoint, 25.0f, DefaultJedisClientConfig.builder().build()));
+    assertDoesNotThrow(() -> client.addDatabase(newEndpoint, 25.0f,
+      endpoint1.getClientConfigBuilder().protocol(protocol).build()));
 
     assertThat(client.getDatabaseEndpoints(), hasItems(newEndpoint));
 
@@ -107,7 +121,8 @@ public class MultiDbClientTest {
     HostAndPort newEndpoint = new HostAndPort("unavailable", 6381);
 
     DatabaseConfig newConfig = DatabaseConfig
-        .builder(newEndpoint, DefaultJedisClientConfig.builder().build()).weight(25.0f).build();
+        .builder(newEndpoint, endpoint1.getClientConfigBuilder().protocol(protocol).build())
+        .weight(25.0f).build();
 
     assertDoesNotThrow(() -> client.addDatabase(newConfig));
 
@@ -138,10 +153,13 @@ public class MultiDbClientTest {
   @Test
   void testBuilderWithMultipleEndpointTypes() {
     MultiDbConfig clientConfig = MultiDbConfig.builder()
-        .database(endpoint1.getHostAndPort(), 100.0f, DefaultJedisClientConfig.builder().build())
-        .database(DatabaseConfig
-            .builder(endpoint2.getHostAndPort(), DefaultJedisClientConfig.builder().build())
-            .weight(50.0f).build())
+        .database(endpoint1.getHostAndPort(), 100.0f,
+          endpoint1.getClientConfigBuilder().protocol(protocol).build())
+        .database(
+          DatabaseConfig
+              .builder(endpoint2.getHostAndPort(),
+                endpoint2.getClientConfigBuilder().protocol(protocol).build())
+              .weight(50.0f).build())
         .build();
 
     try (MultiDbClient testClient = MultiDbClient.builder().multiDbConfig(clientConfig).build()) {
@@ -175,8 +193,9 @@ public class MultiDbClientTest {
     // This test needs health checks enabled to detect an unhealthy endpoint
     Endpoint newEndpoint = new HostAndPort("unavailable", 6381);
     DatabaseConfig config = DatabaseConfig
-        .builder(newEndpoint, DefaultJedisClientConfig.builder().build()).weight(25.0f)
-        .healthCheckEnabled(true) // Enable health check to detect unavailable endpoint
+        .builder(newEndpoint, endpoint1.getClientConfigBuilder().protocol(protocol).build())
+        .weight(25.0f).healthCheckEnabled(true) // Enable health check to detect unavailable
+                                                // endpoint
         .build();
     client.addDatabase(config);
 
@@ -200,10 +219,12 @@ public class MultiDbClientTest {
 
     MultiDbConfig endpointsConfig = MultiDbConfig.builder()
         .database(DatabaseConfig
-            .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())
+            .builder(endpoint1.getHostAndPort(),
+              endpoint1.getClientConfigBuilder().protocol(protocol).build())
             .weight(100.0f).healthCheckEnabled(false).build())
         .database(DatabaseConfig
-            .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
+            .builder(endpoint2.getHostAndPort(),
+              endpoint2.getClientConfigBuilder().protocol(protocol).build())
             .weight(50.0f).healthCheckEnabled(false).build())
         .build();
 
@@ -272,13 +293,17 @@ public class MultiDbClientTest {
 
   @Test
   void testCacheWithMultiDbClient() {
+    // Client-side caching requires RESP3
+    assumeTrue(protocol == null || protocol == RedisProtocol.RESP3,
+      "Client-side caching is only supported with RESP3");
+
     // Create MultiDbClient with cache enabled
     MultiDbConfig clientConfig = MultiDbConfig.builder()
         .database(DatabaseConfig
-            .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())
+            .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().resp3().build())
             .weight(100.0f).healthCheckEnabled(false).build())
         .database(DatabaseConfig
-            .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
+            .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().resp3().build())
             .weight(50.0f).healthCheckEnabled(false).build())
         .build();
 
@@ -319,15 +344,19 @@ public class MultiDbClientTest {
 
   @Test
   void testCacheWithMultiDbClientPoolRecreation() {
+    // Client-side caching requires RESP3
+    assumeTrue(protocol == null || protocol == RedisProtocol.RESP3,
+      "Client-side caching is only supported with RESP3");
+
     // Create MultiDbClient with cache enabled and fast failover enabled
     // This tests the scenario where TrackingConnectionPool.from() is called
     // when switching back to a database whose pool was closed during manual switch
     MultiDbConfig clientConfig = MultiDbConfig.builder()
         .database(DatabaseConfig
-            .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())
+            .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().resp3().build())
             .weight(100.0f).healthCheckEnabled(false).build())
         .database(DatabaseConfig
-            .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
+            .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().resp3().build())
             .weight(50.0f).healthCheckEnabled(false).build())
         .fastFailover(true) // Close pools when switching databases
         .build();
@@ -385,10 +414,14 @@ public class MultiDbClientTest {
 
   @Test
   void testCacheWithDynamicDatabaseAddition() {
+    // Client-side caching requires RESP3
+    assumeTrue(protocol == null || protocol == RedisProtocol.RESP3,
+      "Client-side caching is only supported with RESP3");
+
     // Create MultiDbClient with cache enabled - start with just one database
     MultiDbConfig clientConfig = MultiDbConfig.builder()
         .database(DatabaseConfig
-            .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())
+            .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().resp3().build())
             .weight(100.0f).healthCheckEnabled(false).build())
         .build();
 
@@ -405,7 +438,7 @@ public class MultiDbClientTest {
 
       // Dynamically add a second database with the same cache
       cachedClient.addDatabase(DatabaseConfig
-          .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
+          .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().resp3().build())
           .weight(50.0f).healthCheckEnabled(false).build());
 
       // No need to wait for health check since healthCheckEnabled=false
@@ -432,13 +465,17 @@ public class MultiDbClientTest {
 
   @Test
   void testCachePreservedAcrossDatabaseSwitches() {
+    // Client-side caching requires RESP3
+    assumeTrue(protocol == null || protocol == RedisProtocol.RESP3,
+      "Client-side caching is only supported with RESP3");
+
     // Test that cache instance is shared across database switches
     MultiDbConfig clientConfig = MultiDbConfig.builder()
         .database(DatabaseConfig
-            .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())
+            .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().resp3().build())
             .weight(100.0f).healthCheckEnabled(false).build())
         .database(DatabaseConfig
-            .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
+            .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().resp3().build())
             .weight(50.0f).healthCheckEnabled(false).build())
         .build();
 

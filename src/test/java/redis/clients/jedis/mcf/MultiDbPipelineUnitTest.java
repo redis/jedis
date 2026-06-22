@@ -163,7 +163,8 @@ public class MultiDbPipelineUnitTest {
    * attempt, every borrowed connection must be returned to the pool (i.e. closed).
    */
   @Test
-  public void sync_connectionValidationAlwaysFails_allAcquiredConnectionsReturnedToPool() throws Exception {
+  public void sync_connectionValidationAlwaysFails_allAcquiredConnectionsReturnedToPool()
+      throws Exception {
     MultiDbConfig cfg = MultiDbConfig
         .builder(new DatabaseConfig[] {
             DatabaseConfig.builder(fakeEndpoint, DefaultJedisClientConfig.builder().build())

@@ -41,7 +41,6 @@ import redis.clients.jedis.util.SafeEncoder;
  */
 @Experimental
 public class MultiDbTransaction extends AbstractTransaction {
-  private static final byte[] QUEUED_IN_BYTES = SafeEncoder.encode("QUEUED");
   private static final byte[] OK_IN_BYTES = SafeEncoder.encode("OK");
   private static final String OK_STR = "OK";
 
@@ -143,6 +142,7 @@ public class MultiDbTransaction extends AbstractTransaction {
       throw new IllegalStateException("EXEC without MULTI");
     }
 
+    boolean serverInMultiMode = false;
     try {
       Connection conn = acquireConnection();
 
@@ -153,6 +153,8 @@ public class MultiDbTransaction extends AbstractTransaction {
             : multiReply;
         throw new JedisDataException("Unexpected response: " + response);
       }
+
+      serverInMultiMode = true;
 
       commands.forEach((command) -> conn.sendCommand(command.getKey()));
       // following connection.getMany(int) flushes anyway, so no flush here.
@@ -165,6 +167,7 @@ public class MultiDbTransaction extends AbstractTransaction {
             "Active database has changed since transaction started");
         try {
           conn.executeCommand(new CommandArguments(DISCARD));
+          serverInMultiMode = false;
         } catch (Exception e) {
           dbSwitchException.addSuppressed(e);
         }
@@ -176,6 +179,7 @@ public class MultiDbTransaction extends AbstractTransaction {
       List<Object> unformatted;
       try {
         unformatted = conn.getObjectMultiBulkReply();
+        serverInMultiMode = false;
       } catch (JedisDataException jce) {
         // A command may fail to be queued, so there may be an error before EXEC is called
         // In this case, the server will discard all commands in the transaction and return the
@@ -205,7 +209,7 @@ public class MultiDbTransaction extends AbstractTransaction {
       inMulti = false;
       inWatch = false;
       commands.clear();
-      releaseConnection();
+      releaseConnection(serverInMultiMode);
     }
   }
 
@@ -228,7 +232,7 @@ public class MultiDbTransaction extends AbstractTransaction {
       inMulti = false;
       inWatch = false;
       commands.clear();
-      releaseConnection();
+      releaseConnection(false);
     }
   }
 
@@ -247,8 +251,11 @@ public class MultiDbTransaction extends AbstractTransaction {
     return connection;
   }
 
-  private void releaseConnection() {
+  private void releaseConnection(boolean setBroken) {
     if (connection != null) {
+      if (setBroken) {
+        connection.setBroken();
+      }
       IOUtils.closeQuietly(connection);
       connection = null;
     }

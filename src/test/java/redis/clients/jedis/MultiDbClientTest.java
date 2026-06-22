@@ -2,12 +2,15 @@ package redis.clients.jedis;
 
 import eu.rekawek.toxiproxy.Proxy;
 import eu.rekawek.toxiproxy.ToxiproxyClient;
+import io.redis.test.annotations.SinceRedisVersion;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -25,6 +28,7 @@ import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.exceptions.JedisValidationException;
 import redis.clients.jedis.mcf.DatabaseSwitchEvent;
 import redis.clients.jedis.mcf.SwitchReason;
+import redis.clients.jedis.util.RedisVersionCondition;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -50,6 +54,9 @@ public class MultiDbClientTest {
   private static final ToxiproxyClient tp = new ToxiproxyClient("localhost", 8474);
   private static Proxy redisProxy1;
   private static Proxy redisProxy2;
+
+  @RegisterExtension
+  public RedisVersionCondition versionCondition = new RedisVersionCondition(() -> endpoint1);
 
   public MultiDbClientTest(RedisProtocol protocol) {
     this.protocol = protocol;
@@ -292,6 +299,7 @@ public class MultiDbClientTest {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.4.0", message = "Jedis client-side caching is only supported with Redis 7.4 or later.")
   void testCacheWithMultiDbClient() {
     // Client-side caching requires RESP3
     assumeTrue(protocol == null || protocol == RedisProtocol.RESP3,
@@ -343,6 +351,7 @@ public class MultiDbClientTest {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.4.0", message = "Jedis client-side caching is only supported with Redis 7.4 or later.")
   void testCacheWithMultiDbClientPoolRecreation() {
     // Client-side caching requires RESP3
     assumeTrue(protocol == null || protocol == RedisProtocol.RESP3,
@@ -413,6 +422,7 @@ public class MultiDbClientTest {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.4.0", message = "Jedis client-side caching is only supported with Redis 7.4 or later.")
   void testCacheWithDynamicDatabaseAddition() {
     // Client-side caching requires RESP3
     assumeTrue(protocol == null || protocol == RedisProtocol.RESP3,
@@ -464,6 +474,7 @@ public class MultiDbClientTest {
   }
 
   @Test
+  @SinceRedisVersion(value = "7.4.0", message = "Jedis client-side caching is only supported with Redis 7.4 or later.")
   void testCachePreservedAcrossDatabaseSwitches() {
     // Client-side caching requires RESP3
     assumeTrue(protocol == null || protocol == RedisProtocol.RESP3,

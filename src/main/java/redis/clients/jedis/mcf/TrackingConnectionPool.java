@@ -129,6 +129,7 @@ public class TrackingConnectionPool extends ConnectionPool {
   private final HostAndPort hostAndPort;
   private final JedisClientConfig clientConfig;
   private final GenericObjectPoolConfig<Connection> poolConfig;
+  private final MaintenanceNotificationsConfig maintenanceNotificationsConfig;
   private final AtomicInteger numWaiters = new AtomicInteger();
   private final Set<Connection> poolTrackedObjects = ConcurrentHashMap.newKeySet();
 
@@ -144,6 +145,7 @@ public class TrackingConnectionPool extends ConnectionPool {
     this.hostAndPort = builder.hostAndPort;
     this.clientConfig = builder.clientConfig;
     this.poolConfig = builder.poolConfig;
+    this.maintenanceNotificationsConfig = builder.maintenanceNotificationsConfig;
     this.attachAuthenticationListener(builder.clientConfig.getAuthXManager());
   }
 
@@ -154,7 +156,8 @@ public class TrackingConnectionPool extends ConnectionPool {
 
   public static TrackingConnectionPool from(TrackingConnectionPool existing) {
     return builder().hostAndPort(existing.hostAndPort).clientConfig(existing.clientConfig)
-        .poolConfig(existing.poolConfig).build();
+        .poolConfig(existing.poolConfig)
+        .maintenanceNotificationsConfig(existing.maintenanceNotificationsConfig).build();
   }
 
   @Override

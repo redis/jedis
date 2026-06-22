@@ -149,8 +149,7 @@ public class TrackingConnectionPool extends ConnectionPool {
 
   private static ConnectionFactory.Builder createFailFastFactoryBuilder(Builder poolBuilder) {
     return new FailFastConnectionFactory.FailFastFactoryBuilder()
-        .clientConfig(poolBuilder.clientConfig).socketFactory(
-          new DefaultJedisSocketFactory(poolBuilder.hostAndPort, poolBuilder.clientConfig));
+        .hostAndPort(poolBuilder.hostAndPort).clientConfig(poolBuilder.clientConfig);
   }
 
   public static TrackingConnectionPool from(TrackingConnectionPool existing) {

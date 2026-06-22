@@ -132,7 +132,7 @@ public class MultiDbTransaction extends AbstractTransaction {
         unwatch();
       }
     } finally {
-      releaseConnection();
+      releaseConnection(false);
     }
   }
 

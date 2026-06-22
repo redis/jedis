@@ -67,9 +67,14 @@ public class MultiDbClientTest {
   @BeforeEach
   void setUp() {
     // Create a simple resilient client with mock endpoints for testing
+    // Disable health checks for faster test execution
     MultiDbConfig clientConfig = MultiDbConfig.builder()
-        .database(endpoint1.getHostAndPort(), 100.0f, endpoint1.getClientConfigBuilder().build())
-        .database(endpoint2.getHostAndPort(), 50.0f, endpoint2.getClientConfigBuilder().build())
+        .database(DatabaseConfig
+            .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())
+            .weight(100.0f).healthCheckEnabled(false).build())
+        .database(DatabaseConfig
+            .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
+            .weight(50.0f).healthCheckEnabled(false).build())
         .build();
 
     client = MultiDbClient.builder().multiDbConfig(clientConfig).build();
@@ -117,11 +122,10 @@ public class MultiDbClientTest {
   void testSetActiveDatabase() {
     Endpoint endpoint = client.getActiveDatabaseEndpoint();
 
-    awaitIsHealthy(endpoint1.getHostAndPort());
-    awaitIsHealthy(endpoint2.getHostAndPort());
-    // Ensure we have a healthy endpoint to switch to
+    // With healthCheckEnabled=false, all endpoints are always considered healthy
+    // Find a different endpoint to switch to
     Endpoint newEndpoint = client.getDatabaseEndpoints().stream()
-        .filter(e -> e.equals(endpoint) && client.isHealthy(e)).findFirst().orElse(null);
+        .filter(e -> !e.equals(endpoint)).findFirst().orElse(null);
     assertNotNull(newEndpoint);
 
     // Switch to the new endpoint
@@ -150,14 +154,13 @@ public class MultiDbClientTest {
   public void testForceActiveDatabase() {
     Endpoint endpoint = client.getActiveDatabaseEndpoint();
 
-    // Ensure we have a healthy endpoint to switch to
-    awaitIsHealthy(endpoint1.getHostAndPort());
-    awaitIsHealthy(endpoint2.getHostAndPort());
+    // With healthCheckEnabled=false, endpoints are always considered healthy
+    // Find an endpoint that is not the current one
     Endpoint newEndpoint = client.getDatabaseEndpoints().stream()
-        .filter(e -> e.equals(endpoint) && client.isHealthy(e)).findFirst().orElse(null);
+        .filter(e -> !e.equals(endpoint)).findFirst().orElse(null);
     assertNotNull(newEndpoint);
 
-    // Force switch to the new endpoint for 10 seconds
+    // Force switch to the new endpoint for 100ms
     client.forceActiveDatabase(newEndpoint, Duration.ofMillis(100).toMillis());
 
     // Verify the active endpoint has changed
@@ -166,9 +169,20 @@ public class MultiDbClientTest {
 
   @Test
   public void testForceActiveDatabaseWithNonHealthyEndpoint() {
+    // This test needs health checks enabled to detect an unhealthy endpoint
     Endpoint newEndpoint = new HostAndPort("unavailable", 6381);
-    client.addDatabase(newEndpoint, 25.0f, DefaultJedisClientConfig.builder().build());
+    DatabaseConfig config = DatabaseConfig
+        .builder(newEndpoint, DefaultJedisClientConfig.builder().build())
+        .weight(25.0f)
+        .healthCheckEnabled(true)  // Enable health check to detect unavailable endpoint
+        .build();
+    client.addDatabase(config);
 
+    // Wait for health check to mark it as unhealthy (unavailable endpoint will fail health check)
+    await().atMost(Duration.ofSeconds(3))
+        .until(() -> !client.isHealthy(newEndpoint));
+
+    // Now attempting to force switch to an unhealthy endpoint should throw exception
     assertThrows(JedisValidationException.class,
       () -> client.forceActiveDatabase(newEndpoint, Duration.ofMillis(100).toMillis()));
   }
@@ -186,10 +200,10 @@ public class MultiDbClientTest {
     MultiDbConfig endpointsConfig = MultiDbConfig.builder()
         .database(DatabaseConfig
             .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())
-            .weight(100.0f).build())
+            .weight(100.0f).healthCheckEnabled(false).build())
         .database(DatabaseConfig
             .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
-            .weight(50.0f).build())
+            .weight(50.0f).healthCheckEnabled(false).build())
         .build();
 
     Consumer<DatabaseSwitchEvent> eventConsumer;
@@ -201,7 +215,7 @@ public class MultiDbClientTest {
 
       assertThat(events.size(), equalTo(0));
 
-      awaitIsHealthy(endpoint2.getHostAndPort());
+      // With healthCheckEnabled=false, no need to wait
       testClient.setActiveDatabase(endpoint2.getHostAndPort());
 
       assertThat(events.size(), equalTo(1));
@@ -298,8 +312,172 @@ public class MultiDbClientTest {
     }
   }
 
-  private void awaitIsHealthy(HostAndPort hostAndPort) {
-    await().atMost(Duration.ofSeconds(1)).until(() -> client.isHealthy(hostAndPort));
+  @Test
+  void testCacheWithMultiDbClientPoolRecreation() {
+    // Create MultiDbClient with cache enabled and fast failover enabled
+    // This tests the scenario where TrackingConnectionPool.from() is called
+    // when switching back to a database whose pool was closed during manual switch
+    MultiDbConfig clientConfig = MultiDbConfig.builder()
+        .database(DatabaseConfig
+            .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())
+            .weight(100.0f).healthCheckEnabled(false).build())
+        .database(DatabaseConfig
+            .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
+            .weight(50.0f).healthCheckEnabled(false).build())
+        .fastFailover(true) // Close pools when switching databases
+        .build();
+
+    try (MultiDbClient cachedClient = MultiDbClient.builder().multiDbConfig(clientConfig)
+        .cacheConfig(CacheConfig.builder().build()).build()) {
+
+      // Verify cache is available
+      Cache cache = cachedClient.getCache();
+      assertNotNull(cache, "Cache should be available");
+      assertEquals(0, cache.getSize(), "Cache should be empty initially");
+
+      // Determine the two endpoints
+      Endpoint firstEndpoint = endpoint1.getHostAndPort();
+      Endpoint secondEndpoint = endpoint2.getHostAndPort();
+
+      // Make sure we start on the first endpoint
+      cachedClient.setActiveDatabase(firstEndpoint);
+      assertEquals(firstEndpoint, cachedClient.getActiveDatabaseEndpoint());
+
+      // Set some values and cache them on first endpoint
+      cachedClient.set("poolrec1", "value1");
+      cachedClient.set("poolrec2", "value2");
+      assertEquals("value1", cachedClient.get("poolrec1"));
+      assertEquals("value2", cachedClient.get("poolrec2"));
+      assertEquals(2, cache.getSize(), "Cache should contain 2 entries");
+
+      // Manually switch to the second endpoint
+      // With fastFailover=true, this closes the first endpoint's pool
+      cachedClient.setActiveDatabase(secondEndpoint);
+      assertEquals(secondEndpoint, cachedClient.getActiveDatabaseEndpoint());
+
+      // Perform operations on the second endpoint
+      cachedClient.set("poolrec3", "value3");
+      assertEquals("value3", cachedClient.get("poolrec3"));
+
+      // Cache should still be functional
+      assertSame(cache, cachedClient.getCache(), "Cache instance should be preserved");
+
+      // Now switch back to the first endpoint
+      // This triggers TrackingConnectionPool.from() because the pool was closed
+      cachedClient.setActiveDatabase(firstEndpoint);
+      assertEquals(firstEndpoint, cachedClient.getActiveDatabaseEndpoint());
+
+      // Verify cache continues to work after pool recreation
+      // This is the key test - the TrackingConnectionPool.from() code path
+      cachedClient.set("poolrec4", "value4");
+      assertEquals("value4", cachedClient.get("poolrec4"));
+
+      // Verify cache is still the same instance and functional
+      assertSame(cache, cachedClient.getCache(), "Cache instance should still be preserved");
+      assertTrue(cachedClient.getCache().getSize() > 0, "Cache should have entries");
+    }
+  }
+
+  @Test
+  void testCacheWithDynamicDatabaseAddition() {
+    // Create MultiDbClient with cache enabled - start with just one database
+    MultiDbConfig clientConfig = MultiDbConfig.builder()
+        .database(DatabaseConfig
+            .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())
+            .weight(100.0f).healthCheckEnabled(false).build())
+        .build();
+
+    try (MultiDbClient cachedClient = MultiDbClient.builder().multiDbConfig(clientConfig)
+        .cacheConfig(CacheConfig.builder().build()).build()) {
+
+      Cache cache = cachedClient.getCache();
+      assertNotNull(cache, "Cache should be available");
+
+      // Set and cache some values on the first endpoint
+      cachedClient.set("dynamic1", "value1");
+      assertEquals("value1", cachedClient.get("dynamic1"));
+      assertTrue(cache.getSize() > 0, "Cache should have entries");
+
+      // Dynamically add a second database with the same cache
+      cachedClient.addDatabase(DatabaseConfig
+          .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
+          .weight(50.0f).healthCheckEnabled(false).build());
+
+      // No need to wait for health check since healthCheckEnabled=false
+
+      // Verify both endpoints are available
+      assertEquals(2, cachedClient.getDatabaseEndpoints().size());
+
+      // Continue operations - cache should work across database additions
+      cachedClient.set("dynamic2", "value2");
+      assertEquals("value2", cachedClient.get("dynamic2"));
+
+      // Switch to the newly added database
+      cachedClient.setActiveDatabase(endpoint2.getHostAndPort());
+      assertEquals(endpoint2.getHostAndPort(), cachedClient.getActiveDatabaseEndpoint());
+
+      // Cache should still be functional after switching
+      cachedClient.set("dynamic3", "value3");
+      assertEquals("value3", cachedClient.get("dynamic3"));
+
+      assertNotNull(cachedClient.getCache(),
+        "Cache should still be available after database switch");
+    }
+  }
+
+  @Test
+  void testCachePreservedAcrossDatabaseSwitches() {
+    // Test that cache instance is shared across database switches
+    MultiDbConfig clientConfig = MultiDbConfig.builder()
+        .database(DatabaseConfig
+            .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())
+            .weight(100.0f).healthCheckEnabled(false).build())
+        .database(DatabaseConfig
+            .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
+            .weight(50.0f).healthCheckEnabled(false).build())
+        .build();
+
+    try (MultiDbClient cachedClient = MultiDbClient.builder().multiDbConfig(clientConfig)
+        .cacheConfig(CacheConfig.builder().maxSize(100).build()).build()) {
+
+      Cache cache = cachedClient.getCache();
+      assertNotNull(cache);
+
+      Endpoint firstEndpoint = cachedClient.getActiveDatabaseEndpoint();
+      // No need to wait for health checks since healthCheckEnabled=false
+
+      Endpoint secondEndpoint = cachedClient.getDatabaseEndpoints().stream()
+          .filter(e -> !e.equals(firstEndpoint)).findFirst().orElse(null);
+      assertNotNull(secondEndpoint, "Should have a second endpoint");
+
+      // Set data on first endpoint
+      cachedClient.set("shared1", "value1");
+      assertEquals("value1", cachedClient.get("shared1"));
+
+      // Switch to second endpoint
+      cachedClient.setActiveDatabase(secondEndpoint);
+      assertEquals(secondEndpoint, cachedClient.getActiveDatabaseEndpoint());
+
+      // Verify cache is the same instance
+      assertSame(cache, cachedClient.getCache(),
+        "Cache instance should be preserved across switches");
+
+      // Set data on second endpoint
+      cachedClient.set("shared2", "value2");
+      assertEquals("value2", cachedClient.get("shared2"));
+
+      // Switch back to first endpoint
+      cachedClient.setActiveDatabase(firstEndpoint);
+      assertEquals(firstEndpoint, cachedClient.getActiveDatabaseEndpoint());
+
+      // Cache should still be the same instance
+      assertSame(cache, cachedClient.getCache(),
+        "Cache instance should be the same after switching back");
+
+      // Verify operations still work
+      cachedClient.set("shared3", "value3");
+      assertEquals("value3", cachedClient.get("shared3"));
+    }
   }
 
 }

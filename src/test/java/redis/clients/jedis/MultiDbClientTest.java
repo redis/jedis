@@ -122,10 +122,11 @@ public class MultiDbClientTest {
   void testSetActiveDatabase() {
     Endpoint endpoint = client.getActiveDatabaseEndpoint();
 
-    // With healthCheckEnabled=false, all endpoints are always considered healthy
+    awaitIsHealthy(endpoint1.getHostAndPort());
+    awaitIsHealthy(endpoint2.getHostAndPort());
     // Find a different endpoint to switch to
-    Endpoint newEndpoint = client.getDatabaseEndpoints().stream()
-        .filter(e -> !e.equals(endpoint)).findFirst().orElse(null);
+    Endpoint newEndpoint = client.getDatabaseEndpoints().stream().filter(e -> !e.equals(endpoint))
+        .findFirst().orElse(null);
     assertNotNull(newEndpoint);
 
     // Switch to the new endpoint
@@ -154,10 +155,12 @@ public class MultiDbClientTest {
   public void testForceActiveDatabase() {
     Endpoint endpoint = client.getActiveDatabaseEndpoint();
 
-    // With healthCheckEnabled=false, endpoints are always considered healthy
+    // Ensure we have a healthy endpoint to switch to
+    awaitIsHealthy(endpoint1.getHostAndPort());
+    awaitIsHealthy(endpoint2.getHostAndPort());
     // Find an endpoint that is not the current one
-    Endpoint newEndpoint = client.getDatabaseEndpoints().stream()
-        .filter(e -> !e.equals(endpoint)).findFirst().orElse(null);
+    Endpoint newEndpoint = client.getDatabaseEndpoints().stream().filter(e -> !e.equals(endpoint))
+        .findFirst().orElse(null);
     assertNotNull(newEndpoint);
 
     // Force switch to the new endpoint for 100ms
@@ -172,15 +175,13 @@ public class MultiDbClientTest {
     // This test needs health checks enabled to detect an unhealthy endpoint
     Endpoint newEndpoint = new HostAndPort("unavailable", 6381);
     DatabaseConfig config = DatabaseConfig
-        .builder(newEndpoint, DefaultJedisClientConfig.builder().build())
-        .weight(25.0f)
-        .healthCheckEnabled(true)  // Enable health check to detect unavailable endpoint
+        .builder(newEndpoint, DefaultJedisClientConfig.builder().build()).weight(25.0f)
+        .healthCheckEnabled(true) // Enable health check to detect unavailable endpoint
         .build();
     client.addDatabase(config);
 
     // Wait for health check to mark it as unhealthy (unavailable endpoint will fail health check)
-    await().atMost(Duration.ofSeconds(3))
-        .until(() -> !client.isHealthy(newEndpoint));
+    await().atMost(Duration.ofSeconds(3)).until(() -> !client.isHealthy(newEndpoint));
 
     // Now attempting to force switch to an unhealthy endpoint should throw exception
     assertThrows(JedisValidationException.class,
@@ -273,8 +274,12 @@ public class MultiDbClientTest {
   void testCacheWithMultiDbClient() {
     // Create MultiDbClient with cache enabled
     MultiDbConfig clientConfig = MultiDbConfig.builder()
-        .database(endpoint1.getHostAndPort(), 100.0f, endpoint1.getClientConfigBuilder().build())
-        .database(endpoint2.getHostAndPort(), 50.0f, endpoint2.getClientConfigBuilder().build())
+        .database(DatabaseConfig
+            .builder(endpoint1.getHostAndPort(), endpoint1.getClientConfigBuilder().build())
+            .weight(100.0f).healthCheckEnabled(false).build())
+        .database(DatabaseConfig
+            .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
+            .weight(50.0f).healthCheckEnabled(false).build())
         .build();
 
     try (MultiDbClient cachedClient = MultiDbClient.builder().multiDbConfig(clientConfig)
@@ -478,6 +483,10 @@ public class MultiDbClientTest {
       cachedClient.set("shared3", "value3");
       assertEquals("value3", cachedClient.get("shared3"));
     }
+  }
+
+  private void awaitIsHealthy(HostAndPort hostAndPort) {
+    await().atMost(Duration.ofSeconds(1)).until(() -> client.isHealthy(hostAndPort));
   }
 
 }

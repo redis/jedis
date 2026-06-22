@@ -110,7 +110,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   private final AtomicInteger failoverAttemptCount = new AtomicInteger(0);
   private final Cache cache;
 
-  /*
+  /**
    * Constructor for MultiDbConnectionProvider. For the case where client side cache is not used.
    * Check other constructor where client side cache is demanded.
    * @param multiDbConfig the multi-database configuration

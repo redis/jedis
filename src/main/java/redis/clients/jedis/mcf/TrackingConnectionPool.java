@@ -16,7 +16,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.DefaultJedisSocketFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.csc.CacheConnection;
+import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 public class TrackingConnectionPool extends ConnectionPool {
@@ -25,19 +25,16 @@ public class TrackingConnectionPool extends ConnectionPool {
     private volatile boolean failFast = false;
     private final Set<Connection> factoryTrackedObjects = ConcurrentHashMap.newKeySet();
 
-    public FailFastConnectionFactory(ConnectionFactory.Builder factoryBuilder,
-        JedisClientConfig clientConfig) {
-      super(factoryBuilder
-          .connectionBuilder(createCustomConnectionBuilder(factoryBuilder, clientConfig)));
+    private static class FailFastFactoryBuilder extends ConnectionFactory.Builder {
+
+      @Override
+      protected ConnectionFactory create() {
+        return new FailFastConnectionFactory(this);
+      }
     }
 
-    private static Connection.Builder createCustomConnectionBuilder(
-        ConnectionFactory.Builder factoryBuilder, JedisClientConfig clientConfig) {
-      Connection.Builder connBuilder = factoryBuilder.getCache() == null ? Connection.builder()
-          : CacheConnection.builder(factoryBuilder.getCache());
-
-      return connBuilder.socketFactory(factoryBuilder.getJedisSocketFactory())
-          .clientConfig(clientConfig);
+    public FailFastConnectionFactory(Builder factoryBuilder) {
+      super(factoryBuilder);
     }
 
     @Override
@@ -89,6 +86,7 @@ public class TrackingConnectionPool extends ConnectionPool {
     private HostAndPort hostAndPort;
     private JedisClientConfig clientConfig;
     private GenericObjectPoolConfig<Connection> poolConfig;
+    private MaintenanceNotificationsConfig maintenanceNotificationsConfig;
 
     public Builder hostAndPort(HostAndPort hostAndPort) {
       this.hostAndPort = hostAndPort;
@@ -102,6 +100,12 @@ public class TrackingConnectionPool extends ConnectionPool {
 
     public Builder poolConfig(GenericObjectPoolConfig<Connection> poolConfig) {
       this.poolConfig = poolConfig;
+      return this;
+    }
+
+    public Builder maintenanceNotificationsConfig(
+        MaintenanceNotificationsConfig maintenanceNotificationsConfig) {
+      this.maintenanceNotificationsConfig = maintenanceNotificationsConfig;
       return this;
     }
 
@@ -133,8 +137,9 @@ public class TrackingConnectionPool extends ConnectionPool {
   }
 
   private TrackingConnectionPool(Builder builder) {
-    super(createfailFastFactory(builder),
-        builder.poolConfig != null ? builder.poolConfig : new GenericObjectPoolConfig<>());
+    super(createFailFastFactoryBuilder(builder),
+        builder.poolConfig != null ? builder.poolConfig : new GenericObjectPoolConfig<>(),
+        builder.maintenanceNotificationsConfig);
 
     this.hostAndPort = builder.hostAndPort;
     this.clientConfig = builder.clientConfig;
@@ -142,11 +147,10 @@ public class TrackingConnectionPool extends ConnectionPool {
     this.attachAuthenticationListener(builder.clientConfig.getAuthXManager());
   }
 
-  private static FailFastConnectionFactory createfailFastFactory(Builder poolBuilder) {
-    ConnectionFactory.Builder factoryBuilder = ConnectionFactory.builder()
+  private static ConnectionFactory.Builder createFailFastFactoryBuilder(Builder poolBuilder) {
+    return new FailFastConnectionFactory.FailFastFactoryBuilder()
         .clientConfig(poolBuilder.clientConfig).socketFactory(
           new DefaultJedisSocketFactory(poolBuilder.hostAndPort, poolBuilder.clientConfig));
-    return new FailFastConnectionFactory(factoryBuilder, poolBuilder.clientConfig);
   }
 
   public static TrackingConnectionPool from(TrackingConnectionPool existing) {

@@ -937,7 +937,7 @@ public class Connection implements Closeable {
 
     // The server must accept CLIENT MAINT_NOTIFICATIONS ON. Pre-register the consumer so a push
     // frame the server emits immediately on accepting the subscription cannot race ahead.
-    MaintenanceEventConsumer consumer = new MaintenanceEventConsumer();
+    MaintenanceEventConsumer consumer = new MaintenanceEventConsumer(this, maintenanceEventListeners);
     addPushConsumer(consumer);
     sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
       resolveEndpointType(maintenanceConfig.getEndpointType()));
@@ -1270,31 +1270,4 @@ public class Connection implements Closeable {
     maintenanceEventListeners.remove(listener);
   }
 
-  /**
-   * Push consumer for server maintenance events: parses each frame into a typed
-   * {@link MaintenanceEvent} and dispatches it to the registered {@link MaintenanceEventListener}s
-   * on this connection's read thread. Listener exceptions propagate to the read loop.
-   */
-  class MaintenanceEventConsumer implements PushConsumer {
-
-    @Override
-    public PushConsumerContext handle(PushConsumerContext context) {
-      PushMessage message = context.getMessage();
-      MaintenancePushCodec.PushType type = MaintenancePushCodec.PushType.resolve(message.getType());
-
-      // not a maintenance event
-      if (type == null) {
-        return context;
-      }
-
-      MaintenanceEvent event = MaintenancePushCodec.build(type, message);
-      if (event != null) {
-        for (MaintenanceEventListener listener : maintenanceEventListeners) {
-          event.accept(listener, Connection.this);
-        }
-      }
-      context.drop(); // a maintenance event is consumed even if malformed
-      return context;
-    }
-  }
 }

@@ -27,14 +27,14 @@ public class ConnectionTestHelper {
   }
 
   /**
-   * Returns {@code true} if the consumer is a {@link Connection.MaintenanceEventConsumer}.
+   * Returns {@code true} if the consumer is a {@link MaintenanceEventConsumer}.
    * <p>
    * The maintenance consumer captures its owning connection, so it cannot be a shared singleton and
    * must be matched by type rather than identity.
    * </p>
    */
   public static boolean isMaintenanceEventConsumer(PushConsumer consumer) {
-    return consumer instanceof Connection.MaintenanceEventConsumer;
+    return consumer instanceof MaintenanceEventConsumer;
   }
 
   /**

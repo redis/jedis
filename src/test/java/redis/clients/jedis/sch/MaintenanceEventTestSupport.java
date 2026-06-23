@@ -26,7 +26,7 @@ public final class MaintenanceEventTestSupport {
     return MaintenanceNotificationsConfig.builder().build();
   }
 
-  /** Matches a {@link redis.clients.jedis.Connection.MaintenanceEventConsumer} instance. */
+  /** Matches a {@link redis.clients.jedis.MaintenanceEventConsumer} instance. */
   public static Matcher<? super PushConsumer> isMaintenanceConsumer() {
     return new TypeSafeMatcher<PushConsumer>() {
       @Override

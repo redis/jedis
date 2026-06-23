@@ -13,7 +13,6 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionFactory;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.DefaultJedisClientConfig;
-import redis.clients.jedis.DefaultJedisSocketFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
@@ -146,7 +145,6 @@ public class TrackingConnectionPool extends ConnectionPool {
     this.clientConfig = builder.clientConfig;
     this.poolConfig = builder.poolConfig;
     this.maintenanceNotificationsConfig = builder.maintenanceNotificationsConfig;
-    this.attachAuthenticationListener(builder.clientConfig.getAuthXManager());
   }
 
   private static ConnectionFactory.Builder createFailFastFactoryBuilder(Builder poolBuilder) {

@@ -1,0 +1,134 @@
+package redis.clients.jedis;
+
+import java.util.Arrays;
+import java.util.List;
+import java.util.function.Function;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import redis.clients.jedis.util.SafeEncoder;
+
+/**
+ * Decodes RESP3 maintenance push frames into {@link MaintenanceEvent}s — the push transport for
+ * maintenance notifications. Token classification ({@link PushType#resolve}) and per-type field
+ * extraction ({@link #build}) both live here.
+ */
+final class MaintenancePushCodec {
+
+  private static final Logger logger = LoggerFactory.getLogger(MaintenancePushCodec.class);
+
+  /** A maintenance push wire type: its token and how to decode its frame content into an event. */
+  enum PushType {
+    MOVING(PushMessageTypes.MOVING_BYTES, MaintenancePushCodec::moving),
+    MIGRATING(PushMessageTypes.MIGRATING_BYTES, MaintenancePushCodec::migrating),
+    FAILING_OVER(PushMessageTypes.FAILING_OVER_BYTES, MaintenancePushCodec::failingOver),
+    MIGRATED(PushMessageTypes.MIGRATED_BYTES, MaintenancePushCodec::migrated),
+    FAILED_OVER(PushMessageTypes.FAILED_OVER_BYTES, MaintenancePushCodec::failedOver);
+
+    private final byte[] token;
+    private final Function<List<Object>, MaintenanceEvent> decoder;
+
+    PushType(byte[] token, Function<List<Object>, MaintenanceEvent> decoder) {
+      this.token = token;
+      this.decoder = decoder;
+    }
+
+    /**
+     * Resolves a push type token to its maintenance type, or {@code null} when it is not a
+     * maintenance push. Length-switch fast path: rejects unrelated pushes with one comparison.
+     */
+    static PushType resolve(byte[] type) {
+      if (type == null) {
+        return null;
+      }
+      switch (type.length) {
+        case 6:
+          return Arrays.equals(type, MOVING.token) ? MOVING : null;
+        case 8:
+          return Arrays.equals(type, MIGRATED.token) ? MIGRATED : null;
+        case 9:
+          return Arrays.equals(type, MIGRATING.token) ? MIGRATING : null;
+        case 11:
+          return Arrays.equals(type, FAILED_OVER.token) ? FAILED_OVER : null;
+        case 12:
+          return Arrays.equals(type, FAILING_OVER.token) ? FAILING_OVER : null;
+        default:
+          return null;
+      }
+    }
+  }
+
+  /**
+   * Builds the domain event for an already-resolved push type, or {@code null} when the frame is
+   * malformed (logged) — including a MOVING with a missing or unparseable target.
+   */
+  static MaintenanceEvent build(PushType type, PushMessage msg) {
+    MaintenanceEvent event = type.decoder.apply(msg.getContent());
+    if (event == null) {
+      logger.warn("Ignoring malformed maintenance push: {}", msg.getContent());
+    }
+    return event;
+  }
+
+  private static MaintenanceEvent moving(List<Object> c) { // [MOVING, seq, time_s, host:port]
+    if (c.size() < 3 || !(c.get(1) instanceof Long) || !(c.get(2) instanceof Long)) {
+      return null;
+    }
+    HostAndPort target = parseHostPort(c, 3);
+    return target == null ? null : new MovingEvent((Long) c.get(1), (Long) c.get(2), target);
+  }
+
+  private static MaintenanceEvent migrating(List<Object> c) { // [MIGRATING, seq, time_s, shards]
+    if (c.size() < 4 || !(c.get(1) instanceof Long) || !(c.get(2) instanceof Long)
+        || !(c.get(3) instanceof byte[])) {
+      return null;
+    }
+    return new MigratingEvent((Long) c.get(1), (Long) c.get(2), shardIds(c, 3));
+  }
+
+  private static MaintenanceEvent failingOver(List<Object> c) { // [FAILING_OVER, seq, time_s,
+                                                                // shards]
+    if (c.size() < 4 || !(c.get(1) instanceof Long) || !(c.get(2) instanceof Long)
+        || !(c.get(3) instanceof byte[])) {
+      return null;
+    }
+    return new FailingOverEvent((Long) c.get(1), (Long) c.get(2), shardIds(c, 3));
+  }
+
+  private static MaintenanceEvent migrated(List<Object> c) { // [MIGRATED, seq, shards]
+    if (c.size() < 3 || !(c.get(1) instanceof Long) || !(c.get(2) instanceof byte[])) {
+      return null;
+    }
+    return new MigratedEvent((Long) c.get(1), shardIds(c, 2));
+  }
+
+  private static MaintenanceEvent failedOver(List<Object> c) { // [FAILED_OVER, seq, shards]
+    if (c.size() < 3 || !(c.get(1) instanceof Long) || !(c.get(2) instanceof byte[])) {
+      return null;
+    }
+    return new FailedOverEvent((Long) c.get(1), shardIds(c, 2));
+  }
+
+  /** Diagnostic shard-id list (stringified JSON array), logging only; required on the wire. */
+  private static String shardIds(List<Object> c, int i) {
+    return SafeEncoder.encode((byte[]) c.get(i));
+  }
+
+  /** MOVING target {@code host:port}, or {@code null} when absent or unparseable (logged). */
+  private static HostAndPort parseHostPort(List<Object> c, int i) {
+    if (i >= c.size() || !(c.get(i) instanceof byte[])) {
+      logger.warn("Invalid MOVING target, expected host:port byte[] at index {}: {}", i, c);
+      return null;
+    }
+    try {
+      return HostAndPort.from(SafeEncoder.encode((byte[]) c.get(i)));
+    } catch (Exception e) {
+      logger.warn("Error parsing MOVING target from {}", c, e);
+      return null;
+    }
+  }
+
+  private MaintenancePushCodec() {
+  }
+}

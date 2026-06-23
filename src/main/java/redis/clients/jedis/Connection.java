@@ -1280,10 +1280,14 @@ public class Connection implements Closeable {
     @Override
     public PushConsumerContext handle(PushConsumerContext context) {
       PushMessage message = context.getMessage();
-      if (!MaintenanceEvent.isMaintenanceType(message.getType())) {
+      MaintenancePushCodec.PushType type = MaintenancePushCodec.PushType.resolve(message.getType());
+
+      // not a maintenance event
+      if (type == null) {
         return context;
       }
-      MaintenanceEvent event = MaintenanceEvent.parse(message);
+
+      MaintenanceEvent event = MaintenancePushCodec.build(type, message);
       if (event != null) {
         for (MaintenanceEventListener listener : maintenanceEventListeners) {
           event.accept(listener, Connection.this);

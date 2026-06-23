@@ -5,6 +5,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.authentication.core.Token;
 import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.authentication.AuthXManager;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisException;
@@ -84,13 +85,18 @@ public class ConnectionPool extends Pool<Connection> {
     this(factoryBuilder.maintenanceController(controller).build(), poolConfig);
     this.maintenanceController = controller;
     attachAuthenticationListener(factoryBuilder.getClientConfig().getAuthXManager());
+    enableMaintenanceEvents(controller);
+  }
+
+  private void enableMaintenanceEvents(MaintenanceEventController controller) {
     if (controller != null) {
       setEvictionPolicy(new RebindAwareEvictionPolicy(controller, getEvictionPolicy()));
       controller.addHandoffHook(handoff -> evictQuietly());
     }
   }
 
-  /** The pool's maintenance controller, or {@code null} when maintenance is off. */
+  /** Exposes the pool's maintenance controller ({@code null} when off) for test clock injection. */
+  @VisibleForTesting
   MaintenanceEventController getMaintenanceController() {
     return maintenanceController;
   }

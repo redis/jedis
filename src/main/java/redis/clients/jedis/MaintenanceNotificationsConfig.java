@@ -7,7 +7,7 @@ public class MaintenanceNotificationsConfig {
   /** Default upper bound on the relaxed-timeout window started by MIGRATING/FAILING_OVER/MOVING. */
   public static final Duration DEFAULT_RELAXED_WINDOW_MAX_DURATION = Duration.ofSeconds(60);
 
-  public static final MaintenanceNotificationsConfig DEFAULT = new MaintenanceNotificationsConfig();
+  public static final MaintenanceNotificationsConfig DEFAULT = builder().build();
 
   /**
    * Endpoint types for maintenance event notifications.
@@ -73,6 +73,18 @@ public class MaintenanceNotificationsConfig {
 
   public static Builder builder() {
     return new Builder();
+  }
+
+  public static MaintenanceNotificationsConfig disabled() {
+    return builder().mode(Mode.DISABLED).build();
+  }
+
+  public static MaintenanceNotificationsConfig enabled() {
+    return builder().mode(Mode.ENABLED).build();
+  }
+
+  public static MaintenanceNotificationsConfig auto() {
+    return builder().mode(Mode.AUTO).build();
   }
 
   public static class Builder {

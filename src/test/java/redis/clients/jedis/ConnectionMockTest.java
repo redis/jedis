@@ -189,7 +189,7 @@ public class ConnectionMockTest {
           .build();
 
       HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
-      try (Connection c = buildConnection(hp, cfg, MaintenanceNotificationsConfig.DEFAULT)) {
+      try (Connection c = buildConnection(hp, cfg, MaintenanceNotificationsConfig.auto())) {
         assertTrue(c.isConnected());
         assertEquals(RedisProtocol.RESP2, c.getRedisProtocol());
       }

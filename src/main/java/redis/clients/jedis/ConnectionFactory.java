@@ -173,15 +173,6 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     initAuthXManager();
   }
 
-  JedisClientConfig getClientConfig() {
-    return clientConfig;
-  }
-
-  /** Visible for testing: the underlying connection builder (and via it, the socket factory). */
-  Connection.Builder getConnectionBuilder() {
-    return connectionBuilder;
-  }
-
   private void initAuthXManager() {
     AuthXManager authXManager = clientConfig.getAuthXManager();
     if (authXManager == null) {

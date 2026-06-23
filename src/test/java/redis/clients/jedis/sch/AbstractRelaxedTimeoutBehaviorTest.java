@@ -48,9 +48,6 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
   protected static final int SO_TIMEOUT_MS = 2000;
   protected static final int RELAXED_TIMEOUT_MS = 10000;
   protected static final int RELAXED_BLOCKING_TIMEOUT_MS = 15000;
-  protected static final Duration RELAXED_TIMEOUT = Duration.ofMillis(RELAXED_TIMEOUT_MS);
-  protected static final Duration RELAXED_BLOCKING_TIMEOUT = Duration
-      .ofMillis(RELAXED_BLOCKING_TIMEOUT_MS);
 
   protected final CommandObjects commandObjects = new CommandObjects(RedisProtocol.RESP3);
 

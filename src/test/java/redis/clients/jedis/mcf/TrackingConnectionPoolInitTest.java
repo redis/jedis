@@ -58,7 +58,7 @@ public class TrackingConnectionPoolInitTest {
     try (
         TrackingConnectionPool pool = TrackingConnectionPool.builder().hostAndPort(hostAndPort)
             .clientConfig(config)
-            .maintenanceNotificationsConfig(MaintenanceNotificationsConfig.DEFAULT).build();
+            .maintenanceNotificationsConfig(MaintenanceNotificationsConfig.enabled()).build();
         Connection conn = pool.getResource()) {
 
       List<PushConsumer> consumers = ConnectionTestHelper.getPushConsumers(conn);

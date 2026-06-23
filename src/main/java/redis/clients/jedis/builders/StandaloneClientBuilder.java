@@ -19,7 +19,7 @@ public abstract class StandaloneClientBuilder<C>
 
   // Standalone-specific configuration fields
   private HostAndPort hostAndPort = new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
-  private MaintenanceNotificationsConfig maintNotificationsConfig;
+  private MaintenanceNotificationsConfig maintNotificationsConfig = MaintenanceNotificationsConfig.DEFAULT;
 
   /**
    * Sets the Redis server host and port.
@@ -44,11 +44,9 @@ public abstract class StandaloneClientBuilder<C>
 
   /**
    * Configures server-side maintenance notifications (MIGRATING, MIGRATED, FAILING_OVER,
-   * FAILED_OVER, MOVING). Supported only with the default {@link ConnectionProvider}: with a custom
-   * provider, {@code ENABLED} fails at {@link #build()} and {@code AUTO} silently disables
-   * (debug-logged).
+   * FAILED_OVER, MOVING).
    * <p>
-   * If unset, defaults to {@link MaintenanceNotificationsConfig#DEFAULT} (AUTO).
+   * If unset, defaults to ).
    * @param config maintenance notifications configuration; {@code null} keeps the default
    * @return this builder
    */
@@ -66,12 +64,7 @@ public abstract class StandaloneClientBuilder<C>
   @Override
   protected ConnectionProvider createDefaultConnectionProvider() {
     return new PooledConnectionProvider(this.hostAndPort, this.clientConfig, this.cache,
-        this.poolConfig, effectiveMaintNotificationsConfig());
-  }
-
-  private MaintenanceNotificationsConfig effectiveMaintNotificationsConfig() {
-    return maintNotificationsConfig != null ? maintNotificationsConfig
-        : MaintenanceNotificationsConfig.DEFAULT;
+        this.poolConfig, this.maintNotificationsConfig);
   }
 
   @Override

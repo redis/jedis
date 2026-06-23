@@ -14,12 +14,6 @@ public interface JedisClientConfig {
   /** Sentinel meaning "no relaxed override configured" — falls back to the base timeout. */
   int UNSET_TIMEOUT_MS = -1;
 
-  /** Default relaxed per-command timeout applied during maintenance windows. */
-  int DEFAULT_RELAXED_SOCKET_TIMEOUT_MS = 10_000;
-
-  /** Default relaxed blocking-command timeout during maintenance windows: unset (inherit base). */
-  int DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS = UNSET_TIMEOUT_MS;
-
   /** True iff {@code millis} represents a configured timeout (not {@link #UNSET_TIMEOUT_MS}). */
   static boolean isTimeoutSet(int millis) {
     return millis != UNSET_TIMEOUT_MS;
@@ -73,28 +67,6 @@ public interface JedisClientConfig {
    */
   default int getBlockingSocketTimeoutMillis() {
     return 0;
-  }
-
-  /**
-   * Per-command timeout applied while a maintenance relaxation window is active (MIGRATING /
-   * FAILING_OVER / MOVING). Use {@link #UNSET_TIMEOUT_MS} to fall back to
-   * {@link #getSocketTimeoutMillis()} during the window.
-   * @return relaxed socket timeout in milliseconds (default
-   *         {@link #DEFAULT_RELAXED_SOCKET_TIMEOUT_MS})
-   */
-  default int getRelaxedSocketTimeoutMillis() {
-    return DEFAULT_RELAXED_SOCKET_TIMEOUT_MS;
-  }
-
-  /**
-   * Per-command timeout applied to blocking commands while a maintenance relaxation window is
-   * active. Use {@link #UNSET_TIMEOUT_MS} to fall back to
-   * {@link #getBlockingSocketTimeoutMillis()}.
-   * @return relaxed blocking socket timeout in milliseconds (default
-   *         {@link #DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS}, i.e. unset)
-   */
-  default int getRelaxedBlockingSocketTimeoutMillis() {
-    return DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS;
   }
 
   /**

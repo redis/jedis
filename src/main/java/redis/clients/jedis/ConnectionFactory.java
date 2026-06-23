@@ -116,7 +116,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       if (maintenanceController != null) {
         connBuilder.maintenanceConfig(maintenanceController.getConfig())
             .addMaintenanceEventListener(maintenanceController)
-            .soTimeoutSupplier(rebindSoTimeoutSupplier(maintenanceController, clientConfig));
+            .soTimeoutSupplier(rebindSoTimeoutSupplier(maintenanceController));
       }
       return connBuilder;
     }
@@ -125,13 +125,13 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
      * SO_TIMEOUT override that relaxes a connection's timeout while a MOVING rebind window is active
      * in the pool, and defers ({@link JedisClientConfig#UNSET_TIMEOUT_MS}) otherwise so the
      * connection falls back to its own per-receiver / configured calculation. Relaxed values are
-     * captured from the (immutable) client config at wiring time; an unset relaxed value is itself
-     * {@code UNSET_TIMEOUT_MS}, so it naturally defers.
+     * captured from the (immutable) maintenance config at wiring time; an unset relaxed value is
+     * itself {@code UNSET_TIMEOUT_MS}, so it naturally defers.
      */
-    private static SoTimeoutSupplier rebindSoTimeoutSupplier(MaintenanceEventController controller,
-        JedisClientConfig clientConfig) {
-      int relaxed = clientConfig.getRelaxedSocketTimeoutMillis();
-      int relaxedBlocking = clientConfig.getRelaxedBlockingSocketTimeoutMillis();
+    private static SoTimeoutSupplier rebindSoTimeoutSupplier(MaintenanceEventController controller) {
+      MaintenanceNotificationsConfig config = controller.getConfig();
+      int relaxed = config.getRelaxedSocketTimeoutMillis();
+      int relaxedBlocking = config.getRelaxedBlockingSocketTimeoutMillis();
       return blocking -> controller.isRebindActive() ? (blocking ? relaxedBlocking : relaxed)
           : JedisClientConfig.UNSET_TIMEOUT_MS;
     }

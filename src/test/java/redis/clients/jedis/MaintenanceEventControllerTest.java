@@ -249,10 +249,10 @@ public class MaintenanceEventControllerTest {
   public void borrowRelaxesConnection_duringRebindWindow() throws Exception {
     int soTimeoutMs = 2000;
     int relaxedTimeoutMs = 10000;
-    MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder().build();
+    MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
+        .relaxedSocketTimeoutMillis(relaxedTimeoutMs).build();
     DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
-        .socketTimeoutMillis(soTimeoutMs).relaxedSocketTimeoutMillis(relaxedTimeoutMs)
-        .protocol(RedisProtocol.RESP3).build();
+        .socketTimeoutMillis(soTimeoutMs).protocol(RedisProtocol.RESP3).build();
     HostAndPort mock = new HostAndPort("127.0.0.1", mockServer.getPort());
 
     MaintenanceEventController poolCtl = MaintenanceEventController.from(maintConfig);

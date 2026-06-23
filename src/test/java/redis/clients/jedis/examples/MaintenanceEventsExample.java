@@ -3,6 +3,7 @@ package redis.clients.jedis.examples;
 import java.util.Date;
 
 import redis.clients.jedis.Connection;
+import redis.clients.jedis.ConnectionTestHelper;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
@@ -32,10 +33,11 @@ public class MaintenanceEventsExample {
     int durationSeconds = Integer.getInteger("example.durationSeconds", 300);
 
     MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
-        .mode(MaintenanceNotificationsConfig.Mode.ENABLED).build();
+        .mode(MaintenanceNotificationsConfig.Mode.ENABLED).relaxedSocketTimeoutMillis(20_000)
+        .build();
 
     DefaultJedisClientConfig.Builder configBuilder = DefaultJedisClientConfig.builder()
-        .protocol(RedisProtocol.RESP3).socketTimeoutMillis(5000).relaxedSocketTimeoutMillis(20_000);
+        .protocol(RedisProtocol.RESP3).socketTimeoutMillis(5000);
     if (System.getProperty("redis.username") != null) {
       configBuilder.user(System.getProperty("redis.username"));
     }
@@ -64,7 +66,7 @@ public class MaintenanceEventsExample {
           try {
             client.incr(key); // application workload via RedisClient
             observer.ping(); // reads and processes any pending maintenance push
-            boolean nowRelaxed = observer.isRelaxedTimeoutActive();
+            boolean nowRelaxed = ConnectionTestHelper.isRelaxedTimeoutActive(observer);
             if (nowRelaxed != relaxed) {
               relaxed = nowRelaxed;
               System.out.printf("[%tT] relaxed timeout %s%n", new Date(),
@@ -76,7 +78,7 @@ public class MaintenanceEventsExample {
               e.getMessage());
             observer.close();
             observer = client.getPool().getResource();
-            relaxed = observer.isRelaxedTimeoutActive();
+            relaxed = ConnectionTestHelper.isRelaxedTimeoutActive(observer);
           }
           Thread.sleep(500);
         }

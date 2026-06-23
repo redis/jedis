@@ -186,14 +186,14 @@ public class Connection implements Closeable {
    * connection is in a relaxed (maintenance) state. {@link JedisClientConfig#UNSET_TIMEOUT_MS}
    * means {@link #soTimeout} is inherited instead.
    */
-  private int relaxedTimeout = JedisClientConfig.DEFAULT_RELAXED_SOCKET_TIMEOUT_MS;
+  private int relaxedTimeout = MaintenanceNotificationsConfig.DEFAULT_RELAXED_SOCKET_TIMEOUT_MS;
 
   /**
    * Socket read timeout (SO_TIMEOUT) in milliseconds used for blocking commands while the
    * connection is in a relaxed (maintenance) state. {@link JedisClientConfig#UNSET_TIMEOUT_MS}
    * means {@link #infiniteSoTimeout} is inherited instead.
    */
-  private int relaxedBlockingTimeout = JedisClientConfig.DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS;
+  private int relaxedBlockingTimeout = MaintenanceNotificationsConfig.DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS;
 
   private boolean relaxedTimeoutConfigured = JedisClientConfig.isTimeoutSet(relaxedTimeout);
 
@@ -396,7 +396,7 @@ public class Connection implements Closeable {
    * @see #getSoTimeout()
    * @see #isRelaxedTimeoutActive()
    */
-  public int getRelaxedSoTimeout() {
+  int getRelaxedSoTimeout() {
     return relaxedTimeout;
   }
 
@@ -414,7 +414,7 @@ public class Connection implements Closeable {
    * @see #getRelaxedSoTimeout()
    * @see #isRelaxedTimeoutActive()
    */
-  public int getRelaxedBlockingSoTimeout() {
+  int getRelaxedBlockingSoTimeout() {
     return relaxedBlockingTimeout;
   }
 
@@ -812,8 +812,12 @@ public class Connection implements Closeable {
       this.soTimeout = config.getSocketTimeoutMillis();
       this.infiniteSoTimeout = config.getBlockingSocketTimeoutMillis();
 
-      this.relaxedTimeout = config.getRelaxedSocketTimeoutMillis();
-      this.relaxedBlockingTimeout = config.getRelaxedBlockingSocketTimeoutMillis();
+      // Relaxed timeouts are an SCH knob: sourced from the maintenance config when present,
+      // otherwise the fields keep their defaults (unused, since relaxation never starts).
+      if (maintenanceConfig != null) {
+        this.relaxedTimeout = maintenanceConfig.getRelaxedSocketTimeoutMillis();
+        this.relaxedBlockingTimeout = maintenanceConfig.getRelaxedBlockingSocketTimeoutMillis();
+      }
       this.relaxedTimeoutConfigured = JedisClientConfig.isTimeoutSet(relaxedTimeout);
       this.relaxedBlockingTimeoutConfigured = JedisClientConfig.isTimeoutSet(relaxedBlockingTimeout);
 
@@ -1167,8 +1171,7 @@ public class Connection implements Closeable {
    * delivered on this connection). Reverts to {@code false} once the event completes or the
    * relaxation window expires.
    */
-  @Experimental
-  public boolean isRelaxedTimeoutActive() {
+  boolean isRelaxedTimeoutActive() {
     long d = relaxedUntilNanos;
     if (d == 0) return false;
     if (d - clockNanos.getAsLong() > 0) return true;
@@ -1230,8 +1233,7 @@ public class Connection implements Closeable {
    *
    * @param period maximum duration of the relaxation window
    */
-  @Experimental
-  public void relaxTimeouts(Duration period) {
+  void relaxTimeouts(Duration period) {
     long deadline = clockNanos.getAsLong() + period.toNanos();
     if (relaxedUntilNanos == 0 || deadline - relaxedUntilNanos > 0) {
       relaxedUntilNanos = deadline;
@@ -1240,8 +1242,7 @@ public class Connection implements Closeable {
   }
 
   /** Clears the per-receiver relaxation deadline and eagerly realigns the socket (cache-checked). */
-  @Experimental
-  public void resetRelaxedTimeouts() {
+  void resetRelaxedTimeouts() {
     relaxedUntilNanos = 0;
     applyTimeout(effectiveSoTimeout());
   }

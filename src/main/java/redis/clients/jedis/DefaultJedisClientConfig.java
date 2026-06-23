@@ -20,8 +20,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   private final int connectionTimeoutMillis;
   private final int socketTimeoutMillis;
   private final int blockingSocketTimeoutMillis;
-  private final int relaxedSocketTimeoutMillis;
-  private final int relaxedBlockingSocketTimeoutMillis;
 
   private volatile Supplier<RedisCredentials> credentialsProvider;
   private final int database;
@@ -51,8 +49,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.connectionTimeoutMillis = builder.connectionTimeoutMillis;
     this.socketTimeoutMillis = builder.socketTimeoutMillis;
     this.blockingSocketTimeoutMillis = builder.blockingSocketTimeoutMillis;
-    this.relaxedSocketTimeoutMillis = builder.relaxedSocketTimeoutMillis;
-    this.relaxedBlockingSocketTimeoutMillis = builder.relaxedBlockingSocketTimeoutMillis;
     this.credentialsProvider = builder.credentialsProvider;
     this.database = builder.database;
     this.clientName = builder.clientName;
@@ -93,16 +89,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   @Override
   public int getBlockingSocketTimeoutMillis() {
     return blockingSocketTimeoutMillis;
-  }
-
-  @Override
-  public int getRelaxedSocketTimeoutMillis() {
-    return relaxedSocketTimeoutMillis;
-  }
-
-  @Override
-  public int getRelaxedBlockingSocketTimeoutMillis() {
-    return relaxedBlockingSocketTimeoutMillis;
   }
 
   @Override
@@ -261,8 +247,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     private int connectionTimeoutMillis = Protocol.DEFAULT_TIMEOUT;
     private int socketTimeoutMillis = Protocol.DEFAULT_TIMEOUT;
     private int blockingSocketTimeoutMillis = 0;
-    private int relaxedSocketTimeoutMillis = DEFAULT_RELAXED_SOCKET_TIMEOUT_MS;
-    private int relaxedBlockingSocketTimeoutMillis = DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS;
 
     private String user = null;
     private String password = null;
@@ -366,26 +350,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     public Builder blockingSocketTimeoutMillis(int blockingSocketTimeoutMillis) {
       this.blockingSocketTimeoutMillis = blockingSocketTimeoutMillis;
-      return this;
-    }
-
-    /**
-     * Per-command timeout applied while a maintenance relaxation window is active. Pass
-     * {@link JedisClientConfig#UNSET_TIMEOUT_MS} to fall back to {@link #socketTimeoutMillis(int)}
-     * during the window.
-     */
-    public Builder relaxedSocketTimeoutMillis(int relaxedSocketTimeoutMillis) {
-      this.relaxedSocketTimeoutMillis = relaxedSocketTimeoutMillis;
-      return this;
-    }
-
-    /**
-     * Per-command timeout applied to blocking commands while a maintenance relaxation window is
-     * active. Pass {@link JedisClientConfig#UNSET_TIMEOUT_MS} to fall back to
-     * {@link #blockingSocketTimeoutMillis(int)} during the window.
-     */
-    public Builder relaxedBlockingSocketTimeoutMillis(int relaxedBlockingSocketTimeoutMillis) {
-      this.relaxedBlockingSocketTimeoutMillis = relaxedBlockingSocketTimeoutMillis;
       return this;
     }
 
@@ -546,8 +510,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.connectionTimeoutMillis = instance.getConnectionTimeoutMillis();
       this.socketTimeoutMillis = instance.getSocketTimeoutMillis();
       this.blockingSocketTimeoutMillis = instance.getBlockingSocketTimeoutMillis();
-      this.relaxedSocketTimeoutMillis = instance.getRelaxedSocketTimeoutMillis();
-      this.relaxedBlockingSocketTimeoutMillis = instance.getRelaxedBlockingSocketTimeoutMillis();
       this.credentialsProvider = instance.getCredentialsProvider();
       this.database = instance.getDatabase();
       this.clientName = instance.getClientName();
@@ -602,8 +564,6 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     builder.connectionTimeoutMillis(copy.getConnectionTimeoutMillis());
     builder.socketTimeoutMillis(copy.getSocketTimeoutMillis());
     builder.blockingSocketTimeoutMillis(copy.getBlockingSocketTimeoutMillis());
-    builder.relaxedSocketTimeoutMillis(copy.getRelaxedSocketTimeoutMillis());
-    builder.relaxedBlockingSocketTimeoutMillis(copy.getRelaxedBlockingSocketTimeoutMillis());
 
     Supplier<RedisCredentials> credentialsProvider = copy.getCredentialsProvider();
     if (credentialsProvider != null) {

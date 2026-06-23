@@ -7,6 +7,10 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.doAnswer;
+import static redis.clients.jedis.ConnectionTestHelper.getRelaxedBlockingSoTimeout;
+import static redis.clients.jedis.ConnectionTestHelper.getRelaxedSoTimeout;
+import static redis.clients.jedis.ConnectionTestHelper.isRelaxedTimeoutActive;
+import static redis.clients.jedis.ConnectionTestHelper.relaxTimeouts;
 import static redis.clients.jedis.JedisClientConfig.UNSET_TIMEOUT_MS;
 
 import java.io.IOException;
@@ -89,17 +93,18 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
     }
   }
 
-  /** Default client config: RESP3, mock server's port, with relaxed timeouts configured. */
+  /** Default client config: RESP3, mock server's port. */
   protected JedisClientConfig defaultClientConfig() {
     return DefaultJedisClientConfig.builder().socketTimeoutMillis(SO_TIMEOUT_MS)
-        .relaxedSocketTimeoutMillis(RELAXED_TIMEOUT_MS)
-        .relaxedBlockingSocketTimeoutMillis(RELAXED_BLOCKING_TIMEOUT_MS)
         .protocol(RedisProtocol.RESP3).build();
   }
 
-  /** Default maintenance config: AUTO mode, default backstop window. */
+  /**
+   * Default maintenance config: AUTO mode, default backstop window, relaxed timeouts configured.
+   */
   protected MaintenanceNotificationsConfig defaultMaintConfig() {
-    return MaintenanceNotificationsConfig.builder().build();
+    return MaintenanceNotificationsConfig.builder().relaxedSocketTimeoutMillis(RELAXED_TIMEOUT_MS)
+        .relaxedBlockingSocketTimeoutMillis(RELAXED_BLOCKING_TIMEOUT_MS).build();
   }
 
   // ---- Tests ---------------------------------------------------------------
@@ -109,18 +114,18 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
     Socket socket = ConnectionTestHelper.getSocket(connection);
 
     assertEquals(SO_TIMEOUT_MS, connection.getSoTimeout());
-    assertEquals(RELAXED_TIMEOUT_MS, connection.getRelaxedSoTimeout());
+    assertEquals(RELAXED_TIMEOUT_MS, getRelaxedSoTimeout(connection));
 
     mockServer.sendPushMessageToAll(
       MaintenanceEventMessages.migrating(1, 10, Collections.singletonList("1")));
     assertTrue(connection.ping());
-    assertTrue(connection.isRelaxedTimeoutActive());
+    assertTrue(isRelaxedTimeoutActive(connection));
     assertEquals(RELAXED_TIMEOUT_MS, socket.getSoTimeout());
 
     mockServer
         .sendPushMessageToAll(MaintenanceEventMessages.migrated(1, Collections.singletonList("1")));
     assertTrue(connection.ping());
-    assertFalse(connection.isRelaxedTimeoutActive());
+    assertFalse(isRelaxedTimeoutActive(connection));
     assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
   }
 
@@ -135,34 +140,34 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
     mockServer.sendPushMessageToAll(
       MaintenanceEventMessages.failingOver(1, 10, Collections.singletonList("1")));
     assertTrue(connection.ping());
-    assertTrue(connection.isRelaxedTimeoutActive());
+    assertTrue(isRelaxedTimeoutActive(connection));
     assertEquals(RELAXED_TIMEOUT_MS, socket.getSoTimeout());
 
     mockServer.sendPushMessageToAll(
       MaintenanceEventMessages.failedOver(1, Collections.singletonList("1")));
     assertTrue(connection.ping());
-    assertFalse(connection.isRelaxedTimeoutActive());
+    assertFalse(isRelaxedTimeoutActive(connection));
     assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
   }
 
   /** Relaxed timeout unset (UNSET_TIMEOUT) falls back to the baseline socket timeout. */
   @Test
   public void testRelaxTimeoutsDisabledFallbackToSoTimeout() throws SocketException {
-    MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder().build();
+    MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
+        .relaxedSocketTimeoutMillis(UNSET_TIMEOUT_MS).build();
     DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
-        .socketTimeoutMillis(SO_TIMEOUT_MS).relaxedSocketTimeoutMillis(UNSET_TIMEOUT_MS)
-        .protocol(RedisProtocol.RESP3).build();
+        .socketTimeoutMillis(SO_TIMEOUT_MS).protocol(RedisProtocol.RESP3).build();
 
     try (Connection conn = buildDirect(new HostAndPort("localhost", mockServer.getPort()),
       clientConfig, maintConfig)) {
       Socket socket = ConnectionTestHelper.getSocket(conn);
       assertTrue(conn.isConnected());
       assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
-      assertEquals(UNSET_TIMEOUT_MS, conn.getRelaxedSoTimeout());
+      assertEquals(UNSET_TIMEOUT_MS, getRelaxedSoTimeout(conn));
 
-      conn.relaxTimeouts(Duration.ofSeconds(10));
+      relaxTimeouts(conn, Duration.ofSeconds(10));
 
-      assertTrue(conn.isRelaxedTimeoutActive());
+      assertTrue(isRelaxedTimeoutActive(conn));
       assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
     }
   }
@@ -180,9 +185,9 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
 
       assertEquals(SO_TIMEOUT_MS, conn.getSoTimeout());
       assertEquals(0, conn.getBlockingSoTimeout());
-      assertEquals(RELAXED_TIMEOUT_MS, conn.getRelaxedSoTimeout());
-      assertEquals(UNSET_TIMEOUT_MS, conn.getRelaxedBlockingSoTimeout());
-      assertFalse(conn.isRelaxedTimeoutActive());
+      assertEquals(RELAXED_TIMEOUT_MS, getRelaxedSoTimeout(conn));
+      assertEquals(UNSET_TIMEOUT_MS, getRelaxedBlockingSoTimeout(conn));
+      assertFalse(isRelaxedTimeoutActive(conn));
 
       assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
     }
@@ -228,14 +233,14 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
     // BLPOP is now parked on the mock side; worker is reading. The MIGRATING push frame is
     // ahead of the (not-yet-sent) reply in the client buffer, so the worker processes it.
     await().atMost(Duration.ofSeconds(2)).pollInterval(Duration.ofMillis(5))
-        .until(connection::isRelaxedTimeoutActive);
+        .until(() -> isRelaxedTimeoutActive(connection));
     assertEquals(RELAXED_BLOCKING_TIMEOUT_MS, socket.getSoTimeout(),
       "Socket timeout should be relaxed blocking timeout during blocking command");
 
     // Let the mock return the BLPOP reply; worker can now complete.
     blpopRelease.countDown();
     blpopFinished.await();
-    assertTrue(connection.isRelaxedTimeoutActive(),
+    assertTrue(isRelaxedTimeoutActive(connection),
       "Relaxed timeout should still be active after blocking command");
     assertEquals(RELAXED_TIMEOUT_MS, socket.getSoTimeout(),
       "Socket timeout should be restored to relaxed (non-blocking) value");
@@ -244,7 +249,7 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
         .sendPushMessageToAll(MaintenanceEventMessages.migrated(1, Collections.singletonList("1")));
     connection.executeCommand(commandObjects.ping());
 
-    assertFalse(connection.isRelaxedTimeoutActive(),
+    assertFalse(isRelaxedTimeoutActive(connection),
       "Relaxed timeout should be disabled after MIGRATED");
     assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout(),
       "Socket timeout should be restored to baseline");
@@ -262,13 +267,13 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
     mockServer.sendPushMessageToAll(
       MaintenanceEventMessages.migrating(1, 10, Collections.singletonList("1")));
     assertTrue(connection.ping());
-    assertTrue(connection.isRelaxedTimeoutActive());
+    assertTrue(isRelaxedTimeoutActive(connection));
     assertEquals(RELAXED_TIMEOUT_MS, socket.getSoTimeout());
 
     // No MIGRATED arrives; advance past the 60s safety cap.
     clock.set(Duration.ofSeconds(61).toNanos());
     assertTrue(connection.ping());
-    assertFalse(connection.isRelaxedTimeoutActive(),
+    assertFalse(isRelaxedTimeoutActive(connection),
       "Relaxed timeout should revert at maxRelaxedDuration without a terminator");
     assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
   }
@@ -288,12 +293,12 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
     mockServer.sendPushMessageToAll(
       MaintenanceEventMessages.moving(1, 15, "localhost:" + mockServer.getPort()));
     assertTrue(connection.ping());
-    assertTrue(connection.isRelaxedTimeoutActive(), "MOVING relaxes the receiving connection");
+    assertTrue(isRelaxedTimeoutActive(connection), "MOVING relaxes the receiving connection");
     assertEquals(RELAXED_TIMEOUT_MS, socket.getSoTimeout());
 
     clock.set(Duration.ofSeconds(16).toNanos());
     assertTrue(connection.ping());
-    assertFalse(connection.isRelaxedTimeoutActive());
+    assertFalse(isRelaxedTimeoutActive(connection));
     assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
   }
 }

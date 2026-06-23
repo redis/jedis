@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import java.net.Socket;
+import java.time.Duration;
 import java.util.List;
 import java.util.function.LongSupplier;
 
@@ -35,6 +36,30 @@ public class ConnectionTestHelper {
    */
   public static boolean isMaintenanceEventConsumer(PushConsumer consumer) {
     return consumer instanceof MaintenanceEventConsumer;
+  }
+
+  /**
+   * Maintenance relaxed-timeout state machine on {@link Connection}. These methods are package-
+   * private (driven internally by the SCH layer); tests in other packages reach them here.
+   */
+  public static boolean isRelaxedTimeoutActive(Connection connection) {
+    return connection.isRelaxedTimeoutActive();
+  }
+
+  public static void relaxTimeouts(Connection connection, Duration period) {
+    connection.relaxTimeouts(period);
+  }
+
+  public static void resetRelaxedTimeouts(Connection connection) {
+    connection.resetRelaxedTimeouts();
+  }
+
+  public static int getRelaxedSoTimeout(Connection connection) {
+    return connection.getRelaxedSoTimeout();
+  }
+
+  public static int getRelaxedBlockingSoTimeout(Connection connection) {
+    return connection.getRelaxedBlockingSoTimeout();
   }
 
   /**

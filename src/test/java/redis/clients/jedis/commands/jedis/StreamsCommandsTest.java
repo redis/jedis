@@ -1261,8 +1261,6 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Stream info test
     assertEquals(2L, streamInfo.getStreamInfo().get(StreamInfo.LENGTH));
-    assertEquals(1L, streamInfo.getStreamInfo().get(StreamInfo.RADIX_TREE_KEYS));
-    assertEquals(2L, streamInfo.getStreamInfo().get(StreamInfo.RADIX_TREE_NODES));
     assertEquals(0L, streamInfo.getStreamInfo().get(StreamInfo.GROUPS));
     assertEquals(V1, ((StreamEntry) streamInfo.getStreamInfo().get(StreamInfo.FIRST_ENTRY)).getFields().get(F1));
     assertEquals(V2, ((StreamEntry) streamInfo.getStreamInfo().get(StreamInfo.LAST_ENTRY)).getFields().get(F1));
@@ -1270,8 +1268,6 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Using getters
     assertEquals(2, streamInfo.getLength());
-    assertEquals(1, streamInfo.getRadixTreeKeys());
-    assertEquals(2, streamInfo.getRadixTreeNodes());
     assertEquals(0, streamInfo.getGroups());
     assertEquals(V1, streamInfo.getFirstEntry().getFields().get(F1));
     assertEquals(V2, streamInfo.getLastEntry().getFields().get(F1));
@@ -1339,8 +1335,6 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals(2, streamInfoFull.getEntries().size());
     assertEquals(2, streamInfoFull.getGroups().size());
     assertEquals(2, streamInfoFull.getLength());
-    assertEquals(1, streamInfoFull.getRadixTreeKeys());
-    assertEquals(2, streamInfoFull.getRadixTreeNodes());
     assertEquals(0, streamInfo.getGroups());
     assertEquals(G1, streamInfoFull.getGroups().get(0).getName());
     assertEquals(G2, streamInfoFull.getGroups().get(1).getName());

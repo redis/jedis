@@ -94,7 +94,8 @@ public abstract class AbstractMaintenanceHandshakeTest {
         .build();
 
     HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
-    try (Connection c = buildConnection(hp, cfg, MaintenanceNotificationsConfig.auto())) {
+    try (Connection c = buildConnection(hp, cfg, MaintenanceNotificationsConfig.builder()
+        .mode(MaintenanceNotificationsConfig.Mode.AUTO).build())) {
       assertTrue(c.isConnected());
       assertEquals(RedisProtocol.RESP3, c.getRedisProtocol());
       assertTrue(c.ping());

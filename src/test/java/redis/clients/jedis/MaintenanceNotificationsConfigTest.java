@@ -13,20 +13,12 @@ import java.time.Duration;
 public class MaintenanceNotificationsConfigTest {
 
   @Test
-  public void defaultModeIsAuto() {
-    assertEquals(MaintenanceNotificationsConfig.Mode.AUTO,
-      MaintenanceNotificationsConfig.DEFAULT.getMode());
-    assertTrue(MaintenanceNotificationsConfig.DEFAULT.isEnabledOrAuto());
-    assertEquals(Duration.ofSeconds(60),
-      MaintenanceNotificationsConfig.DEFAULT.getRelaxedWindowMaxDuration());
-  }
-
-  @Test
-  public void builderDefaultsMatchDefault() {
+  public void builderDefaultsToAuto() {
     MaintenanceNotificationsConfig built = MaintenanceNotificationsConfig.builder().build();
-    assertEquals(MaintenanceNotificationsConfig.DEFAULT.getMode(), built.getMode());
-    assertEquals(MaintenanceNotificationsConfig.DEFAULT.getEndpointType(), built.getEndpointType());
+    assertEquals(MaintenanceNotificationsConfig.Mode.AUTO, built.getMode());
+    assertEquals(MaintenanceNotificationsConfig.EndpointType.EXTERNAL_IP, built.getEndpointType());
     assertTrue(built.isEnabledOrAuto());
+    assertEquals(Duration.ofSeconds(60), built.getRelaxedWindowMaxDuration());
   }
 
   @Test
@@ -38,12 +30,12 @@ public class MaintenanceNotificationsConfigTest {
 
   @Test
   public void defaultRelaxedTimeouts() {
+    MaintenanceNotificationsConfig built = MaintenanceNotificationsConfig.builder().build();
     assertEquals(MaintenanceNotificationsConfig.DEFAULT_RELAXED_SOCKET_TIMEOUT_MS,
-      MaintenanceNotificationsConfig.DEFAULT.getRelaxedSocketTimeoutMillis());
+      built.getRelaxedSocketTimeoutMillis());
     assertEquals(MaintenanceNotificationsConfig.DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS,
-      MaintenanceNotificationsConfig.DEFAULT.getRelaxedBlockingSocketTimeoutMillis());
-    assertEquals(JedisClientConfig.UNSET_TIMEOUT_MS,
-      MaintenanceNotificationsConfig.DEFAULT.getRelaxedBlockingSocketTimeoutMillis());
+      built.getRelaxedBlockingSocketTimeoutMillis());
+    assertEquals(JedisClientConfig.UNSET_TIMEOUT_MS, built.getRelaxedBlockingSocketTimeoutMillis());
   }
 
   @Test
@@ -52,5 +44,12 @@ public class MaintenanceNotificationsConfigTest {
         .relaxedSocketTimeoutMillis(20_000).relaxedBlockingSocketTimeoutMillis(30_000).build();
     assertEquals(20_000, config.getRelaxedSocketTimeoutMillis());
     assertEquals(30_000, config.getRelaxedBlockingSocketTimeoutMillis());
+  }
+
+  @Test
+  public void disabledConstantIsDisabled() {
+    assertEquals(MaintenanceNotificationsConfig.Mode.DISABLED,
+      MaintenanceNotificationsConfig.DISABLED.getMode());
+    assertFalse(MaintenanceNotificationsConfig.DISABLED.isEnabledOrAuto());
   }
 }

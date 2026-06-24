@@ -179,7 +179,8 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
         .socketTimeoutMillis(SO_TIMEOUT_MS).protocol(RedisProtocol.RESP3).build();
 
     try (Connection conn = buildDirect(new HostAndPort("localhost", mockServer.getPort()),
-      clientConfig, MaintenanceNotificationsConfig.DEFAULT)) {
+      clientConfig, MaintenanceNotificationsConfig.builder()
+          .mode(MaintenanceNotificationsConfig.Mode.AUTO).build())) {
       Socket socket = ConnectionTestHelper.getSocket(conn);
       assertTrue(conn.isConnected());
 

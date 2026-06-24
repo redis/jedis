@@ -13,8 +13,6 @@ public class MaintenanceNotificationsConfig {
   /** Default relaxed blocking-command timeout (ms): unset, i.e. inherit the configured one. */
   public static final int DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS = JedisClientConfig.UNSET_TIMEOUT_MS;
 
-  public static final MaintenanceNotificationsConfig DEFAULT = builder().build();
-
   /**
    * Endpoint types for maintenance event notifications.
    * <p>
@@ -100,17 +98,12 @@ public class MaintenanceNotificationsConfig {
     return new Builder();
   }
 
-  public static MaintenanceNotificationsConfig disabled() {
-    return builder().mode(Mode.DISABLED).build();
-  }
-
-  public static MaintenanceNotificationsConfig enabled() {
-    return builder().mode(Mode.ENABLED).build();
-  }
-
-  public static MaintenanceNotificationsConfig auto() {
-    return builder().mode(Mode.AUTO).build();
-  }
+  /**
+   * Maintenance notifications disabled. To enable — optionally with custom relaxed timeouts — use
+   * {@link #builder()} with mode {@link Mode#AUTO} or {@link Mode#ENABLED}.
+   */
+  public static final MaintenanceNotificationsConfig DISABLED = builder().mode(Mode.DISABLED)
+      .build();
 
   public static class Builder {
     private EndpointType endpointType = EndpointType.EXTERNAL_IP;

@@ -33,7 +33,7 @@ class AdvancedTimeoutSupplier implements TimeoutSupplier {
     TimeoutCard current = top;
     // defaultCard.isValid() is a constant true (no clock read); only a live pushed card reads the
     // clock here. The cached top changes only on push/remove or when it expires — not per command.
-    if (current.isValid()) {
+    if (current == defaultCard || current.isValid()) {
       return current;
     }
     return advance();
@@ -45,8 +45,8 @@ class AdvancedTimeoutSupplier implements TimeoutSupplier {
     while (!current.isValid()) {
       stack.remove(current);
       current = stack.peek();
-      top = current;
     }
+    top = current;
     return current;
   }
 

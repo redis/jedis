@@ -2,7 +2,7 @@ package redis.clients.jedis;
 
 class SimpleTimeoutSupplier implements TimeoutSupplier {
 
-    TimeoutCard card;
+    final DefaultTimeoutCard card;
 
     SimpleTimeoutSupplier(DefaultTimeoutCard defaultCard) {
         card = defaultCard;
@@ -20,4 +20,7 @@ class SimpleTimeoutSupplier implements TimeoutSupplier {
         throw new UnsupportedOperationException();
     }
 
+    public void setDefaults(int timeout, int blockingTimeout) {
+        card.set(timeout, blockingTimeout);
+    }
 }

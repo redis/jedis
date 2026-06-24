@@ -12,6 +12,8 @@ interface TimeoutSupplier {
 
   void remove(TimeoutCard card);
 
+  void setDefaults(int timeout, int blockingTimeout);
+
   class TimeoutInfo {
 
     final int timeout;
@@ -22,7 +24,6 @@ interface TimeoutSupplier {
       this.timeout = timeout;
       this.blockingTimeout = blockingTimeout;
       this.expiration = expiration;
-
     }
 
     boolean isValid() {
@@ -37,26 +38,13 @@ interface TimeoutSupplier {
   class TimeoutCard {
 
     private final TimeoutInfo info;
-    private volatile boolean consumed = false;
 
     TimeoutCard(TimeoutInfo info) {
       this.info = info;
     }
 
-    boolean isConsumed() {
-      return consumed;
-    }
-
     boolean isValid() {
       return getInfo().isValid();
-    }
-
-    void readyConsume() {
-      consumed = false;
-    }
-
-    void markConsumed() {
-      consumed = true;
     }
 
     TimeoutInfo getInfo() {
@@ -68,7 +56,7 @@ interface TimeoutSupplier {
     private TimeoutInfo info;
 
     DefaultTimeoutCard(int timeout, int blockingTimeout) {
-      super(new TimeoutInfo(timeout, blockingTimeout, Long.MAX_VALUE));
+      super(notExpiringInfo(timeout, blockingTimeout));
       this.info = super.getInfo();
     }
 
@@ -78,9 +66,15 @@ interface TimeoutSupplier {
     }
 
     void set(int timeout, int blockingTimeout) {
-      this.info = new TimeoutInfo(timeout, blockingTimeout, Long.MAX_VALUE);
-      readyConsume();
+      this.info = notExpiringInfo(timeout, blockingTimeout);
     }
 
+    private static TimeoutInfo notExpiringInfo(int timeout, int blockingTimeout) {
+      return new TimeoutInfo(timeout, blockingTimeout, Long.MAX_VALUE) {
+        boolean isValid() {
+          return true;
+        }
+      };
+    }
   }
 }

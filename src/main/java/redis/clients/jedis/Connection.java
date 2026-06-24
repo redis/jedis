@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
@@ -43,7 +42,7 @@ public class Connection implements Closeable {
     private JedisClientConfig clientConfig;
     private MaintenanceNotificationsConfig maintenanceConfig;
     private final List<MaintenanceEventListener> maintenanceEventListeners = new ArrayList<>();
-    private SoTimeoutSupplier soTimeoutSupplier;
+    private TimeoutSupplier timeoutSupplier;
 
     public Builder socketFactory(JedisSocketFactory socketFactory) {
       this.socketFactory = socketFactory;
@@ -70,12 +69,8 @@ public class Connection implements Closeable {
       return this;
     }
 
-    /**
-     * Installs a per-operation {@code SO_TIMEOUT} override (see {@link SoTimeoutSupplier}). Absent a
-     * supplier the connection uses its configured timeouts unchanged.
-     */
-    Builder soTimeoutSupplier(SoTimeoutSupplier soTimeoutSupplier) {
-      this.soTimeoutSupplier = soTimeoutSupplier;
+    Builder timeoutSupplier(TimeoutSupplier timeoutSupplier) {
+      this.timeoutSupplier = timeoutSupplier;
       return this;
     }
 
@@ -95,8 +90,8 @@ public class Connection implements Closeable {
       return maintenanceEventListeners;
     }
 
-    SoTimeoutSupplier getSoTimeoutSupplier() {
-      return soTimeoutSupplier;
+    TimeoutSupplier getTimeoutSupplier() {
+      return timeoutSupplier;
     }
 
     public Connection build() {
@@ -171,8 +166,13 @@ public class Connection implements Closeable {
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
 
-  private DefaultTimeoutCard defaultTimeoutCard = new DefaultTimeoutCard(0, 0);
-  private TimeoutSupplier timeoutSupplier = new SimpleTimeoutSupplier(defaultTimeoutCard);
+
+  /**
+   * Last SO_TIMEOUT value pushed to the underlying socket, used to skip redundant
+   * {@code setSoTimeout} syscalls. Touched only by the command-executing thread (and on connect).
+   * {@code -1} means "unknown / no socket yet".
+   */
+  private int appliedSoTimeout = -1;
 
   private boolean broken = false;
   private boolean strValActive;
@@ -183,9 +183,6 @@ public class Connection implements Closeable {
   private AuthXManager authXManager;
 
 
-  /** Monotonic clock for relaxed-timeout expiry; overridable for tests. */
-  private LongSupplier clockNanos = System::nanoTime;
-
   /**
    * Maintenance configuration driving the {@code CLIENT MAINT_NOTIFICATIONS} handshake; {@code null}
    * when non-pooled or maintenance disabled.
@@ -195,8 +192,7 @@ public class Connection implements Closeable {
   /** Listeners notified synchronously of this connection's maintenance events (pool-injected). */
   private final List<MaintenanceEventListener> maintenanceEventListeners = new CopyOnWriteArrayList<>();
 
-  /** Per-operation SO_TIMEOUT override; {@code null} = use configured timeouts unchanged. */
-  private SoTimeoutSupplier soTimeoutSupplier;
+  private TimeoutSupplier timeoutSupplier = new SimpleTimeoutSupplier(new DefaultTimeoutCard(0, 0));
 
   private JedisClientConfig clientConfig;
   private final ProtocolHandshake handshake = new ProtocolHandshake(this);
@@ -237,7 +233,7 @@ public class Connection implements Closeable {
     this.clientConfig = builder.getClientConfig();
     this.maintenanceConfig = builder.getMaintenanceConfig();              // pool-injected (may be null)
     this.maintenanceEventListeners.addAll(builder.getMaintenanceEventListeners());
-    this.soTimeoutSupplier = builder.getSoTimeoutSupplier();              // pool-injected (may be null)
+    this.timeoutSupplier = builder.getTimeoutSupplier();              // pool-injected (may be null)
   }
 
   /**
@@ -328,7 +324,7 @@ public class Connection implements Closeable {
    * @see #getRelaxedSoTimeout()
    */
   public int getSoTimeout() {
-    return timeoutSupplier.get().getInfo().timeout;
+    return currentTimeoutInfo().timeout;
   }
 
   /**
@@ -341,7 +337,7 @@ public class Connection implements Closeable {
    * @see #getSoTimeout()
    */
   public int getBlockingSoTimeout() {
-    return timeoutSupplier.get().getInfo().blockingTimeout;
+    return currentTimeoutInfo().blockingTimeout;
   }
 
   /**
@@ -359,22 +355,36 @@ public class Connection implements Closeable {
    * @see #isRelaxedTimeoutActive()
    */
   public void setSoTimeout(int soTimeout) {
-    defaultTimeoutCard.set(soTimeout, getBlockingSoTimeout());
-    consumePendingTimeout();
+    timeoutSupplier.setDefaults(soTimeout, getBlockingSoTimeout());
+    applySoTimeout(currentTimeoutInfo().timeout);
   }
 
-  private void consumePendingTimeout() {
-    TimeoutCard card = timeoutSupplier.get();
-    if (card.isConsumed()) {
+  /**
+   * Resolves the timeout currently in effect. The common case has no relaxed-timeout window open, so
+   * we read the default card directly and avoid the supplier dispatch and the {@code System.nanoTime}
+   * expiry check entirely; the supplier (and its clock) is only consulted while a relaxation window
+   * is active.
+   */
+  private TimeoutInfo currentTimeoutInfo() {
+    return timeoutSupplier.get().getInfo();
+  }
+
+  /**
+   * Pushes {@code timeout} to the socket only when it differs from the value already applied. The
+   * socket's SO_TIMEOUT is sticky, so caching the last-applied value lets the hot read path skip the
+   * syscall whenever the effective timeout is unchanged (the overwhelmingly common case).
+   */
+  private void applySoTimeout(int timeout) {
+    if (timeout == appliedSoTimeout) {
       return;
     }
     try {
-      socket.setSoTimeout(card.getInfo().timeout);
+      socket.setSoTimeout(timeout);
     } catch (IOException e) {
       setBroken();
       throw new JedisConnectionException("Failed to set SO_TIMEOUT", e);
     }
-    card.markConsumed();
+    appliedSoTimeout = timeout;
   }
 
   /**
@@ -395,13 +405,7 @@ public class Connection implements Closeable {
    * @see #isRelaxedTimeoutActive()
    */
   public void setTimeoutInfinite() {
-    TimeoutCard card = timeoutSupplier.get();
-    try{
-      socket.setSoTimeout(card.getInfo().blockingTimeout);
-    }catch (IOException e){
-      setBroken();
-      throw new JedisConnectionException("Failed to set SO_TIMEOUT",e);
-    }
+    applySoTimeout(currentTimeoutInfo().blockingTimeout);
   }
 
   /**
@@ -420,13 +424,7 @@ public class Connection implements Closeable {
    * @see #isRelaxedTimeoutActive()
    */
   public void rollbackTimeout() {
-    TimeoutCard card = timeoutSupplier.get();
-    try{
-      socket.setSoTimeout(card.getInfo().timeout);
-    }catch (IOException e){
-      setBroken();
-      throw new JedisConnectionException("Failed to set SO_TIMEOUT",e);
-    }
+    applySoTimeout(currentTimeoutInfo().timeout);
   }
 
   public Object executeCommand(final ProtocolCommand cmd) {
@@ -442,7 +440,7 @@ public class Connection implements Closeable {
     final CommandArguments args = commandObject.getArguments();
     sendCommand(args);
     if (!args.isBlocking()) {
-      consumePendingTimeout();
+    applySoTimeout(currentTimeoutInfo().timeout);
       return commandObject.getBuilder().build(getOne());
     }
     try {
@@ -500,7 +498,9 @@ public class Connection implements Closeable {
     if (!isConnected()) {
       try {
         socket = socketFactory.createSocket();
-        defaultTimeoutCard.set(socket.getSoTimeout(), getBlockingSoTimeout());
+        timeoutSupplier.setDefaults(socket.getSoTimeout(), getBlockingSoTimeout());
+        // Fresh socket: align the applied-timeout cache with the new socket's actual SO_TIMEOUT.
+        appliedSoTimeout = socket.getSoTimeout();
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
@@ -632,11 +632,11 @@ public class Connection implements Closeable {
     return (List<Object>) readProtocolWithCheckingBroken();
   }
 
-  @SuppressWarnings("unchecked")
   public Object getUnflushedObject() {
     return readProtocolWithCheckingBroken();
   }
 
+  @SuppressWarnings("unchecked")
   public List<Object> getObjectMultiBulkReply() {
     flush();
     return (List<Object>) readProtocolWithCheckingBroken();
@@ -745,7 +745,7 @@ public class Connection implements Closeable {
 
   protected void initializeFromClientConfig(final JedisClientConfig config) {
     try {
-      defaultTimeoutCard.set(config.getSocketTimeoutMillis(), config.getBlockingSocketTimeoutMillis());
+      timeoutSupplier.setDefaults(config.getSocketTimeoutMillis(), config.getBlockingSocketTimeoutMillis());
 
       initPushConsumers(config);
 
@@ -1114,10 +1114,6 @@ public class Connection implements Closeable {
     if(card != null) {
       timeoutSupplier.remove(card);
     }
-  }
-
-  void setClockNanos(LongSupplier clockNanos) {
-    this.clockNanos = clockNanos;
   }
 
   /** Marks this connection for discard on return to the pool (MOVING receiver). */

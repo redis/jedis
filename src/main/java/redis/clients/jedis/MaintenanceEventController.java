@@ -16,6 +16,9 @@ import java.util.function.LongSupplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import redis.clients.jedis.TimeoutSupplier.TimeoutInfo;
+import redis.clients.jedis.util.JedisAsserts;
+
 /**
  * Maintenance handler: owns the shared rebind overlay, the relax-window policy, and the handoff
  * hooks fired when a MOVING is applied.
@@ -26,8 +29,8 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
 
   private final MaintenanceNotificationsConfig config;
   private final long maxRelaxedDurationNanos; // MIGRATING/FAILING_OVER backstop window
-  private LongSupplier clockNanos = System::nanoTime; // test seam
-  private final AtomicReference<RebindState> rebind = new AtomicReference<>();
+  private final AtomicReference<RebindState> rebind = new AtomicReference<>(
+      RebindState.EXPIRED_STATE);
   /** Synchronous hooks fired once per applied MOVING handoff; see {@link #addHandoffHook}. */
   private final List<Consumer<MaintenanceHandoff>> handoffHooks = new CopyOnWriteArrayList<>();
 
@@ -66,8 +69,9 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   }
 
   /** Test seam: override the monotonic clock used for rebind expiry. */
-  void setClockNanos(LongSupplier clockNanos) {
-    this.clockNanos = clockNanos;
+  static void setClockNanos(LongSupplier clockNanos) {
+    JedisAsserts.notNull(clockNanos, "clockNanos must not be null");
+    RebindState.CLOCK_NANOS = clockNanos;
   }
 
   /**
@@ -78,25 +82,18 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   @Override
   public SocketAddress getSocketAddress(SocketAddress resolved) {
     RebindState s = rebind.get();
-    if (s == null || s.deadlineNanos - clockNanos.getAsLong() <= 0) {
-      return null;
-    }
-    return s.affected.contains(resolved) ? s.target : null;
+    return (s.isValid() && s.affected.contains(resolved)) ? s.target : null;
   }
 
   /** True iff {@code peer} is one of the active rebind's affected sources. */
   public boolean isAffected(SocketAddress peer) {
     RebindState s = rebind.get();
-    return s != null && s.deadlineNanos - clockNanos.getAsLong() > 0 && s.affected.contains(peer);
+    return s.isValid() && s.affected.contains(peer);
   }
 
   /** True iff there is an active MOVING rebind window in the pool right now. */
   public boolean isRebindActive() {
-    RebindState s = rebind.get();
-    if (s == null) return false;
-    if (s.deadlineNanos - clockNanos.getAsLong() > 0) return true;
-    rebind.compareAndSet(s, null);
-    return false;
+    return rebind.get().isValid();
   }
 
   @Override
@@ -107,20 +104,21 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     long ttlNanos = Math.min(TimeUnit.SECONDS.toNanos(e.ttlSeconds), maxRelaxedDurationNanos);
     // Any MOVING affects the receiver: mark for discard and relax commands on it before return.
     c.requestRebind();
-    c.relaxTimeouts(Duration.ofNanos(ttlNanos));
+    c.relaxTimeouts(
+      TimeoutInfo.ofDuration(config.relaxedTimeout(), config.relaxedBlockingTimeout(), ttlNanos));
     SocketAddress affectedPeer = c.getRemoteSocketAddress();
     if (affectedPeer == null) {
       return; // receiver socket already closed; no peer to register
     }
     SocketAddress target = new InetSocketAddress(e.target.getHost(), e.target.getPort());
-    long deadline = clockNanos.getAsLong() + ttlNanos;
+    long deadline = RebindState.CLOCK_NANOS.getAsLong() + ttlNanos;
 
     while (true) {
       RebindState cur = rebind.get();
-      if (cur != null && e.seq < cur.seq) {
+      if (e.seq < cur.seq) {
         return; // older event
       }
-      if (cur != null && e.seq == cur.seq) {
+      if (e.seq == cur.seq) {
         // Same handoff event from another affected connection: merge its peer into the set.
         if (!target.equals(cur.target)) {
           logger.warn("Ignoring MOVING with conflicting target for seq {}: have {}, got {}", e.seq,
@@ -130,11 +128,7 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
         if (cur.affected.contains(affectedPeer)) {
           return; // already merged
         }
-        Set<SocketAddress> merged = new HashSet<>(cur.affected.size() + 1, 1.0f);
-        merged.addAll(cur.affected);
-        merged.add(affectedPeer);
-        RebindState next = new RebindState(cur.seq, Collections.unmodifiableSet(merged), cur.target,
-            cur.deadlineNanos);
+        RebindState next = cur.merge(affectedPeer);
         if (rebind.compareAndSet(cur, next)) {
           logger.debug("Merged source {} into rebind seq={} (sources={})", affectedPeer, cur.seq,
             next.affected.size());
@@ -165,14 +159,16 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   @Override
   public void onMigrating(MigratingEvent e, Connection c) {
     logger.debug("Migrating shards {} (seq={}, ttl={}s)", e.shardIds, e.seq, e.ttlSeconds);
-    c.relaxTimeouts(Duration.ofNanos(maxRelaxedDurationNanos)); // time_s = "starts within";
-                                                                // backstop
+    c.relaxTimeouts(TimeoutInfo.ofDuration(config.relaxedTimeout(), config.relaxedBlockingTimeout(),
+      maxRelaxedDurationNanos)); // time_s = "starts within";
+    // backstop
   }
 
   @Override
   public void onFailingOver(FailingOverEvent e, Connection c) {
     logger.debug("Failing over shards {} (seq={}, ttl={}s)", e.shardIds, e.seq, e.ttlSeconds);
-    c.relaxTimeouts(Duration.ofNanos(maxRelaxedDurationNanos));
+    c.relaxTimeouts(TimeoutInfo.ofDuration(config.relaxedTimeout(), config.relaxedBlockingTimeout(),
+      maxRelaxedDurationNanos));
   }
 
   @Override
@@ -227,16 +223,31 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
    * set is always immutable; updates swap the whole state.
    */
   private static final class RebindState {
+
+    static LongSupplier CLOCK_NANOS = System::nanoTime;
+    static final RebindState EXPIRED_STATE = new RebindState(-1, Collections.emptySet(), null, 0L);
     final long seq;
     final Set<SocketAddress> affected;
     final SocketAddress target;
     final long deadlineNanos;
 
-    RebindState(long seq, Set<SocketAddress> affected, SocketAddress target, long deadlineNanos) {
+    private RebindState(long seq, Set<SocketAddress> affected, SocketAddress target,
+        long deadlineNanos) {
       this.seq = seq;
       this.affected = affected;
       this.target = target;
       this.deadlineNanos = deadlineNanos;
+    }
+
+    private RebindState merge(SocketAddress peer) {
+      Set<SocketAddress> merged = new HashSet<>(affected.size() + 1, 1.0f);
+      merged.addAll(affected);
+      merged.add(peer);
+      return new RebindState(seq, Collections.unmodifiableSet(merged), target, deadlineNanos);
+    }
+
+    private boolean isValid() {
+      return deadlineNanos - CLOCK_NANOS.getAsLong() > 0;
     }
   }
 }

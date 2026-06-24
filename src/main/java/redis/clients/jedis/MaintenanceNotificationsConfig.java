@@ -71,6 +71,14 @@ public class MaintenanceNotificationsConfig {
     return mode == Mode.ENABLED || mode == Mode.AUTO;
   }
 
+  public int relaxedTimeout() {
+    return 0;
+  }
+
+  public int relaxedBlockingTimeout() {
+    return 0;
+  }
+
   public static Builder builder() {
     return new Builder();
   }

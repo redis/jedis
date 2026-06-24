@@ -6,10 +6,8 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketAddress;
-import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -23,6 +21,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.TimeoutSupplier.DefaultTimeoutCard;
+import redis.clients.jedis.TimeoutSupplier.TimeoutCard;
+import redis.clients.jedis.TimeoutSupplier.TimeoutInfo;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.args.ClientAttributeOption;
@@ -169,36 +170,9 @@ public class Connection implements Closeable {
   private Socket socket;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
-  /**
-   * Socket read timeout (SO_TIMEOUT) in milliseconds used for non-blocking commands.
-   * A value of {@code 0} indicates an infinite timeout.
-   */
-  private int soTimeout = 0;
 
-  /**
-   * Socket read timeout (SO_TIMEOUT) in milliseconds used for blocking commands.
-   * A value of {@code 0} indicates an infinite timeout.
-   */
-  private int infiniteSoTimeout = 0;
-
-  /**
-   * Socket read timeout (SO_TIMEOUT) in milliseconds used for non-blocking commands while the
-   * connection is in a relaxed (maintenance) state. {@link JedisClientConfig#UNSET_TIMEOUT_MS}
-   * means {@link #soTimeout} is inherited instead.
-   */
-  private int relaxedTimeout = JedisClientConfig.DEFAULT_RELAXED_SOCKET_TIMEOUT_MS;
-
-  /**
-   * Socket read timeout (SO_TIMEOUT) in milliseconds used for blocking commands while the
-   * connection is in a relaxed (maintenance) state. {@link JedisClientConfig#UNSET_TIMEOUT_MS}
-   * means {@link #infiniteSoTimeout} is inherited instead.
-   */
-  private int relaxedBlockingTimeout = JedisClientConfig.DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS;
-
-  private boolean relaxedTimeoutConfigured = JedisClientConfig.isTimeoutSet(relaxedTimeout);
-
-  private boolean relaxedBlockingTimeoutConfigured = JedisClientConfig
-      .isTimeoutSet(relaxedBlockingTimeout);
+  private DefaultTimeoutCard defaultTimeoutCard = new DefaultTimeoutCard(0, 0);
+  private TimeoutSupplier timeoutSupplier = new SimpleTimeoutSupplier(defaultTimeoutCard);
 
   private boolean broken = false;
   private boolean strValActive;
@@ -207,14 +181,7 @@ public class Connection implements Closeable {
   protected String version;
   private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
   private AuthXManager authXManager;
-  private boolean isBlocking = false;
 
-  /**
-   * Maintenance relaxed-timeout overlay: {@code 0} = not relaxed, else the absolute
-   * {@link #clockNanos} deadline until which relaxed timeouts apply. Reset to {@code 0} lazily on
-   * the next read once expired.
-   */
-  private long relaxedUntilNanos = 0L;
 
   /** Monotonic clock for relaxed-timeout expiry; overridable for tests. */
   private LongSupplier clockNanos = System::nanoTime;
@@ -230,13 +197,6 @@ public class Connection implements Closeable {
 
   /** Per-operation SO_TIMEOUT override; {@code null} = use configured timeouts unchanged. */
   private SoTimeoutSupplier soTimeoutSupplier;
-
-  /**
-   * Cache of the SO_TIMEOUT value currently applied to {@link #socket}. Lets {@link #applyTimeout}
-   * skip the {@code setSoTimeout} syscall when the desired value already matches. Initialized in
-   * {@link #connect()} from the socket's actual value and updated by {@link #applyTimeout}.
-   */
-  private int lastAppliedTimeout;
 
   private JedisClientConfig clientConfig;
   private final ProtocolHandshake handshake = new ProtocolHandshake(this);
@@ -368,7 +328,7 @@ public class Connection implements Closeable {
    * @see #getRelaxedSoTimeout()
    */
   public int getSoTimeout() {
-    return soTimeout;
+    return timeoutSupplier.get().getInfo().timeout;
   }
 
   /**
@@ -381,41 +341,7 @@ public class Connection implements Closeable {
    * @see #getSoTimeout()
    */
   public int getBlockingSoTimeout() {
-    return infiniteSoTimeout;
-  }
-
-
-
-  /**
-   * Returns the socket read timeout (SO_TIMEOUT) in milliseconds used for non-blocking commands
-   * while the connection is in a relaxed (maintenance) state.
-   *
-   * <p>This timeout is applied when relaxed timeout mode is active (see {@link #isRelaxedTimeoutActive()}).</p>
-   *
-   * @return the relaxed timeout in milliseconds for non-blocking operations during maintenance
-   * @see #getSoTimeout()
-   * @see #isRelaxedTimeoutActive()
-   */
-  public int getRelaxedSoTimeout() {
-    return relaxedTimeout;
-  }
-
-  /**
-   * Returns the socket read timeout (SO_TIMEOUT) in milliseconds used for blocking commands
-   * while the connection is in a relaxed (maintenance) state.
-   *
-   * <p>This timeout is applied when relaxed timeout mode is active
-   * (see {@link #isRelaxedTimeoutActive()}).</p>
-   *
-   * <p>It is specifically used for blocking Redis commands (e.g. BLPOP, BRPOP) during
-   * maintenance periods where the connection may require different timeout behavior.</p>
-   *
-   * @return the relaxed timeout in milliseconds for blocking operations during maintenance
-   * @see #getRelaxedSoTimeout()
-   * @see #isRelaxedTimeoutActive()
-   */
-  public int getRelaxedBlockingSoTimeout() {
-    return relaxedBlockingTimeout;
+    return timeoutSupplier.get().getInfo().blockingTimeout;
   }
 
   /**
@@ -433,8 +359,22 @@ public class Connection implements Closeable {
    * @see #isRelaxedTimeoutActive()
    */
   public void setSoTimeout(int soTimeout) {
-    this.soTimeout = soTimeout;
-    applyTimeout(effectiveSoTimeout());
+    defaultTimeoutCard.set(soTimeout, getBlockingSoTimeout());
+    consumePendingTimeout();
+  }
+
+  private void consumePendingTimeout() {
+    TimeoutCard card = timeoutSupplier.get();
+    if (card.isConsumed()) {
+      return;
+    }
+    try {
+      socket.setSoTimeout(card.getInfo().timeout);
+    } catch (IOException e) {
+      setBroken();
+      throw new JedisConnectionException("Failed to set SO_TIMEOUT", e);
+    }
+    card.markConsumed();
   }
 
   /**
@@ -455,11 +395,13 @@ public class Connection implements Closeable {
    * @see #isRelaxedTimeoutActive()
    */
   public void setTimeoutInfinite() {
-    if (!isConnected()) {
-      connect();
+    TimeoutCard card = timeoutSupplier.get();
+    try{
+      socket.setSoTimeout(card.getInfo().blockingTimeout);
+    }catch (IOException e){
+      setBroken();
+      throw new JedisConnectionException("Failed to set SO_TIMEOUT",e);
     }
-    isBlocking = true;
-    applyTimeout(effectiveSoTimeout());
   }
 
   /**
@@ -478,8 +420,13 @@ public class Connection implements Closeable {
    * @see #isRelaxedTimeoutActive()
    */
   public void rollbackTimeout() {
-    isBlocking = false;
-    applyTimeout(effectiveSoTimeout());
+    TimeoutCard card = timeoutSupplier.get();
+    try{
+      socket.setSoTimeout(card.getInfo().timeout);
+    }catch (IOException e){
+      setBroken();
+      throw new JedisConnectionException("Failed to set SO_TIMEOUT",e);
+    }
   }
 
   public Object executeCommand(final ProtocolCommand cmd) {
@@ -495,16 +442,14 @@ public class Connection implements Closeable {
     final CommandArguments args = commandObject.getArguments();
     sendCommand(args);
     if (!args.isBlocking()) {
+      consumePendingTimeout();
       return commandObject.getBuilder().build(getOne());
     }
     try {
-      isBlocking = true;
+      setTimeoutInfinite();
       return commandObject.getBuilder().build(getOne());
     } finally {
-      isBlocking = false;
-      // Restore the non-blocking socket timeout so observers (and the next, possibly non-blocking,
-      // command) see a coherent value immediately. Cache-checked → no syscall when unchanged.
-      applyTimeout(effectiveSoTimeout());
+      rollbackTimeout();
     }
   }
 
@@ -555,8 +500,7 @@ public class Connection implements Closeable {
     if (!isConnected()) {
       try {
         socket = socketFactory.createSocket();
-        soTimeout = socket.getSoTimeout(); // ?
-        lastAppliedTimeout = soTimeout;    // mirror the freshly-set baseline
+        defaultTimeoutCard.set(socket.getSoTimeout(), getBlockingSoTimeout());
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
@@ -731,14 +675,6 @@ public class Connection implements Closeable {
     if (broken) {
       throw new JedisConnectionException("Attempting to read from a broken connection.");
     }
-    // Hot-path fast skip: when no maintenance state is in play and we're not in a blocking
-    // section, the socket's SO_TIMEOUT invariantly equals the configured baseline (set in
-    // {@link #connect()} and maintained by {@link #applyTimeout}). Avoid the apply machinery in
-    // that overwhelming common case. Otherwise, align the socket to the current blocking /
-    // relaxation state — cache-checked, so a syscall fires only on a transition.
-    if (relaxedUntilNanos != 0 || isBlocking || soTimeoutSupplier != null) {
-      applyTimeout(effectiveSoTimeout());
-    }
     try {
       return protocolRead(inputStream, pushConsumers);
     } catch (JedisConnectionException exc) {
@@ -809,13 +745,7 @@ public class Connection implements Closeable {
 
   protected void initializeFromClientConfig(final JedisClientConfig config) {
     try {
-      this.soTimeout = config.getSocketTimeoutMillis();
-      this.infiniteSoTimeout = config.getBlockingSocketTimeoutMillis();
-
-      this.relaxedTimeout = config.getRelaxedSocketTimeoutMillis();
-      this.relaxedBlockingTimeout = config.getRelaxedBlockingSocketTimeoutMillis();
-      this.relaxedTimeoutConfigured = JedisClientConfig.isTimeoutSet(relaxedTimeout);
-      this.relaxedBlockingTimeoutConfigured = JedisClientConfig.isTimeoutSet(relaxedBlockingTimeout);
+      defaultTimeoutCard.set(config.getSocketTimeoutMillis(), config.getBlockingSocketTimeoutMillis());
 
       initPushConsumers(config);
 
@@ -1161,65 +1091,7 @@ public class Connection implements Closeable {
     this.pushConsumers.remove(consumer);
   }
 
-  /**
-   * {@code true} while this connection is operating with relaxed timeouts because a server-side
-   * maintenance event is in progress on it (MIGRATING / FAILING_OVER, or a MOVING handoff
-   * delivered on this connection). Reverts to {@code false} once the event completes or the
-   * relaxation window expires.
-   */
-  @Experimental
-  public boolean isRelaxedTimeoutActive() {
-    long d = relaxedUntilNanos;
-    if (d == 0) return false;
-    if (d - clockNanos.getAsLong() > 0) return true;
-    relaxedUntilNanos = 0; // lazy reset past deadline; same thread owns the field
-    return false;
-  }
-
-  /**
-   * The {@code SO_TIMEOUT} to apply for the next operation. Consults the {@link #soTimeoutSupplier}
-   * first (e.g. a pool-injected MOVING-rebind override); when it has no opinion
-   * ({@link JedisClientConfig#UNSET_TIMEOUT_MS}) or is absent, falls back to this connection's own
-   * calculation based on its blocking mode and per-receiver relaxation window.
-   */
-  private int effectiveSoTimeout() {
-    if (soTimeoutSupplier != null) {
-      int v = soTimeoutSupplier.getSoTimeout(isBlocking);
-      if (JedisClientConfig.isTimeoutSet(v)) {
-        return v;
-      }
-    }
-    return desiredSoTimeout(isBlocking, isRelaxedTimeoutActive());
-  }
-
-  /**
-   * Returns the {@code SO_TIMEOUT} value to apply for the next operation given the blocking mode
-   * and whether relaxation is in effect right now.
-   */
-  private int desiredSoTimeout(boolean blocking, boolean relaxed) {
-    if (blocking) {
-      return relaxed && relaxedBlockingTimeoutConfigured ? relaxedBlockingTimeout : infiniteSoTimeout;
-    }
-    return relaxed && relaxedTimeoutConfigured ? relaxedTimeout : soTimeout;
-  }
-
-  /**
-   * Sets {@code SO_TIMEOUT} only when {@code desired} differs from what we've previously applied —
-   * skips the {@code setSoTimeout} syscall in the steady state.
-   */
-  private void applyTimeout(int desired) {
-    if (socket == null || lastAppliedTimeout == desired) {
-      return;
-    }
-    try {
-      socket.setSoTimeout(desired);
-      lastAppliedTimeout = desired;
-    } catch (SocketException ex) {
-      setBroken();
-      throw new JedisConnectionException(ex);
-    }
-  }
-
+  CopyOnWriteArrayList<TimeoutCard> relaxedTimeouts = new CopyOnWriteArrayList<>();
   /**
    * Switches this connection to relaxed timeouts for at most {@code period}. While the window is
    * open, commands use {@link #getRelaxedSoTimeout()} and {@link #getRelaxedBlockingSoTimeout()}
@@ -1231,19 +1103,17 @@ public class Connection implements Closeable {
    * @param period maximum duration of the relaxation window
    */
   @Experimental
-  public void relaxTimeouts(Duration period) {
-    long deadline = clockNanos.getAsLong() + period.toNanos();
-    if (relaxedUntilNanos == 0 || deadline - relaxedUntilNanos > 0) {
-      relaxedUntilNanos = deadline;
-    }
-    applyTimeout(effectiveSoTimeout());
+  public void relaxTimeouts(TimeoutInfo info) {
+    relaxedTimeouts.add(timeoutSupplier.push(info));
   }
 
   /** Clears the per-receiver relaxation deadline and eagerly realigns the socket (cache-checked). */
   @Experimental
   public void resetRelaxedTimeouts() {
-    relaxedUntilNanos = 0;
-    applyTimeout(effectiveSoTimeout());
+    TimeoutCard card = relaxedTimeouts.remove(0);
+    if(card != null) {
+      timeoutSupplier.remove(card);
+    }
   }
 
   void setClockNanos(LongSupplier clockNanos) {

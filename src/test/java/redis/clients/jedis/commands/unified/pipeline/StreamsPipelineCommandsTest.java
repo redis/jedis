@@ -1177,6 +1177,9 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     StreamInfo streamInfo = streamInfoResponse.get();
 
     assertEquals(2L, streamInfo.getStreamInfo().get(StreamInfo.LENGTH));
+    // radix-tree-* are internal debugging fields; only assert they are parsed, not their values
+    assertThat((Long) streamInfo.getStreamInfo().get(StreamInfo.RADIX_TREE_KEYS), Matchers.any(Long.class));
+    assertThat((Long) streamInfo.getStreamInfo().get(StreamInfo.RADIX_TREE_NODES), Matchers.any(Long.class));
     assertEquals(0L, streamInfo.getStreamInfo().get(StreamInfo.GROUPS));
     assertEquals(V1, ((StreamEntry) streamInfo.getStreamInfo().get(StreamInfo.FIRST_ENTRY)).getFields().get(F1));
     assertEquals(V2, ((StreamEntry) streamInfo.getStreamInfo().get(StreamInfo.LAST_ENTRY)).getFields().get(F1));
@@ -1184,6 +1187,8 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     // Using getters
     assertEquals(2, streamInfo.getLength());
+    assertThat(streamInfo.getRadixTreeKeys(), Matchers.any(Long.class));
+    assertThat(streamInfo.getRadixTreeNodes(), Matchers.any(Long.class));
     assertEquals(0, streamInfo.getGroups());
     assertEquals(V1, streamInfo.getFirstEntry().getFields().get(F1));
     assertEquals(V2, streamInfo.getLastEntry().getFields().get(F1));
@@ -1264,6 +1269,8 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     assertEquals(2, streamInfoFull.getEntries().size());
     assertEquals(2, streamInfoFull.getGroups().size());
     assertEquals(2, streamInfoFull.getLength());
+    assertThat(streamInfoFull.getRadixTreeKeys(), Matchers.any(Long.class));
+    assertThat(streamInfoFull.getRadixTreeNodes(), Matchers.any(Long.class));
     assertEquals(0, streamInfo.getGroups());
     assertEquals(G1, streamInfoFull.getGroups().get(0).getName());
     assertEquals(G2, streamInfoFull.getGroups().get(1).getName());

@@ -162,4 +162,15 @@ public interface ClientBinaryCommands {
    * @return OK
    */
   String clientNoEvictOff();
+
+  /**
+   * Returns the client ID we are redirecting our
+   * <a href="https://redis.io/docs/manual/client-side-caching/">tracking</a> notifications to.
+   * <p>
+   * Returns -1 if client tracking is not enabled, or 0 if client tracking is enabled but we
+   * are not redirecting the notifications to any client.
+   *
+   * @return The client ID we are redirecting tracking notifications to.
+   */
+  long clientGetredir();
 }

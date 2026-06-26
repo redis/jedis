@@ -484,7 +484,8 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
 
   static Stream<Arguments> yieldScoreAsCombiners() {
     return Stream.of(
-      Arguments.of("LINEAR-all-params", Combiners.linear().alpha(0.5).beta(0.5).as("combined_score")),
+      Arguments.of("LINEAR-all-params",
+        Combiners.linear().alpha(0.5).beta(0.5).as("combined_score")),
       Arguments.of("RRF-all-params", Combiners.rrf().window(20).constant(60).as("combined_score")),
       Arguments.of("LINEAR-default-with-alias", Combiners.linear().as("combined_score")),
       Arguments.of("RRF-default-with-alias", Combiners.rrf().as("combined_score")));

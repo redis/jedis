@@ -42,6 +42,7 @@ import redis.clients.jedis.search.aggr.Reducers;
 import redis.clients.jedis.search.aggr.SortedField;
 import redis.clients.jedis.search.Apply;
 import redis.clients.jedis.search.Filter;
+import redis.clients.jedis.search.Combiner;
 import redis.clients.jedis.search.Combiners;
 import redis.clients.jedis.search.hybrid.FTHybridParams;
 import redis.clients.jedis.search.hybrid.FTHybridPostProcessingParams;
@@ -479,6 +480,36 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
     Document firstResult = reply.getDocuments().get(0);
     assertThat(firstResult.hasProperty("title"), equalTo(true));
     assertThat(firstResult.hasProperty("price"), equalTo(true));
+  }
+
+  static Stream<Arguments> yieldScoreAsCombiners() {
+    return Stream.of(
+      Arguments.of("LINEAR-all-params", Combiners.linear().alpha(0.5).beta(0.5).as("combined_score")),
+      Arguments.of("RRF-all-params", Combiners.rrf().window(20).constant(60).as("combined_score")),
+      Arguments.of("LINEAR-default-with-alias", Combiners.linear().as("combined_score")),
+      Arguments.of("RRF-default-with-alias", Combiners.rrf().as("combined_score")));
+  }
+
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("yieldScoreAsCombiners")
+  public void testCombineWithYieldScoreAs(String name, Combiner combiner) {
+    // Combiner.as(...) emits YIELD_SCORE_AS; it must be counted inside the COMBINE clause or the
+    // server rejects it as an unknown argument (see #4574). The combined score is returned under
+    // the alias for both LINEAR and RRF.
+    FTHybridParams hybridArgs = FTHybridParams.builder()
+        .search(FTHybridSearchParams.builder().query("@id:1").build())
+        .vectorSearch(FTHybridVectorParams.builder().filter("@id:1").field("@image_embedding")
+            .vector("vector").method(FTHybridVectorParams.Knn.of(5)).build())
+        .combine(combiner).param("vector", queryVector).build();
+
+    HybridResult reply = jedis.ftHybrid(INDEX_NAME, hybridArgs);
+
+    assertThat(reply, notNullValue());
+    assertThat(reply.getTotalResults(), equalTo(1L));
+
+    Document doc = reply.getDocuments().get(0);
+    assertThat(doc.hasProperty("combined_score"), equalTo(true));
+    assertThat(Double.parseDouble(doc.getString("combined_score")), greaterThanOrEqualTo(0.0));
   }
 
   // ========== Scorer Tests ==========

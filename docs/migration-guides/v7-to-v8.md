@@ -14,6 +14,7 @@ This guide helps you migrate from Jedis 7.5.0 to Jedis 8.0.0. Version 8.0.0 intr
   - [`CommandObjects` Protocol is Now Immutable](#commandobjects-protocol-is-now-immutable)
   - [`broadcastCommand` and `JedisBroadcastAndRoundRobinConfig` Removed](#broadcastcommand-and-jedisbroadcastandroundrobinconfig-removed)
   - [Removed Sharding Utility Classes](#removed-sharding-utility-classes)
+  - [`aclLogBinary()` Removed](#acllogbinary-removed)
   - [`commons-pool2` Upgraded to 2.13.1](#commons-pool2-upgraded-to-2131)
 - [Deprecations](#deprecations)
   - [`JedisCluster` Deprecation](#jediscluster-deprecation)
@@ -324,6 +325,18 @@ The following utility classes — leftovers from the `JedisSharding` feature rem
 - `redis.clients.jedis.util.MurmurHash`
 
 If you happened to use these utility classes for application-level hashing, copy them into your own codebase or switch to an equivalent library (Guava's `Hashing.murmur3_*`, etc.).
+
+### `aclLogBinary()` Removed
+
+`Jedis.aclLogBinary()` and `aclLogBinary(int)` (declared on `AccessControlLogBinaryCommands`) have been **removed**. Their declared return type `List<byte[]>` could not represent the `ACL LOG` reply, which is a nested array (a list of entries, each a flattened list of key/value pairs). Reading any element threw `ClassCastException`, so the methods were never usable.
+
+#### Migration Path
+
+Use `aclLog()` / `aclLog(int)`, which return structured `AccessControlLogEntry` objects for the same data:
+
+```java
+List<AccessControlLogEntry> log = jedis.aclLog();
+```
 
 ### `commons-pool2` Upgraded to 2.13.1
 

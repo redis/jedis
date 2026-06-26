@@ -5,6 +5,7 @@ import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import redis.clients.authentication.core.Token;
 import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.authentication.AuthXManager;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisException;
@@ -13,6 +14,7 @@ import redis.clients.jedis.util.Pool;
 public class ConnectionPool extends Pool<Connection> {
 
   private AuthXManager authXManager;
+  private MaintenanceEventController maintenanceController; // null = maintenance off
 
   // Primary constructors using factory
   public ConnectionPool(PooledObjectFactory<Connection> factory) {
@@ -22,6 +24,15 @@ public class ConnectionPool extends Pool<Connection> {
   public ConnectionPool(PooledObjectFactory<Connection> factory,
       GenericObjectPoolConfig<Connection> poolConfig) {
     super(factory, poolConfig);
+  }
+
+  /** Wraps the checked-Exception {@link #evict()}. */
+  private void evictQuietly() {
+    try {
+      evict();
+    } catch (Exception e) {
+      throw new JedisException("Failed to evict pool on maintenance handoff", e);
+    }
   }
 
   // Convenience constructors
@@ -48,6 +59,46 @@ public class ConnectionPool extends Pool<Connection> {
       Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig, clientSideCache), poolConfig);
     attachAuthenticationListener(clientConfig.getAuthXManager());
+  }
+
+  @Experimental
+  public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
+      Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig,
+      MaintenanceNotificationsConfig maintConfig) {
+    this(ConnectionFactory.builder().hostAndPort(hostAndPort).clientConfig(clientConfig)
+        .cache(clientSideCache), poolConfig, maintConfig);
+  }
+
+  private static MaintenanceEventController controllerFor(MaintenanceNotificationsConfig config) {
+    return config != null && config.isEnabledOrAuto() ? MaintenanceEventController.from(config)
+        : null;
+  }
+
+  @Experimental
+  public ConnectionPool(ConnectionFactory.Builder factoryBuilder,
+      GenericObjectPoolConfig<Connection> poolConfig, MaintenanceNotificationsConfig maintConfig) {
+    this(factoryBuilder, poolConfig, controllerFor(maintConfig));
+  }
+
+  private ConnectionPool(ConnectionFactory.Builder factoryBuilder,
+      GenericObjectPoolConfig<Connection> poolConfig, MaintenanceEventController controller) {
+    this(factoryBuilder.maintenanceController(controller).build(), poolConfig);
+    this.maintenanceController = controller;
+    attachAuthenticationListener(factoryBuilder.getClientConfig().getAuthXManager());
+    enableMaintenanceEvents(controller);
+  }
+
+  private void enableMaintenanceEvents(MaintenanceEventController controller) {
+    if (controller != null) {
+      setEvictionPolicy(new RebindAwareEvictionPolicy(controller, getEvictionPolicy()));
+      controller.addHandoffHook(handoff -> evictQuietly());
+    }
+  }
+
+  /** Exposes the pool's maintenance controller ({@code null} when off) for test clock injection. */
+  @VisibleForTesting
+  MaintenanceEventController getMaintenanceController() {
+    return maintenanceController;
   }
 
   @Override

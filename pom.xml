@@ -557,6 +557,11 @@
 						<include>**/*IT.java</include>
 						<include>**/scenario/RestEndpointUtil.java</include>
 						<include>src/main/java/redis/clients/jedis/MultiDbConfig.java</include>
+						<include>**/Maintenance*.java</include>
+						<include>**/SocketAddress*.java</include>
+						<include>src/test/java/redis/clients/jedis/sch/*.java</include>
+						<include>src/main/java/redis/clients/jedis/util/NumberUtils.java</include>
+						<include>src/test/java/redis/clients/jedis/ConnectionFactoryRebindTest.java</include>
 						<include>src/main/java/redis/clients/jedis/HostAndPort.java</include>
 						<include>**/builders/*.java</include>
 						<include>**/MultiDb*.java</include>
@@ -625,6 +630,9 @@
 						<include>**/*MockTest.java</include>
 						<include>**/*Increx*.java</include>
 						<include>src/test/jmh/**/*.java</include>
+						<include>**/Rebind*.java</include>
+						<include>**/TimeoutOptions.java</include>
+						<include>**/*Handler.java</include>
 					</includes>
 				</configuration>
 				<executions>

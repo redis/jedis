@@ -27,6 +27,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     private JedisSocketFactory jedisSocketFactory;
     private Cache cache;
     private HostAndPort hostAndPort;
+    private MaintenanceEventController maintenanceController;
 
     // Fluent API methods (preferred)
     public Builder clientConfig(JedisClientConfig clientConfig) {
@@ -54,6 +55,16 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       return this;
     }
 
+    /**
+     * Maintenance controller propagated to the default socket factory (as the post-DNS
+     * address mapper for MOVING redirects) and to the default {@link Connection.Builder} (so each
+     * connection forwards push frames to it). {@code null} disables maintenance for this factory.
+     */
+    Builder maintenanceController(MaintenanceEventController maintenanceController) {
+      this.maintenanceController = maintenanceController;
+      return this;
+    }
+
     public Connection.Builder getConnectionBuilder() {
       return connectionBuilder;
     }
@@ -72,6 +83,10 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
     public ConnectionFactory build() {
       withDefaults();
+      return create();
+    }
+
+    protected ConnectionFactory create() {
       return new ConnectionFactory(this);
     }
 
@@ -92,13 +107,33 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       if (hostAndPort == null) {
         throw new IllegalStateException("HostAndPort is required when no socketFactory is provided");
       }
-      return new DefaultJedisSocketFactory(hostAndPort, clientConfig);
+      return new DefaultJedisSocketFactory(hostAndPort, clientConfig, maintenanceController);
     }
 
     private Connection.Builder createDefaultConnectionBuilder() {
       Connection.Builder connBuilder = cache == null ? Connection.builder() : CacheConnection.builder(cache);
       connBuilder.socketFactory(jedisSocketFactory).clientConfig(clientConfig);
+      if (maintenanceController != null) {
+        connBuilder.maintenanceConfig(maintenanceController.getConfig())
+            .addMaintenanceEventListener(maintenanceController)
+            .soTimeoutSupplier(rebindSoTimeoutSupplier(maintenanceController));
+      }
       return connBuilder;
+    }
+
+    /**
+     * SO_TIMEOUT override that relaxes a connection's timeout while a MOVING rebind window is active
+     * in the pool, and defers ({@link JedisClientConfig#UNSET_TIMEOUT_MS}) otherwise so the
+     * connection falls back to its own per-receiver / configured calculation. Relaxed values are
+     * captured from the (immutable) maintenance config at wiring time; an unset relaxed value is
+     * itself {@code UNSET_TIMEOUT_MS}, so it naturally defers.
+     */
+    private static SoTimeoutSupplier rebindSoTimeoutSupplier(MaintenanceEventController controller) {
+      MaintenanceNotificationsConfig config = controller.getConfig();
+      int relaxed = config.getRelaxedSocketTimeoutMillis();
+      int relaxedBlocking = config.getRelaxedBlockingSocketTimeoutMillis();
+      return blocking -> controller.isRebindActive() ? (blocking ? relaxedBlocking : relaxed)
+          : JedisClientConfig.UNSET_TIMEOUT_MS;
     }
   }
 

@@ -277,21 +277,33 @@ public class Connection implements Closeable {
 
   public Object executeCommand(final CommandArguments args) {
     sendCommand(args);
-    return getOne();
+    return readReplyAfterCommandSent();
   }
 
   public <T> T executeCommand(final CommandObject<T> commandObject) {
     final CommandArguments args = commandObject.getArguments();
+
     sendCommand(args);
+    final Object reply;
     if (!args.isBlocking()) {
-      return commandObject.getBuilder().build(getOne());
+      reply = readReplyAfterCommandSent();
     } else {
       try {
         setTimeoutInfinite();
-        return commandObject.getBuilder().build(getOne());
+        reply = readReplyAfterCommandSent();
       } finally {
         rollbackTimeout();
       }
+    }
+
+    return commandObject.getBuilder().build(reply);
+  }
+
+  private Object readReplyAfterCommandSent() {
+    try {
+      return getOne();
+    } catch (Error err) {
+      throw markBroken(err);
     }
   }
 

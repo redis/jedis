@@ -494,6 +494,25 @@ public class ConnectionErrorHandlingTest {
   }
 
   @Test
+  public void commandObjectBuilderLookupErrorAfterSuccessfulReadDoesNotMarkConnectionBroken() {
+    SyntheticError expected = new SyntheticError();
+    ByteArrayOutputStream output = new ByteArrayOutputStream();
+    try (Connection conn = new Connection(
+        fakeSocketFactory("+OK\r\n+NEXT\r\n".getBytes(StandardCharsets.UTF_8), output))) {
+      CommandObject<Object> commandObject = new ErrorOnGetBuilderCommandObject(
+          new CommandArguments(Command.PING), expected);
+
+      SyntheticError thrown = assertThrows(SyntheticError.class,
+        () -> conn.executeCommand(commandObject));
+
+      assertSame(expected, thrown);
+      assertFalse(conn.isBroken());
+      assertArrayEquals(PING_COMMAND, output.toByteArray());
+      assertArrayEquals("NEXT".getBytes(StandardCharsets.UTF_8), (byte[]) conn.getOne());
+    }
+  }
+
+  @Test
   public void commandObjectBuilderErrorAfterSuccessfulReadDoesNotMarkConnectionBroken() {
     SyntheticError expected = new SyntheticError();
     try (Connection conn = new Connection(fakeSocketFactory(
@@ -2150,6 +2169,21 @@ public class ConnectionErrorHandlingTest {
     public void destroyObject(PooledObject<Connection> pooledObject) throws Exception {
       destroyed.incrementAndGet();
       super.destroyObject(pooledObject);
+    }
+  }
+
+  private static final class ErrorOnGetBuilderCommandObject extends CommandObject<Object> {
+
+    private final Error error;
+
+    private ErrorOnGetBuilderCommandObject(CommandArguments args, Error error) {
+      super(args, BuilderFactory.RAW_OBJECT);
+      this.error = error;
+    }
+
+    @Override
+    public Builder<Object> getBuilder() {
+      throw error;
     }
   }
 

@@ -189,8 +189,11 @@ public class MultiNodePipelineBaseDeadlockTest {
   @Test
   @Timeout(5)
   public void blockedSecondNodeBorrowKeepsPreviouslyBorrowedConnectionHeld() throws Exception {
+    Map<HostAndPort, Integer> immediateBorrows = new HashMap<>();
+    immediateBorrows.put(NODE_A, 1);
+    immediateBorrows.put(NODE_B, 0);
     ControlledNodeConnections connections = ControlledNodeConnections
-        .withImmediateBorrows(Map.of(NODE_A, 1, NODE_B, 0));
+        .withImmediateBorrows(immediateBorrows);
     TestPipeline pipeline = new TestPipeline(connections);
 
     pipeline.sendTo(NODE_A, "a-1");

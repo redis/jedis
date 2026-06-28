@@ -25,16 +25,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       - name: Set up Java
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@1bcf9fb12cf4aa7d266a90ae39939e61372fe520 # v5
         with:
           java-version: '8'
           distribution: 'temurin'
 
       - name: Cache dependencies
-        uses: actions/cache@v5
+        uses: actions/cache@caa296126883cff596d87d8935842f9db880ef25 # v5
         with:
           path: |
             ~/.m2/repository
@@ -53,18 +53,17 @@ jobs:
           mvn -B -Dwith-param-names=true clean test jacoco:report -Djacoco.dataFile=target/jacoco-ut.exec
 
       - name: Publish Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
+        uses: EnricoMi/publish-unit-test-result-action@d0a4676d0e0b938bc201470d88276b7c74c712b3 # v2
         if: always() && github.actor != 'dependabot[bot]'
         with:
           files: |
             target/surefire-reports/**/*.xml
 
       - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
+        uses: codecov/codecov-action@0fb7174895f61a3b6b78fc075e0cd60383518dac # v5
         with:
           files: ./target/site/jacoco/jacoco.xml
           flags: unit-tests
           name: unit-test-coverage
           fail_ci_if_error: false
           token: ${{ secrets.CODECOV_TOKEN }}
-

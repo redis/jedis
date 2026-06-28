@@ -46,6 +46,7 @@ public class MultiNodePipelineBaseDeadlockTest {
 
   private static final HostAndPort NODE_A = new HostAndPort("127.0.0.1", 7000);
   private static final HostAndPort NODE_B = new HostAndPort("127.0.0.1", 7001);
+  private static final HostAndPort NODE_C = new HostAndPort("127.0.0.1", 7002);
 
   private final ExecutorService executor = Executors.newCachedThreadPool();
 
@@ -267,6 +268,130 @@ public class MultiNodePipelineBaseDeadlockTest {
   }
 
   @Test
+  public void failingSecondNodeAfterSyncClosesHeldConnectionWithoutMarkingBroken() {
+    ControlledNodeConnections connections = ControlledNodeConnections.unbounded(NODE_A, NODE_B);
+    PolicyAwareTestPipeline pipeline = new PolicyAwareTestPipeline(connections);
+    pipeline.failNonBlockingAcquisition(new JedisException("node B exhausted"));
+
+    Response<String> first = pipeline.sendTo(NODE_A, "a-1");
+
+    pipeline.sync();
+
+    RecordingConnection held = connections.pool(NODE_A).connections().get(0);
+    assertEquals("OK", first.get());
+    assertEquals(1, held.getManyCalls());
+
+    JedisException thrown = assertThrows(JedisException.class,
+      () -> pipeline.sendTo(NODE_B, "b-1"));
+
+    assertEquals("node B exhausted", thrown.getMessage());
+    assertEquals(Arrays.asList(true, false), pipeline.allowBlockingCalls());
+    assertFalse(held.isBroken());
+    assertTrue(held.isClosed());
+    assertEquals(1, held.closeCalls());
+    assertEquals(0, connections.pool(NODE_B).borrowAttempts());
+
+    pipeline.close();
+
+    assertEquals(1, held.closeCalls());
+  }
+
+  @Test
+  public void failingSecondNodeAfterSyncAllowsNextFirstNodeToBlockAgain() {
+    ControlledNodeConnections connections = ControlledNodeConnections.unbounded(NODE_A, NODE_B);
+    PolicyAwareTestPipeline pipeline = new PolicyAwareTestPipeline(connections);
+    pipeline.failNonBlockingAcquisition(new JedisException("node B exhausted"));
+
+    Response<String> first = pipeline.sendTo(NODE_A, "a-1");
+    pipeline.sync();
+
+    RecordingConnection firstA = connections.pool(NODE_A).connections().get(0);
+    assertEquals("OK", first.get());
+
+    assertThrows(JedisException.class, () -> pipeline.sendTo(NODE_B, "b-1"));
+
+    assertFalse(firstA.isBroken());
+    assertTrue(firstA.isClosed());
+
+    Response<String> next = pipeline.sendTo(NODE_A, "a-2");
+    RecordingConnection secondA = connections.pool(NODE_A).connections().get(1);
+
+    assertEquals(Arrays.asList(true, false, true), pipeline.allowBlockingCalls());
+    assertEquals(1, secondA.sentCommands());
+
+    pipeline.sync();
+
+    assertEquals("OK", next.get());
+    pipeline.close();
+
+    assertTrue(secondA.isClosed());
+  }
+
+  @Test
+  public void failingSecondNodeAfterResendingToSyncedNodeMarksNewPendingResponseBroken() {
+    ControlledNodeConnections connections = ControlledNodeConnections.unbounded(NODE_A, NODE_B);
+    PolicyAwareTestPipeline pipeline = new PolicyAwareTestPipeline(connections);
+    pipeline.failNonBlockingAcquisition(new JedisException("node B exhausted"));
+
+    Response<String> first = pipeline.sendTo(NODE_A, "a-1");
+    pipeline.sync();
+    Response<String> second = pipeline.sendTo(NODE_A, "a-2");
+
+    JedisException thrown = assertThrows(JedisException.class,
+      () -> pipeline.sendTo(NODE_B, "b-1"));
+
+    RecordingConnection held = connections.pool(NODE_A).connections().get(0);
+    assertEquals("node B exhausted", thrown.getMessage());
+    assertEquals("OK", first.get());
+    assertTrue(held.isBroken());
+    assertTrue(held.isClosed());
+    assertEquals(2, held.sentCommands());
+    assertEquals(1, held.getManyCalls());
+    assertThrows(IllegalStateException.class, second::get);
+
+    pipeline.close();
+
+    assertEquals(1, held.closeCalls());
+  }
+
+  @Test
+  public void acquisitionFailureMarksOnlyConnectionsWithPendingResponsesBroken() {
+    ControlledNodeConnections connections = ControlledNodeConnections.unbounded(NODE_A, NODE_B,
+      NODE_C);
+    PolicyAwareTestPipeline pipeline = new PolicyAwareTestPipeline(connections);
+
+    Response<String> firstA = pipeline.sendTo(NODE_A, "a-1");
+    Response<String> firstB = pipeline.sendTo(NODE_B, "b-1");
+
+    pipeline.sync();
+
+    Response<String> secondB = pipeline.sendTo(NODE_B, "b-2");
+    pipeline.failNonBlockingAcquisition(new JedisException("node C exhausted"));
+
+    JedisException thrown = assertThrows(JedisException.class,
+      () -> pipeline.sendTo(NODE_C, "c-1"));
+
+    RecordingConnection connectionA = connections.pool(NODE_A).connections().get(0);
+    RecordingConnection connectionB = connections.pool(NODE_B).connections().get(0);
+
+    assertEquals("node C exhausted", thrown.getMessage());
+    assertEquals("OK", firstA.get());
+    assertEquals("OK", firstB.get());
+    assertFalse(connectionA.isBroken());
+    assertTrue(connectionA.isClosed());
+    assertTrue(connectionB.isBroken());
+    assertTrue(connectionB.isClosed());
+    assertEquals(1, connectionA.getManyCalls());
+    assertEquals(1, connectionB.getManyCalls());
+    assertThrows(IllegalStateException.class, secondB::get);
+
+    pipeline.close();
+
+    assertEquals(1, connectionA.closeCalls());
+    assertEquals(1, connectionB.closeCalls());
+  }
+
+  @Test
   public void failingFirstNodeAcquisitionDoesNotRunHeldConnectionCleanup() {
     ControlledNodeConnections connections = ControlledNodeConnections.unbounded(NODE_A);
     PolicyAwareTestPipeline pipeline = new PolicyAwareTestPipeline(connections);
@@ -375,6 +500,39 @@ public class MultiNodePipelineBaseDeadlockTest {
     pipeline.close();
 
     assertEquals(0, firstConnection.getManyCalls());
+    assertEquals(1, firstConnection.closeCalls());
+  }
+
+  @Test
+  public void clusterPipelineFailureAfterSyncClosesHeldConnectionWithoutMarkingBroken() {
+    FakeClusterConnectionProvider provider = new FakeClusterConnectionProvider(NODE_A, NODE_B);
+    RecordingConnection firstConnection = new RecordingConnection(NODE_A);
+    JedisException poolExhausted = new JedisException("pool exhausted");
+    provider.useBlockingConnection(NODE_A, firstConnection);
+    provider.failNonBlockingAcquisition(poolExhausted);
+    ClusterPipeline pipeline = new ClusterPipeline(provider,
+        new ClusterCommandObjects(RedisProtocol.RESP2));
+
+    Response<String> first = pipeline.set("first", "value");
+
+    pipeline.sync();
+
+    assertEquals("OK", first.get());
+
+    JedisClusterOperationException thrown = assertThrows(JedisClusterOperationException.class,
+      () -> pipeline.set("second", "value"));
+
+    assertSame(poolExhausted, thrown.getCause());
+    assertEquals(Collections.singletonList(NODE_A), provider.blockingNodes());
+    assertEquals(Collections.singletonList(new Acquisition(NODE_B, Duration.ZERO)),
+      provider.nonBlockingAcquisitions());
+    assertFalse(firstConnection.isBroken());
+    assertTrue(firstConnection.isClosed());
+    assertEquals(1, firstConnection.getManyCalls());
+    assertEquals(1, firstConnection.closeCalls());
+
+    pipeline.close();
+
     assertEquals(1, firstConnection.closeCalls());
   }
 

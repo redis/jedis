@@ -110,15 +110,18 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
       return getConnection(nodeKey, allowBlocking);
     } catch (RuntimeException | Error ex) {
       if (!allowBlocking) {
-        closeHeldConnectionsAsBroken();
+        closeHeldConnectionsAfterAcquisitionFailure();
       }
       throw ex;
     }
   }
 
-  private void closeHeldConnectionsAsBroken() {
-    connections.values().forEach(connection -> {
-      connection.setBroken();
+  private void closeHeldConnectionsAfterAcquisitionFailure() {
+    connections.forEach((nodeKey, connection) -> {
+      Queue<Response<?>> queue = pipelinedResponses.get(nodeKey);
+      if (queue != null && !queue.isEmpty()) {
+        connection.setBroken();
+      }
       IOUtils.closeQuietly(connection);
     });
     connections.clear();

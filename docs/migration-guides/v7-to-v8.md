@@ -8,7 +8,9 @@ This guide helps you migrate from Jedis 7.5.0 to Jedis 8.0.0. Version 8.0.0 intr
 - [Breaking Changes](#breaking-changes)
   - [RESP3 Negotiated by Default](#resp3-negotiated-by-default)
   - [TLS Hostname Verification Enforced by Default](#tls-hostname-verification-enforced-by-default)
+  - [Command Retries Enabled by Default on `RedisClient` and `RedisSentinelClient`](#command-retries-enabled-by-default-on-redisclient-and-redissentinelclient)
   - [Removed Client Classes (`JedisPooled`, `JedisSentineled`)](#removed-client-classes-jedispooled-jedissentineled)
+  - [`UnifiedJedis` is Now `abstract`](#unifiedjedis-is-now-abstract)
   - [Removed `UnifiedJedis` Public Constructors](#removed-unifiedjedis-public-constructors)
   - [`Transaction(Jedis)` and `ClusterPipeline(ClusterConnectionProvider)` Constructors Removed](#transactionjedis-and-clusterpipelineclusterconnectionprovider-constructors-removed)
   - [`CommandObjects` Protocol is Now Immutable](#commandobjects-protocol-is-now-immutable)
@@ -18,6 +20,7 @@ This guide helps you migrate from Jedis 7.5.0 to Jedis 8.0.0. Version 8.0.0 intr
   - [`commons-pool2` Upgraded to 2.13.1](#commons-pool2-upgraded-to-2131)
 - [Deprecations](#deprecations)
   - [`JedisCluster` Deprecation](#jediscluster-deprecation)
+  - [`RetryableCommandExecutor` Deprecated](#retryablecommandexecutor-deprecated)
   - [Legacy SSL Configuration Setters Deprecated](#legacy-ssl-configuration-setters-deprecated)
   - [RediSearch Cursor APIs Deprecated](#redisearch-cursor-apis-deprecated)
 - [New Features](#new-features)
@@ -34,8 +37,9 @@ Jedis 8.0.0 is a major release that finishes the client-class consolidation star
 
 1. **RESP3 auto-negotiation on by default** for all `UnifiedJedis`-based clients (with graceful RESP2 fallback)
 2. **Final removal of legacy `JedisPooled` / `JedisSentineled` classes** in favor of the `RedisClient` family introduced in 7.0.0
-3. **Removal of deprecated `UnifiedJedis` public constructors** — clients are now created exclusively through the dedicated client classes or their builders
-4. **Internal refactoring** that affects users of low-level extension points (custom `CommandExecutor`, `Transaction` subclasses, `CommandObjects`)
+3. **`UnifiedJedis` is now `abstract` and its public constructors are removed** — clients are created exclusively through the dedicated client classes (`RedisClient`, `RedisClusterClient`, `RedisSentinelClient`, `MultiDbClient`) or their builders
+4. **Command retries enabled by default on `RedisClient` and `RedisSentinelClient`** — the `RedisClient` family now retries transient connection failures uniformly across standalone, sentinel, and cluster clients
+5. **Internal refactoring** that affects users of low-level extension points (custom `CommandExecutor`, `Transaction` subclasses, `CommandObjects`)
 
 ## Breaking Changes
 
@@ -120,6 +124,56 @@ JedisClientConfig config = DefaultJedisClientConfig.builder()
 
 > **Note:** the legacy `ssl()`, `sslSocketFactory()`, `sslParameters()`, and `hostnameVerifier()` setters used in the second snippet are themselves deprecated — see [Legacy SSL Configuration Setters Deprecated](#legacy-ssl-configuration-setters-deprecated).
 
+### Command Retries Enabled by Default on `RedisClient` and `RedisSentinelClient`
+
+In 7.x, only `JedisCluster` / `RedisClusterClient` retried commands automatically; `JedisPooled` and `RedisClient` ran every command exactly once on a fresh connection from the pool and surfaced any `JedisConnectionException` directly. In 8.0.0 the retry policy is unified across the entire `RedisClient` family — **`RedisClient` and `RedisSentinelClient` now retry transient connection failures by default**, using the same defaults that already applied to cluster clients (`5` attempts, total budget `socketTimeoutMillis * maxAttempts`).
+
+Under the hood:
+
+- `DefaultCommandExecutor` is no longer a single-shot executor — it now natively supports retries (`maxAttempts`, `maxTotalRetriesDuration`) on `JedisConnectionException`, with the same jittered exponential backoff previously used by the cluster executor.
+- `ClusterCommandExecutor` and `DefaultCommandExecutor` share a new common base, `ResilientCommandExecutor`, which centralizes attempt validation, backoff, and sleep semantics.
+- The legacy `RetryableCommandExecutor` is now `@Deprecated` (see [`RetryableCommandExecutor` Deprecated](#retryablecommandexecutor-deprecated)).
+
+#### What this means for your code
+
+- Calls that previously failed fast with `JedisConnectionException` on a single connection blip now transparently succeed after a retry. No code change is required to benefit from the new behaviour.
+- When the retry budget is exhausted, the executor throws a single `JedisException` with message `"No more attempts left."` (or `"Retry deadline exceeded."` if the time budget ran out first) and the original `JedisConnectionException` attached as a suppressed exception. If you had `catch (JedisConnectionException ...)` around standalone/sentinel calls, broaden it to `JedisException` to also handle the retry-exhausted case.
+- Tests that intentionally exercise connection-failure paths may now hang for up to the configured retry duration. Disable retries explicitly in those tests (see below).
+
+#### New builder methods on the `RedisClient` family
+
+`AbstractClientBuilder` (the parent of all `RedisClient*` builders) now exposes `maxAttempts(int)` and `maxTotalRetriesDuration(Duration)`. These methods were previously cluster-only; they now apply uniformly to `RedisClient`, `RedisSentinelClient`, `RedisClusterClient`, and `MultiDbClient` builders.
+
+```java
+RedisClient client = RedisClient.builder()
+    .hostAndPort("localhost", 6379)
+    .maxAttempts(5)                              // default: 5
+    .maxTotalRetriesDuration(Duration.ofSeconds(10)) // default: socketTimeoutMillis * maxAttempts
+    .build();
+```
+
+The new constants used by the builders live on `UnifiedJedis`:
+
+```java
+UnifiedJedis.DEFAULT_TIMEOUT       // 2000 ms
+UnifiedJedis.DEFAULT_MAX_ATTEMPTS  // 5
+```
+
+(They were previously defined on `RedisClusterClient` only; the duplicates on `RedisClusterClient` have been removed — call sites that referenced `RedisClusterClient.DEFAULT_MAX_ATTEMPTS` continue to work via the inherited constant but should be migrated to `UnifiedJedis.DEFAULT_MAX_ATTEMPTS`.)
+
+#### Opting out of retries
+
+To restore the pre-8.0 single-shot behaviour for `RedisClient` / `RedisSentinelClient`, set `maxAttempts(1)`:
+
+```java
+RedisClient client = RedisClient.builder()
+    .hostAndPort("localhost", 6379)
+    .maxAttempts(1)
+    .build();
+```
+
+This is the recommended setting for tests that simulate connection drops or for callers that implement their own retry policy at a higher layer.
+
 ### Removed Client Classes (`JedisPooled`, `JedisSentineled`)
 
 `JedisPooled` and `JedisSentineled` were deprecated in 7.0.0 and have now been **completely removed**. Use the corresponding classes from the `RedisClient` family introduced in 7.0.0.
@@ -166,9 +220,25 @@ RedisSentinelClient sentinel = RedisSentinelClient.builder()
     .build();
 ```
 
+### `UnifiedJedis` is Now `abstract`
+
+`UnifiedJedis` is declared `abstract` in 8.0.0 and can no longer be instantiated directly. It is now strictly a base class for the dedicated client implementations (`RedisClient`, `RedisClusterClient`, `RedisSentinelClient`, `MultiDbClient`, and the deprecated `JedisCluster`).
+
+This goes hand in hand with the constructor removals below — all of its public constructors are gone, the remaining constructors are `protected`, and there is no longer any supported way to create a raw `UnifiedJedis` instance in application code. If you previously held a `UnifiedJedis` reference returned by `new UnifiedJedis(...)`, switch to the corresponding `RedisClient*` class or builder; declaring variables and method parameters as `UnifiedJedis` continues to work for code that needs to treat the family uniformly.
+
+```java
+// REMOVED in v8.0.0 — won't compile
+UnifiedJedis jedis = new UnifiedJedis(new HostAndPort("localhost", 6379));
+
+// OK — UnifiedJedis is still a valid reference type for the family
+UnifiedJedis jedis = RedisClient.create("localhost", 6379);
+```
+
+Two constants previously defined on `RedisClusterClient` — `DEFAULT_TIMEOUT` and `DEFAULT_MAX_ATTEMPTS` — were lifted onto `UnifiedJedis` as part of the same cleanup so that all clients in the family share them. References to `RedisClusterClient.DEFAULT_MAX_ATTEMPTS` continue to compile via inheritance.
+
 ### Removed `UnifiedJedis` Public Constructors
 
-All previously deprecated public constructors on `UnifiedJedis` have been removed. The class is no longer intended to be instantiated directly by users — use `RedisClient`, `RedisClusterClient`, `RedisSentinelClient`, or `MultiDbClient` (and their builders) instead.
+All previously public constructors on `UnifiedJedis` have been removed. Combined with the class becoming `abstract` (see above), this means `UnifiedJedis` is no longer instantiable from user code — use `RedisClient`, `RedisClusterClient`, `RedisSentinelClient`, or `MultiDbClient` (and their builders) instead.
 
 #### Removed constructors
 
@@ -183,6 +253,7 @@ UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig)
 UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, CacheConfig cacheConfig)
 UnifiedJedis(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache cache)
 UnifiedJedis(ConnectionProvider provider)
+UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration)
 UnifiedJedis(JedisSocketFactory socketFactory)
 UnifiedJedis(JedisSocketFactory socketFactory, JedisClientConfig clientConfig)
 UnifiedJedis(CommandExecutor executor)
@@ -195,12 +266,7 @@ The following constructor changed visibility from `public` to `protected`:
 UnifiedJedis(Connection connection)
 ```
 
-The following constructor is **not removed**, but is now `@Deprecated` — call sites continue to compile (the wider `ConnectionProvider` signature absorbs former `ClusterConnectionProvider` callers), but new code should use `RedisClusterClient.builder()`:
-
-```java
-@Deprecated
-public UnifiedJedis(ConnectionProvider provider, int maxAttempts, Duration maxTotalRetriesDuration)
-```
+The `(ConnectionProvider, int, Duration)` constructor — which the cluster code path used historically to plug in `RetryableCommandExecutor` — is gone entirely. The same retry knobs are now first-class builder options on every client in the family (see [Command Retries Enabled by Default on `RedisClient` and `RedisSentinelClient`](#command-retries-enabled-by-default-on-redisclient-and-redissentinelclient)).
 
 #### Migration Path
 
@@ -360,6 +426,24 @@ RedisClusterClient cluster = RedisClusterClient.builder()
     .clientConfig(clientConfig)
     .build();
 ```
+
+### `RetryableCommandExecutor` Deprecated
+
+`RetryableCommandExecutor` is now `@Deprecated`. Its retry logic has been folded into `DefaultCommandExecutor`, which accepts the same `maxAttempts` / `maxTotalRetriesDuration` parameters and shares the common `ResilientCommandExecutor` base with `ClusterCommandExecutor`.
+
+**Before (v7.5.0):**
+```java
+CommandExecutor executor =
+    new RetryableCommandExecutor(provider, 3, Duration.ofSeconds(5));
+```
+
+**After (v8.0.0):**
+```java
+CommandExecutor executor =
+    new DefaultCommandExecutor(provider, 3, Duration.ofSeconds(5));
+```
+
+If you assembled a client manually by passing a custom `CommandExecutor`, switch to `DefaultCommandExecutor`'s three-argument constructor. The single-argument `DefaultCommandExecutor(ConnectionProvider)` constructor remains for the "no retries" case (it is equivalent to `maxAttempts = 1`).
 
 ### Legacy SSL Configuration Setters Deprecated
 

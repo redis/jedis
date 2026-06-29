@@ -65,4 +65,8 @@ class AdvancedTimeoutSupplier implements TimeoutSupplier {
   public void setDefaults(int timeout, int blockingTimeout) {
     defaultCard.set(timeout, blockingTimeout);
   }
+
+  public TimeoutCard getDefaults() {
+    return defaultCard;
+  }
 }

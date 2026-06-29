@@ -182,7 +182,6 @@ public class Connection implements Closeable {
   private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
   private AuthXManager authXManager;
 
-
   /**
    * Maintenance configuration driving the {@code CLIENT MAINT_NOTIFICATIONS} handshake; {@code null}
    * when non-pooled or maintenance disabled.
@@ -192,12 +191,11 @@ public class Connection implements Closeable {
   /** Listeners notified synchronously of this connection's maintenance events (pool-injected). */
   private final List<MaintenanceEventListener> maintenanceEventListeners = new CopyOnWriteArrayList<>();
 
-  private TimeoutSupplier timeoutSupplier = new SimpleTimeoutSupplier(new DefaultTimeoutCard(0, 0));
+  private TimeoutSupplier timeoutSupplier = new AdvancedTimeoutSupplier(new DefaultTimeoutCard(0, 0));
 
   private JedisClientConfig clientConfig;
   private final ProtocolHandshake handshake = new ProtocolHandshake(this);
   private final PushConsumerChainImpl pushConsumers = PushConsumerChainImpl.of();
-  private boolean rebindRequested = false;
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -231,9 +229,11 @@ public class Connection implements Closeable {
   protected Connection(Builder builder) {
     this.socketFactory = builder.getSocketFactory();
     this.clientConfig = builder.getClientConfig();
-    this.maintenanceConfig = builder.getMaintenanceConfig();              // pool-injected (may be null)
+    this.maintenanceConfig = builder.getMaintenanceConfig(); // pool-injected (may be null)
     this.maintenanceEventListeners.addAll(builder.getMaintenanceEventListeners());
-    this.timeoutSupplier = builder.getTimeoutSupplier();              // pool-injected (may be null)
+    if (builder.timeoutSupplier != null) {
+      this.timeoutSupplier = builder.getTimeoutSupplier();
+    }
   }
 
   /**
@@ -498,7 +498,15 @@ public class Connection implements Closeable {
     if (!isConnected()) {
       try {
         socket = socketFactory.createSocket();
-        timeoutSupplier.setDefaults(socket.getSoTimeout(), getBlockingSoTimeout());
+        // here clientConfig means we have a potential custom/new value as timeout from supplier, so
+        // we apply it to the socket
+        //
+        // if no clientConfig, we use socket timeout to set defaults in the supplier
+        if (this.clientConfig != null) {
+          socket.setSoTimeout(currentTimeoutInfo().timeout);
+        } else {
+          timeoutSupplier.setDefaults(socket.getSoTimeout(), getBlockingSoTimeout());
+        }
         // Fresh socket: align the applied-timeout cache with the new socket's actual SO_TIMEOUT.
         appliedSoTimeout = socket.getSoTimeout();
 
@@ -531,7 +539,7 @@ public class Connection implements Closeable {
     if (this.memberOf != null) {
       ConnectionPool pool = this.memberOf;
       this.memberOf = null;
-      if (isBroken() || isRebindRequested()) {
+      if (isBroken()) {
         pool.returnBrokenResource(this);
       } else {
         pool.returnResource(this);
@@ -539,10 +547,6 @@ public class Connection implements Closeable {
     } else {
       disconnect();
     }
-  }
-
-  private boolean isRebindRequested() {
-    return rebindRequested;
   }
 
   /**
@@ -1091,34 +1095,35 @@ public class Connection implements Closeable {
     this.pushConsumers.remove(consumer);
   }
 
-  CopyOnWriteArrayList<TimeoutCard> relaxedTimeouts = new CopyOnWriteArrayList<>();
+  private AtomicReference<TimeoutCard> lastRelaxedTimeout = new AtomicReference<>();
+
   /**
    * Switches this connection to relaxed timeouts for at most {@code period}. While the window is
    * open, commands use {@link #getRelaxedSoTimeout()} and {@link #getRelaxedBlockingSoTimeout()}
-   * instead of the configured values, giving in-flight commands extra headroom across a
-   * server-side maintenance event (MIGRATING / FAILING_OVER / MOVING-receiver). The original
-   * timeouts return into effect once the window closes or {@link #resetRelaxedTimeouts()} is
-   * called. Calling this with a later deadline extends the window; an earlier one is ignored.
-   *
+   * instead of the configured values, giving in-flight commands extra headroom across a server-side
+   * maintenance event (MIGRATING / FAILING_OVER / MOVING-receiver). The original timeouts return
+   * into effect once the window closes or {@link #resetRelaxedTimeouts()} is called. Calling this
+   * with a later deadline extends the window; an earlier one is ignored.
    * @param period maximum duration of the relaxation window
    */
   @Experimental
   public void relaxTimeouts(TimeoutInfo info) {
-    relaxedTimeouts.add(timeoutSupplier.push(info));
-  }
-
-  /** Clears the per-receiver relaxation deadline and eagerly realigns the socket (cache-checked). */
-  @Experimental
-  public void resetRelaxedTimeouts() {
-    TimeoutCard card = relaxedTimeouts.remove(0);
-    if(card != null) {
-      timeoutSupplier.remove(card);
+    TimeoutCard newTimeout = timeoutSupplier.push(info);
+    TimeoutCard old = lastRelaxedTimeout.getAndSet(newTimeout);
+    if (old != null) {
+      timeoutSupplier.remove(old);
     }
   }
 
-  /** Marks this connection for discard on return to the pool (MOVING receiver). */
-  void requestRebind() {
-    this.rebindRequested = true;
+  /**
+   * Clears the per-receiver relaxation deadline and eagerly realigns the socket (cache-checked).
+   */
+  @Experimental
+  public void resetRelaxedTimeouts() {
+    TimeoutCard old = lastRelaxedTimeout.getAndSet(null);
+    if (old != null) {
+      timeoutSupplier.remove(old);
+    }
   }
 
   /** The connected peer's address, or {@code null} if the socket is not (yet) open. */

@@ -1,26 +1,26 @@
 package redis.clients.jedis;
 
-class SimpleTimeoutSupplier implements TimeoutSupplier {
+// class SimpleTimeoutSupplier implements TimeoutSupplier {
 
-    final DefaultTimeoutCard card;
+//     final DefaultTimeoutCard card;
 
-    SimpleTimeoutSupplier(DefaultTimeoutCard defaultCard) {
-        card = defaultCard;
-    }
+//     SimpleTimeoutSupplier(DefaultTimeoutCard defaultCard) {
+//         card = defaultCard;
+//     }
 
-    public TimeoutCard get() {
-        return card;
-    }
+//     public TimeoutCard get() {
+//         return card;
+//     }
 
-    public TimeoutCard push(TimeoutInfo info) {
-        throw new UnsupportedOperationException();
-    }
+//     public TimeoutCard push(TimeoutInfo info) {
+//         throw new UnsupportedOperationException();
+//     }
 
-    public void remove(TimeoutCard card) {
-        throw new UnsupportedOperationException();
-    }
+//     public void remove(TimeoutCard card) {
+//         throw new UnsupportedOperationException();
+//     }
 
-    public void setDefaults(int timeout, int blockingTimeout) {
-        card.set(timeout, blockingTimeout);
-    }
-}
+//     public void setDefaults(int timeout, int blockingTimeout) {
+//         card.set(timeout, blockingTimeout);
+//     }
+// }

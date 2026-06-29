@@ -7,9 +7,10 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.WeakHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.function.Consumer;
 import java.util.function.LongSupplier;
 
@@ -29,10 +30,13 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
 
   private final MaintenanceNotificationsConfig config;
   private final long maxRelaxedDurationNanos; // MIGRATING/FAILING_OVER backstop window
-  private final AtomicReference<RebindState> rebind = new AtomicReference<>(
-      RebindState.EXPIRED_STATE);
+  private static final AtomicReferenceFieldUpdater<MaintenanceEventController, RebindState> REBIND = AtomicReferenceFieldUpdater
+      .newUpdater(MaintenanceEventController.class, RebindState.class, "rebind");
+  private volatile RebindState rebind = RebindState.EXPIRED_STATE;
   /** Synchronous hooks fired once per applied MOVING handoff; see {@link #addHandoffHook}. */
   private final List<Consumer<MaintenanceHandoff>> handoffHooks = new CopyOnWriteArrayList<>();
+  private final WeakHashMap<Connection, Boolean> rebindConnections = new WeakHashMap<>();
+  private final WeakHashMap<TimeoutSupplier, Boolean> trackedSuppliers = new WeakHashMap<>();
 
   private MaintenanceEventController(MaintenanceNotificationsConfig config) {
     this.config = config;
@@ -81,19 +85,17 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
    */
   @Override
   public SocketAddress getSocketAddress(SocketAddress resolved) {
-    RebindState s = rebind.get();
-    return (s.isValid() && s.affected.contains(resolved)) ? s.target : null;
+    return (rebind.isValid() && rebind.affected.contains(resolved)) ? rebind.target : null;
   }
 
   /** True iff {@code peer} is one of the active rebind's affected sources. */
   public boolean isAffected(SocketAddress peer) {
-    RebindState s = rebind.get();
-    return s.isValid() && s.affected.contains(peer);
+    return rebind.isValid() && rebind.affected.contains(peer);
   }
 
   /** True iff there is an active MOVING rebind window in the pool right now. */
   public boolean isRebindActive() {
-    return rebind.get().isValid();
+    return rebind.isValid();
   }
 
   @Override
@@ -103,7 +105,11 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     // server can't pin the pool in relaxed mode beyond {@code relaxedTimeoutMaxDuration}.
     long ttlNanos = Math.min(TimeUnit.SECONDS.toNanos(e.ttlSeconds), maxRelaxedDurationNanos);
     // Any MOVING affects the receiver: mark for discard and relax commands on it before return.
-    c.requestRebind();
+    // QUESTION : are we relying on each in-use connection that connected to a rebinding endpoint
+    // will receive a MOVING and then eventually will be marked for discard? If so, we
+    // may want to consider a more aggressive approach to mark connections that are connected to
+    // the rebinding endpoint for discard.
+    markRebinding(c);
     c.relaxTimeouts(
       TimeoutInfo.ofDuration(config.relaxedTimeout(), config.relaxedBlockingTimeout(), ttlNanos));
     SocketAddress affectedPeer = c.getRemoteSocketAddress();
@@ -114,7 +120,7 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     long deadline = RebindState.CLOCK_NANOS.getAsLong() + ttlNanos;
 
     while (true) {
-      RebindState cur = rebind.get();
+      RebindState cur = rebind;
       if (e.seq < cur.seq) {
         return; // older event
       }
@@ -129,7 +135,7 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
           return; // already merged
         }
         RebindState next = cur.merge(affectedPeer);
-        if (rebind.compareAndSet(cur, next)) {
+        if (REBIND.compareAndSet(this, cur, next)) {
           logger.debug("Merged source {} into rebind seq={} (sources={})", affectedPeer, cur.seq,
             next.affected.size());
           fireHandoffHook(e);
@@ -140,7 +146,11 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
       // New seq (or first ever): replace state with a fresh single-source set.
       RebindState next = new RebindState(e.seq, Collections.singleton(affectedPeer), target,
           deadline);
-      if (rebind.compareAndSet(cur, next)) {
+
+      trackedSuppliers.keySet().forEach(supplier -> supplier.push(TimeoutInfo
+          .ofDuration(config.relaxedTimeout(), config.relaxedBlockingTimeout(), ttlNanos)));
+
+      if (REBIND.compareAndSet(this, cur, next)) {
         logger.debug("Rebinding {} -> {} (seq={}, ttl={}s)", affectedPeer, target, e.seq,
           e.ttlSeconds);
         fireHandoffHook(e);
@@ -148,6 +158,23 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
       }
       // CAS lost (concurrent apply); retry — may then see same-seq merge path or older-seq exit.
     }
+  }
+
+  /**
+   * IMPORTANT NOTE! for {@link #markRebinding(Connection)} & {@link #isRebinding(Connection)}:
+   * these methods are subject to be replaced with {@link #isAffected(SocketAddress)}.
+   * <p>
+   * Only major concern here is performance since this will be running on hot path of returning
+   * connections to the pool.
+   */
+  private void markRebinding(Connection c) {
+    rebindConnections.put(c, Boolean.TRUE);
+  }
+
+  public boolean isRebinding(Connection c) {
+    // map is expected to be empty most of the time, considering the lifecyle of controller and
+    // rebinding operations.
+    return !rebindConnections.isEmpty() && rebindConnections.containsKey(c);
   }
 
   private void fireHandoffHook(MovingEvent e) {
@@ -181,6 +208,12 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   public void onFailedOver(FailedOverEvent e, Connection c) {
     logger.debug("Failed over shards {} (seq={})", e.shardIds, e.seq);
     c.resetRelaxedTimeouts();
+  }
+
+  public void trackSupplier(TimeoutSupplier supplier) {
+    trackedSuppliers.put(supplier, Boolean.TRUE);
+    supplier.push(new TimeoutInfo(config.relaxedTimeout(), config.relaxedBlockingTimeout(),
+        rebind.deadlineNanos));
   }
 
   /** Observation payload delivered to handoff hooks: seq, new endpoint, and the handoff window. */

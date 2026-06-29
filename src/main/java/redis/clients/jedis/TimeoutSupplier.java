@@ -14,6 +14,8 @@ interface TimeoutSupplier {
 
   void setDefaults(int timeout, int blockingTimeout);
 
+  TimeoutCard getDefaults();
+
   class TimeoutInfo {
 
     final int timeout;

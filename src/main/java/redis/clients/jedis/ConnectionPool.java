@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import java.util.function.Consumer;
+
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
@@ -14,15 +16,18 @@ public class ConnectionPool extends Pool<Connection> {
 
   private AuthXManager authXManager;
   private MaintenanceEventController maintenanceController; // null = maintenance off
+  private final Consumer<Connection> returnHook;
 
   // Primary constructors using factory
   public ConnectionPool(PooledObjectFactory<Connection> factory) {
     super(factory);
+    this.returnHook = super::returnResource;
   }
 
   public ConnectionPool(PooledObjectFactory<Connection> factory,
       GenericObjectPoolConfig<Connection> poolConfig) {
     super(factory, poolConfig);
+    this.returnHook = super::returnResource;
   }
 
   /** Wraps the checked-Exception {@link #evict()}. */
@@ -81,12 +86,21 @@ public class ConnectionPool extends Pool<Connection> {
 
   private ConnectionPool(ConnectionFactory.Builder factoryBuilder,
       GenericObjectPoolConfig<Connection> poolConfig, MaintenanceEventController controller) {
-    this(factoryBuilder.maintenanceController(controller).build(), poolConfig);
+    super(factoryBuilder.maintenanceController(controller).build(), poolConfig);
     this.maintenanceController = controller;
     attachAuthenticationListener(factoryBuilder.getClientConfig().getAuthXManager());
     if (controller != null) {
       setEvictionPolicy(new RebindAwareEvictionPolicy(controller, getEvictionPolicy()));
       controller.addHandoffHook(handoff -> evictQuietly());
+      returnHook = c -> {
+        if (controller.isRebinding(c)) {
+          super.returnBrokenResource(c);
+        } else {
+          super.returnResource(c);
+        }
+      };
+    } else {
+      returnHook = super::returnResource;
     }
   }
 
@@ -111,6 +125,11 @@ public class ConnectionPool extends Pool<Connection> {
     } finally {
       super.close();
     }
+  }
+
+  @Override
+  public void returnResource(final Connection resource) {
+    returnHook.accept(resource);
   }
 
   protected void attachAuthenticationListener(AuthXManager authXManager) {

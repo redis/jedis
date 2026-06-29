@@ -77,7 +77,7 @@ public class Response<T> implements Supplier<T> {
 
   static class DecodedResponse<T> extends Response<T> {
 
-   private DecodedResponse(T response, JedisDataException exception) {
+    private DecodedResponse(T response, JedisDataException exception) {
       super(null);
       this.exception = exception;
       this.response = response;
@@ -94,15 +94,15 @@ public class Response<T> implements Supplier<T> {
 
     @Override
     public String toString() {
-        return  "Response<T>";
+      return "Response<T>";
     }
   }
 
-   static <T> Response<T> of(T response) {
-      return new DecodedResponse<>(response, null);
-   }
+  public static <T> Response<T> of(T response) {
+    return new DecodedResponse<>(response, null);
+  }
 
-   static <T> Response<T> error(JedisDataException exception) {
-      return new DecodedResponse<>(null, exception);
-   }
+  public static <T> Response<T> error(JedisDataException exception) {
+    return new DecodedResponse<>(null, exception);
+  }
 }

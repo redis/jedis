@@ -147,5 +147,23 @@ Complete a transaction by calling either:
 
 When using try-with-resources, `close()` automatically sends `DISCARD` (if in `MULTI` state) or `UNWATCH` (if in `WATCH` state) to ensure the connection is returned to the pool in a clean state.
 
+## Notes on `MultiDbTransaction`
+
+`MultiDbTransaction` (returned by `multi()` / `transaction(...)` on a multi-database client) is annotated `@Experimental` and behaves slightly differently from the single-endpoint transaction.
+
+### Connection Lifecycle
+
+- When started with `multi()` (i.e. `doMulti=true`), connection acquisition is **deferred** until `exec()` (or `discard()` / `close()`). Commands issued after `MULTI` are buffered in memory only.
+- When started with `transaction(false)` (i.e. `doMulti=false`), a connection is acquired on the first command that needs to be sent to the server (e.g. `watch(...)` or any pre-`MULTI` read/write) and held until the transaction is completed.
+- A `MultiDbTransaction` is bound to the database that was active **at the time the connection was acquired**, and the connection is borrowed from that database's pool. Subsequent database failovers do not migrate the in-flight transaction to the new endpoint.
+- On `exec()`, `discard()` and `close()` the held connection is released back to its originating pool (via `Connection.close()`) in the `finally` block, regardless of success or failure. The next operation after release will use a fresh connection from the currently active database.
+
+### Database-switch Semantics
+
+If a failover changes the active database while a `MultiDbTransaction` is in progress, the transaction will not silently complete against a different endpoint:
+
+- For commands sent **before** `MULTI` (pre-`MULTI` traffic on a manual transaction), the next `appendCommand` call detects the switch and throws `JedisException("Active database has changed since transaction started")` without sending the command.
+- On `exec()`, after queueing commands on the server, the active database is re-checked. If it has changed, the transaction sends `DISCARD` to the original connection so the server-side `MULTI` block is rolled back, then throws `JedisException("Active database has changed since transaction started")`. Any error from the `DISCARD` attempt is attached as a suppressed exception.
+- In both cases the held connection is still released via the normal `finally`-block path, so it is returned to its (original) pool and subsequent operations go through the now-active database.
 
 

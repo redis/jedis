@@ -435,6 +435,35 @@ public class Connection implements Closeable {
     }
   }
 
+  String getPongReply() {
+    final byte[] resp = getBinaryPongReply(false);
+    return resp == null ? null : encode(resp);
+  }
+
+  String getPongReply(final boolean hasArgument) {
+    final byte[] resp = getBinaryPongReply(hasArgument);
+    return resp == null ? null : encode(resp);
+  }
+
+  @SuppressWarnings("unchecked")
+  byte[] getBinaryPongReply(final boolean hasArgument) {
+    flush();
+    final Object resp = readProtocolWithCheckingBroken();
+    if (resp instanceof List) {
+      return getPubSubPongReply((List<Object>) resp, hasArgument);
+    }
+    return (byte[]) resp;
+  }
+
+  private static byte[] getPubSubPongReply(final List<Object> reply, final boolean hasArgument) {
+    if (reply.size() != 2 || !(reply.get(0) instanceof byte[])
+        || !Arrays.equals(Protocol.ResponseKeyword.PONG.getRaw(), (byte[]) reply.get(0))
+        || !(reply.get(1) instanceof byte[])) {
+      throw new JedisException("Unexpected PING reply: " + reply);
+    }
+    return hasArgument ? (byte[]) reply.get(1) : encode("PONG");
+  }
+
   public String getBulkReply() {
     final byte[] result = getBinaryBulkReply();
     if (null != result) {

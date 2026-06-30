@@ -44,6 +44,8 @@ public class MaintenanceNotificationsConfig {
   EndpointType endpointType = EndpointType.EXTERNAL_IP;
   Mode mode = Mode.AUTO;
   Duration relaxedWindowMaxDuration = DEFAULT_RELAXED_WINDOW_MAX_DURATION;
+  int relaxedTimeout = 0;
+  int relaxedBlockingTimeout = 0;
 
   public EndpointType getEndpointType() {
     return endpointType;
@@ -72,11 +74,11 @@ public class MaintenanceNotificationsConfig {
   }
 
   public int relaxedTimeout() {
-    return 0;
+    return relaxedTimeout;
   }
 
   public int relaxedBlockingTimeout() {
-    return 0;
+    return relaxedBlockingTimeout;
   }
 
   public static Builder builder() {
@@ -87,6 +89,8 @@ public class MaintenanceNotificationsConfig {
     private EndpointType endpointType = EndpointType.EXTERNAL_IP;
     private Mode mode = Mode.AUTO;
     private Duration relaxedWindowMaxDuration = DEFAULT_RELAXED_WINDOW_MAX_DURATION;
+    private int relaxedTimeout = 0;
+    private int relaxedBlockingTimeout = 0;
 
     public Builder endpointType(EndpointType endpointType) {
       this.endpointType = endpointType;
@@ -95,6 +99,16 @@ public class MaintenanceNotificationsConfig {
 
     public Builder mode(Mode mode) {
       this.mode = mode;
+      return this;
+    }
+
+    public Builder relaxedTimeout(int timeout) {
+      this.relaxedTimeout = timeout;
+      return this;
+    }
+
+    public Builder relaxedBlockingTimeout(int blockingTimeout) {
+      this.relaxedBlockingTimeout = blockingTimeout;
       return this;
     }
 
@@ -114,6 +128,8 @@ public class MaintenanceNotificationsConfig {
       config.endpointType = this.endpointType;
       config.mode = this.mode;
       config.relaxedWindowMaxDuration = this.relaxedWindowMaxDuration;
+      config.relaxedTimeout = this.relaxedTimeout;
+      config.relaxedBlockingTimeout = this.relaxedBlockingTimeout;
       return config;
     }
   }

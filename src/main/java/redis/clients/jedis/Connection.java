@@ -355,7 +355,8 @@ public class Connection implements Closeable {
    * @see #isRelaxedTimeoutActive()
    */
   public void setSoTimeout(int soTimeout) {
-    timeoutSupplier.setDefaults(soTimeout, getBlockingSoTimeout());
+    // TODO: here the issue is this set operation will broke the defaults when executed during a relaxed window.
+    timeoutSupplier.setDefaults(soTimeout, timeoutSupplier.getDefaults().getInfo().blockingTimeout);
     applySoTimeout(currentTimeoutInfo().timeout);
   }
 
@@ -375,7 +376,7 @@ public class Connection implements Closeable {
    * syscall whenever the effective timeout is unchanged (the overwhelmingly common case).
    */
   private void applySoTimeout(int timeout) {
-    if (timeout == appliedSoTimeout) {
+    if (timeout == appliedSoTimeout || socket == null) {
       return;
     }
     try {
@@ -433,7 +434,8 @@ public class Connection implements Closeable {
 
   public Object executeCommand(final CommandArguments args) {
     sendCommand(args);
-    return getOne();
+    applySoTimeout(currentTimeoutInfo().timeout);
+    return getOneInner();
   }
 
   public <T> T executeCommand(final CommandObject<T> commandObject) {
@@ -441,11 +443,11 @@ public class Connection implements Closeable {
     sendCommand(args);
     if (!args.isBlocking()) {
     applySoTimeout(currentTimeoutInfo().timeout);
-      return commandObject.getBuilder().build(getOne());
+      return commandObject.getBuilder().build(getOneInner());
     }
     try {
       setTimeoutInfinite();
-      return commandObject.getBuilder().build(getOne());
+      return commandObject.getBuilder().build(getOneInner());
     } finally {
       rollbackTimeout();
     }
@@ -589,7 +591,13 @@ public class Connection implements Closeable {
   }
 
   public String getStatusCodeReply() {
+    applySoTimeout(currentTimeoutInfo().timeout);
+    return getStatusCodeReplyInner();
+  }
+
+  private String getStatusCodeReplyInner() {
     flush();
+    applySoTimeout(currentTimeoutInfo().timeout);
     final byte[] resp = (byte[]) readProtocolWithCheckingBroken();
     if (null == resp) {
       return null;
@@ -599,7 +607,8 @@ public class Connection implements Closeable {
   }
 
   public String getBulkReply() {
-    final byte[] result = getBinaryBulkReply();
+    applySoTimeout(currentTimeoutInfo().timeout);
+    final byte[] result = getBinaryBulkReplyInner();
     if (null != result) {
       return encode(result);
     } else {
@@ -608,6 +617,10 @@ public class Connection implements Closeable {
   }
 
   public byte[] getBinaryBulkReply() {
+    applySoTimeout(currentTimeoutInfo().timeout);
+    return getBinaryBulkReplyInner();
+  }
+  private byte[] getBinaryBulkReplyInner() {
     flush();
     return (byte[]) readProtocolWithCheckingBroken();
   }
@@ -618,11 +631,17 @@ public class Connection implements Closeable {
   }
 
   public List<String> getMultiBulkReply() {
-    return BuilderFactory.STRING_LIST.build(getBinaryMultiBulkReply());
+    applySoTimeout(currentTimeoutInfo().timeout);
+    return BuilderFactory.STRING_LIST.build(getBinaryMultiBulkReplyInner());
+  }
+
+  public List<byte[]> getBinaryMultiBulkReply() {
+    applySoTimeout(currentTimeoutInfo().timeout);
+    return getBinaryMultiBulkReplyInner();
   }
 
   @SuppressWarnings("unchecked")
-  public List<byte[]> getBinaryMultiBulkReply() {
+  private List<byte[]> getBinaryMultiBulkReplyInner() {
     flush();
     return (List<byte[]>) readProtocolWithCheckingBroken();
   }
@@ -633,26 +652,35 @@ public class Connection implements Closeable {
   @Deprecated
   @SuppressWarnings("unchecked")
   public List<Object> getUnflushedObjectMultiBulkReply() {
+    applySoTimeout(currentTimeoutInfo().timeout);
     return (List<Object>) readProtocolWithCheckingBroken();
   }
 
   public Object getUnflushedObject() {
+    applySoTimeout(currentTimeoutInfo().timeout);
     return readProtocolWithCheckingBroken();
   }
 
   @SuppressWarnings("unchecked")
   public List<Object> getObjectMultiBulkReply() {
+    applySoTimeout(currentTimeoutInfo().timeout);
     flush();
     return (List<Object>) readProtocolWithCheckingBroken();
   }
 
   @SuppressWarnings("unchecked")
   public List<Long> getIntegerMultiBulkReply() {
+    applySoTimeout(currentTimeoutInfo().timeout);
     flush();
     return (List<Long>) readProtocolWithCheckingBroken();
   }
 
   public Object getOne() {
+    applySoTimeout(currentTimeoutInfo().timeout);
+    return getOneInner();
+  }
+
+  private Object getOneInner() {
     flush();
     return readProtocolWithCheckingBroken();
   }
@@ -706,6 +734,11 @@ public class Connection implements Closeable {
   }
 
   public List<Object> getMany(final int count) {
+    applySoTimeout(currentTimeoutInfo().timeout);
+    return getManyInner(count);
+  }
+
+  private List<Object> getManyInner(final int count) {
     flush();
     final List<Object> responses = new ArrayList<>(count);
     for (int i = 0; i < count; i++) {
@@ -814,7 +847,7 @@ public class Connection implements Closeable {
       for (CommandArguments arg : fireAndForgetMsg) {
         sendCommand(arg);
       }
-      getMany(fireAndForgetMsg.size());
+      getManyInner(fireAndForgetMsg.size());
 
       enableMaintenanceNotifications();
 
@@ -876,7 +909,7 @@ public class Connection implements Closeable {
     sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
       resolveEndpointType(maintenanceConfig.getEndpointType()));
     try {
-      getStatusCodeReply();
+      getStatusCodeReplyInner();
     } catch (JedisDataException e) {
       removePushConsumer(consumer);
       if (strict) {
@@ -978,7 +1011,7 @@ public class Connection implements Closeable {
     } finally {
       Arrays.fill(rawPass, (byte) 0); // clear sensitive data
     }
-    return getStatusCodeReply();
+    return getStatusCodeReplyInner();
   }
 
   public String reAuthenticate() {
@@ -987,7 +1020,7 @@ public class Connection implements Closeable {
 
   protected Map<String, Object> hello(byte[]... args) {
     sendCommand(Command.HELLO, args);
-    return BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
+    return BuilderFactory.ENCODED_OBJECT_MAP.build(getOneInner());
   }
 
   /**
@@ -1056,12 +1089,12 @@ public class Connection implements Closeable {
 
   public String select(final int index) {
     sendCommand(Command.SELECT, Protocol.toByteArray(index));
-    return getStatusCodeReply();
+    return getStatusCodeReplyInner();
   }
 
   public boolean ping() {
     sendCommand(Command.PING);
-    String status = getStatusCodeReply();
+    String status = getStatusCodeReplyInner();
     if (!"PONG".equals(status)) {
       throw new JedisException(status);
     }

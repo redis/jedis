@@ -36,7 +36,6 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   /** Synchronous hooks fired once per applied MOVING handoff; see {@link #addHandoffHook}. */
   private final List<Consumer<MaintenanceHandoff>> handoffHooks = new CopyOnWriteArrayList<>();
   private final WeakHashMap<Connection, Boolean> rebindConnections = new WeakHashMap<>();
-  private final WeakHashMap<TimeoutSupplier, Boolean> trackedSuppliers = new WeakHashMap<>();
 
   private MaintenanceEventController(MaintenanceNotificationsConfig config) {
     this.config = config;
@@ -72,12 +71,6 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     handoffHooks.remove(hook);
   }
 
-  /** Test seam: override the monotonic clock used for rebind expiry. */
-  static void setClockNanos(LongSupplier clockNanos) {
-    JedisAsserts.notNull(clockNanos, "clockNanos must not be null");
-    RebindState.CLOCK_NANOS = clockNanos;
-  }
-
   /**
    * Post-DNS address mapper: remaps the resolved peer to the rebind target when the resolved peer
    * is one of the active rebind's affected sources and the window is still open; else returns null
@@ -110,14 +103,12 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     // may want to consider a more aggressive approach to mark connections that are connected to
     // the rebinding endpoint for discard.
     markRebinding(c);
-    c.relaxTimeouts(
-      TimeoutInfo.ofDuration(config.relaxedTimeout(), config.relaxedBlockingTimeout(), ttlNanos));
     SocketAddress affectedPeer = c.getRemoteSocketAddress();
     if (affectedPeer == null) {
       return; // receiver socket already closed; no peer to register
     }
     SocketAddress target = new InetSocketAddress(e.target.getHost(), e.target.getPort());
-    long deadline = RebindState.CLOCK_NANOS.getAsLong() + ttlNanos;
+    long deadline = NanoClock.INSTANCE.getAsLong() + ttlNanos;
 
     while (true) {
       RebindState cur = rebind;
@@ -146,9 +137,6 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
       // New seq (or first ever): replace state with a fresh single-source set.
       RebindState next = new RebindState(e.seq, Collections.singleton(affectedPeer), target,
           deadline);
-
-      trackedSuppliers.keySet().forEach(supplier -> supplier.push(TimeoutInfo
-          .ofDuration(config.relaxedTimeout(), config.relaxedBlockingTimeout(), ttlNanos)));
 
       if (REBIND.compareAndSet(this, cur, next)) {
         logger.debug("Rebinding {} -> {} (seq={}, ttl={}s)", affectedPeer, target, e.seq,
@@ -210,12 +198,6 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     c.resetRelaxedTimeouts();
   }
 
-  public void trackSupplier(TimeoutSupplier supplier) {
-    trackedSuppliers.put(supplier, Boolean.TRUE);
-    supplier.push(new TimeoutInfo(config.relaxedTimeout(), config.relaxedBlockingTimeout(),
-        rebind.deadlineNanos));
-  }
-
   /** Observation payload delivered to handoff hooks: seq, new endpoint, and the handoff window. */
   public static final class MaintenanceHandoff {
     private final long seq;
@@ -257,12 +239,12 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
    */
   private static final class RebindState {
 
-    static LongSupplier CLOCK_NANOS = System::nanoTime;
     static final RebindState EXPIRED_STATE = new RebindState(-1, Collections.emptySet(), null, 0L);
     final long seq;
     final Set<SocketAddress> affected;
     final SocketAddress target;
     final long deadlineNanos;
+    volatile boolean expired = false;
 
     private RebindState(long seq, Set<SocketAddress> affected, SocketAddress target,
         long deadlineNanos) {
@@ -280,7 +262,14 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     }
 
     private boolean isValid() {
-      return deadlineNanos - CLOCK_NANOS.getAsLong() > 0;
+      if (expired) {
+        return false;
+      }
+      if (deadlineNanos - NanoClock.INSTANCE.getAsLong() > 0) {
+        return true;
+      }
+      expired = true;
+      return false;
     }
   }
 }

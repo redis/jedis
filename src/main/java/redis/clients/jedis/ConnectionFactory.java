@@ -132,10 +132,9 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     private static TimeoutSupplier rebindSoTimeoutSupplier(MaintenanceEventController controller,
         JedisClientConfig clientConfig) {
 
-      TimeoutSupplier supplier = new AdvancedTimeoutSupplier(new DefaultTimeoutCard(
-          clientConfig.getSocketTimeoutMillis(), clientConfig.getBlockingSocketTimeoutMillis()));
-      controller.trackSupplier(supplier); // so it can be notified when rebind state changes
-      return supplier;
+      return new AdvancedTimeoutSupplier(
+          new MaintenanceAwareTimeoutCard(clientConfig.getSocketTimeoutMillis(),
+              clientConfig.getBlockingSocketTimeoutMillis(), controller));
     }
   }
 

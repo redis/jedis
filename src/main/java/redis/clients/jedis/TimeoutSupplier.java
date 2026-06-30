@@ -1,10 +1,6 @@
 package redis.clients.jedis;
 
-import java.util.function.LongSupplier;
-
 interface TimeoutSupplier {
-
-  static LongSupplier clockNanos = System::nanoTime;
 
   TimeoutCard get();
 
@@ -29,11 +25,11 @@ interface TimeoutSupplier {
     }
 
     boolean isValid() {
-      return expiration > clockNanos.getAsLong();
+      return expiration > NanoClock.INSTANCE.getAsLong();
     }
 
     static TimeoutInfo ofDuration(int timeout, int blockingTimeout, long duration) {
-      return new TimeoutInfo(timeout, blockingTimeout, clockNanos.getAsLong() + duration);
+      return new TimeoutInfo(timeout, blockingTimeout, NanoClock.INSTANCE.getAsLong() + duration);
     }
   }
 
@@ -65,6 +61,11 @@ interface TimeoutSupplier {
     @Override
     TimeoutInfo getInfo() {
       return info;
+    }
+
+    @Override
+    public boolean isValid() {
+      return true;
     }
 
     void set(int timeout, int blockingTimeout) {

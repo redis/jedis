@@ -56,4 +56,5 @@ nav:
   - Development guide:
       - Contributing: .github/CONTRIBUTING.md
       - Integration Testing: integration-testing.md
+      - Benchmark results: https://redis.github.io/jedis/benchmarks/
 

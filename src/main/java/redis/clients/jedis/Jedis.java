@@ -447,7 +447,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String ping() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.PING);
-    return connection.getStatusCodeReply();
+    return connection.getPongReply();
   }
 
   /**
@@ -458,7 +458,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public byte[] ping(final byte[] message) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.PING, message);
-    return connection.getBinaryBulkReply();
+    return connection.getBinaryPongReply(true);
   }
 
   /**
@@ -5400,7 +5400,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String ping(final String message) {
     checkIsInMultiOrPipeline();
     connection.sendCommand(Command.PING, message);
-    return connection.getBulkReply();
+    return connection.getPongReply(true);
   }
 
   /**

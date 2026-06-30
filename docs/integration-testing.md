@@ -215,14 +215,14 @@ Custom image instead of a version: `make start CLIENT_LIBS_TEST_IMAGE_TAG=<tag>`
 
 ### Test selection (JUnit 5 tags + Maven, see `pom.xml`)
 
-| Group       | Tag / naming                                      | Runner   | Default                                |
-|-------------|---------------------------------------------------|----------|----------------------------------------|
-| Unit        | `@Tag("unit")`, no network                        | Surefire | run (`skipUnitTests=false`)            |
-| Integration | `*IT`/`*IntegrationTest` (or legacy `@Tag("integration")`) | Failsafe | run (`skipIntegrationTests=false`)     |
-| Scenario    | `@Tag("scenario")`                                | Failsafe | **skipped** (`skipScenarioTests=true`) |
+| Group       | Tag / naming                                                              | Runner   | Default                                |
+|-------------|---------------------------------------------------------------------------|----------|----------------------------------------|
+| Unit        | `@Tag("unit")`, no network                                                | Surefire | run (`skipUnitTests=false`)            |
+| Integration | `*IT` (new) — legacy `*IntegrationTest` / `@Tag("integration")` still run | Failsafe | run (`skipIntegrationTests=false`)     |
+| Scenario    | `@Tag("scenario")`                                                        | Failsafe | **skipped** (`skipScenarioTests=true`) |
 
-New integration tests should use the `*IT` / `*IntegrationTest` name, not the
-`@Tag("integration")` marker — see §5.
+New integration tests **must** be named `*IT` — do not use `*IntegrationTest` or
+the `@Tag("integration")` marker. See §5.
 
 Useful flags: `-DskipUnitTests=true` (CI Docker job runs integration only),
 `-Dtest=<Class#method>` to narrow.
@@ -261,31 +261,28 @@ What decides whether a test is run by Surefire (unit) or Failsafe (integration)
 is **how the test is marked** — its file-name suffix and/or JUnit tag — not which
 folder it sits in (the runners select by suffix and tag — see §4 and `pom.xml`).
 
-The repo is **transitioning to the standard naming convention** in which
-integration tests are identified purely by their file name: **`*IT`** or
-**`*IntegrationTest`** (with the plural `*ITs` / `*IntegrationTests` also
-accepted). The older `@Tag("integration")` marker is still recognised by
-Failsafe for the many existing classes that use it, but it is **deprecated for
-new code**.
+**New integration tests MUST be named `*IT`.** This is the single accepted
+convention for new code. Failsafe still recognises the older `*IntegrationTest`
+name and the `@Tag("integration")` marker so the many existing classes keep
+running while they are migrated, but **do not use them for new tests** — name
+your class `FooIT` and nothing else.
 
 | Test needs… | Name / mark it as… | Runner |
 |---|---|---|
 | **No server** (pure logic, mocks) | a plain `*Test` / `*Tests` class, **untagged** | Surefire |
-| **A running Redis** | **`*IT`** or **`*IntegrationTest`** file name | Failsafe |
+| **A running Redis** | **`*IT`** file name | Failsafe |
 | **A long-running scenario** | `@Tag("scenario")`, placed under `scenario/` | Failsafe (off by default) |
 
 Guidance for new tests:
 
-- **Do not add `@Tag("integration")` to new test classes.** It exists only for
-  backward compatibility while the existing tagged classes are migrated; new
-  integration tests must rely on the `*IT` / `*IntegrationTest` name instead.
+- **Integration test** → name the file `FooIT.java` (the **only** accepted name
+  for new integration tests — not `*IntegrationTest`, and **never**
+  `@Tag("integration")`). Put it in the area package it exercises (`commands/…`,
+  `search/`, `tls/`, etc.). It connects to a server resolved through
+  `Endpoints.getRedisEndpoint(...)`.
 - **Unit test** → add it next to related unit tests (or under `mocked/` if it is
   Mockito-based), name it `FooTest`, and leave it untagged. It must pass with no
   Redis running.
-- **Integration test** → name the file `FooIT.java` (or `FooIntegrationTest.java`)
-  so Failsafe picks it up, and put it in the area package it exercises
-  (`commands/…`, `search/`, `tls/`, etc.). It connects to a server resolved
-  through `Endpoints.getRedisEndpoint(...)`.
 - **Never** put production-required fixtures in `examples/`, `benchmark/`, or
   `codegen/` — those packages are excluded from the test run. Shared helpers go
   in `util/` (helpers there are not collected as tests even if named `*Test`).

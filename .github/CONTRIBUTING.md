@@ -23,7 +23,9 @@ tests discover their servers, where to place unit vs. integration tests, and how
 this maps to CI — is documented in **[docs/integration-testing.md](../docs/integration-testing.md)**.
 
 When adding tests, please follow the unit vs. integration conventions described
-in the guide (new integration tests are named `*IT` / `*IntegrationTest`).
+in the guide. New integration tests **must** be named `*IT` (not
+`*IntegrationTest`, and never `@Tag("integration")`); unit tests are plain
+`*Test` classes that need no running server.
 
 ## Code Convention
 

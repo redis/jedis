@@ -53,4 +53,7 @@ nav:
   - Jedis Guide: https://redis.io/docs/latest/develop/connect/clients/java/jedis/
   - Redis Command Reference: https://redis.io/docs/latest/commands/
   - Advanced Usage: advanced-usage.md
+  - Development guide:
+      - Contributing: .github/CONTRIBUTING.md
+      - Integration Testing: integration-testing.md
 

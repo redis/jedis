@@ -44,7 +44,10 @@ public abstract class Combiner implements IParams {
     args.add(name);
 
     List<Object> ownArgs = getOwnArgs();
-    args.add(ownArgs.size());
+
+    int argCount = ownArgs.size() + (scoreAlias != null ? 2 : 0);
+    args.add(argCount);
+
     ownArgs.forEach(args::add);
 
     if (scoreAlias != null) {

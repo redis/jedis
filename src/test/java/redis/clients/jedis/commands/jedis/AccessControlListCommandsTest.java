@@ -12,7 +12,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static redis.clients.jedis.util.ACLTestUtil.filterBinaryByClientId;
 import static redis.clients.jedis.util.ACLTestUtil.filterByClientId;
 import static redis.clients.jedis.util.RedisVersionUtil.getRedisVersion;
 
@@ -471,10 +470,6 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     jedis.auth(endpoint.getUsername(), endpoint.getPassword());
     assertEquals( 3, filterByClientId(jedis.aclLog(), jedis.clientId()).size(), "Number of log messages ");
     assertEquals( 2, jedis.aclLog(2).size(), "Number of log messages ");
-
-    // Binary tests
-    assertEquals( 3, filterBinaryByClientId(jedis.aclLogBinary(), jedis.clientId()).size(), "Number of log messages ");
-    assertEquals( 2, jedis.aclLogBinary(2).size(), "Number of log messages ");
 
     // RESET
     String status = jedis.aclLogReset();

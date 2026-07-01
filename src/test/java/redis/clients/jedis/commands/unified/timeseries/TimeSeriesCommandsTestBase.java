@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.unified.timeseries;
 
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -519,31 +520,87 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
             .duplicatePolicy(DuplicatePolicy.MAX).ignore(50, 12.5).labels(labels)));
   }
 
+  /**
+   * Verify ALIGN modes. Non-keyword key: ALIGN option parsing is unaffected
+   * @see #alignKeyNotConsumedAsOption()
+   */
   @Test
   public void align() {
-    jedis.tsAdd("align", 1, 10d);
-    jedis.tsAdd("align", 3, 5d);
-    jedis.tsAdd("align", 11, 10d);
-    jedis.tsAdd("align", 25, 11d);
 
-    List<TSElement> values = jedis.tsRange("align",
+    final String key = "ts:align";
+
+    jedis.tsAdd(key, 1, 10d);
+    jedis.tsAdd(key, 3, 5d);
+    jedis.tsAdd(key, 11, 10d);
+    jedis.tsAdd(key, 25, 11d);
+
+    // No ALIGN -> default alignment is 0 (epoch): buckets start at 0, 10, 20.
+    List<TSElement> values = jedis.tsRange(key,
       TSRangeParams.rangeParams(1L, 30L).aggregation(AggregationType.COUNT, 10));
-    assertEquals(Arrays.asList(new TSElement(1, 2), new TSElement(11, 1), new TSElement(21, 1)),
+    assertEquals(Arrays.asList(new TSElement(0, 2), new TSElement(10, 1), new TSElement(20, 1)),
       values);
 
-    values = jedis.tsRange("align",
+    // ALIGN start -> align to fromTimestamp (1): buckets start at 1, 11, 21.
+    values = jedis.tsRange(key,
       TSRangeParams.rangeParams(1L, 30L).alignStart().aggregation(AggregationType.COUNT, 10));
     assertEquals(Arrays.asList(new TSElement(1, 2), new TSElement(11, 1), new TSElement(21, 1)),
       values);
 
-    values = jedis.tsRange("align",
+    // ALIGN end -> align to toTimestamp (30 ≡ 0 mod 10): buckets start at 0, 10, 20.
+    values = jedis.tsRange(key,
       TSRangeParams.rangeParams(1L, 30L).alignEnd().aggregation(AggregationType.COUNT, 10));
+    assertEquals(Arrays.asList(new TSElement(0, 2), new TSElement(10, 1), new TSElement(20, 1)),
+      values);
+
+    // ALIGN 5 -> align to timestamp 5: buckets start at 0 (clamped), 5, 25.
+    values = jedis.tsRange(key,
+      TSRangeParams.rangeParams(1L, 30L).align(5).aggregation(AggregationType.COUNT, 10));
+    assertEquals(Arrays.asList(new TSElement(0, 2), new TSElement(5, 1), new TSElement(25, 1)),
+      values);
+  }
+
+  /**
+   * Verify that the series key is not consumed as the ALIGN option. See RedisTimeSeries #2052.
+   * @see #align()
+   */
+  @Test
+  @SinceRedisVersion(value = "8.10.0", message = "Requires the RedisTimeSeries TS.RANGE option-parsing fix "
+      + "(RedisTimeSeries PR #2052). Before it, a series key named like an option keyword "
+      + "(here \"align\") was matched as the ALIGN option, so the alignment was silently "
+      + "taken from the fromTimestamp and every ALIGN mode returned the same buckets.")
+  public void alignKeyNotConsumedAsOption() {
+    // The series key is intentionally named "align" to guard against the option-keyword
+    // shadowing regression fixed in RedisTimeSeries PR #2052: option parsing must start after
+    // the key, so the key name must NOT be consumed as the ALIGN option.
+    final String key = "align";
+
+    jedis.tsAdd(key, 1, 10d);
+    jedis.tsAdd(key, 3, 5d);
+    jedis.tsAdd(key, 11, 10d);
+    jedis.tsAdd(key, 25, 11d);
+
+    // No ALIGN -> default alignment is 0 (epoch): buckets start at 0, 10, 20.
+    List<TSElement> values = jedis.tsRange(key,
+      TSRangeParams.rangeParams(1L, 30L).aggregation(AggregationType.COUNT, 10));
+    assertEquals(Arrays.asList(new TSElement(0, 2), new TSElement(10, 1), new TSElement(20, 1)),
+      values);
+
+    // ALIGN start -> align to fromTimestamp (1): buckets start at 1, 11, 21.
+    values = jedis.tsRange(key,
+      TSRangeParams.rangeParams(1L, 30L).alignStart().aggregation(AggregationType.COUNT, 10));
     assertEquals(Arrays.asList(new TSElement(1, 2), new TSElement(11, 1), new TSElement(21, 1)),
       values);
 
-    values = jedis.tsRange("align",
+    // ALIGN end -> align to toTimestamp (30 ≡ 0 mod 10): buckets start at 0, 10, 20.
+    values = jedis.tsRange(key,
+      TSRangeParams.rangeParams(1L, 30L).alignEnd().aggregation(AggregationType.COUNT, 10));
+    assertEquals(Arrays.asList(new TSElement(0, 2), new TSElement(10, 1), new TSElement(20, 1)),
+      values);
+
+    // ALIGN 5 -> align to timestamp 5: buckets start at 0 (clamped), 5, 25.
+    values = jedis.tsRange(key,
       TSRangeParams.rangeParams(1L, 30L).align(5).aggregation(AggregationType.COUNT, 10));
-    assertEquals(Arrays.asList(new TSElement(1, 2), new TSElement(11, 1), new TSElement(21, 1)),
+    assertEquals(Arrays.asList(new TSElement(0, 2), new TSElement(5, 1), new TSElement(25, 1)),
       values);
   }
 

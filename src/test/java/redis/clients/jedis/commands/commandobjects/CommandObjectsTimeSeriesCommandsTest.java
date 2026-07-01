@@ -416,8 +416,10 @@ public class CommandObjectsTimeSeriesCommandsTest extends CommandObjectsModulesT
 
   @Test
   public void testTsCreateRule() {
-    String sourceKey = "tsSourceKey";
-    String destKey = "tsDestKey";
+    // Hash-tag the rule key pair so TS.CREATERULE's two keys hash to the same slot on a
+    // clustered deployment (otherwise the server rejects it with CROSSSLOT).
+    String sourceKey = "{tsCreateRule}tsSourceKey";
+    String destKey = "{tsCreateRule}tsDestKey";
 
     AggregationType aggregationType = AggregationType.AVG;
 
@@ -460,8 +462,9 @@ public class CommandObjectsTimeSeriesCommandsTest extends CommandObjectsModulesT
 
   @Test
   public void testTsCreateRuleWithAlign() {
-    String sourceKey = "tsSourceKey";
-    String destKey = "tsDestKey";
+    // Hash-tag the rule key pair so the two keys collocate on one slot (avoid CROSSSLOT).
+    String sourceKey = "{tsCreateRuleAlign}tsSourceKey";
+    String destKey = "{tsCreateRuleAlign}tsDestKey";
 
     AggregationType aggregationType = AggregationType.AVG;
 
@@ -502,8 +505,9 @@ public class CommandObjectsTimeSeriesCommandsTest extends CommandObjectsModulesT
 
   @Test
   public void testTsDeleteRule() {
-    String sourceKey = "tsSourceKeyForDeletionWithData";
-    String destKey = "tsDestKeyForDeletionWithData";
+    // Hash-tag the rule key pair so TS.DELETERULE's two keys collocate on one slot (avoid CROSSSLOT).
+    String sourceKey = "{tsDeleteRule}tsSourceKeyForDeletionWithData";
+    String destKey = "{tsDeleteRule}tsDestKeyForDeletionWithData";
 
     AggregationType aggregationType = AggregationType.SUM;
 

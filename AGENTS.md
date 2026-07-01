@@ -35,7 +35,7 @@ It covers standalone, cluster, sentinel, and multi-db setups — with pipelining
 
 ## Architecture
 
-See [`docs/redis-client-architecture-overview.md`](docs/redis-client-architecture-overview.md)
+See [`docs/redis-client-components-overview.md`](docs/redis-client-components-overview.md)
 for a high-level walkthrough (executors, providers, builders, and command execution flows).
 
 `UnifiedJedis` is the core client. It implements the command interfaces and

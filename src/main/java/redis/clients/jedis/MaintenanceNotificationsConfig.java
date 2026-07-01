@@ -48,8 +48,8 @@ public class MaintenanceNotificationsConfig {
   EndpointType endpointType = EndpointType.EXTERNAL_IP;
   Mode mode = Mode.AUTO;
   Duration relaxedWindowMaxDuration = DEFAULT_RELAXED_WINDOW_MAX_DURATION;
-  int relaxedSocketTimeoutMillis = DEFAULT_RELAXED_SOCKET_TIMEOUT_MS;
-  int relaxedBlockingSocketTimeoutMillis = DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS;
+  int relaxedTimeout = DEFAULT_RELAXED_SOCKET_TIMEOUT_MS;
+  int relaxedBlockingTimeout = DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS;
 
   public EndpointType getEndpointType() {
     return endpointType;
@@ -69,29 +69,20 @@ public class MaintenanceNotificationsConfig {
   }
 
   /**
-   * Per-command socket timeout (ms) applied while a maintenance relaxation window is active
-   * (MIGRATING / FAILING_OVER / MOVING). {@link JedisClientConfig#UNSET_TIMEOUT_MS} inherits the
-   * connection's configured socket timeout during the window.
-   */
-  public int getRelaxedSocketTimeoutMillis() {
-    return relaxedSocketTimeoutMillis;
-  }
-
-  /**
-   * Per-command timeout (ms) applied to blocking commands while a relaxation window is active.
-   * {@link JedisClientConfig#UNSET_TIMEOUT_MS} inherits the configured blocking timeout.
-   */
-  public int getRelaxedBlockingSocketTimeoutMillis() {
-    return relaxedBlockingSocketTimeoutMillis;
-  }
-
-  /**
    * Returns whether maintenance event notifications are enabled. When enabled, both timeout
    * relaxation and proactive rebind features are activated.
    * @return true if mode is ENABLED or AUTO, false if DISABLED
    */
   public boolean isEnabledOrAuto() {
     return mode == Mode.ENABLED || mode == Mode.AUTO;
+  }
+
+  public int relaxedTimeout() {
+    return relaxedTimeout;
+  }
+
+  public int relaxedBlockingTimeout() {
+    return relaxedBlockingTimeout;
   }
 
   public static Builder builder() {
@@ -109,8 +100,8 @@ public class MaintenanceNotificationsConfig {
     private EndpointType endpointType = EndpointType.EXTERNAL_IP;
     private Mode mode = Mode.AUTO;
     private Duration relaxedWindowMaxDuration = DEFAULT_RELAXED_WINDOW_MAX_DURATION;
-    private int relaxedSocketTimeoutMillis = DEFAULT_RELAXED_SOCKET_TIMEOUT_MS;
-    private int relaxedBlockingSocketTimeoutMillis = DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS;
+    private int relaxedTimeout = DEFAULT_RELAXED_SOCKET_TIMEOUT_MS;
+    private int relaxedBlockingTimeout = DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS;
 
     public Builder endpointType(EndpointType endpointType) {
       this.endpointType = endpointType;
@@ -119,6 +110,16 @@ public class MaintenanceNotificationsConfig {
 
     public Builder mode(Mode mode) {
       this.mode = mode;
+      return this;
+    }
+
+    public Builder relaxedTimeout(int timeout) {
+      this.relaxedTimeout = timeout;
+      return this;
+    }
+
+    public Builder relaxedBlockingTimeout(int blockingTimeout) {
+      this.relaxedBlockingTimeout = blockingTimeout;
       return this;
     }
 
@@ -133,35 +134,13 @@ public class MaintenanceNotificationsConfig {
       return this;
     }
 
-    /**
-     * Per-command socket timeout (ms) applied while a relaxation window is active. Pass
-     * {@link JedisClientConfig#UNSET_TIMEOUT_MS} to inherit the connection's configured socket
-     * timeout. Defaults to
-     * {@link MaintenanceNotificationsConfig#DEFAULT_RELAXED_SOCKET_TIMEOUT_MS}.
-     */
-    public Builder relaxedSocketTimeoutMillis(int millis) {
-      this.relaxedSocketTimeoutMillis = millis;
-      return this;
-    }
-
-    /**
-     * Per-command timeout (ms) applied to blocking commands while a relaxation window is active.
-     * Pass {@link JedisClientConfig#UNSET_TIMEOUT_MS} to inherit the configured blocking timeout.
-     * Defaults to
-     * {@link MaintenanceNotificationsConfig#DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS}.
-     */
-    public Builder relaxedBlockingSocketTimeoutMillis(int millis) {
-      this.relaxedBlockingSocketTimeoutMillis = millis;
-      return this;
-    }
-
     public MaintenanceNotificationsConfig build() {
       MaintenanceNotificationsConfig config = new MaintenanceNotificationsConfig();
       config.endpointType = this.endpointType;
       config.mode = this.mode;
       config.relaxedWindowMaxDuration = this.relaxedWindowMaxDuration;
-      config.relaxedSocketTimeoutMillis = this.relaxedSocketTimeoutMillis;
-      config.relaxedBlockingSocketTimeoutMillis = this.relaxedBlockingSocketTimeoutMillis;
+      config.relaxedTimeout = this.relaxedTimeout;
+      config.relaxedBlockingTimeout = this.relaxedBlockingTimeout;
       return config;
     }
   }

@@ -9,6 +9,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -17,6 +20,7 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionTestHelper;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.PushConsumer;
 import redis.clients.jedis.PushConsumerChainImpl;
@@ -53,13 +57,30 @@ public class TrackingConnectionPoolInitTest {
 
     try (
         TrackingConnectionPool pool = TrackingConnectionPool.builder().hostAndPort(hostAndPort)
-            .clientConfig(config).build();
+            .clientConfig(config)
+            .maintenanceNotificationsConfig(MaintenanceNotificationsConfig.builder()
+                .mode(MaintenanceNotificationsConfig.Mode.ENABLED).build())
+            .build();
         Connection conn = pool.getResource()) {
 
       List<PushConsumer> consumers = ConnectionTestHelper.getPushConsumers(conn);
-      // contains(...) is an exact-length matcher: two copies of PUBSUB_CONSUMER would fail.
-      assertThat(consumers, contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER)));
+      assertThat(consumers,
+        contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER), matchesMaintenanceConsumer()));
     }
+  }
+
+  private static Matcher<PushConsumer> matchesMaintenanceConsumer() {
+    return new TypeSafeMatcher<PushConsumer>() {
+      @Override
+      protected boolean matchesSafely(PushConsumer consumer) {
+        return ConnectionTestHelper.isMaintenanceEventConsumer(consumer);
+      }
+
+      @Override
+      public void describeTo(Description description) {
+        description.appendText("a maintenance event consumer");
+      }
+    };
   }
 
   /**

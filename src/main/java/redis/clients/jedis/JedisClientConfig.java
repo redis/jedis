@@ -11,6 +11,14 @@ import redis.clients.jedis.search.SearchProtocol;
 
 public interface JedisClientConfig {
 
+  /** Sentinel meaning "no relaxed override configured" — falls back to the base timeout. */
+  int UNSET_TIMEOUT_MS = -1;
+
+  /** True iff {@code millis} represents a configured timeout (not {@link #UNSET_TIMEOUT_MS}). */
+  static boolean isTimeoutSet(int millis) {
+    return millis != UNSET_TIMEOUT_MS;
+  }
+
   default RedisProtocol getRedisProtocol() {
     return null;
   }
@@ -209,4 +217,5 @@ public interface JedisClientConfig {
   default int getSearchDialect() {
     return SearchProtocol.DEFAULT_DIALECT;
   }
+
 }

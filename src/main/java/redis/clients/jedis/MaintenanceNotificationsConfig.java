@@ -69,23 +69,6 @@ public class MaintenanceNotificationsConfig {
   }
 
   /**
-   * Per-command socket timeout (ms) applied while a maintenance relaxation window is active
-   * (MIGRATING / FAILING_OVER / MOVING). {@link JedisClientConfig#UNSET_TIMEOUT_MS} inherits the
-   * connection's configured socket timeout during the window.
-   */
-  public int getRelaxedSocketTimeoutMillis() {
-    return relaxedSocketTimeoutMillis;
-  }
-
-  /**
-   * Per-command timeout (ms) applied to blocking commands while a relaxation window is active.
-   * {@link JedisClientConfig#UNSET_TIMEOUT_MS} inherits the configured blocking timeout.
-   */
-  public int getRelaxedBlockingSocketTimeoutMillis() {
-    return relaxedBlockingSocketTimeoutMillis;
-  }
-
-  /**
    * Returns whether maintenance event notifications are enabled. When enabled, both timeout
    * relaxation and proactive rebind features are activated.
    * @return true if mode is ENABLED or AUTO, false if DISABLED
@@ -148,28 +131,6 @@ public class MaintenanceNotificationsConfig {
     public Builder relaxedWindowMaxDuration(Duration duration) {
       if (duration == null) throw new IllegalArgumentException("duration must not be null");
       this.relaxedWindowMaxDuration = duration;
-      return this;
-    }
-
-    /**
-     * Per-command socket timeout (ms) applied while a relaxation window is active. Pass
-     * {@link JedisClientConfig#UNSET_TIMEOUT_MS} to inherit the connection's configured socket
-     * timeout. Defaults to
-     * {@link MaintenanceNotificationsConfig#DEFAULT_RELAXED_SOCKET_TIMEOUT_MS}.
-     */
-    public Builder relaxedSocketTimeoutMillis(int millis) {
-      this.relaxedSocketTimeoutMillis = millis;
-      return this;
-    }
-
-    /**
-     * Per-command timeout (ms) applied to blocking commands while a relaxation window is active.
-     * Pass {@link JedisClientConfig#UNSET_TIMEOUT_MS} to inherit the configured blocking timeout.
-     * Defaults to
-     * {@link MaintenanceNotificationsConfig#DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS}.
-     */
-    public Builder relaxedBlockingSocketTimeoutMillis(int millis) {
-      this.relaxedBlockingSocketTimeoutMillis = millis;
       return this;
     }
 

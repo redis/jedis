@@ -31,15 +31,6 @@ public class ConnectionPool extends Pool<Connection> {
     this.returnHook = super::returnResource;
   }
 
-  /** Wraps the checked-Exception {@link #evict()}. */
-  private void evictQuietly() {
-    try {
-      evict();
-    } catch (Exception e) {
-      throw new JedisException("Failed to evict pool on maintenance handoff", e);
-    }
-  }
-
   // Convenience constructors
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig) {
     this(new ConnectionFactory(hostAndPort, clientConfig));
@@ -90,10 +81,6 @@ public class ConnectionPool extends Pool<Connection> {
     super(factoryBuilder.maintenanceController(controller).build(), poolConfig);
     this.maintenanceController = controller;
     attachAuthenticationListener(factoryBuilder.getClientConfig().getAuthXManager());
-    enableMaintenanceEvents(controller);
-  }
-
-  private void enableMaintenanceEvents(MaintenanceEventController controller) {
     if (controller != null) {
       setEvictionPolicy(new RebindAwareEvictionPolicy(controller, getEvictionPolicy()));
       controller.addHandoffHook(handoff -> evictQuietly());
@@ -106,6 +93,15 @@ public class ConnectionPool extends Pool<Connection> {
       };
     } else {
       returnHook = super::returnResource;
+    }
+  }
+
+  /** Wraps the checked-Exception {@link #evict()}. */
+  private void evictQuietly() {
+    try {
+      evict();
+    } catch (Exception e) {
+      throw new JedisException("Failed to evict pool on maintenance handoff", e);
     }
   }
 

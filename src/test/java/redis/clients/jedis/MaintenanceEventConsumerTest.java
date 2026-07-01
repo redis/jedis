@@ -48,7 +48,7 @@ public class MaintenanceEventConsumerTest {
   @Test
   public void malformedRecognizedFrameDropsWithoutDispatch() {
     RecordingListener l = new RecordingListener();
-    // resolves as MOVING but the seq is not a Long -> build() returns null
+    // resolves as MOVING but the seq is not a Long -> build() throws, consumer discards
     PushConsumerContext ctx = consume(Collections.singletonList(l),
       push(type("MOVING"), bytes("x"), 15L, bytes("h:1")));
 

@@ -4,9 +4,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
@@ -15,8 +12,6 @@ import redis.clients.jedis.util.SafeEncoder;
  * extraction ({@link #build}) both live here.
  */
 final class MaintenancePushCodec {
-
-  private static final Logger logger = LoggerFactory.getLogger(MaintenancePushCodec.class);
 
   /** A maintenance push wire type: its token and how to decode its frame content into an event. */
   enum PushType {
@@ -60,29 +55,27 @@ final class MaintenancePushCodec {
   }
 
   /**
-   * Builds the domain event for an already-resolved push type, or {@code null} when the frame is
-   * malformed (logged) — including a MOVING with a missing or unparseable target.
+   * Builds the domain event for an already-resolved push type.
+   * @throws MalformedMaintenanceEventException if the frame's fields are malformed (missing or
+   *           wrong-typed seq/time/shards, or a MOVING with an absent or unparseable target)
    */
   static MaintenanceEvent build(PushType type, PushMessage msg) {
-    MaintenanceEvent event = type.decoder.apply(msg.getContent());
-    if (event == null) {
-      logger.warn("Ignoring malformed maintenance push: {}", msg.getContent());
-    }
-    return event;
+    return type.decoder.apply(msg.getContent());
   }
 
   private static MaintenanceEvent moving(List<Object> c) { // [MOVING, seq, time_s, host:port]
     if (c.size() < 3 || !(c.get(1) instanceof Long) || !(c.get(2) instanceof Long)) {
-      return null;
+      throw malformed("MOVING", c);
     }
-    HostAndPort target = parseHostPort(c, 3);
-    return target == null ? null : new MovingEvent((Long) c.get(1), (Long) c.get(2), target);
+    // TODO: once explicit 'none' target support lands, build a MovingEvent with a null target for
+    // that case instead of treating an absent target as malformed.
+    return new MovingEvent((Long) c.get(1), (Long) c.get(2), parseHostPort(c, 3));
   }
 
   private static MaintenanceEvent migrating(List<Object> c) { // [MIGRATING, seq, time_s, shards]
     if (c.size() < 4 || !(c.get(1) instanceof Long) || !(c.get(2) instanceof Long)
         || !(c.get(3) instanceof byte[])) {
-      return null;
+      throw malformed("MIGRATING", c);
     }
     return new MigratingEvent((Long) c.get(1), (Long) c.get(2), shardIds(c, 3));
   }
@@ -91,21 +84,21 @@ final class MaintenancePushCodec {
                                                                 // shards]
     if (c.size() < 4 || !(c.get(1) instanceof Long) || !(c.get(2) instanceof Long)
         || !(c.get(3) instanceof byte[])) {
-      return null;
+      throw malformed("FAILING_OVER", c);
     }
     return new FailingOverEvent((Long) c.get(1), (Long) c.get(2), shardIds(c, 3));
   }
 
   private static MaintenanceEvent migrated(List<Object> c) { // [MIGRATED, seq, shards]
     if (c.size() < 3 || !(c.get(1) instanceof Long) || !(c.get(2) instanceof byte[])) {
-      return null;
+      throw malformed("MIGRATED", c);
     }
     return new MigratedEvent((Long) c.get(1), shardIds(c, 2));
   }
 
   private static MaintenanceEvent failedOver(List<Object> c) { // [FAILED_OVER, seq, shards]
     if (c.size() < 3 || !(c.get(1) instanceof Long) || !(c.get(2) instanceof byte[])) {
-      return null;
+      throw malformed("FAILED_OVER", c);
     }
     return new FailedOverEvent((Long) c.get(1), shardIds(c, 2));
   }
@@ -115,18 +108,21 @@ final class MaintenancePushCodec {
     return SafeEncoder.encode((byte[]) c.get(i));
   }
 
-  /** MOVING target {@code host:port}, or {@code null} when absent or unparseable (logged). */
+  /** MOVING target {@code host:port}; throws when the target is absent or unparseable. */
   private static HostAndPort parseHostPort(List<Object> c, int i) {
     if (i >= c.size() || !(c.get(i) instanceof byte[])) {
-      logger.warn("Invalid MOVING target, expected host:port byte[] at index {}: {}", i, c);
-      return null;
+      throw new MalformedMaintenanceEventException(
+          "MOVING target must be a host:port byte[] at index " + i + ": " + c);
     }
     try {
       return HostAndPort.from(SafeEncoder.encode((byte[]) c.get(i)));
     } catch (Exception e) {
-      logger.warn("Error parsing MOVING target from {}", c, e);
-      return null;
+      throw new MalformedMaintenanceEventException("Unparseable MOVING target: " + c, e);
     }
+  }
+
+  private static MalformedMaintenanceEventException malformed(String type, List<Object> c) {
+    return new MalformedMaintenanceEventException("Malformed " + type + " push: " + c);
   }
 
   private MaintenancePushCodec() {

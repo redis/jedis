@@ -2,14 +2,19 @@ package redis.clients.jedis;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * Push consumer for server maintenance events: resolves and decodes each frame via
  * {@link MaintenancePushCodec}, then dispatches the typed {@link MaintenanceEvent} to the
  * connection's {@link MaintenanceEventListener}s on the read thread. A recognized maintenance frame
- * is consumed even if malformed; any other push passes through to the next consumer. Listener
- * exceptions propagate to the read loop.
+ * is consumed even if malformed (logged and discarded); any other push passes through to the next
+ * consumer. Listener exceptions propagate to the read loop.
  */
 final class MaintenanceEventConsumer implements PushConsumer {
+
+  private static final Logger logger = LoggerFactory.getLogger(MaintenanceEventConsumer.class);
 
   private final Connection connection;
   private final List<MaintenanceEventListener> listeners;
@@ -29,13 +34,19 @@ final class MaintenanceEventConsumer implements PushConsumer {
       return context;
     }
 
-    MaintenanceEvent event = MaintenancePushCodec.build(type, message);
-    if (event != null) {
-      for (MaintenanceEventListener listener : listeners) {
-        event.accept(listener, connection);
-      }
+    MaintenanceEvent event;
+    try {
+      event = MaintenancePushCodec.build(type, message);
+    } catch (MalformedMaintenanceEventException e) {
+      logger.warn("Ignoring malformed maintenance push: {}", message.getContent(), e);
+      context.drop(); // recognized maintenance frame is consumed even when malformed
+      return context;
     }
-    context.drop(); // a maintenance event is consumed even if malformed
+
+    for (MaintenanceEventListener listener : listeners) {
+      event.accept(listener, connection);
+    }
+    context.drop();
     return context;
   }
 }

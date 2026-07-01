@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static redis.clients.jedis.MaintenancePushCodec.build;
 import static redis.clients.jedis.MaintenancePushCodec.PushType.resolve;
 
@@ -90,52 +91,56 @@ public class MaintenancePushCodecTest {
     assertEquals("[\"2\",\"4\"]", e.shardIds);
   }
 
-  // build(): malformed frame -> null (logged)
+  // build(): malformed frame -> throws MalformedMaintenanceEventException (logged by the consumer)
 
   @Test
   public void buildRejectsMalformedMoving() {
     // bad seq
-    assertNull(build(PushType.MOVING, push(type("MOVING"), bytes("x"), 15L, bytes("h:1"))));
+    assertMalformed(PushType.MOVING, push(type("MOVING"), bytes("x"), 15L, bytes("h:1")));
     // bad time
-    assertNull(build(PushType.MOVING, push(type("MOVING"), 30L, bytes("x"), bytes("h:1"))));
+    assertMalformed(PushType.MOVING, push(type("MOVING"), 30L, bytes("x"), bytes("h:1")));
     // missing time/target
-    assertNull(build(PushType.MOVING, push(type("MOVING"), 30L)));
+    assertMalformed(PushType.MOVING, push(type("MOVING"), 30L));
     // missing target
-    assertNull(build(PushType.MOVING, push(type("MOVING"), 30L, 15L)));
+    assertMalformed(PushType.MOVING, push(type("MOVING"), 30L, 15L));
     // target not byte[]
-    assertNull(build(PushType.MOVING, push(type("MOVING"), 30L, 15L, 6379L)));
+    assertMalformed(PushType.MOVING, push(type("MOVING"), 30L, 15L, 6379L));
     // unparseable host:port
-    assertNull(build(PushType.MOVING, push(type("MOVING"), 30L, 15L, bytes("no-port"))));
+    assertMalformed(PushType.MOVING, push(type("MOVING"), 30L, 15L, bytes("no-port")));
   }
 
   @Test
   public void buildRejectsMalformedMigrating() {
-    assertNull(build(PushType.MIGRATING, push(type("MIGRATING")))); // no seq/time
-    assertNull(build(PushType.MIGRATING, push(type("MIGRATING"), 6L))); // missing time
-    assertNull(build(PushType.MIGRATING, push(type("MIGRATING"), 6L, bytes("x")))); // bad time
-    assertNull(build(PushType.MIGRATING, push(type("MIGRATING"), bytes("x"), 2L))); // bad seq
-    assertNull(build(PushType.MIGRATING, push(type("MIGRATING"), 6L, 2L))); // missing shards
+    assertMalformed(PushType.MIGRATING, push(type("MIGRATING"))); // no seq/time
+    assertMalformed(PushType.MIGRATING, push(type("MIGRATING"), 6L)); // missing time
+    assertMalformed(PushType.MIGRATING, push(type("MIGRATING"), 6L, bytes("x"))); // bad time
+    assertMalformed(PushType.MIGRATING, push(type("MIGRATING"), bytes("x"), 2L)); // bad seq
+    assertMalformed(PushType.MIGRATING, push(type("MIGRATING"), 6L, 2L)); // missing shards
   }
 
   @Test
   public void buildRejectsMalformedFailingOver() {
-    assertNull(build(PushType.FAILING_OVER, push(type("FAILING_OVER"), bytes("x"), 2L))); // bad seq
-    assertNull(build(PushType.FAILING_OVER, push(type("FAILING_OVER"), 6L))); // missing time
-    assertNull(build(PushType.FAILING_OVER, push(type("FAILING_OVER"), 6L, 2L))); // missing shards
+    assertMalformed(PushType.FAILING_OVER, push(type("FAILING_OVER"), bytes("x"), 2L)); // bad seq
+    assertMalformed(PushType.FAILING_OVER, push(type("FAILING_OVER"), 6L)); // missing time
+    assertMalformed(PushType.FAILING_OVER, push(type("FAILING_OVER"), 6L, 2L)); // missing shards
   }
 
   @Test
   public void buildRejectsMalformedMigrated() {
-    assertNull(build(PushType.MIGRATED, push(type("MIGRATED")))); // no seq
-    assertNull(build(PushType.MIGRATED, push(type("MIGRATED"), bytes("x")))); // bad seq
-    assertNull(build(PushType.MIGRATED, push(type("MIGRATED"), 7L))); // missing shards
+    assertMalformed(PushType.MIGRATED, push(type("MIGRATED"))); // no seq
+    assertMalformed(PushType.MIGRATED, push(type("MIGRATED"), bytes("x"))); // bad seq
+    assertMalformed(PushType.MIGRATED, push(type("MIGRATED"), 7L)); // missing shards
   }
 
   @Test
   public void buildRejectsMalformedFailedOver() {
-    assertNull(build(PushType.FAILED_OVER, push(type("FAILED_OVER")))); // no seq
-    assertNull(build(PushType.FAILED_OVER, push(type("FAILED_OVER"), bytes("x")))); // bad seq
-    assertNull(build(PushType.FAILED_OVER, push(type("FAILED_OVER"), 7L))); // missing shards
+    assertMalformed(PushType.FAILED_OVER, push(type("FAILED_OVER"))); // no seq
+    assertMalformed(PushType.FAILED_OVER, push(type("FAILED_OVER"), bytes("x"))); // bad seq
+    assertMalformed(PushType.FAILED_OVER, push(type("FAILED_OVER"), 7L)); // missing shards
+  }
+
+  private static void assertMalformed(PushType type, PushMessage msg) {
+    assertThrows(MalformedMaintenanceEventException.class, () -> build(type, msg));
   }
 
   private static PushMessage push(Object... content) {

@@ -1,9 +1,9 @@
 ---
-description: Generate a PR title and description from the diff between two local branches, using the create-pr-description skill, and save to prDescription.md
+description: Generate a PR title and description from the diff between two local branches, using the creating-description-for-gh-pr skill, and save to prDescription.md
 argument-hint: [base-branch] [target-branch]
 ---
 
-Use the "create-pr-description" skill to generate a PR title and description.
+Use the "creating-description-for-gh-pr" skill to generate a PR title and description.
 
 Arguments provided to this command: base = `$1`, target = `$2` (either may be empty).
 

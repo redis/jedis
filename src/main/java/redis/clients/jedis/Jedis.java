@@ -4342,20 +4342,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<byte[]> aclLogBinary() {
-    checkIsInMultiOrPipeline();
-    connection.sendCommand(ACL, LOG);
-    return connection.getBinaryMultiBulkReply();
-  }
-
-  @Override
-  public List<byte[]> aclLogBinary(int limit) {
-    checkIsInMultiOrPipeline();
-    connection.sendCommand(ACL, LOG.getRaw(), toByteArray(limit));
-    return connection.getBinaryMultiBulkReply();
-  }
-
-  @Override
   public String aclLogReset() {
     checkIsInMultiOrPipeline();
     connection.sendCommand(ACL, LOG.getRaw(), Keyword.RESET.getRaw());

@@ -61,6 +61,18 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
 
   protected abstract Connection getConnection(HostAndPort nodeKey);
 
+  /**
+   * Acquires a connection for {@code nodeKey}.
+   * <p>
+   * {@code allowBlocking} is {@code false} once this pipeline already holds a connection to another
+   * node. Implementations that can avoid blocking should do so in that state to avoid circular
+   * waits across multi-node pipelines.
+   * </p>
+   */
+  protected Connection getConnection(HostAndPort nodeKey, boolean allowBlocking) {
+    return getConnection(nodeKey);
+  }
+
   @Override
   protected final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
     // Validate that the command is supported in pipeline mode
@@ -74,7 +86,7 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
       queue = pipelinedResponses.get(nodeKey);
       connection = connections.get(nodeKey);
     } else {
-      Connection newOne = getConnection(nodeKey);
+      Connection newOne = getConnectionOrCleanup(nodeKey);
       connections.putIfAbsent(nodeKey, newOne);
       connection = connections.get(nodeKey);
       if (connection != newOne) {
@@ -90,6 +102,30 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
     Response<T> response = new Response<>(commandObject.getBuilder());
     queue.add(response);
     return response;
+  }
+
+  private Connection getConnectionOrCleanup(HostAndPort nodeKey) {
+    boolean allowBlocking = connections.isEmpty();
+    try {
+      return getConnection(nodeKey, allowBlocking);
+    } catch (RuntimeException | Error ex) {
+      if (!allowBlocking) {
+        closeHeldConnectionsAfterAcquisitionFailure();
+      }
+      throw ex;
+    }
+  }
+
+  private void closeHeldConnectionsAfterAcquisitionFailure() {
+    connections.forEach((nodeKey, connection) -> {
+      Queue<Response<?>> queue = pipelinedResponses.get(nodeKey);
+      if (queue != null && !queue.isEmpty()) {
+        connection.setBroken();
+      }
+      IOUtils.closeQuietly(connection);
+    });
+    connections.clear();
+    pipelinedResponses.clear();
   }
 
   @Override

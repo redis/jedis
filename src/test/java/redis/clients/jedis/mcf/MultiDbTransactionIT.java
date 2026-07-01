@@ -13,21 +13,17 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
-
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.Endpoints;
-import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiDbClient;
 import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Response;
-import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.ClientTestUtil;
@@ -218,8 +214,7 @@ public class MultiDbTransactionIT {
 
     MultiDbConfig config = MultiDbConfig.builder(new DatabaseConfig[] { db1, db2 }).build();
 
-    MultiDbClient twoDbClient = MultiDbClient.builder().cacheConfig(CacheConfig.builder().build())
-        .multiDbConfig(config).build();
+    MultiDbClient twoDbClient = MultiDbClient.builder().multiDbConfig(config).build();
 
     try {
       try (MultiDbTransaction tx = twoDbClient.transaction(false)) {

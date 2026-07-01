@@ -126,8 +126,8 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
      * SO_TIMEOUT override that relaxes a connection's timeout while a MOVING rebind window is active
      * in the pool, and defers ({@link JedisClientConfig#UNSET_TIMEOUT_MS}) otherwise so the
      * connection falls back to its own per-receiver / configured calculation. Relaxed values are
-     * captured from the (immutable) client config at wiring time; an unset relaxed value is itself
-     * {@code UNSET_TIMEOUT_MS}, so it naturally defers.
+     * captured from the (immutable) maintenance config at wiring time; an unset relaxed value is
+     * itself {@code UNSET_TIMEOUT_MS}, so it naturally defers.
      */
     private static TimeoutSupplier rebindSoTimeoutSupplier(MaintenanceEventController controller,
         JedisClientConfig clientConfig) {
@@ -172,15 +172,6 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     this.connectionBuilder = builder.getConnectionBuilder();
 
     initAuthXManager();
-  }
-
-  JedisClientConfig getClientConfig() {
-    return clientConfig;
-  }
-
-  /** Visible for testing: the underlying connection builder (and via it, the socket factory). */
-  Connection.Builder getConnectionBuilder() {
-    return connectionBuilder;
   }
 
   private void initAuthXManager() {

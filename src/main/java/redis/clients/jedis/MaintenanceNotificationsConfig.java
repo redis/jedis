@@ -7,7 +7,11 @@ public class MaintenanceNotificationsConfig {
   /** Default upper bound on the relaxed-timeout window started by MIGRATING/FAILING_OVER/MOVING. */
   public static final Duration DEFAULT_RELAXED_WINDOW_MAX_DURATION = Duration.ofSeconds(60);
 
-  public static final MaintenanceNotificationsConfig DEFAULT = new MaintenanceNotificationsConfig();
+  /** Default per-command socket timeout (ms) applied while a relaxation window is active. */
+  public static final int DEFAULT_RELAXED_SOCKET_TIMEOUT_MS = 10_000;
+
+  /** Default relaxed blocking-command timeout (ms): unset, i.e. inherit the configured one. */
+  public static final int DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS = JedisClientConfig.UNSET_TIMEOUT_MS;
 
   /**
    * Endpoint types for maintenance event notifications.
@@ -44,8 +48,8 @@ public class MaintenanceNotificationsConfig {
   EndpointType endpointType = EndpointType.EXTERNAL_IP;
   Mode mode = Mode.AUTO;
   Duration relaxedWindowMaxDuration = DEFAULT_RELAXED_WINDOW_MAX_DURATION;
-  int relaxedTimeout = 0;
-  int relaxedBlockingTimeout = 0;
+  int relaxedTimeout = DEFAULT_RELAXED_SOCKET_TIMEOUT_MS;
+  int relaxedBlockingTimeout = DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS;
 
   public EndpointType getEndpointType() {
     return endpointType;
@@ -62,6 +66,23 @@ public class MaintenanceNotificationsConfig {
    */
   public Duration getRelaxedWindowMaxDuration() {
     return relaxedWindowMaxDuration;
+  }
+
+  /**
+   * Per-command socket timeout (ms) applied while a maintenance relaxation window is active
+   * (MIGRATING / FAILING_OVER / MOVING). {@link JedisClientConfig#UNSET_TIMEOUT_MS} inherits the
+   * connection's configured socket timeout during the window.
+   */
+  public int getRelaxedSocketTimeoutMillis() {
+    return relaxedSocketTimeoutMillis;
+  }
+
+  /**
+   * Per-command timeout (ms) applied to blocking commands while a relaxation window is active.
+   * {@link JedisClientConfig#UNSET_TIMEOUT_MS} inherits the configured blocking timeout.
+   */
+  public int getRelaxedBlockingSocketTimeoutMillis() {
+    return relaxedBlockingSocketTimeoutMillis;
   }
 
   /**
@@ -85,12 +106,19 @@ public class MaintenanceNotificationsConfig {
     return new Builder();
   }
 
+  /**
+   * Maintenance notifications disabled. To enable — optionally with custom relaxed timeouts — use
+   * {@link #builder()} with mode {@link Mode#AUTO} or {@link Mode#ENABLED}.
+   */
+  public static final MaintenanceNotificationsConfig DISABLED = builder().mode(Mode.DISABLED)
+      .build();
+
   public static class Builder {
     private EndpointType endpointType = EndpointType.EXTERNAL_IP;
     private Mode mode = Mode.AUTO;
     private Duration relaxedWindowMaxDuration = DEFAULT_RELAXED_WINDOW_MAX_DURATION;
-    private int relaxedTimeout = 0;
-    private int relaxedBlockingTimeout = 0;
+    private int relaxedTimeout = DEFAULT_RELAXED_SOCKET_TIMEOUT_MS;
+    private int relaxedBlockingTimeout = DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS;
 
     public Builder endpointType(EndpointType endpointType) {
       this.endpointType = endpointType;
@@ -120,6 +148,28 @@ public class MaintenanceNotificationsConfig {
     public Builder relaxedWindowMaxDuration(Duration duration) {
       if (duration == null) throw new IllegalArgumentException("duration must not be null");
       this.relaxedWindowMaxDuration = duration;
+      return this;
+    }
+
+    /**
+     * Per-command socket timeout (ms) applied while a relaxation window is active. Pass
+     * {@link JedisClientConfig#UNSET_TIMEOUT_MS} to inherit the connection's configured socket
+     * timeout. Defaults to
+     * {@link MaintenanceNotificationsConfig#DEFAULT_RELAXED_SOCKET_TIMEOUT_MS}.
+     */
+    public Builder relaxedSocketTimeoutMillis(int millis) {
+      this.relaxedSocketTimeoutMillis = millis;
+      return this;
+    }
+
+    /**
+     * Per-command timeout (ms) applied to blocking commands while a relaxation window is active.
+     * Pass {@link JedisClientConfig#UNSET_TIMEOUT_MS} to inherit the configured blocking timeout.
+     * Defaults to
+     * {@link MaintenanceNotificationsConfig#DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS}.
+     */
+    public Builder relaxedBlockingSocketTimeoutMillis(int millis) {
+      this.relaxedBlockingSocketTimeoutMillis = millis;
       return this;
     }
 

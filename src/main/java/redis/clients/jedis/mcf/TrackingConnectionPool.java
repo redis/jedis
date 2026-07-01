@@ -16,6 +16,7 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.DefaultJedisSocketFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
+import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConnection;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
@@ -89,6 +90,7 @@ public class TrackingConnectionPool extends ConnectionPool {
     private HostAndPort hostAndPort;
     private JedisClientConfig clientConfig;
     private GenericObjectPoolConfig<Connection> poolConfig;
+    private Cache cache;
 
     public Builder hostAndPort(HostAndPort hostAndPort) {
       this.hostAndPort = hostAndPort;
@@ -102,6 +104,11 @@ public class TrackingConnectionPool extends ConnectionPool {
 
     public Builder poolConfig(GenericObjectPoolConfig<Connection> poolConfig) {
       this.poolConfig = poolConfig;
+      return this;
+    }
+
+    public Builder cache(Cache cache) {
+      this.cache = cache;
       return this;
     }
 
@@ -125,6 +132,7 @@ public class TrackingConnectionPool extends ConnectionPool {
   private final HostAndPort hostAndPort;
   private final JedisClientConfig clientConfig;
   private final GenericObjectPoolConfig<Connection> poolConfig;
+  private final Cache cache;
   private final AtomicInteger numWaiters = new AtomicInteger();
   private final Set<Connection> poolTrackedObjects = ConcurrentHashMap.newKeySet();
 
@@ -139,19 +147,22 @@ public class TrackingConnectionPool extends ConnectionPool {
     this.hostAndPort = builder.hostAndPort;
     this.clientConfig = builder.clientConfig;
     this.poolConfig = builder.poolConfig;
+    this.cache = builder.cache;
     this.attachAuthenticationListener(builder.clientConfig.getAuthXManager());
   }
 
   private static FailFastConnectionFactory createfailFastFactory(Builder poolBuilder) {
     ConnectionFactory.Builder factoryBuilder = ConnectionFactory.builder()
-        .clientConfig(poolBuilder.clientConfig).socketFactory(
-          new DefaultJedisSocketFactory(poolBuilder.hostAndPort, poolBuilder.clientConfig));
+        .clientConfig(poolBuilder.clientConfig)
+        .socketFactory(
+          new DefaultJedisSocketFactory(poolBuilder.hostAndPort, poolBuilder.clientConfig))
+        .cache(poolBuilder.cache);
     return new FailFastConnectionFactory(factoryBuilder, poolBuilder.clientConfig);
   }
 
   public static TrackingConnectionPool from(TrackingConnectionPool existing) {
     return builder().hostAndPort(existing.hostAndPort).clientConfig(existing.clientConfig)
-        .poolConfig(existing.poolConfig).build();
+        .poolConfig(existing.poolConfig).cache(existing.cache).build();
   }
 
   @Override

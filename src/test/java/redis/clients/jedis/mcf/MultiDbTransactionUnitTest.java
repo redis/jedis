@@ -8,8 +8,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.doNothing;
+import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -26,12 +28,14 @@ import redis.clients.jedis.CommandObjects;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
 import redis.clients.jedis.util.ReflectionTestUtil;
 
@@ -213,4 +217,59 @@ public class MultiDbTransactionUnitTest {
     // no command was issued, so the supplier was never touched
     verify(poolMock, never()).getResource();
   }
+
+  @Test
+  public void exec_whenActiveDatabaseChangesMidTransaction_throws() {
+    HostAndPort active = fakeEndpoint;
+    HostAndPort standby = new HostAndPort("fake-standby", 6379);
+
+    JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
+        .protocol(RedisProtocol.RESP3).build();
+
+    DatabaseConfig activeDb = DatabaseConfig.builder(active, clientConfig).healthCheckEnabled(false)
+        .weight(100.0f).build();
+    DatabaseConfig standbyDb = DatabaseConfig.builder(standby, clientConfig)
+        .healthCheckEnabled(false).weight(1.0f).build();
+    MultiDbConfig cfg = MultiDbConfig.builder(new DatabaseConfig[] { activeDb, standbyDb })
+        .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).build()).build();
+    MultiDbConnectionProvider p = new MultiDbConnectionProvider(cfg);
+
+    try {
+      Connection conn = mock(Connection.class);
+      when(conn.executeCommand(any(CommandObject.class))).thenReturn("OK".getBytes());
+
+      Database initial = p.getDatabase();
+      Database other = p.getDatabase(standby);
+      initial = spy(initial);
+      doReturn(conn).when(initial).getConnection();
+      other = spy(other);
+      doReturn(conn).when(other).getConnection();
+
+      p = spy(p);
+      // 1 - initial: for acquiring the conn
+      // 2 - initial: for the pre-MULTI command
+      // 3 - other: for the database switch check during exec()
+      when(p.getDatabase()).thenReturn(initial).thenReturn(initial).thenReturn(other);
+
+      // doMulti=false: the pre-MULTI command borrows a connection and pins the initial database.
+      MultiDbTransaction tx = new MultiDbTransaction(p, false,
+          new CommandObjects(RedisProtocol.RESP3));
+      tx.set("k", "v");
+      tx.multi();
+      tx.set("k", "v2");
+
+      // Simulate a database switch happening between MULTI buffering and exec().
+      ReflectionTestUtil.setField(p, "activeDatabase", other);
+
+      JedisException ex = assertThrows(JedisException.class, tx::exec);
+      assertTrue(ex.getMessage().contains("Active database has changed"),
+        "expected active-database-changed error, got: " + ex.getMessage());
+
+      verify(conn, times(1)).executeCommand(any(CommandArguments.class));
+      verify(conn, atLeastOnce()).close();
+    } finally {
+      p.close();
+    }
+  }
+
 }

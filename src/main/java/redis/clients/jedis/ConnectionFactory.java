@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.function.Supplier;
 
-import redis.clients.jedis.TimeoutSupplier.DefaultTimeoutCard;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.authentication.AuthXManager;
 import redis.clients.jedis.authentication.JedisAuthenticationException;
@@ -117,24 +116,9 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       if (maintenanceController != null) {
         connBuilder.maintenanceConfig(maintenanceController.getConfig())
             .addMaintenanceEventListener(maintenanceController)
-            .timeoutSupplier(rebindSoTimeoutSupplier(maintenanceController, clientConfig));
+            .timeoutSupplier(maintenanceController.getTimeoutSupplier());
       }
       return connBuilder;
-    }
-
-    /**
-     * SO_TIMEOUT override that relaxes a connection's timeout while a MOVING rebind window is active
-     * in the pool, and defers ({@link JedisClientConfig#UNSET_TIMEOUT_MS}) otherwise so the
-     * connection falls back to its own per-receiver / configured calculation. Relaxed values are
-     * captured from the (immutable) maintenance config at wiring time; an unset relaxed value is
-     * itself {@code UNSET_TIMEOUT_MS}, so it naturally defers.
-     */
-    private static TimeoutSupplier rebindSoTimeoutSupplier(MaintenanceEventController controller,
-        JedisClientConfig clientConfig) {
-
-      return new AdvancedTimeoutSupplier(
-          new MaintenanceAwareTimeoutCard(clientConfig.getSocketTimeoutMillis(),
-              clientConfig.getBlockingSocketTimeoutMillis(), controller));
     }
   }
 

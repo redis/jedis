@@ -12,13 +12,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.function.Consumer;
-import java.util.function.LongSupplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import redis.clients.jedis.TimeoutSupplier.TimeoutInfo;
-import redis.clients.jedis.util.JedisAsserts;
+import redis.clients.jedis.TimeoutSupplierChain.TimeoutInfo;
 
 /**
  * Maintenance handler: owns the shared rebind overlay, the relax-window policy, and the handoff
@@ -36,10 +34,18 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   /** Synchronous hooks fired once per applied MOVING handoff; see {@link #addHandoffHook}. */
   private final List<Consumer<MaintenanceHandoff>> handoffHooks = new CopyOnWriteArrayList<>();
   private final WeakHashMap<Connection, Boolean> rebindConnections = new WeakHashMap<>();
+  private final TimeoutSupplierChain timeoutSupplier;
 
   private MaintenanceEventController(MaintenanceNotificationsConfig config) {
     this.config = config;
     this.maxRelaxedDurationNanos = config.getRelaxedWindowMaxDuration().toNanos();
+    this.timeoutSupplier = new TimeoutSupplierDecorator(
+        new TimeoutInfo(config.relaxedTimeout(), config.relaxedBlockingTimeout())) {
+      @Override
+      protected boolean isValid() {
+        return MaintenanceEventController.this.rebind.isValid();
+      }
+    };
   }
 
   /**
@@ -159,6 +165,10 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     rebindConnections.put(c, Boolean.TRUE);
   }
 
+  public TimeoutSupplierChain getTimeoutSupplier() {
+    return timeoutSupplier;
+  }
+
   public boolean isRebinding(Connection c) {
     // map is expected to be empty most of the time, considering the lifecyle of controller and
     // rebinding operations.
@@ -174,16 +184,14 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   @Override
   public void onMigrating(MigratingEvent e, Connection c) {
     logger.debug("Migrating shards {} (seq={}, ttl={}s)", e.shardIds, e.seq, e.ttlSeconds);
-    c.relaxTimeouts(TimeoutInfo.ofDuration(config.relaxedTimeout(), config.relaxedBlockingTimeout(),
-      maxRelaxedDurationNanos)); // time_s = "starts within";
+    c.relaxTimeouts(maxRelaxedDurationNanos); // time_s = "starts within";
     // backstop
   }
 
   @Override
   public void onFailingOver(FailingOverEvent e, Connection c) {
     logger.debug("Failing over shards {} (seq={}, ttl={}s)", e.shardIds, e.seq, e.ttlSeconds);
-    c.relaxTimeouts(TimeoutInfo.ofDuration(config.relaxedTimeout(), config.relaxedBlockingTimeout(),
-      maxRelaxedDurationNanos));
+    c.relaxTimeouts(maxRelaxedDurationNanos);
   }
 
   @Override

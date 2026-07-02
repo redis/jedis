@@ -184,14 +184,16 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   @Override
   public void onMigrating(MigratingEvent e, Connection c) {
     logger.debug("Migrating shards {} (seq={}, ttl={}s)", e.shardIds, e.seq, e.ttlSeconds);
-    c.relaxTimeouts(maxRelaxedDurationNanos); // time_s = "starts within";
+    c.relaxTimeouts(maxRelaxedDurationNanos + NanoClock.INSTANCE.getAsLong()); // time_s = "starts
+                                                                               // within";
     // backstop
   }
 
   @Override
   public void onFailingOver(FailingOverEvent e, Connection c) {
     logger.debug("Failing over shards {} (seq={}, ttl={}s)", e.shardIds, e.seq, e.ttlSeconds);
-    c.relaxTimeouts(maxRelaxedDurationNanos);
+    c.relaxTimeouts(maxRelaxedDurationNanos + NanoClock.INSTANCE.getAsLong()); // time_s = "starts
+                                                                               // within"; backstop
   }
 
   @Override

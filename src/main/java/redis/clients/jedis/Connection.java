@@ -40,7 +40,7 @@ public class Connection implements Closeable {
     private JedisClientConfig clientConfig;
     private MaintenanceNotificationsConfig maintenanceConfig;
     private final List<MaintenanceEventListener> maintenanceEventListeners = new ArrayList<>();
-    private TimeoutSupplierChain timeoutSupplier;
+    private Supplier<TimeoutInfo> customTimeoutSupplier;
 
     public Builder socketFactory(JedisSocketFactory socketFactory) {
       this.socketFactory = socketFactory;
@@ -67,8 +67,8 @@ public class Connection implements Closeable {
       return this;
     }
 
-    Builder timeoutSupplier(TimeoutSupplierChain timeoutSupplier) {
-      this.timeoutSupplier = timeoutSupplier;
+    Builder customTimeoutSupplier(Supplier<TimeoutInfo> customTimeoutSupplier) {
+      this.customTimeoutSupplier = customTimeoutSupplier;
       return this;
     }
 
@@ -88,8 +88,8 @@ public class Connection implements Closeable {
       return maintenanceEventListeners;
     }
 
-    TimeoutSupplierChain getTimeoutSupplier() {
-      return timeoutSupplier;
+    Supplier<TimeoutInfo> getCustomTimeoutSupplier() {
+      return customTimeoutSupplier;
     }
 
     public Connection build() {
@@ -188,7 +188,7 @@ public class Connection implements Closeable {
   /** Listeners notified synchronously of this connection's maintenance events (pool-injected). */
   private final List<MaintenanceEventListener> maintenanceEventListeners = new CopyOnWriteArrayList<>();
 
-  private DefaultTimeoutSupplier timeoutSupplier = new DefaultTimeoutSupplier(
+  private DefaultTimeoutSupplier defaultTimeoutSupplier = new DefaultTimeoutSupplier(
       new TimeoutInfo(0, 0));
   private ExpiringTimeoutSupplier relaxedTimeout;
 
@@ -230,8 +230,13 @@ public class Connection implements Closeable {
     this.clientConfig = builder.getClientConfig();
     this.maintenanceConfig = builder.getMaintenanceConfig(); // pool-injected (may be null)
     this.maintenanceEventListeners.addAll(builder.getMaintenanceEventListeners());
-    if (builder.timeoutSupplier != null) {
-      this.timeoutSupplier.overrideWith(builder.timeoutSupplier);
+    if (builder.customTimeoutSupplier != null) {
+      defaultTimeoutSupplier.overrideWith(new TimeoutSupplierDecorator(null) {
+        @Override
+        protected TimeoutInfo getOwnInfo() {
+          return builder.customTimeoutSupplier.get();
+        }
+      });
     }
   }
 
@@ -356,7 +361,7 @@ public class Connection implements Closeable {
   public void setSoTimeout(int soTimeout) {
     // TODO: here the issue is this set operation will broke the defaults when executed during a
     // relaxed window.
-    timeoutSupplier.setDefaults(soTimeout, timeoutSupplier.getDefaults().blockingTimeout);
+    defaultTimeoutSupplier.setDefaults(soTimeout, defaultTimeoutSupplier.getDefaults().blockingTimeout);
     applySoTimeout(currentTimeoutInfo().timeout);
   }
 
@@ -367,7 +372,7 @@ public class Connection implements Closeable {
    * is active.
    */
   private TimeoutInfo currentTimeoutInfo() {
-    return timeoutSupplier.get();
+    return defaultTimeoutSupplier.get();
   }
 
   /**
@@ -506,11 +511,13 @@ public class Connection implements Closeable {
         // if no clientConfig, we use socket timeout to set defaults in the supplier
         if (this.clientConfig != null) {
           socket.setSoTimeout(currentTimeoutInfo().timeout);
+          // Fresh socket: align the applied-timeout cache with the new socket's actual SO_TIMEOUT.
+          appliedSoTimeout = socket.getSoTimeout();
         } else {
-          timeoutSupplier.setDefaults(socket.getSoTimeout(), getBlockingSoTimeout());
+          defaultTimeoutSupplier.setDefaults(socket.getSoTimeout(), getBlockingSoTimeout());
+          applySoTimeout(currentTimeoutInfo().timeout);
         }
-        // Fresh socket: align the applied-timeout cache with the new socket's actual SO_TIMEOUT.
-        appliedSoTimeout = socket.getSoTimeout();
+
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
@@ -782,7 +789,7 @@ public class Connection implements Closeable {
 
   protected void initializeFromClientConfig(final JedisClientConfig config) {
     try {
-      timeoutSupplier.setDefaults(config.getSocketTimeoutMillis(),
+      defaultTimeoutSupplier.setDefaults(config.getSocketTimeoutMillis(),
         config.getBlockingSocketTimeoutMillis());
 
       initPushConsumers(config);
@@ -914,7 +921,7 @@ public class Connection implements Closeable {
       resolveEndpointType(maintenanceConfig.getEndpointType()));
     try {
       getStatusCodeReplyInner();
-      timeoutSupplier.overrideWith(relaxedTimeout);
+      defaultTimeoutSupplier.overrideWith(relaxedTimeout);
     } catch (JedisDataException e) {
       removePushConsumer(consumer);
       if (strict) {

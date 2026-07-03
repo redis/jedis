@@ -116,7 +116,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       if (maintenanceController != null) {
         connBuilder.maintenanceConfig(maintenanceController.getConfig())
             .addMaintenanceEventListener(maintenanceController)
-            .timeoutSupplier(maintenanceController.getTimeoutSupplier());
+            .customTimeoutSupplier(maintenanceController.getTimeoutSupplier());
       }
       return connBuilder;
     }

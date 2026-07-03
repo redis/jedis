@@ -7,11 +7,11 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.WeakHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
 import java.util.function.Consumer;
+import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,18 +33,15 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   private volatile RebindState rebind = RebindState.EXPIRED_STATE;
   /** Synchronous hooks fired once per applied MOVING handoff; see {@link #addHandoffHook}. */
   private final List<Consumer<MaintenanceHandoff>> handoffHooks = new CopyOnWriteArrayList<>();
-  private final TimeoutSupplierChain timeoutSupplier;
+  private final Supplier<TimeoutInfo> timeoutSupplier;
 
   private MaintenanceEventController(MaintenanceNotificationsConfig config) {
     this.config = config;
     this.maxRelaxedDurationNanos = config.getRelaxedWindowMaxDuration().toNanos();
-    this.timeoutSupplier = new TimeoutSupplierDecorator(
-        new TimeoutInfo(config.relaxedTimeout(), config.relaxedBlockingTimeout())) {
-      @Override
-      protected boolean isValid() {
-        return MaintenanceEventController.this.rebind.isValid();
-      }
-    };
+    
+    TimeoutInfo relaxedTimeoutInfo = new TimeoutInfo(config.relaxedTimeout(),
+        config.relaxedBlockingTimeout());
+    this.timeoutSupplier = () -> rebind.isValid() ? relaxedTimeoutInfo : null;
   }
 
   /**
@@ -152,7 +149,7 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     }
   }
 
-  public TimeoutSupplierChain getTimeoutSupplier() {
+  public Supplier<TimeoutInfo> getTimeoutSupplier() {
     return timeoutSupplier;
   }
 

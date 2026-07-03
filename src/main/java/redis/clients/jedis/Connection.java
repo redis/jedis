@@ -277,7 +277,7 @@ public class Connection implements Closeable {
 
   public Object executeCommand(final CommandArguments args) {
     sendCommand(args);
-    return readReplyAfterCommandSent();
+    return getOne();
   }
 
   public <T> T executeCommand(final CommandObject<T> commandObject) {
@@ -286,25 +286,17 @@ public class Connection implements Closeable {
     sendCommand(args);
     final Object reply;
     if (!args.isBlocking()) {
-      reply = readReplyAfterCommandSent();
+      reply = getOne();
     } else {
       try {
         setTimeoutInfinite();
-        reply = readReplyAfterCommandSent();
+        reply = getOne();
       } finally {
         rollbackTimeout();
       }
     }
 
     return commandObject.getBuilder().build(reply);
-  }
-
-  private Object readReplyAfterCommandSent() {
-    try {
-      return getOne();
-    } catch (Error err) {
-      throw markBroken(err);
-    }
   }
 
   public void sendCommand(final ProtocolCommand cmd) {

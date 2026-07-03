@@ -123,6 +123,11 @@ public class ClusterConnectionProvider implements ConnectionProvider {
     return node != null ? cache.setupNodeIfNotExist(node).getResource() : getConnection();
   }
 
+  public Connection getConnection(HostAndPort node, Duration maxWait) {
+    return node != null ? cache.setupNodeIfNotExist(node).getResource(maxWait)
+        : getConnection(maxWait);
+  }
+
   @Override
   public Connection getConnection(CommandArguments args) {
     Set<Integer> slots = args.getKeyHashSlots();
@@ -151,13 +156,21 @@ public class ClusterConnectionProvider implements ConnectionProvider {
     // In antirez's redis-rb-cluster implementation, getRandomConnection always return
     // valid connection (able to ping-pong) or exception if all connections are invalid
 
+    return getAnyConnection(null);
+  }
+
+  public Connection getConnection(Duration maxWait) {
+    return getAnyConnection(maxWait);
+  }
+
+  private Connection getAnyConnection(Duration maxWait) {
     List<ConnectionPool> pools = cache.getShuffledPrimaryNodesPool();
 
     JedisException suppressed = null;
     for (ConnectionPool pool : pools) {
       Connection jedis = null;
       try {
-        jedis = pool.getResource();
+        jedis = maxWait != null ? pool.getResource(maxWait) : pool.getResource();
         if (jedis == null) {
           continue;
         }

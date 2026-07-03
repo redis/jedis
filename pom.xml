@@ -626,6 +626,8 @@
 						<include>**/*MockTest.java</include>
 						<include>**/*Increx*.java</include>
 						<include>src/test/jmh/**/*.java</include>
+						<include>**/RedisMultiDbClientSideCacheTest.java</include>
+						<include>**/MultiDbCSCTest.java</include>
 					</includes>
 				</configuration>
 				<executions>

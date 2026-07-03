@@ -597,7 +597,6 @@ public class Connection implements Closeable {
 
   private String getStatusCodeReplyInner() {
     flush();
-    applySoTimeout(currentTimeoutInfo().timeout);
     final byte[] resp = (byte[]) readProtocolWithCheckingBroken();
     if (null == resp) {
       return null;

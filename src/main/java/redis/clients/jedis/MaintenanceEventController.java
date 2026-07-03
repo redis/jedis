@@ -33,7 +33,6 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   private volatile RebindState rebind = RebindState.EXPIRED_STATE;
   /** Synchronous hooks fired once per applied MOVING handoff; see {@link #addHandoffHook}. */
   private final List<Consumer<MaintenanceHandoff>> handoffHooks = new CopyOnWriteArrayList<>();
-  private final WeakHashMap<Connection, Boolean> rebindConnections = new WeakHashMap<>();
   private final TimeoutSupplierChain timeoutSupplier;
 
   private MaintenanceEventController(MaintenanceNotificationsConfig config) {
@@ -108,7 +107,6 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     // will receive a MOVING and then eventually will be marked for discard? If so, we
     // may want to consider a more aggressive approach to mark connections that are connected to
     // the rebinding endpoint for discard.
-    markRebinding(c);
     SocketAddress affectedPeer = c.getRemoteSocketAddress();
     if (affectedPeer == null) {
       return; // receiver socket already closed; no peer to register
@@ -154,17 +152,6 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     }
   }
 
-  /**
-   * IMPORTANT NOTE! for {@link #markRebinding(Connection)} & {@link #isRebinding(Connection)}:
-   * these methods are subject to be replaced with {@link #isAffected(SocketAddress)}.
-   * <p>
-   * Only major concern here is performance since this will be running on hot path of returning
-   * connections to the pool.
-   */
-  private void markRebinding(Connection c) {
-    rebindConnections.put(c, Boolean.TRUE);
-  }
-
   public TimeoutSupplierChain getTimeoutSupplier() {
     return timeoutSupplier;
   }
@@ -172,7 +159,7 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   public boolean isRebinding(Connection c) {
     // map is expected to be empty most of the time, considering the lifecyle of controller and
     // rebinding operations.
-    return !rebindConnections.isEmpty() && rebindConnections.containsKey(c);
+    return rebind.isValid() && rebind.affected.contains(c.getRemoteSocketAddress());
   }
 
   private void fireHandoffHook(MovingEvent e) {

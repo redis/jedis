@@ -39,8 +39,8 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     this.config = config;
     this.maxRelaxedDurationNanos = config.getRelaxedWindowMaxDuration().toNanos();
 
-    TimeoutInfo relaxedTimeoutInfo = new TimeoutInfo(config.relaxedTimeout(),
-        config.relaxedBlockingTimeout());
+    TimeoutInfo relaxedTimeoutInfo = new TimeoutInfo(config.getRelaxedTimeout(),
+        config.getRelaxedBlockingTimeout());
     this.timeoutSupplier = () -> rebind.isValid() ? relaxedTimeoutInfo : null;
   }
 

@@ -68,7 +68,7 @@ public class MaintenanceAwareVisitor implements InitVisitor {
         maintenanceEventListeners);
     connection.addPushConsumer(consumer);
     ExpiringTimeoutSupplier relaxedTimeout = new ExpiringTimeoutSupplier(new TimeoutInfo(
-        maintenanceConfig.relaxedTimeout, maintenanceConfig.relaxedBlockingTimeout));
+        maintenanceConfig.getRelaxedTimeout(), maintenanceConfig.getRelaxedBlockingTimeout()));
     connection.enableRelaxedTimeouts(relaxedTimeout);
     connection.sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
       resolveEndpointType(maintenanceConfig.getEndpointType()));

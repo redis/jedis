@@ -190,6 +190,7 @@ public class Connection implements Closeable {
   protected String version;
   private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
   private AuthXManager authXManager;
+  private boolean isBlocking = false;
   private Set<InitVisitor> initVisitors = new HashSet<>();
   private long expireAt = Long.MAX_VALUE; 
 
@@ -338,7 +339,7 @@ public class Connection implements Closeable {
    * @see #getRelaxedSoTimeout()
    */
   public int getSoTimeout() {
-    return currentTimeoutInfo().timeout;
+    return defaultTimeoutSupplier.getDefaults().timeout;
   }
 
   /**
@@ -351,7 +352,7 @@ public class Connection implements Closeable {
    * @see #getSoTimeout()
    */
   public int getBlockingSoTimeout() {
-    return currentTimeoutInfo().blockingTimeout;
+    return defaultTimeoutSupplier.getDefaults().blockingTimeout;
   }
 
   /**
@@ -372,17 +373,11 @@ public class Connection implements Closeable {
     // TODO: here the issue is this set operation will broke the defaults when executed during a
     // relaxed window.
     defaultTimeoutSupplier.setDefaults(soTimeout, defaultTimeoutSupplier.getDefaults().blockingTimeout);
-    applySoTimeout(currentTimeoutInfo().timeout);
+    applySoTimeout(currentTimeout());
   }
 
-  /**
-   * Resolves the timeout currently in effect. The common case has no relaxed-timeout window open, so
-   * we read the default card directly and avoid the supplier dispatch and the {@code System.nanoTime}
-   * expiry check entirely; the supplier (and its clock) is only consulted while a relaxation window
-   * is active.
-   */
-  private TimeoutInfo currentTimeoutInfo() {
-    return defaultTimeoutSupplier.get();
+  private int currentTimeout() {
+    return isBlocking ? defaultTimeoutSupplier.get().blockingTimeout : defaultTimeoutSupplier.get().timeout;
   }
 
   /**
@@ -421,7 +416,8 @@ public class Connection implements Closeable {
    * @see #isRelaxedTimeoutActive()
    */
   public void setTimeoutInfinite() {
-    applySoTimeout(currentTimeoutInfo().blockingTimeout);
+    isBlocking = true;
+    applySoTimeout(currentTimeout());
   }
 
   /**
@@ -440,7 +436,8 @@ public class Connection implements Closeable {
    * @see #isRelaxedTimeoutActive()
    */
   public void rollbackTimeout() {
-    applySoTimeout(currentTimeoutInfo().timeout);
+    isBlocking = false;
+    applySoTimeout(currentTimeout());
   }
 
   public Object executeCommand(final ProtocolCommand cmd) {
@@ -449,7 +446,7 @@ public class Connection implements Closeable {
 
   public Object executeCommand(final CommandArguments args) {
     sendCommand(args);
-    applySoTimeout(currentTimeoutInfo().timeout);
+    applySoTimeout(currentTimeout());
     return getOneInner();
   }
 
@@ -457,7 +454,7 @@ public class Connection implements Closeable {
     final CommandArguments args = commandObject.getArguments();
     sendCommand(args);
     if (!args.isBlocking()) {
-      applySoTimeout(currentTimeoutInfo().timeout);
+      applySoTimeout(currentTimeout());
       return commandObject.getBuilder().build(getOneInner());
     }
     try {
@@ -520,12 +517,12 @@ public class Connection implements Closeable {
         //
         // if no clientConfig, we use socket timeout to set defaults in the supplier
         if (this.clientConfig != null) {
-          socket.setSoTimeout(currentTimeoutInfo().timeout);
+          socket.setSoTimeout(currentTimeout());
           // Fresh socket: align the applied-timeout cache with the new socket's actual SO_TIMEOUT.
           appliedSoTimeout = socket.getSoTimeout();
         } else {
           defaultTimeoutSupplier.setDefaults(socket.getSoTimeout(), getBlockingSoTimeout());
-          applySoTimeout(currentTimeoutInfo().timeout);
+          applySoTimeout(currentTimeout());
         }
 
 
@@ -608,7 +605,7 @@ public class Connection implements Closeable {
   }
 
   public String getStatusCodeReply() {
-    applySoTimeout(currentTimeoutInfo().timeout);
+    applySoTimeout(currentTimeout());
     return getStatusCodeReplyInner();
   }
 
@@ -623,7 +620,7 @@ public class Connection implements Closeable {
   }
 
   public String getBulkReply() {
-    applySoTimeout(currentTimeoutInfo().timeout);
+    applySoTimeout(currentTimeout());
     final byte[] result = getBinaryBulkReplyInner();
     if (null != result) {
       return encode(result);
@@ -633,7 +630,7 @@ public class Connection implements Closeable {
   }
 
   public byte[] getBinaryBulkReply() {
-    applySoTimeout(currentTimeoutInfo().timeout);
+    applySoTimeout(currentTimeout());
     return getBinaryBulkReplyInner();
   }
 
@@ -648,12 +645,12 @@ public class Connection implements Closeable {
   }
 
   public List<String> getMultiBulkReply() {
-    applySoTimeout(currentTimeoutInfo().timeout);
+    applySoTimeout(currentTimeout());
     return BuilderFactory.STRING_LIST.build(getBinaryMultiBulkReplyInner());
   }
 
   public List<byte[]> getBinaryMultiBulkReply() {
-    applySoTimeout(currentTimeoutInfo().timeout);
+    applySoTimeout(currentTimeout());
     return getBinaryMultiBulkReplyInner();
   }
 
@@ -669,31 +666,31 @@ public class Connection implements Closeable {
   @Deprecated
   @SuppressWarnings("unchecked")
   public List<Object> getUnflushedObjectMultiBulkReply() {
-    applySoTimeout(currentTimeoutInfo().timeout);
+    applySoTimeout(currentTimeout());
     return (List<Object>) readProtocolWithCheckingBroken();
   }
 
   public Object getUnflushedObject() {
-    applySoTimeout(currentTimeoutInfo().timeout);
+    applySoTimeout(currentTimeout());
     return readProtocolWithCheckingBroken();
   }
 
   @SuppressWarnings("unchecked")
   public List<Object> getObjectMultiBulkReply() {
-    applySoTimeout(currentTimeoutInfo().timeout);
+    applySoTimeout(currentTimeout());
     flush();
     return (List<Object>) readProtocolWithCheckingBroken();
   }
 
   @SuppressWarnings("unchecked")
   public List<Long> getIntegerMultiBulkReply() {
-    applySoTimeout(currentTimeoutInfo().timeout);
+    applySoTimeout(currentTimeout());
     flush();
     return (List<Long>) readProtocolWithCheckingBroken();
   }
 
   public Object getOne() {
-    applySoTimeout(currentTimeoutInfo().timeout);
+    applySoTimeout(currentTimeout());
     return getOneInner();
   }
 
@@ -751,7 +748,7 @@ public class Connection implements Closeable {
   }
 
   public List<Object> getMany(final int count) {
-    applySoTimeout(currentTimeoutInfo().timeout);
+    applySoTimeout(currentTimeout());
     return getManyInner(count);
   }
 
@@ -1038,11 +1035,13 @@ public class Connection implements Closeable {
 
   public String select(final int index) {
     sendCommand(Command.SELECT, Protocol.toByteArray(index));
+    applySoTimeout(currentTimeout());
     return getStatusCodeReplyInner();
   }
 
   public boolean ping() {
     sendCommand(Command.PING);
+    applySoTimeout(currentTimeout());
     String status = getStatusCodeReplyInner();
     if (!"PONG".equals(status)) {
       throw new JedisException(status);
@@ -1104,6 +1103,7 @@ public class Connection implements Closeable {
       throw new IllegalStateException("Relaxed timeouts not activated");
     }
     relaxedTimeout.setExpirationTime(expiration);
+    applySoTimeout(currentTimeout());
   }
 
   /**
@@ -1115,6 +1115,7 @@ public class Connection implements Closeable {
       throw new IllegalStateException("Relaxed timeouts not activated");
     }
     relaxedTimeout.setExpirationTime(0);
+    applySoTimeout(currentTimeout());
   }
 
   /** The connected peer's address, or {@code null} if the socket is not (yet) open. */

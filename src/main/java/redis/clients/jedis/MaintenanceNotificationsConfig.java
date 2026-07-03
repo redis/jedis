@@ -7,11 +7,17 @@ public class MaintenanceNotificationsConfig {
   /** Default upper bound on the relaxed-timeout window started by MIGRATING/FAILING_OVER/MOVING. */
   public static final Duration DEFAULT_RELAXED_WINDOW_MAX_DURATION = Duration.ofSeconds(60);
 
-  /** Default per-command socket timeout (ms) applied while a relaxation window is active. */
   public static final int DEFAULT_RELAXED_SOCKET_TIMEOUT_MS = 10_000;
 
-  /** Default relaxed blocking-command timeout (ms): unset, i.e. inherit the configured one. */
-  public static final int DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS = JedisClientConfig.UNSET_TIMEOUT_MS;
+  public static final int DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS = 0;
+
+  private MaintenanceNotificationsConfig(Builder builder) {
+    this.endpointType = builder.endpointType;
+    this.mode = builder.mode;
+    this.relaxedWindowMaxDuration = builder.relaxedWindowMaxDuration;
+    this.relaxedTimeout = builder.relaxedTimeout;
+    this.relaxedBlockingTimeout = builder.relaxedBlockingTimeout;
+  }
 
   /**
    * Endpoint types for maintenance event notifications.
@@ -45,11 +51,11 @@ public class MaintenanceNotificationsConfig {
     ENABLED, DISABLED, AUTO
   }
 
-  EndpointType endpointType = EndpointType.EXTERNAL_IP;
-  Mode mode = Mode.AUTO;
-  Duration relaxedWindowMaxDuration = DEFAULT_RELAXED_WINDOW_MAX_DURATION;
-  int relaxedTimeout = DEFAULT_RELAXED_SOCKET_TIMEOUT_MS;
-  int relaxedBlockingTimeout = DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS;
+  private final EndpointType endpointType;
+  private final Mode mode;
+  private final Duration relaxedWindowMaxDuration;
+  private final int relaxedTimeout;
+  private final int relaxedBlockingTimeout;
 
   public EndpointType getEndpointType() {
     return endpointType;
@@ -77,11 +83,11 @@ public class MaintenanceNotificationsConfig {
     return mode == Mode.ENABLED || mode == Mode.AUTO;
   }
 
-  public int relaxedTimeout() {
+  public int getRelaxedTimeout() {
     return relaxedTimeout;
   }
 
-  public int relaxedBlockingTimeout() {
+  public int getRelaxedBlockingTimeout() {
     return relaxedBlockingTimeout;
   }
 
@@ -135,13 +141,7 @@ public class MaintenanceNotificationsConfig {
     }
 
     public MaintenanceNotificationsConfig build() {
-      MaintenanceNotificationsConfig config = new MaintenanceNotificationsConfig();
-      config.endpointType = this.endpointType;
-      config.mode = this.mode;
-      config.relaxedWindowMaxDuration = this.relaxedWindowMaxDuration;
-      config.relaxedTimeout = this.relaxedTimeout;
-      config.relaxedBlockingTimeout = this.relaxedBlockingTimeout;
-      return config;
+      return new MaintenanceNotificationsConfig(this);
     }
   }
 

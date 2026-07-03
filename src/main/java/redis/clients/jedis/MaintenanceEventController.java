@@ -38,7 +38,7 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   private MaintenanceEventController(MaintenanceNotificationsConfig config) {
     this.config = config;
     this.maxRelaxedDurationNanos = config.getRelaxedWindowMaxDuration().toNanos();
-    
+
     TimeoutInfo relaxedTimeoutInfo = new TimeoutInfo(config.relaxedTimeout(),
         config.relaxedBlockingTimeout());
     this.timeoutSupplier = () -> rebind.isValid() ? relaxedTimeoutInfo : null;
@@ -104,12 +104,16 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     // will receive a MOVING and then eventually will be marked for discard? If so, we
     // may want to consider a more aggressive approach to mark connections that are connected to
     // the rebinding endpoint for discard.
+
+    long deadline = NanoClock.INSTANCE.getAsLong() + ttlNanos;
+    // HERE! we can control if an immediate gracefull drop needed,, or we need to delay in case
+    // MOVING msg suggests a future renewal.
+    c.expireAt(deadline);
     SocketAddress affectedPeer = c.getRemoteSocketAddress();
     if (affectedPeer == null) {
       return; // receiver socket already closed; no peer to register
     }
     SocketAddress target = new InetSocketAddress(e.target.getHost(), e.target.getPort());
-    long deadline = NanoClock.INSTANCE.getAsLong() + ttlNanos;
 
     while (true) {
       RebindState cur = rebind;

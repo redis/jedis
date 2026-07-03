@@ -11,9 +11,9 @@ class TimeoutSupplierDecorator implements TimeoutSupplierChain {
 
   public TimeoutInfo get() {
     if (override != null) {
-      TimeoutInfo info = override.get();
-      if (info != null) {
-        return info;
+      TimeoutInfo fromOverride = override.get();
+      if (fromOverride != null) {
+        return fromOverride;
       }
     }
     return getOwnInfo();

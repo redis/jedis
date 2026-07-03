@@ -10,8 +10,10 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.atomic.AtomicReference;
@@ -41,6 +43,7 @@ public class Connection implements Closeable {
     private MaintenanceNotificationsConfig maintenanceConfig;
     private final List<MaintenanceEventListener> maintenanceEventListeners = new ArrayList<>();
     private Supplier<TimeoutInfo> customTimeoutSupplier;
+    private final Set<InitVisitor> visitors = new HashSet<>();
 
     public Builder socketFactory(JedisSocketFactory socketFactory) {
       this.socketFactory = socketFactory;
@@ -90,6 +93,15 @@ public class Connection implements Closeable {
 
     Supplier<TimeoutInfo> getCustomTimeoutSupplier() {
       return customTimeoutSupplier;
+    }
+
+    Builder addVisitor(InitVisitor visitor) {
+      this.visitors.add(visitor);
+      return this;
+    }
+
+    Set<InitVisitor> getVisitors() {
+      return visitors;
     }
 
     public Connection build() {
@@ -178,12 +190,8 @@ public class Connection implements Closeable {
   protected String version;
   private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
   private AuthXManager authXManager;
-
-  /**
-   * Maintenance configuration driving the {@code CLIENT MAINT_NOTIFICATIONS} handshake; {@code null}
-   * when non-pooled or maintenance disabled.
-   */
-  private MaintenanceNotificationsConfig maintenanceConfig;
+  private Set<InitVisitor> initVisitors = new HashSet<>();
+  private long expireAt = Long.MAX_VALUE; 
 
   /** Listeners notified synchronously of this connection's maintenance events (pool-injected). */
   private final List<MaintenanceEventListener> maintenanceEventListeners = new CopyOnWriteArrayList<>();
@@ -222,14 +230,16 @@ public class Connection implements Closeable {
   public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
     this.socketFactory = socketFactory;
     this.clientConfig = clientConfig;
+
     initializeFromClientConfig(clientConfig);
   }
 
   protected Connection(Builder builder) {
     this.socketFactory = builder.getSocketFactory();
     this.clientConfig = builder.getClientConfig();
-    this.maintenanceConfig = builder.getMaintenanceConfig(); // pool-injected (may be null)
     this.maintenanceEventListeners.addAll(builder.getMaintenanceEventListeners());
+    this.initVisitors = builder.getVisitors();
+
     if (builder.customTimeoutSupplier != null) {
       defaultTimeoutSupplier.overrideWith(new TimeoutSupplierDecorator(null) {
         @Override
@@ -548,7 +558,7 @@ public class Connection implements Closeable {
     if (this.memberOf != null) {
       ConnectionPool pool = this.memberOf;
       this.memberOf = null;
-      if (isBroken()) {
+      if (isBroken() || expireAt < NanoClock.INSTANCE.getAsLong()) {
         pool.returnBrokenResource(this);
       } else {
         pool.returnResource(this);
@@ -857,7 +867,9 @@ public class Connection implements Closeable {
       }
       getManyInner(fireAndForgetMsg.size());
 
-      enableMaintenanceNotifications();
+      for (InitVisitor visitor : initVisitors) {
+        visitor.visit(this);
+      }
 
       int dbIndex = config.getDatabase();
       if (dbIndex > 0) {
@@ -871,81 +883,6 @@ public class Connection implements Closeable {
         // the first exception 'je' will be thrown
       }
       throw je;
-    }
-  }
-
-  /**
-   * Activates server-side maintenance notifications on this connection so the client can react to
-   * cluster maintenance events ({@code MIGRATING}, {@code MIGRATED}, {@code FAILING_OVER},
-   * {@code FAILED_OVER}, {@code MOVING}). Each parsed event is dispatched synchronously to the
-   * registered {@link MaintenanceEventListener}s.
-   *
-   * <p>Gated by {@link #maintenanceConfig}, set by the builder:
-   *
-   * <ul>
-   *   <li>{@code null} or {@code DISABLED} — maintenance off; no-op.</li>
-   *   <li>negotiated protocol is not RESP3 — {@code ENABLED}: throws; {@code AUTO}: debug-log
-   *       and return.</li>
-   *   <li>server rejects {@code CLIENT MAINT_NOTIFICATIONS ON} — same strict/lax split.</li>
-   * </ul>
-   *
-   * @throws JedisConnectionException in {@code ENABLED} mode when a prerequisite is not met or the
-   *           server rejects the subscription
-   */
-  private void enableMaintenanceNotifications() {
-    if (maintenanceConfig == null
-        || maintenanceConfig.getMode() == MaintenanceNotificationsConfig.Mode.DISABLED) {
-      return;
-    }
-    boolean strict = maintenanceConfig.getMode() == MaintenanceNotificationsConfig.Mode.ENABLED;
-
-    // Maintenance push frames require RESP3.
-    if (protocol != RedisProtocol.RESP3) {
-      String reason = "RESP3 is required but the established protocol is "
-          + (protocol == null ? "RESP2" : protocol);
-      if (strict) {
-        throw new JedisConnectionException("Maintenance notifications: " + reason);
-      }
-      logger.debug("Maintenance notifications disabled: {}.", reason);
-      return;
-    }
-
-    // The server must accept CLIENT MAINT_NOTIFICATIONS ON. Pre-register the consumer so a push
-    // frame the server emits immediately on accepting the subscription cannot race ahead.
-    MaintenanceEventConsumer consumer = new MaintenanceEventConsumer(this,
-        maintenanceEventListeners);
-    addPushConsumer(consumer);
-    relaxedTimeout = new ExpiringTimeoutSupplier(new TimeoutInfo(maintenanceConfig.relaxedTimeout,
-        maintenanceConfig.relaxedBlockingTimeout));
-    sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
-      resolveEndpointType(maintenanceConfig.getEndpointType()));
-    try {
-      getStatusCodeReplyInner();
-      defaultTimeoutSupplier.overrideWith(relaxedTimeout);
-    } catch (JedisDataException e) {
-      removePushConsumer(consumer);
-      if (strict) {
-        throw new JedisConnectionException(
-            "Maintenance notifications: events not supported on server", e);
-      }
-      logger.debug(
-        "Maintenance notifications disabled: server rejected CLIENT MAINT_NOTIFICATIONS ({}).",
-        e.getMessage());
-    }
-  }
-
-  private String resolveEndpointType(MaintenanceNotificationsConfig.EndpointType endpointType) {
-    switch (endpointType) {
-      case INTERNAL_IP:
-        return "internal-ip";
-      case INTERNAL_FQDN:
-        return "internal-fqdn";
-      case EXTERNAL_IP:
-        return "external-ip";
-      case EXTERNAL_FQDN:
-        return "external-fqdn";
-      default:
-        throw new JedisException("Unknown endpoint type: " + endpointType);
     }
   }
 
@@ -1140,6 +1077,18 @@ public class Connection implements Closeable {
     this.pushConsumers.remove(consumer);
   }
 
+  void expireAt(long expireAt) {
+    this.expireAt = expireAt;
+  }
+
+  void enableRelaxedTimeouts(ExpiringTimeoutSupplier relaxedTimeout) {
+    if (this.relaxedTimeout != null) {
+      throw new IllegalStateException("Relaxed timeouts already activated");
+    }
+    this.relaxedTimeout = relaxedTimeout;
+    this.defaultTimeoutSupplier.overrideWith(relaxedTimeout);
+  }
+
   /**
    * Switches this connection to relaxed timeouts for at most {@code period}. While the window is
    * open, commands use {@link #getRelaxedSoTimeout()} and {@link #getRelaxedBlockingSoTimeout()}
@@ -1150,7 +1099,10 @@ public class Connection implements Closeable {
    * @param period maximum duration of the relaxation window
    */
   @Experimental
-  public void relaxTimeouts(long expiration) {
+  void relaxTimeouts(long expiration) {
+    if (this.relaxedTimeout == null) {
+      throw new IllegalStateException("Relaxed timeouts not activated");
+    }
     relaxedTimeout.setExpirationTime(expiration);
   }
 
@@ -1158,7 +1110,10 @@ public class Connection implements Closeable {
    * Clears the per-receiver relaxation deadline and eagerly realigns the socket (cache-checked).
    */
   @Experimental
-  public void resetRelaxedTimeouts() {
+  void resetRelaxedTimeouts() {
+    if (this.relaxedTimeout == null) {
+      throw new IllegalStateException("Relaxed timeouts not activated");
+    }
     relaxedTimeout.setExpirationTime(0);
   }
 

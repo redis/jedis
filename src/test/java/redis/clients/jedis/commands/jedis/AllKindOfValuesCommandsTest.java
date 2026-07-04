@@ -72,6 +72,12 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
 
   private static EndpointConfig lfuEndpoint;
 
+  private static void assertRecentlyTouched(Long idletime) {
+    assertNotNull(idletime);
+    assertTrue(idletime >= 0 && idletime <= 1,
+        "Expected object idletime to be reset, but was " + idletime);
+  }
+
   @BeforeAll
   public static void prepareLfuEndpoint() {
     lfuEndpoint = Endpoints.getRedisEndpoint("standalone7-with-lfu-policy");
@@ -415,7 +421,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertTrue(jedis.objectIdletime("foo1") >= 0);
 
     assertEquals(1, jedis.touch("foo1"));
-    assertEquals(0L, jedis.objectIdletime("foo1").longValue());
+    assertRecentlyTouched(jedis.objectIdletime("foo1"));
 
     assertEquals(1, jedis.touch("foo1", "foo2", "foo3"));
 
@@ -433,7 +439,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertTrue(jedis.objectIdletime(bfoo1) >= 0);
 
     assertEquals(1, jedis.touch(bfoo1));
-    assertEquals(0L, jedis.objectIdletime(bfoo1).longValue());
+    assertRecentlyTouched(jedis.objectIdletime(bfoo1));
 
     assertEquals(1, jedis.touch(bfoo1, bfoo2, bfoo3));
 

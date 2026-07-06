@@ -556,7 +556,12 @@ public class Connection implements Closeable {
 
     try {
       return protocolRead(inputStream, pushConsumers);
-    } catch (JedisConnectionException exc) {
+    } catch (JedisDataException exc) {
+      // Redis error reply was fully parsed; the stream is aligned and the connection reusable.
+      throw exc;
+    } catch (RuntimeException exc) {
+      // Transport failures (JedisConnectionException) and any other unexpected failure mid-read
+      // leave the stream position indeterminate.
       throw markBroken(exc);
     } catch (Error err) {
       throw markBroken(err);
@@ -574,7 +579,7 @@ public class Connection implements Closeable {
       }
     } catch (IOException e) {
       throw markBroken(new JedisConnectionException("Failed to check buffer on connection.", e));
-    } catch (JedisConnectionException exc) {
+    } catch (RuntimeException exc) {
       throw markBroken(exc);
     } catch (Error err) {
       throw markBroken(err);

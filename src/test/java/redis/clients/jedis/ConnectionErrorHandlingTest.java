@@ -846,14 +846,14 @@ public class ConnectionErrorHandlingTest {
   }
 
   @Test
-  public void runtimeExceptionDuringProtocolReadIsNotTreatedAsBrokenConnection() {
-    RuntimeException expected = new IllegalStateException("builder bug");
+  public void runtimeExceptionDuringProtocolReadMarksConnectionBroken() {
+    RuntimeException expected = new IllegalStateException("decoder bug");
     try (Connection conn = new ProtocolReadRuntimeExceptionConnection(expected)) {
       RuntimeException thrown = assertThrows(RuntimeException.class,
         conn::readProtocolWithCheckingBroken);
 
       assertSame(expected, thrown);
-      assertFalse(conn.isBroken());
+      assertTrue(conn.isBroken());
     }
   }
 
@@ -976,7 +976,7 @@ public class ConnectionErrorHandlingTest {
   }
 
   @Test
-  public void runtimeExceptionDuringPushReadIsNotTreatedAsBrokenConnection() {
+  public void runtimeExceptionDuringPushReadMarksConnectionBroken() {
     RuntimeException expected = new IllegalStateException("consumer bug");
     try (Connection conn = new PushReadRuntimeExceptionConnection(expected)) {
       conn.connect();
@@ -985,7 +985,7 @@ public class ConnectionErrorHandlingTest {
         conn::readPushesWithCheckingBroken);
 
       assertSame(expected, thrown);
-      assertFalse(conn.isBroken());
+      assertTrue(conn.isBroken());
     }
   }
 

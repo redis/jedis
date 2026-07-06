@@ -119,13 +119,13 @@ public class MaintenanceNotificationsConfig {
       return this;
     }
 
-    public Builder relaxedTimeout(int timeout) {
-      this.relaxedTimeout = timeout;
+    public Builder relaxedTimeout(int millis) {
+      this.relaxedTimeout = millis;
       return this;
     }
 
-    public Builder relaxedBlockingTimeout(int blockingTimeout) {
-      this.relaxedBlockingTimeout = blockingTimeout;
+    public Builder relaxedBlockingTimeout(int millis) {
+      this.relaxedBlockingTimeout = millis;
       return this;
     }
 

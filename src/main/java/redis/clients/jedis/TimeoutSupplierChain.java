@@ -11,9 +11,9 @@ interface TimeoutSupplierChain {
     final int timeout;
     final int blockingTimeout;
 
-    TimeoutInfo(int timeout, int blockingTimeout) {
-      this.timeout = timeout;
-      this.blockingTimeout = blockingTimeout;
+    TimeoutInfo(int timeoutMillis, int blockingTimeoutMillis) {
+      this.timeout = timeoutMillis;
+      this.blockingTimeout = blockingTimeoutMillis;
     }
   }
 }

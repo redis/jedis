@@ -365,12 +365,12 @@ public class Connection implements Closeable {
    * the relaxed value remains in effect on the socket; the value configured here takes effect
    * once the relaxation window closes.</p>
    *
-   * @param soTimeout the timeout value in milliseconds; a value of {@code 0} means infinite timeout
+   * @param millis the timeout value in milliseconds; a value of {@code 0} means infinite timeout
    * @throws JedisConnectionException if the underlying socket fails to apply the timeout
    * @see #isRelaxedTimeoutActive()
    */
-  public void setSoTimeout(int soTimeout) {
-    defaultTimeoutSupplier.setDefaults(soTimeout, defaultTimeoutSupplier.getDefaults().blockingTimeout);
+  public void setSoTimeout(int millis) {
+    defaultTimeoutSupplier.setDefaults(millis, defaultTimeoutSupplier.getDefaults().blockingTimeout);
     applySoTimeout(currentTimeout());
   }
 

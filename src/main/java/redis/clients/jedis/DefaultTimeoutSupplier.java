@@ -19,8 +19,8 @@ class DefaultTimeoutSupplier extends TimeoutSupplierDecorator {
     return ownInfo;
   }
 
-  void setDefaults(int timeout, int blockingTimeout) {
-    ownInfo = new TimeoutInfo(timeout, blockingTimeout);
+  void setDefaults(int timeoutMillis, int blockingTimeoutMillis) {
+    ownInfo = new TimeoutInfo(timeoutMillis, blockingTimeoutMillis);
   }
 
   TimeoutInfo getDefaults() {

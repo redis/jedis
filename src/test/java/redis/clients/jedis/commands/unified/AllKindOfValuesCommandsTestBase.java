@@ -70,12 +70,6 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   protected final byte[] bex = { 0x65, 0x78 };
   final int expireSeconds = 2;
 
-  private static void assertRecentlyTouched(Long idletime) {
-    assertNotNull(idletime);
-    assertTrue(idletime >= 0 && idletime <= 1,
-        "Expected object idletime to be reset, but was " + idletime);
-  }
-
   public AllKindOfValuesCommandsTestBase(RedisProtocol protocol) {
     super(protocol);
   }
@@ -384,7 +378,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     assertTrue(jedis.objectIdletime("foo1") >= 0);
 
     assertEquals(1, jedis.touch("foo1"));
-    assertRecentlyTouched(jedis.objectIdletime("foo1"));
+    assertEquals(0L, jedis.objectIdletime("foo1").longValue());
 
     assertEquals(1, jedis.touch("foo1", "foo2", "foo3"));
 
@@ -402,7 +396,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     assertTrue(jedis.objectIdletime(bfoo1) >= 0);
 
     assertEquals(1, jedis.touch(bfoo1));
-    assertRecentlyTouched(jedis.objectIdletime(bfoo1));
+    assertEquals(0L, jedis.objectIdletime(bfoo1).longValue());
 
     assertEquals(1, jedis.touch(bfoo1, bfoo2, bfoo3));
 

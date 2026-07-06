@@ -127,6 +127,7 @@ public class Connection implements Closeable {
   private int soTimeout = 0;
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
+  private volatile Throwable brokenCause = null;
   private boolean strValActive;
   private String strVal;
   protected String server;
@@ -318,7 +319,7 @@ public class Connection implements Closeable {
   public void sendCommand(final CommandArguments args) {
     connect();
     if (broken) {
-      throw new JedisConnectionException("Attempting to write to a broken connection.");
+      throw new JedisConnectionException("Attempting to write to a broken connection.", brokenCause);
     }
 
     try {
@@ -443,18 +444,26 @@ public class Connection implements Closeable {
   }
 
   private JedisConnectionException markBroken(JedisConnectionException ex) {
-    setBroken();
+    setBroken(ex);
     return ex;
   }
 
   private RuntimeException markBroken(RuntimeException ex) {
-    setBroken();
+    setBroken(ex);
     return ex;
   }
 
   private Error markBroken(Error err) {
-    setBroken();
+    setBroken(err);
     return err;
+  }
+
+  private void setBroken(Throwable cause) {
+    if (!broken) {
+      // first cause wins — that is the root failure later guard exceptions should point at
+      brokenCause = cause;
+    }
+    setBroken();
   }
 
   public String getStatusCodeReply() {
@@ -528,7 +537,7 @@ public class Connection implements Closeable {
 
   protected void flush() {
     if (broken) {
-      throw new JedisConnectionException("Attempting to write to a broken connection.");
+      throw new JedisConnectionException("Attempting to write to a broken connection.", brokenCause);
     }
 
     try {
@@ -551,7 +560,7 @@ public class Connection implements Closeable {
 
   protected Object readProtocolWithCheckingBroken() {
     if (broken) {
-      throw new JedisConnectionException("Attempting to read from a broken connection.");
+      throw new JedisConnectionException("Attempting to read from a broken connection.", brokenCause);
     }
 
     try {
@@ -570,7 +579,7 @@ public class Connection implements Closeable {
 
   protected void readPushesWithCheckingBroken() {
     if (broken) {
-      throw new JedisConnectionException("Attempting to read from a broken connection.");
+      throw new JedisConnectionException("Attempting to read from a broken connection.", brokenCause);
     }
 
     try {

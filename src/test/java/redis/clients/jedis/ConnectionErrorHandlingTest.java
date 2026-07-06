@@ -69,6 +69,38 @@ public class ConnectionErrorHandlingTest {
   }
 
   @Test
+  public void writeGuardOnBrokenConnectionCarriesOriginalBreakingCause() {
+    RuntimeException expected = new IllegalStateException("raw argument failed");
+    try (Connection conn = new Connection(
+        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()))) {
+      CommandArguments args = new CommandArguments(Command.SET).add(new RuntimeRawable(expected));
+      assertThrows(RuntimeException.class, () -> conn.sendCommand(args));
+
+      JedisConnectionException guard = assertThrows(JedisConnectionException.class,
+        () -> conn.sendCommand(new CommandArguments(Command.PING)));
+
+      assertEquals("Attempting to write to a broken connection.", guard.getMessage());
+      assertSame(expected, guard.getCause());
+    }
+  }
+
+  @Test
+  public void readGuardOnBrokenConnectionCarriesOriginalBreakingCause() {
+    RuntimeException expected = new IllegalStateException("raw argument failed");
+    try (Connection conn = new Connection(
+        fakeSocketFactory(new byte[0], new ByteArrayOutputStream()))) {
+      CommandArguments args = new CommandArguments(Command.SET).add(new RuntimeRawable(expected));
+      assertThrows(RuntimeException.class, () -> conn.sendCommand(args));
+
+      JedisConnectionException guard = assertThrows(JedisConnectionException.class,
+        conn::readProtocolWithCheckingBroken);
+
+      assertEquals("Attempting to read from a broken connection.", guard.getMessage());
+      assertSame(expected, guard.getCause());
+    }
+  }
+
+  @Test
   public void nullRawCommandArgumentMarksConnectionBroken() {
     try (Connection conn = new Connection(
         fakeSocketFactory(new byte[0], new ByteArrayOutputStream()))) {

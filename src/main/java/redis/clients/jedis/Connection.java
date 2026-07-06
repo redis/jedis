@@ -370,8 +370,6 @@ public class Connection implements Closeable {
    * @see #isRelaxedTimeoutActive()
    */
   public void setSoTimeout(int soTimeout) {
-    // TODO: here the issue is this set operation will broke the defaults when executed during a
-    // relaxed window.
     defaultTimeoutSupplier.setDefaults(soTimeout, defaultTimeoutSupplier.getDefaults().blockingTimeout);
     applySoTimeout(currentTimeout());
   }
@@ -641,6 +639,7 @@ public class Connection implements Closeable {
 
   public Long getIntegerReply() {
     flush();
+    applySoTimeout(currentTimeout());
     return (Long) readProtocolWithCheckingBroken();
   }
 
@@ -1080,7 +1079,7 @@ public class Connection implements Closeable {
     this.expireAt = expireAt;
   }
 
-  void enableRelaxedTimeouts(ExpiringTimeoutSupplier relaxedTimeout) {
+  void enableTimeoutRelaxing(ExpiringTimeoutSupplier relaxedTimeout) {
     if (this.relaxedTimeout != null) {
       throw new IllegalStateException("Relaxed timeouts already activated");
     }

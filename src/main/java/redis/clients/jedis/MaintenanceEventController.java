@@ -83,9 +83,10 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     return (rebind.isValid() && rebind.affected.contains(resolved)) ? rebind.target : null;
   }
 
-  /** True iff {@code peer} is one of the active rebind's affected sources. */
-  public boolean isAffected(SocketAddress peer) {
-    return rebind.isValid() && rebind.affected.contains(peer);
+  public boolean isAffected(Connection c) {
+    // map is expected to be empty most of the time, considering the lifecyle of controller and
+    // rebinding operations.
+    return rebind.isValid() && rebind.affected.contains(c.getRemoteSocketAddress());
   }
 
   /** True iff there is an active MOVING rebind window in the pool right now. */
@@ -104,6 +105,15 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     // will receive a MOVING and then eventually will be marked for discard? If so, we
     // may want to consider a more aggressive approach to mark connections that are connected to
     // the rebinding endpoint for discard.
+
+    // UPDATE: we have two different spots that causes connection to be dropped. One is setting
+    // expireAt for connections that received MOVING event, and the other is when a connection is
+    // returned to the pool, we check if it is connected to a rebinding endpoint(isAffected) and if
+    // so, we drop it. So we are covering for both cases.
+
+    // IMPORTANT: in case we like to delay the expiration since NONE as new target may be sent,
+    // dropping the connections immediately just by relying isAffected would be an issue, and cause
+    // immediate drops while it is not supposed to be.
 
     long deadline = NanoClock.INSTANCE.getAsLong() + ttlNanos;
     // HERE! we can control if an immediate gracefull drop needed,, or we need to delay in case
@@ -155,12 +165,6 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
 
   public Supplier<TimeoutInfo> getTimeoutSupplier() {
     return timeoutSupplier;
-  }
-
-  public boolean isRebinding(Connection c) {
-    // map is expected to be empty most of the time, considering the lifecyle of controller and
-    // rebinding operations.
-    return rebind.isValid() && rebind.affected.contains(c.getRemoteSocketAddress());
   }
 
   private void fireHandoffHook(MovingEvent e) {

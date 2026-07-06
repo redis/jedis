@@ -20,22 +20,6 @@ public class MaintenanceAwareVisitor implements InitVisitor {
     this.builder = builder;
   }
 
-  /**
-   * Activates server-side maintenance notifications on this connection so the client can react to
-   * cluster maintenance events ({@code MIGRATING}, {@code MIGRATED}, {@code FAILING_OVER},
-   * {@code FAILED_OVER}, {@code MOVING}). Each parsed event is dispatched synchronously to the
-   * registered {@link MaintenanceEventListener}s.
-   * <p>
-   * Gated by {@link #maintenanceConfig}, set by the builder:
-   * <ul>
-   * <li>{@code null} or {@code DISABLED} — maintenance off; no-op.</li>
-   * <li>negotiated protocol is not RESP3 — {@code ENABLED}: throws; {@code AUTO}: debug-log and
-   * return.</li>
-   * <li>server rejects {@code CLIENT MAINT_NOTIFICATIONS ON} — same strict/lax split.</li>
-   * </ul>
-   * @throws JedisConnectionException in {@code ENABLED} mode when a prerequisite is not met or the
-   *           server rejects the subscription
-   */
   @Override
   public void visit(Connection connection) {
     Logger logger = Connection.logger;
@@ -69,12 +53,11 @@ public class MaintenanceAwareVisitor implements InitVisitor {
     connection.addPushConsumer(consumer);
     ExpiringTimeoutSupplier relaxedTimeout = new ExpiringTimeoutSupplier(new TimeoutInfo(
         maintenanceConfig.getRelaxedTimeout(), maintenanceConfig.getRelaxedBlockingTimeout()));
-    connection.enableRelaxedTimeouts(relaxedTimeout);
+    connection.enableTimeoutRelaxing(relaxedTimeout);
     connection.sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
       resolveEndpointType(maintenanceConfig.getEndpointType()));
     try {
       connection.getStatusCodeReply();
-      connection.relaxTimeouts(0);
     } catch (JedisDataException e) {
       connection.removePushConsumer(consumer);
       if (strict) {

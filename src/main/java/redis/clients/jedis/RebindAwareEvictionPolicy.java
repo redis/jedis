@@ -25,8 +25,7 @@ final class RebindAwareEvictionPolicy implements EvictionPolicy<Connection> {
 
   @Override
   public boolean evict(EvictionConfig config, PooledObject<Connection> underTest, int idleCount) {
-    SocketAddress peer = underTest.getObject().getRemoteSocketAddress();
-    if (peer != null && controller.isAffected(peer)) {
+    if (controller.isAffected(underTest.getObject())) {
       return true;
     }
     return delegate.evict(config, underTest, idleCount);

@@ -85,7 +85,7 @@ public class ConnectionPool extends Pool<Connection> {
       setEvictionPolicy(new RebindAwareEvictionPolicy(controller, getEvictionPolicy()));
       controller.addHandoffHook(handoff -> evictQuietly());
       returnHook = c -> {
-        if (controller.isRebinding(c)) {
+        if (controller.isAffected(c)) {
           super.returnBrokenResource(c);
         } else {
           super.returnResource(c);

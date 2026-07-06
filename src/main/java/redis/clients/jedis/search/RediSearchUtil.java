@@ -78,10 +78,10 @@ public class RediSearchUtil {
   }
 
   private static final Set<Character> ESCAPE_CHARS = new HashSet<>(Arrays.asList(//
-      ',', '.', '<', '>', '{', '}', '[', //
-      ']', '"', '\'', ':', ';', '!', '@', //
-      '#', '$', '%', '^', '&', '*', '(', //
-      ')', '-', '+', '=', '~', '|' //
+      '\\', ',', '.', '<', '>', '{', '}', //
+      '[', ']', '"', '\'', ':', ';', '!', //
+      '@', '#', '$', '%', '^', '&', '*', //
+      '(', ')', '-', '+', '=', '~', '|' //
   ));
 
   public static String escape(String text) {

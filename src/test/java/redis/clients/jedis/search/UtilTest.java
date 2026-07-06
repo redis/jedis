@@ -19,6 +19,20 @@ public class UtilTest {
   }
 
   @Test
+  public void escapeEscapesBackslash() {
+    // the escape character itself must be escaped, otherwise a value's own
+    // backslash consumes the backslash the escaper prepends to the next operator
+    assertEquals("\\\\", RediSearchUtil.escape("\\"));
+    assertEquals("a\\\\b", RediSearchUtil.escape("a\\b"));
+  }
+
+  @Test
+  public void escapeQueryKeepsOperatorInert() {
+    // '|' (union) must stay literal even when the value starts with a backslash
+    assertEquals("\\\\\\|evil", RediSearchUtil.escapeQuery("\\|evil"));
+  }
+
+  @Test
   public void getSchemaFieldName() {
     SchemaField field = NumericField.of("$.num").as("num");
 

@@ -78,10 +78,10 @@ public class RediSearchUtil {
   }
 
   private static final Set<Character> ESCAPE_CHARS = new HashSet<>(Arrays.asList(//
-      '\\', ',', '.', '<', '>', '{', '}', //
-      '[', ']', '"', '\'', ':', ';', '!', //
-      '@', '#', '$', '%', '^', '&', '*', //
-      '(', ')', '-', '+', '=', '~', '|' //
+      ',', '.', '<', '>', '{', '}', '[', //
+      ']', '"', '\'', ':', ';', '!', '@', //
+      '#', '$', '%', '^', '&', '*', '(', //
+      ')', '-', '+', '=', '~', '|' //
   ));
 
   public static String escape(String text) {
@@ -98,7 +98,9 @@ public class RediSearchUtil {
     StringBuilder sb = new StringBuilder();
     for (char ch : chars) {
       if (ESCAPE_CHARS.contains(ch)
-          || (querying && ch == ' ')) {
+          // a backslash in the input would otherwise consume the escape prepended
+          // to the next special character, reactivating that query operator
+          || (querying && (ch == ' ' || ch == '\\'))) {
         sb.append("\\");
       }
       sb.append(ch);

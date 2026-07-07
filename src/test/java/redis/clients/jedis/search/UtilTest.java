@@ -19,11 +19,13 @@ public class UtilTest {
   }
 
   @Test
-  public void escapeEscapesBackslash() {
-    // the escape character itself must be escaped, otherwise a value's own
-    // backslash consumes the backslash the escaper prepends to the next operator
-    assertEquals("\\\\", RediSearchUtil.escape("\\"));
-    assertEquals("a\\\\b", RediSearchUtil.escape("a\\b"));
+  public void escapeQueryEscapesBackslash() {
+    // in a query the escape character itself must be escaped, otherwise a value's
+    // own backslash consumes the backslash the escaper prepends to the next operator
+    assertEquals("\\\\", RediSearchUtil.escapeQuery("\\"));
+    assertEquals("a\\\\b", RediSearchUtil.escapeQuery("a\\b"));
+    // the indexing path is intentionally unchanged
+    assertEquals("\\", RediSearchUtil.escape("\\"));
   }
 
   @Test

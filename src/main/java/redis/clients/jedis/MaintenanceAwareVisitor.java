@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -47,6 +48,14 @@ public class MaintenanceAwareVisitor implements InitVisitor {
       }
       logger.debug("Maintenance notifications disabled: {}.", reason);
       return;
+    }
+
+    // The controller is shared across the pool, so only register it once per connection if it is
+    // missing in the provided list of listeners. The controller is the source of truth for the
+    // pool-wide state, so it must be present in the list of listeners to receive events.
+    if (!maintenanceEventListeners.contains(controller)) {
+      maintenanceEventListeners = new ArrayList<>(maintenanceEventListeners);
+      maintenanceEventListeners.add(controller);
     }
 
     // The server must accept CLIENT MAINT_NOTIFICATIONS ON. Pre-register the consumer so a

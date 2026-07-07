@@ -11,7 +11,9 @@ import static org.mockito.Mockito.mock;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -32,7 +34,7 @@ public class MaintenanceEventConsumerTest {
   public void dispatchesValidEventToAllListenersThenDrops() {
     RecordingListener a = new RecordingListener();
     RecordingListener b = new RecordingListener();
-    PushConsumerContext ctx = consume(Arrays.asList(a, b),
+    PushConsumerContext ctx = consume(new HashSet<>(Arrays.asList(a, b)),
       push(type("MOVING"), 30L, 15L, bytes("new-host:6380")));
 
     assertTrue(ctx.shouldDrop());
@@ -86,7 +88,7 @@ public class MaintenanceEventConsumerTest {
       }
     };
     MaintenanceEventConsumer consumer = new MaintenanceEventConsumer(connection,
-        Collections.singletonList(boom));
+        Collections.singleton(boom));
     PushConsumerContext ctx = new PushConsumerContext(push(type("MOVING"), 30L, 15L, bytes("h:1")));
 
     assertThrows(IllegalStateException.class, () -> consumer.handle(ctx));
@@ -94,13 +96,13 @@ public class MaintenanceEventConsumerTest {
 
   private void assertCallback(String expected, PushMessage msg) {
     RecordingListener l = new RecordingListener();
-    consume(Collections.singletonList(l), msg);
+    consume(Collections.singleton(l), msg);
     assertEquals(1, l.calls.size());
     assertEquals(expected, l.calls.get(0).callback);
     assertSame(connection, l.calls.get(0).connection);
   }
 
-  private PushConsumerContext consume(List<MaintenanceEventListener> listeners, PushMessage msg) {
+  private PushConsumerContext consume(Set<MaintenanceEventListener> listeners, PushMessage msg) {
     PushConsumerContext ctx = new PushConsumerContext(msg);
     new MaintenanceEventConsumer(connection, listeners).handle(ctx);
     return ctx;

@@ -41,7 +41,6 @@ public class Connection implements Closeable {
     private JedisSocketFactory socketFactory;
     private JedisClientConfig clientConfig;
     private MaintenanceNotificationsConfig maintenanceConfig;
-    private final List<MaintenanceEventListener> maintenanceEventListeners = new ArrayList<>();
     private final Set<InitVisitor> visitors = new HashSet<>();
 
     public Builder socketFactory(JedisSocketFactory socketFactory) {
@@ -60,12 +59,6 @@ public class Connection implements Closeable {
      */
     public Builder maintenanceConfig(MaintenanceNotificationsConfig maintenanceConfig) {
       this.maintenanceConfig = maintenanceConfig;
-      return this;
-    }
-
-    /** Registers a listener notified synchronously of this connection's maintenance events. */
-    Builder addMaintenanceEventListener(MaintenanceEventListener listener) {
-      this.maintenanceEventListeners.add(listener);
       return this;
     }
 

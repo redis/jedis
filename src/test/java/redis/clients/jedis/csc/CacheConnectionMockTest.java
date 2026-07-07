@@ -22,7 +22,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Connection;
-import redis.clients.jedis.ConnectionFactory;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.ConnectionPoolConfig;
 import redis.clients.jedis.ConnectionTestHelper;

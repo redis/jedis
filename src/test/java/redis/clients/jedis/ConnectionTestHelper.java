@@ -39,15 +39,18 @@ public class ConnectionTestHelper {
   }
 
   /**
-   * Maintenance relaxed-timeout state machine on {@link Connection}. These methods are package-
-   * private (driven internally by the SCH layer); tests in other packages reach them here.
+   * Maintenance relaxed-timeout state on {@link Connection}. The relaxed timeout is wired only when
+   * the maintenance feature is active (a {@link MaintenanceEventController} attached via the pool);
+   * these read the internal {@code relaxedTimeoutSource} directly so tests in other packages can
+   * observe it without a public accessor.
    */
   public static boolean isRelaxedTimeoutActive(Connection connection) {
-    return connection.isRelaxedTimeoutActive();
+    ExpiringTimeoutSource source = ReflectionTestUtil.getField(connection, "relaxedTimeoutSource");
+    return source != null && source.get() != null;
   }
 
   public static void relaxTimeouts(Connection connection, Duration period) {
-    connection.relaxTimeouts(period);
+    connection.relaxTimeouts(NanoClock.INSTANCE.getAsLong() + period.toNanos());
   }
 
   public static void resetRelaxedTimeouts(Connection connection) {
@@ -55,11 +58,17 @@ public class ConnectionTestHelper {
   }
 
   public static int getRelaxedSoTimeout(Connection connection) {
-    return connection.getRelaxedSoTimeout();
+    return relaxedInfo(connection).timeout;
   }
 
   public static int getRelaxedBlockingSoTimeout(Connection connection) {
-    return connection.getRelaxedBlockingSoTimeout();
+    return relaxedInfo(connection).blockingTimeout;
+  }
+
+  /** The configured relaxed timeouts, or a zeroed pair when relaxation was never wired. */
+  private static TimeoutSource.TimeoutInfo relaxedInfo(Connection connection) {
+    ExpiringTimeoutSource source = ReflectionTestUtil.getField(connection, "relaxedTimeoutSource");
+    return source == null ? null : source.get();
   }
 
   /**
@@ -71,15 +80,13 @@ public class ConnectionTestHelper {
     return ReflectionTestUtil.getField(connection, "socket");
   }
 
-  /**
-   * Overrides the monotonic clock on the connection and (if attached) its pool's
-   * {@link MaintenanceEventController}, so tests can fast-forward time deterministically across
-   * both the per-connection deadlines and any pool-wide state that consults the clock.
-   */
-  public static void setClockNanos(ConnectionPool pool, Connection conn, LongSupplier clock) {
-    conn.setClockNanos(clock);
-    MaintenanceEventController ctrl = pool.getMaintenanceController();
-    if (ctrl != null) ctrl.setClockNanos(clock);
+  public static void setClockNanos(LongSupplier clock) {
+    NanoClock.INSTANCE = clock;
+  }
+
+  /** Restores the process-wide monotonic clock to {@link System#nanoTime()}. */
+  public static void resetClockNanos() {
+    NanoClock.INSTANCE = System::nanoTime;
   }
 
   private ConnectionTestHelper() {

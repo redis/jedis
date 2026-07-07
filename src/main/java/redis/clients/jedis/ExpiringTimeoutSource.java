@@ -1,10 +1,10 @@
 package redis.clients.jedis;
 
-class ExpiringTimeoutSupplier extends TimeoutSupplierDecorator {
+class ExpiringTimeoutSource extends TimeoutSourceNode {
 
   private volatile long expirationTime;
 
-  ExpiringTimeoutSupplier(TimeoutInfo info) {
+  ExpiringTimeoutSource(TimeoutInfo info) {
     super(info);
     this.expirationTime = 0;
   }

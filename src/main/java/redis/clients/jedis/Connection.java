@@ -22,7 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.jedis.TimeoutSupplierChain.TimeoutInfo;
+import redis.clients.jedis.TimeoutSource.TimeoutInfo;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.args.ClientAttributeOption;
@@ -197,9 +197,9 @@ public class Connection implements Closeable {
   /** Listeners notified synchronously of this connection's maintenance events (pool-injected). */
   private final List<MaintenanceEventListener> maintenanceEventListeners = new CopyOnWriteArrayList<>();
 
-  private DefaultTimeoutSupplier defaultTimeoutSupplier = new DefaultTimeoutSupplier(
+  private DefaultTimeoutSource defaultTimeoutSource = new DefaultTimeoutSource(
       new TimeoutInfo(0, 0));
-  private ExpiringTimeoutSupplier relaxedTimeout;
+  private ExpiringTimeoutSource relaxedTimeoutSource;
 
   private JedisClientConfig clientConfig;
   private final ProtocolHandshake handshake = new ProtocolHandshake(this);
@@ -242,7 +242,7 @@ public class Connection implements Closeable {
     this.initVisitors = builder.getVisitors();
 
     if (builder.customTimeoutSupplier != null) {
-      defaultTimeoutSupplier.overrideWith(new TimeoutSupplierDecorator(null) {
+      defaultTimeoutSource.overrideWith(new TimeoutSourceNode(null) {
         @Override
         protected TimeoutInfo getOwnInfo() {
           return builder.customTimeoutSupplier.get();
@@ -339,7 +339,7 @@ public class Connection implements Closeable {
    * @see #getRelaxedSoTimeout()
    */
   public int getSoTimeout() {
-    return defaultTimeoutSupplier.getDefaults().timeout;
+    return defaultTimeoutSource.getDefaults().timeout;
   }
 
   /**
@@ -352,7 +352,7 @@ public class Connection implements Closeable {
    * @see #getSoTimeout()
    */
   public int getBlockingSoTimeout() {
-    return defaultTimeoutSupplier.getDefaults().blockingTimeout;
+    return defaultTimeoutSource.getDefaults().blockingTimeout;
   }
 
   /**
@@ -370,12 +370,12 @@ public class Connection implements Closeable {
    * @see #isRelaxedTimeoutActive()
    */
   public void setSoTimeout(int millis) {
-    defaultTimeoutSupplier.setDefaults(millis, defaultTimeoutSupplier.getDefaults().blockingTimeout);
+    defaultTimeoutSource.setDefaults(millis, defaultTimeoutSource.getDefaults().blockingTimeout);
     applyCurrentTimeout();
   }
 
   private int currentTimeout() {
-    return isBlocking ? defaultTimeoutSupplier.get().blockingTimeout : defaultTimeoutSupplier.get().timeout;
+    return isBlocking ? defaultTimeoutSource.get().blockingTimeout : defaultTimeoutSource.get().timeout;
   }
 
   private void applyCurrentTimeout() {
@@ -513,7 +513,7 @@ public class Connection implements Closeable {
           // Fresh socket: align the applied-timeout cache with the new socket's actual SO_TIMEOUT.
           appliedSoTimeout = socket.getSoTimeout();
         } else {
-          defaultTimeoutSupplier.setDefaults(socket.getSoTimeout(), getBlockingSoTimeout());
+          defaultTimeoutSource.setDefaults(socket.getSoTimeout(), getBlockingSoTimeout());
         }
 
 
@@ -758,7 +758,7 @@ public class Connection implements Closeable {
 
   protected void initializeFromClientConfig(final JedisClientConfig config) {
     try {
-      defaultTimeoutSupplier.setDefaults(config.getSocketTimeoutMillis(),
+      defaultTimeoutSource.setDefaults(config.getSocketTimeoutMillis(),
         config.getBlockingSocketTimeoutMillis());
 
       initPushConsumers(config);
@@ -1040,12 +1040,12 @@ public class Connection implements Closeable {
     this.expireAt = expireAt;
   }
 
-  void enableTimeoutRelaxing(ExpiringTimeoutSupplier relaxedTimeout) {
-    if (this.relaxedTimeout != null) {
+  void enableTimeoutRelaxing(ExpiringTimeoutSource relaxedTimeout) {
+    if (this.relaxedTimeoutSource != null) {
       throw new IllegalStateException("Relaxed timeouts already activated");
     }
-    this.relaxedTimeout = relaxedTimeout;
-    this.defaultTimeoutSupplier.overrideWith(relaxedTimeout);
+    this.relaxedTimeoutSource = relaxedTimeout;
+    this.defaultTimeoutSource.overrideWith(relaxedTimeout);
   }
 
   /**
@@ -1059,10 +1059,10 @@ public class Connection implements Closeable {
    */
   @Experimental
   void relaxTimeouts(long expiration) {
-    if (this.relaxedTimeout == null) {
+    if (this.relaxedTimeoutSource == null) {
       throw new IllegalStateException("Relaxed timeouts not activated");
     }
-    relaxedTimeout.setExpirationTime(expiration);
+    relaxedTimeoutSource.setExpirationTime(expiration);
     applyCurrentTimeout();
   }
 
@@ -1071,10 +1071,10 @@ public class Connection implements Closeable {
    */
   @Experimental
   void resetRelaxedTimeouts() {
-    if (this.relaxedTimeout == null) {
+    if (this.relaxedTimeoutSource == null) {
       throw new IllegalStateException("Relaxed timeouts not activated");
     }
-    relaxedTimeout.setExpirationTime(0);
+    relaxedTimeoutSource.setExpirationTime(0);
     applyCurrentTimeout();
   }
 

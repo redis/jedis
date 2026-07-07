@@ -1,10 +1,10 @@
 package redis.clients.jedis;
 
-class DefaultTimeoutSupplier extends TimeoutSupplierDecorator {
+class DefaultTimeoutSource extends TimeoutSourceNode {
 
   TimeoutInfo ownInfo;
 
-  DefaultTimeoutSupplier(TimeoutInfo info) {
+  DefaultTimeoutSource(TimeoutInfo info) {
     super(info);
     ownInfo = info;
   }

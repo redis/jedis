@@ -5,7 +5,7 @@ import java.util.List;
 import org.slf4j.Logger;
 
 import redis.clients.jedis.Protocol.Command;
-import redis.clients.jedis.TimeoutSupplierChain.TimeoutInfo;
+import redis.clients.jedis.TimeoutSource.TimeoutInfo;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -51,9 +51,9 @@ public class MaintenanceAwareVisitor implements InitVisitor {
     MaintenanceEventConsumer consumer = new MaintenanceEventConsumer(connection,
         maintenanceEventListeners);
     connection.addPushConsumer(consumer);
-    ExpiringTimeoutSupplier relaxedTimeout = new ExpiringTimeoutSupplier(new TimeoutInfo(
+    ExpiringTimeoutSource relaxedTimeoutSource = new ExpiringTimeoutSource(new TimeoutInfo(
         maintenanceConfig.getRelaxedTimeout(), maintenanceConfig.getRelaxedBlockingTimeout()));
-    connection.enableTimeoutRelaxing(relaxedTimeout);
+    connection.enableTimeoutRelaxing(relaxedTimeoutSource);
     connection.sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
       resolveEndpointType(maintenanceConfig.getEndpointType()));
     try {

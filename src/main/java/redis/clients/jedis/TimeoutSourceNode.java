@@ -1,11 +1,11 @@
 package redis.clients.jedis;
 
-class TimeoutSupplierDecorator implements TimeoutSupplierChain {
+class TimeoutSourceNode implements TimeoutSource {
 
-  private volatile TimeoutSupplierChain override;
+  private volatile TimeoutSource override;
   private final TimeoutInfo info;
 
-  TimeoutSupplierDecorator(TimeoutInfo info) {
+  TimeoutSourceNode(TimeoutInfo info) {
     this.info = info;
   }
 
@@ -27,7 +27,7 @@ class TimeoutSupplierDecorator implements TimeoutSupplierChain {
     return true;
   }
 
-  public synchronized void overrideWith(TimeoutSupplierChain other) {
+  public synchronized void overrideWith(TimeoutSource other) {
     if (override == null) {
       override = other;
     } else {

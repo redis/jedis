@@ -1,10 +1,10 @@
 package redis.clients.jedis;
 
-interface TimeoutSupplierChain {
+interface TimeoutSource {
 
   TimeoutInfo get();
 
-  void overrideWith(TimeoutSupplierChain other);
+  void overrideWith(TimeoutSource other);
 
   class TimeoutInfo {
 

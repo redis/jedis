@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import redis.clients.jedis.TimeoutSupplierChain.TimeoutInfo;
+import redis.clients.jedis.TimeoutSource.TimeoutInfo;
 
 /**
  * Maintenance handler: owns the shared rebind overlay, the relax-window policy, and the handoff

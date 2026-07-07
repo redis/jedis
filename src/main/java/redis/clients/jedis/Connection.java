@@ -42,7 +42,6 @@ public class Connection implements Closeable {
     private JedisClientConfig clientConfig;
     private MaintenanceNotificationsConfig maintenanceConfig;
     private final List<MaintenanceEventListener> maintenanceEventListeners = new ArrayList<>();
-    private Supplier<TimeoutInfo> customTimeoutSupplier;
     private final Set<InitVisitor> visitors = new HashSet<>();
 
     public Builder socketFactory(JedisSocketFactory socketFactory) {
@@ -70,11 +69,6 @@ public class Connection implements Closeable {
       return this;
     }
 
-    Builder customTimeoutSupplier(Supplier<TimeoutInfo> customTimeoutSupplier) {
-      this.customTimeoutSupplier = customTimeoutSupplier;
-      return this;
-    }
-
     public JedisSocketFactory getSocketFactory() {
       return socketFactory;
     }
@@ -89,10 +83,6 @@ public class Connection implements Closeable {
 
     List<MaintenanceEventListener> getMaintenanceEventListeners() {
       return maintenanceEventListeners;
-    }
-
-    Supplier<TimeoutInfo> getCustomTimeoutSupplier() {
-      return customTimeoutSupplier;
     }
 
     Builder addVisitor(InitVisitor visitor) {
@@ -240,15 +230,6 @@ public class Connection implements Closeable {
     this.clientConfig = builder.getClientConfig();
     this.maintenanceEventListeners.addAll(builder.getMaintenanceEventListeners());
     this.initVisitors = builder.getVisitors();
-
-    if (builder.customTimeoutSupplier != null) {
-      defaultTimeoutSource.overrideWith(new TimeoutSourceNode(null) {
-        @Override
-        protected TimeoutInfo getOwnInfo() {
-          return builder.customTimeoutSupplier.get();
-        }
-      });
-    }
   }
 
   /**

@@ -14,10 +14,14 @@ import redis.clients.jedis.util.JedisAsserts;
 public class MaintenanceAwareVisitor implements InitVisitor {
 
   private final Connection.Builder builder;
+  private final MaintenanceEventController controller;
 
-  MaintenanceAwareVisitor(Connection.Builder builder) {
+  MaintenanceAwareVisitor(Connection.Builder builder,
+      MaintenanceEventController maintenanceController) {
     JedisAsserts.notNull(builder, "Connection.Builder must not be null");
+    JedisAsserts.notNull(maintenanceController, "MaintenanceEventController must not be null");
     this.builder = builder;
+    this.controller = maintenanceController;
   }
 
   @Override
@@ -54,12 +58,22 @@ public class MaintenanceAwareVisitor implements InitVisitor {
     ExpiringTimeoutSource relaxedTimeoutSource = new ExpiringTimeoutSource(new TimeoutInfo(
         maintenanceConfig.getRelaxedTimeout(), maintenanceConfig.getRelaxedBlockingTimeout()));
     connection.enableTimeoutRelaxing(relaxedTimeoutSource);
+
+    TimeoutSourceNode timeoutSourceOfController = new TimeoutSourceNode(null) {
+      @Override
+      protected TimeoutInfo getOwnInfo() {
+        return controller.getTimeoutSupplier().get();
+      }
+    };
+    relaxedTimeoutSource.overrideWith(timeoutSourceOfController);
+
     connection.sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
       resolveEndpointType(maintenanceConfig.getEndpointType()));
     try {
       connection.getStatusCodeReply();
     } catch (JedisDataException e) {
       connection.removePushConsumer(consumer);
+      relaxedTimeoutSource.unplug(timeoutSourceOfController);
       connection.disableTimeoutRelaxing();
       if (strict) {
         throw new JedisConnectionException(

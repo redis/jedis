@@ -16,4 +16,11 @@ interface TimeoutSource {
       this.blockingTimeout = blockingTimeoutMillis;
     }
   }
+
+  interface UnplugableSource<T extends TimeoutSource> {
+
+    void unplug(UnplugableSource<T> other);
+
+    TimeoutSource getOverride();
+  }
 }

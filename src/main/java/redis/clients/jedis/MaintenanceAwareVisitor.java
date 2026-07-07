@@ -60,6 +60,7 @@ public class MaintenanceAwareVisitor implements InitVisitor {
       connection.getStatusCodeReply();
     } catch (JedisDataException e) {
       connection.removePushConsumer(consumer);
+      connection.disableTimeoutRelaxing();
       if (strict) {
         throw new JedisConnectionException(
             "Maintenance notifications: events not supported on server", e);

@@ -1048,6 +1048,14 @@ public class Connection implements Closeable {
     this.defaultTimeoutSource.overrideWith(relaxedTimeout);
   }
 
+  void disableTimeoutRelaxing() {
+    if (this.relaxedTimeoutSource == null) {
+      throw new IllegalStateException("Relaxed timeouts not activated");
+    }
+    this.defaultTimeoutSource.unplug(relaxedTimeoutSource);
+    this.relaxedTimeoutSource = null;
+  }
+
   /**
    * Switches this connection to relaxed timeouts for at most {@code period}. While the window is
    * open, commands use {@link #getRelaxedSoTimeout()} and {@link #getRelaxedBlockingSoTimeout()}

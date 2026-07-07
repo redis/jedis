@@ -99,7 +99,7 @@ public class Connection implements Closeable {
       // builder takes the initiative to wire up the maintenance-aware visitor if maintenance is
       // configured
       if (maintenanceConfig != null) {
-        if (visitors.stream().anyMatch(v -> v instanceof MaintenanceAwareVisitor)) {
+        if (!visitors.stream().anyMatch(v -> v instanceof MaintenanceAwareVisitor)) {
           visitors.add(
             new MaintenanceAwareVisitor(this, MaintenanceEventController.from(maintenanceConfig)));
         }

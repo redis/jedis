@@ -198,11 +198,5 @@ public class ConnectionMockTest {
       return new ConnectionPool(hp, cfg, /* cache */ null, new ConnectionPoolConfig(), maint);
     }
 
-    @Override
-    protected Connection buildDirect(HostAndPort hp, JedisClientConfig cfg,
-        MaintenanceNotificationsConfig maint) {
-      return Connection.builder().socketFactory(new DefaultJedisSocketFactory(hp, cfg))
-          .clientConfig(cfg).maintenanceConfig(maint).build();
-    }
   }
 }

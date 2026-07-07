@@ -197,13 +197,6 @@ public class CacheConnectionMockTest {
         MaintenanceNotificationsConfig maint) {
       return new ConnectionPool(hp, cfg, cache, new ConnectionPoolConfig(), maint);
     }
-
-    @Override
-    protected Connection buildDirect(HostAndPort hp, JedisClientConfig cfg,
-        MaintenanceNotificationsConfig maint) {
-      return CacheConnection.builder(cache).socketFactory(new DefaultJedisSocketFactory(hp, cfg))
-          .clientConfig(cfg).maintenanceConfig(maint).build();
-    }
   }
 
   /**

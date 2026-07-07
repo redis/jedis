@@ -204,7 +204,8 @@ public class MaintenanceEventControllerTest {
     assertEquals(2, fires.get());
     // TODO: here it is not clear how controller is wired into connection;
     // what is the reasoning around relaxed timeoux expectation here?
-    // assertTrue(ConnectionTestHelper.isRelaxedTimeoutActive(receiver), "receiver relaxed on MOVING");
+    // assertTrue(ConnectionTestHelper.isRelaxedTimeoutActive(receiver), "receiver relaxed on
+    // MOVING");
   }
 
   @Test

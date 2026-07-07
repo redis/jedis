@@ -325,7 +325,7 @@ public class Connection implements Closeable {
    * Returns the socket read timeout (SO_TIMEOUT) in milliseconds used for non-blocking commands.
    *
    * @return the configured timeout in milliseconds for non-blocking operations
-   * @see #getRelaxedSoTimeout()
+   * @see MaintenanceNotificationsConfig#getRelaxedTimeout()
    */
   public int getSoTimeout() {
     return defaultTimeoutSource.getDefaults().timeout;
@@ -338,7 +338,7 @@ public class Connection implements Closeable {
    * connection is expected to wait for a potentially long or indefinite period.</p>
    *
    * @return the configured timeout in milliseconds for blocking operations
-   * @see #getSoTimeout()
+   * @see MaintenanceNotificationsConfig#getRelaxedBlockingTimeout()
    */
   public int getBlockingSoTimeout() {
     return defaultTimeoutSource.getDefaults().blockingTimeout;
@@ -350,13 +350,12 @@ public class Connection implements Closeable {
    * <p>The configured timeout is applied to the underlying socket immediately if the connection
    * is already established. Otherwise, it will be applied when the socket is created.</p>
    *
-   * <p>If the connection is currently in a <em>relaxed timeout</em> state (see {@link #isRelaxedTimeoutActive()}),
+   * <p>If the connection is currently in a <em>relaxed timeout</em> state (see {@link MaintenanceNotificationsConfig}),
    * the relaxed value remains in effect on the socket; the value configured here takes effect
    * once the relaxation window closes.</p>
    *
    * @param millis the timeout value in milliseconds; a value of {@code 0} means infinite timeout
    * @throws JedisConnectionException if the underlying socket fails to apply the timeout
-   * @see #isRelaxedTimeoutActive()
    */
   public void setSoTimeout(int millis) {
     defaultTimeoutSource.setDefaults(millis, defaultTimeoutSource.getDefaults().blockingTimeout);
@@ -396,7 +395,7 @@ public class Connection implements Closeable {
    * the connection is expected to wait indefinitely for server responses.</p>
    *
    * @throws JedisConnectionException if the socket cannot be configured or connection fails
-   * @see #isRelaxedTimeoutActive()
+   * @see MaintenanceNotificationsConfig#getRelaxedBlockingTimeout()
    */
   public void setTimeoutInfinite() {
     isBlocking = true;
@@ -411,12 +410,12 @@ public class Connection implements Closeable {
    *
    * <p>The restored timeout depends on the current connection state:</p>
    * <ul>
-   *   <li>{@link #getRelaxedSoTimeout()} if relaxed timeout mode is active</li>
+   *   <li>{@link MaintenanceNotificationsConfig#getRelaxedTimeout()} if relaxed timeout mode is active</li>
    *   <li>{@link #getSoTimeout()} otherwise</li>
    * </ul>
    *
    * @throws JedisConnectionException if the socket cannot be reconfigured
-   * @see #isRelaxedTimeoutActive()
+   * @see MaintenanceNotificationsConfig#getRelaxedTimeout()
    */
   public void rollbackTimeout() {
     isBlocking = false;
@@ -1047,7 +1046,7 @@ public class Connection implements Closeable {
 
   /**
    * Switches this connection to relaxed timeouts for at most {@code period}. While the window is
-   * open, commands use {@link #getRelaxedSoTimeout()} and {@link #getRelaxedBlockingSoTimeout()}
+   * open, commands use {@link MaintenanceNotificationsConfig#getRelaxedTimeout()} and {@link MaintenanceNotificationsConfig#getRelaxedBlockingTimeout()}
    * instead of the configured values, giving in-flight commands extra headroom across a server-side
    * maintenance event (MIGRATING / FAILING_OVER / MOVING-receiver). The original timeouts return
    * into effect once the window closes or {@link #resetRelaxedTimeouts()} is called. Calling this

@@ -115,7 +115,6 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       connBuilder.socketFactory(jedisSocketFactory).clientConfig(clientConfig);
       if (maintenanceController != null) {
         connBuilder.maintenanceConfig(maintenanceController.getConfig())
-            .addMaintenanceEventListener(maintenanceController)
             .addVisitor(new MaintenanceAwareVisitor(connBuilder, maintenanceController));
       }
       return connBuilder;

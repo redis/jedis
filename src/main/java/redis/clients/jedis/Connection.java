@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.function.Supplier;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
@@ -79,10 +79,6 @@ public class Connection implements Closeable {
 
     MaintenanceNotificationsConfig getMaintenanceConfig() {
       return maintenanceConfig;
-    }
-
-    List<MaintenanceEventListener> getMaintenanceEventListeners() {
-      return maintenanceEventListeners;
     }
 
     Builder addVisitor(InitVisitor visitor) {
@@ -193,7 +189,7 @@ public class Connection implements Closeable {
   private long expireAt = Long.MAX_VALUE; 
 
   /** Listeners notified synchronously of this connection's maintenance events (pool-injected). */
-  private final List<MaintenanceEventListener> maintenanceEventListeners = new CopyOnWriteArrayList<>();
+  private final Set<MaintenanceEventListener> maintenanceEventListeners =  ConcurrentHashMap.newKeySet();
 
   private DefaultTimeoutSource defaultTimeoutSource = new DefaultTimeoutSource(
       new TimeoutInfo(0, 0));
@@ -236,7 +232,6 @@ public class Connection implements Closeable {
   protected Connection(Builder builder) {
     this.socketFactory = builder.getSocketFactory();
     this.clientConfig = builder.getClientConfig();
-    this.maintenanceEventListeners.addAll(builder.getMaintenanceEventListeners());
     this.initVisitors = builder.getVisitors();
   }
 
@@ -382,8 +377,6 @@ public class Connection implements Closeable {
 
   /**
    * Sets the socket read timeout (SO_TIMEOUT) to infinite for blocking commands.
-   *
-   * <p>This method ensures the underlying socket is connected before applying the timeout.</p>
    *
    * <p>The effective timeout applied depends on the current connection state:</p>
    * <ul>
@@ -1087,6 +1080,10 @@ public class Connection implements Closeable {
   /** Removes a previously registered maintenance event listener. */
   void removeMaintenanceEventListener(MaintenanceEventListener listener) {
     maintenanceEventListeners.remove(listener);
+  }
+
+  Set<MaintenanceEventListener> getMaintenanceEventListeners() {
+    return maintenanceEventListeners;
   }
 
 }

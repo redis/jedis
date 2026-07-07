@@ -371,20 +371,16 @@ public class Connection implements Closeable {
    */
   public void setSoTimeout(int millis) {
     defaultTimeoutSupplier.setDefaults(millis, defaultTimeoutSupplier.getDefaults().blockingTimeout);
-    applySoTimeout(currentTimeout());
+    applyCurrentTimeout();
   }
 
   private int currentTimeout() {
     return isBlocking ? defaultTimeoutSupplier.get().blockingTimeout : defaultTimeoutSupplier.get().timeout;
   }
 
-  /**
-   * Pushes {@code timeout} to the socket only when it differs from the value already applied. The
-   * socket's SO_TIMEOUT is sticky, so caching the last-applied value lets the hot read path skip the
-   * syscall whenever the effective timeout is unchanged (the overwhelmingly common case).
-   */
-  private void applySoTimeout(int timeout) {
-    if (timeout == appliedSoTimeout || socket == null) {
+  private void applyCurrentTimeout() {
+    int timeout = currentTimeout();
+     if (timeout == appliedSoTimeout || socket == null) {
       return;
     }
     try {
@@ -415,7 +411,7 @@ public class Connection implements Closeable {
    */
   public void setTimeoutInfinite() {
     isBlocking = true;
-    applySoTimeout(currentTimeout());
+    applyCurrentTimeout();
   }
 
   /**
@@ -435,7 +431,7 @@ public class Connection implements Closeable {
    */
   public void rollbackTimeout() {
     isBlocking = false;
-    applySoTimeout(currentTimeout());
+    applyCurrentTimeout();
   }
 
   public Object executeCommand(final ProtocolCommand cmd) {
@@ -444,20 +440,18 @@ public class Connection implements Closeable {
 
   public Object executeCommand(final CommandArguments args) {
     sendCommand(args);
-    applySoTimeout(currentTimeout());
-    return getOneInner();
+    return getOne();
   }
 
   public <T> T executeCommand(final CommandObject<T> commandObject) {
     final CommandArguments args = commandObject.getArguments();
     sendCommand(args);
     if (!args.isBlocking()) {
-      applySoTimeout(currentTimeout());
-      return commandObject.getBuilder().build(getOneInner());
+      return commandObject.getBuilder().build(getOne());
     }
     try {
       setTimeoutInfinite();
-      return commandObject.getBuilder().build(getOneInner());
+      return commandObject.getBuilder().build(getOne());
     } finally {
       rollbackTimeout();
     }
@@ -520,7 +514,6 @@ public class Connection implements Closeable {
           appliedSoTimeout = socket.getSoTimeout();
         } else {
           defaultTimeoutSupplier.setDefaults(socket.getSoTimeout(), getBlockingSoTimeout());
-          applySoTimeout(currentTimeout());
         }
 
 
@@ -603,11 +596,6 @@ public class Connection implements Closeable {
   }
 
   public String getStatusCodeReply() {
-    applySoTimeout(currentTimeout());
-    return getStatusCodeReplyInner();
-  }
-
-  private String getStatusCodeReplyInner() {
     flush();
     final byte[] resp = (byte[]) readProtocolWithCheckingBroken();
     if (null == resp) {
@@ -618,8 +606,7 @@ public class Connection implements Closeable {
   }
 
   public String getBulkReply() {
-    applySoTimeout(currentTimeout());
-    final byte[] result = getBinaryBulkReplyInner();
+    final byte[] result = getBinaryBulkReply();
     if (null != result) {
       return encode(result);
     } else {
@@ -628,33 +615,21 @@ public class Connection implements Closeable {
   }
 
   public byte[] getBinaryBulkReply() {
-    applySoTimeout(currentTimeout());
-    return getBinaryBulkReplyInner();
-  }
-
-  private byte[] getBinaryBulkReplyInner() {
     flush();
     return (byte[]) readProtocolWithCheckingBroken();
   }
 
   public Long getIntegerReply() {
     flush();
-    applySoTimeout(currentTimeout());
     return (Long) readProtocolWithCheckingBroken();
   }
 
   public List<String> getMultiBulkReply() {
-    applySoTimeout(currentTimeout());
-    return BuilderFactory.STRING_LIST.build(getBinaryMultiBulkReplyInner());
-  }
-
-  public List<byte[]> getBinaryMultiBulkReply() {
-    applySoTimeout(currentTimeout());
-    return getBinaryMultiBulkReplyInner();
+    return BuilderFactory.STRING_LIST.build(getBinaryMultiBulkReply());
   }
 
   @SuppressWarnings("unchecked")
-  private List<byte[]> getBinaryMultiBulkReplyInner() {
+  public List<byte[]> getBinaryMultiBulkReply() {
     flush();
     return (List<byte[]>) readProtocolWithCheckingBroken();
   }
@@ -665,35 +640,26 @@ public class Connection implements Closeable {
   @Deprecated
   @SuppressWarnings("unchecked")
   public List<Object> getUnflushedObjectMultiBulkReply() {
-    applySoTimeout(currentTimeout());
     return (List<Object>) readProtocolWithCheckingBroken();
   }
 
   public Object getUnflushedObject() {
-    applySoTimeout(currentTimeout());
     return readProtocolWithCheckingBroken();
   }
 
   @SuppressWarnings("unchecked")
   public List<Object> getObjectMultiBulkReply() {
-    applySoTimeout(currentTimeout());
     flush();
     return (List<Object>) readProtocolWithCheckingBroken();
   }
 
   @SuppressWarnings("unchecked")
   public List<Long> getIntegerMultiBulkReply() {
-    applySoTimeout(currentTimeout());
     flush();
     return (List<Long>) readProtocolWithCheckingBroken();
   }
 
   public Object getOne() {
-    applySoTimeout(currentTimeout());
-    return getOneInner();
-  }
-
-  private Object getOneInner() {
     flush();
     return readProtocolWithCheckingBroken();
   }
@@ -721,6 +687,7 @@ public class Connection implements Closeable {
       throw new JedisConnectionException("Attempting to read from a broken connection.");
     }
     try {
+      applyCurrentTimeout();
       return protocolRead(inputStream, pushConsumers);
     } catch (JedisConnectionException exc) {
       broken = true;
@@ -734,6 +701,7 @@ public class Connection implements Closeable {
     }
 
     try {
+      applyCurrentTimeout();
       if (inputStream.available() > 0) {
         protocolReadPushes(inputStream, pushConsumers);
       }
@@ -747,11 +715,6 @@ public class Connection implements Closeable {
   }
 
   public List<Object> getMany(final int count) {
-    applySoTimeout(currentTimeout());
-    return getManyInner(count);
-  }
-
-  private List<Object> getManyInner(final int count) {
     flush();
     final List<Object> responses = new ArrayList<>(count);
     for (int i = 0; i < count; i++) {
@@ -861,7 +824,7 @@ public class Connection implements Closeable {
       for (CommandArguments arg : fireAndForgetMsg) {
         sendCommand(arg);
       }
-      getManyInner(fireAndForgetMsg.size());
+      getMany(fireAndForgetMsg.size());
 
       for (InitVisitor visitor : initVisitors) {
         visitor.visit(this);
@@ -956,7 +919,7 @@ public class Connection implements Closeable {
     } finally {
       Arrays.fill(rawPass, (byte) 0); // clear sensitive data
     }
-    return getStatusCodeReplyInner();
+    return getStatusCodeReply();
   }
 
   public String reAuthenticate() {
@@ -965,7 +928,7 @@ public class Connection implements Closeable {
 
   protected Map<String, Object> hello(byte[]... args) {
     sendCommand(Command.HELLO, args);
-    return BuilderFactory.ENCODED_OBJECT_MAP.build(getOneInner());
+    return BuilderFactory.ENCODED_OBJECT_MAP.build(getOne());
   }
 
   /**
@@ -1034,14 +997,12 @@ public class Connection implements Closeable {
 
   public String select(final int index) {
     sendCommand(Command.SELECT, Protocol.toByteArray(index));
-    applySoTimeout(currentTimeout());
-    return getStatusCodeReplyInner();
+    return getStatusCodeReply();
   }
 
   public boolean ping() {
     sendCommand(Command.PING);
-    applySoTimeout(currentTimeout());
-    String status = getStatusCodeReplyInner();
+    String status = getStatusCodeReply();
     if (!"PONG".equals(status)) {
       throw new JedisException(status);
     }
@@ -1102,7 +1063,7 @@ public class Connection implements Closeable {
       throw new IllegalStateException("Relaxed timeouts not activated");
     }
     relaxedTimeout.setExpirationTime(expiration);
-    applySoTimeout(currentTimeout());
+    applyCurrentTimeout();
   }
 
   /**
@@ -1114,7 +1075,7 @@ public class Connection implements Closeable {
       throw new IllegalStateException("Relaxed timeouts not activated");
     }
     relaxedTimeout.setExpirationTime(0);
-    applySoTimeout(currentTimeout());
+    applyCurrentTimeout();
   }
 
   /** The connected peer's address, or {@code null} if the socket is not (yet) open. */

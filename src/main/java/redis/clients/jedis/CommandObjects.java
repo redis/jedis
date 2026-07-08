@@ -5445,11 +5445,11 @@ public class CommandObjects {
   }
 
   public CommandObject<Boolean> vismember(String key, String element) {
-    return new CommandObject<>(commandArguments(Command.VISMEMBER).add(key).add(element), BuilderFactory.BOOLEAN);
+    return new CommandObject<>(commandArguments(Command.VISMEMBER).key(key).add(element), BuilderFactory.BOOLEAN);
   }
 
   public CommandObject<Boolean> vismember(byte[] key, byte[] element) {
-    return new CommandObject<>(commandArguments(Command.VISMEMBER).add(key).add(element), BuilderFactory.BOOLEAN);
+    return new CommandObject<>(commandArguments(Command.VISMEMBER).key(key).add(element), BuilderFactory.BOOLEAN);
   }
 
   public final CommandObject<List<Double>> vemb(String key, String element) {

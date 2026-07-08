@@ -3,6 +3,7 @@ package redis.clients.jedis.authentication;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -82,12 +83,18 @@ public final class AuthXManager implements Supplier<RedisCredentials> {
 
     public void authenticateConnections(Token token) {
         RedisCredentials credentialsFromToken = new TokenCredentials(token);
-        for (WeakReference<Connection> connectionRef : connections) {
-            Connection connection = connectionRef.get();
-            if (connection != null) {
-                connection.setCredentials(credentialsFromToken);
-            } else {
-                connections.remove(connectionRef);
+        // Collections.synchronizedList requires manual synchronization on the list while
+        // iterating it, and pruning cleared references must go through the iterator so the
+        // walk does not abort with a ConcurrentModificationException.
+        synchronized (connections) {
+            Iterator<WeakReference<Connection>> iterator = connections.iterator();
+            while (iterator.hasNext()) {
+                Connection connection = iterator.next().get();
+                if (connection != null) {
+                    connection.setCredentials(credentialsFromToken);
+                } else {
+                    iterator.remove();
+                }
             }
         }
         postAuthenticateHooks.forEach(hook -> hook.accept(token));

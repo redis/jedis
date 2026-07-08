@@ -11,12 +11,16 @@ import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 
+import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 import java.util.Collections;
+import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -32,9 +36,11 @@ import redis.clients.authentication.core.TokenListener;
 import redis.clients.authentication.core.TokenManager;
 import redis.clients.authentication.core.TokenManagerConfig;
 import redis.clients.authentication.core.TokenManagerConfig.RetryPolicy;
+import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.RedisCredentials;
 
 public class TokenBasedAuthenticationUnitTests {
 
@@ -352,5 +358,44 @@ public class TokenBasedAuthenticationUnitTests {
     } finally {
       manager.stop();
     }
+  }
+
+  @Test
+  @SuppressWarnings("unchecked")
+  public void authenticateConnectionsPrunesClearedReferences() throws Exception {
+    // A real, never-started TokenManager; authenticateConnections is driven directly below.
+    TokenManager tokenManager = new TokenManager(() -> null,
+        new TokenManagerConfig(0.7F, 200, 2000, new RetryPolicy(1, 1)));
+    AuthXManager manager = new AuthXManager(tokenManager);
+
+    // The single-arg socket-factory path builds a Connection without opening a socket.
+    Connection live1 = new Connection(new HostAndPort("localhost", 6379));
+    Connection live2 = new Connection(new HostAndPort("localhost", 6379));
+
+    // A pooled connection that has been garbage collected leaves behind a cleared
+    // WeakReference. Seed one ahead of the live connections so pruning happens mid-walk.
+    Field field = AuthXManager.class.getDeclaredField("connections");
+    field.setAccessible(true);
+    List<WeakReference<Connection>> connections =
+        (List<WeakReference<Connection>>) field.get(manager);
+    connections.add(new WeakReference<>(null));
+    connections.add(new WeakReference<>(live1));
+    connections.add(new WeakReference<>(live2));
+
+    Token token = new SimpleToken("user1", "tokenVal", System.currentTimeMillis() + 5 * 1000,
+        System.currentTimeMillis(), Collections.singletonMap("oid", "user1"));
+
+    manager.authenticateConnections(token);
+
+    assertEquals(2, connections.size());
+    assertEquals("user1", currentUser(live1));
+    assertEquals("user1", currentUser(live2));
+  }
+
+  private static String currentUser(Connection connection) throws Exception {
+    Field field = Connection.class.getDeclaredField("currentCredentials");
+    field.setAccessible(true);
+    RedisCredentials credentials = ((AtomicReference<RedisCredentials>) field.get(connection)).get();
+    return credentials == null ? null : credentials.getUser();
   }
 }

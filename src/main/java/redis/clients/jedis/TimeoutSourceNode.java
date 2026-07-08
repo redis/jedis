@@ -54,5 +54,4 @@ class TimeoutSourceNode implements TimeoutSource, UnplugableSource<TimeoutSource
     return override;
   }
 
-
 }

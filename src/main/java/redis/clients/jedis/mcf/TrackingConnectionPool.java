@@ -158,7 +158,8 @@ public class TrackingConnectionPool extends ConnectionPool {
 
   private static ConnectionFactory.Builder createFailFastFactoryBuilder(Builder poolBuilder) {
     return new FailFastConnectionFactory.FailFastFactoryBuilder()
-        .hostAndPort(poolBuilder.hostAndPort).clientConfig(poolBuilder.clientConfig).cache(poolBuilder.cache);
+        .hostAndPort(poolBuilder.hostAndPort).clientConfig(poolBuilder.clientConfig)
+        .cache(poolBuilder.cache);
   }
 
   public static TrackingConnectionPool from(TrackingConnectionPool existing) {

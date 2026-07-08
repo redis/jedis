@@ -136,7 +136,7 @@ public class MaintenanceNotificationsConfig {
       return this;
     }
 
-    public Builder listener(MaintenanceEventListener listener) {
+    public Builder eventListener(MaintenanceEventListener listener) {
       this.listener = listener;
       return this;
     }

@@ -50,7 +50,9 @@ public class MaintenanceAwareVisitor implements InitVisitor {
     }
 
     maintenanceEventListeners.add(controller);
-    maintenanceEventListeners.add(maintenanceConfig.getEventListener());
+    if (maintenanceConfig.getEventListener() != null) {
+      maintenanceEventListeners.add(maintenanceConfig.getEventListener());
+    }
 
     // The server must accept CLIENT MAINT_NOTIFICATIONS ON. Pre-register the consumer so a
     // push

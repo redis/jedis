@@ -184,7 +184,7 @@ public class Connection implements Closeable {
   /** Listeners notified synchronously of this connection's maintenance events (pool-injected). */
   private final Set<MaintenanceEventListener> maintenanceEventListeners =  ConcurrentHashMap.newKeySet();
 
-  private DefaultTimeoutSource defaultTimeoutSource = new DefaultTimeoutSource(
+  private final DefaultTimeoutSource defaultTimeoutSource = new DefaultTimeoutSource(
       new TimeoutInfo(0, 0));
   private ExpiringTimeoutSource relaxedTimeoutSource;
 
@@ -1019,14 +1019,14 @@ public class Connection implements Closeable {
       throw new IllegalStateException("Relaxed timeouts already activated");
     }
     this.relaxedTimeoutSource = relaxedTimeout;
-    this.defaultTimeoutSource.overrideWith(relaxedTimeout);
+    this.defaultTimeoutSource.addOverride(relaxedTimeout);
   }
 
   void disableTimeoutRelaxing() {
     if (this.relaxedTimeoutSource == null) {
       throw new IllegalStateException("Relaxed timeouts not activated");
     }
-    this.defaultTimeoutSource.unplug(relaxedTimeoutSource);
+    this.defaultTimeoutSource.removeOverride(relaxedTimeoutSource);
     this.relaxedTimeoutSource = null;
   }
 

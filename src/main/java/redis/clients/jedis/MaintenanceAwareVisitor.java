@@ -64,13 +64,8 @@ public class MaintenanceAwareVisitor implements InitVisitor {
         maintenanceConfig.getRelaxedTimeout(), maintenanceConfig.getRelaxedBlockingTimeout()));
     connection.enableTimeoutRelaxing(relaxedTimeoutSource);
 
-    TimeoutSourceNode timeoutSourceOfController = new TimeoutSourceNode(null) {
-      @Override
-      protected TimeoutInfo getOwnInfo() {
-        return controller.getTimeoutSupplier().get();
-      }
-    };
-    relaxedTimeoutSource.overrideWith(timeoutSourceOfController);
+    ChainedTimeoutSource rebindTimeoutSource = new RebindTimeoutSource(controller);
+    relaxedTimeoutSource.addOverride(rebindTimeoutSource);
 
     connection.sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
       resolveEndpointType(maintenanceConfig.getEndpointType()));
@@ -78,7 +73,7 @@ public class MaintenanceAwareVisitor implements InitVisitor {
       connection.getStatusCodeReply();
     } catch (JedisDataException e) {
       connection.removePushConsumer(consumer);
-      relaxedTimeoutSource.unplug(timeoutSourceOfController);
+      relaxedTimeoutSource.removeOverride(rebindTimeoutSource);
       connection.disableTimeoutRelaxing();
       if (strict) {
         throw new JedisConnectionException(
@@ -102,6 +97,22 @@ public class MaintenanceAwareVisitor implements InitVisitor {
         return "external-fqdn";
       default:
         throw new JedisException("Unknown endpoint type: " + endpointType);
+    }
+  }
+
+  /** Pool-wide MOVING rebind overlay: active while the controller reports a valid rebind window. */
+  private static final class RebindTimeoutSource extends ChainedTimeoutSource {
+
+    private final MaintenanceEventController controller;
+
+    RebindTimeoutSource(MaintenanceEventController controller) {
+      super(null);
+      this.controller = controller;
+    }
+
+    @Override
+    protected TimeoutInfo getOwnInfo() {
+      return controller.getTimeoutSupplier().get();
     }
   }
 }

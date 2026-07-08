@@ -1,6 +1,6 @@
 package redis.clients.jedis;
 
-class ExpiringTimeoutSource extends TimeoutSourceNode {
+class ExpiringTimeoutSource extends ChainedTimeoutSource {
 
   private volatile long expirationTime;
 

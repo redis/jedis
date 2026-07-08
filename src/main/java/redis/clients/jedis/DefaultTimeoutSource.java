@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
-class DefaultTimeoutSource extends TimeoutSourceNode {
+/** Terminal chain link holding the configured baseline timeouts; always has an opinion. */
+class DefaultTimeoutSource extends ChainedTimeoutSource {
 
   TimeoutInfo ownInfo;
 

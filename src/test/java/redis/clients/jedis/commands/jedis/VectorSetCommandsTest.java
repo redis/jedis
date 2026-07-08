@@ -1124,8 +1124,8 @@ public class VectorSetCommandsTest extends JedisCommandsTestBase {
   }
 
   /**
-   * Test VISMEMBER command functionality. Verifies that element existence in a vector set
-   * can be checked correctly throughout its lifecycle.
+   * Test VISMEMBER command functionality. Verifies that element existence in a vector set can be
+   * checked correctly throughout its lifecycle.
    */
   @Test
   @SinceRedisVersion("8.0.0")

@@ -1,6 +1,9 @@
 package redis.clients.jedis.modules.search;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
@@ -226,11 +229,7 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
     assertEquals(99, result.getTotalResults());
 
     assertEquals("OK", client.ftDropIndex(index));
-    try {
-      client.ftSearch(index, "hello world");
-      fail();
-    } catch (JedisDataException e) {
-    }
+    assertThrows(JedisDataException.class, () -> client.ftSearch(index, "hello world"));
   }
 
   @Test
@@ -745,8 +744,10 @@ public class SearchWithParamsTest extends RedisModuleCommandsTestBase {
       client.ftSearch(index, "hello world");
       fail("Index should not exist.");
     } catch (JedisDataException de) {
-      // toLowerCase - Error message updated to "No such index" with Redis 8.0.0
-      assertTrue(de.getMessage().toLowerCase().contains("no such index"));
+      assertThat(de.getMessage(), anyOf(containsStringIgnoringCase("no such index"), // Redis Search
+        // <v8.7.90
+        containsString("SEARCH_INDEX_NOT_FOUND") // Redis Search v8.7.90+
+      ));
     }
     assertEquals(100, client.dbSize());
   }

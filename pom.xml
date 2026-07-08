@@ -633,6 +633,7 @@
 						<include>**/Rebind*.java</include>
 						<include>**/TimeoutOptions.java</include>
 						<include>**/*Handler.java</include>
+						<include>**/InitVisitor.java</include>
 					</includes>
 				</configuration>
 				<executions>

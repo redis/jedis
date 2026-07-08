@@ -2,6 +2,8 @@ package redis.clients.jedis;
 
 import java.time.Duration;
 
+import redis.clients.jedis.util.JedisAsserts;
+
 public class MaintenanceNotificationsConfig {
 
   /** Default upper bound on the relaxed-timeout window started by MIGRATING/FAILING_OVER/MOVING. */
@@ -147,7 +149,7 @@ public class MaintenanceNotificationsConfig {
      * lost. Defaults to {@link MaintenanceNotificationsConfig#DEFAULT_RELAXED_WINDOW_MAX_DURATION}.
      */
     public Builder relaxedWindowMaxDuration(Duration duration) {
-      if (duration == null) throw new IllegalArgumentException("duration must not be null");
+      JedisAsserts.notNull(duration, "duration must not be null");
       this.relaxedWindowMaxDuration = duration;
       return this;
     }

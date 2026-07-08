@@ -32,18 +32,18 @@ public class MaintenanceNotificationsConfigTest {
   public void defaultRelaxedTimeouts() {
     MaintenanceNotificationsConfig built = MaintenanceNotificationsConfig.builder().build();
     assertEquals(MaintenanceNotificationsConfig.DEFAULT_RELAXED_SOCKET_TIMEOUT_MS,
-      built.getRelaxedSocketTimeoutMillis());
+      built.getRelaxedTimeout());
     assertEquals(MaintenanceNotificationsConfig.DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS,
-      built.getRelaxedBlockingSocketTimeoutMillis());
-    assertEquals(JedisClientConfig.UNSET_TIMEOUT_MS, built.getRelaxedBlockingSocketTimeoutMillis());
+      built.getRelaxedBlockingTimeout());
+    assertEquals(0, built.getRelaxedBlockingTimeout());
   }
 
   @Test
   public void builderSetsRelaxedTimeouts() {
     MaintenanceNotificationsConfig config = MaintenanceNotificationsConfig.builder()
-        .relaxedSocketTimeoutMillis(20_000).relaxedBlockingSocketTimeoutMillis(30_000).build();
-    assertEquals(20_000, config.getRelaxedSocketTimeoutMillis());
-    assertEquals(30_000, config.getRelaxedBlockingSocketTimeoutMillis());
+        .relaxedTimeout(20_000).relaxedBlockingTimeout(30_000).build();
+    assertEquals(20_000, config.getRelaxedTimeout());
+    assertEquals(30_000, config.getRelaxedBlockingTimeout());
   }
 
   @Test

@@ -1,6 +1,6 @@
 package redis.clients.jedis;
 
-import java.util.List;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,9 +17,9 @@ final class MaintenanceEventConsumer implements PushConsumer {
   private static final Logger logger = LoggerFactory.getLogger(MaintenanceEventConsumer.class);
 
   private final Connection connection;
-  private final List<MaintenanceEventListener> listeners;
+  private final Set<MaintenanceEventListener> listeners;
 
-  MaintenanceEventConsumer(Connection connection, List<MaintenanceEventListener> listeners) {
+  MaintenanceEventConsumer(Connection connection, Set<MaintenanceEventListener> listeners) {
     this.connection = connection;
     this.listeners = listeners;
   }

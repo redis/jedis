@@ -33,8 +33,7 @@ public class MaintenanceEventsExample {
     int durationSeconds = Integer.getInteger("example.durationSeconds", 300);
 
     MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
-        .mode(MaintenanceNotificationsConfig.Mode.ENABLED).relaxedSocketTimeoutMillis(20_000)
-        .build();
+        .mode(MaintenanceNotificationsConfig.Mode.ENABLED).relaxedTimeout(20_000).build();
 
     DefaultJedisClientConfig.Builder configBuilder = DefaultJedisClientConfig.builder()
         .protocol(RedisProtocol.RESP3).socketTimeoutMillis(5000);

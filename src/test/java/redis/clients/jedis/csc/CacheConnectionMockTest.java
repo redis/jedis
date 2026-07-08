@@ -22,7 +22,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Connection;
-import redis.clients.jedis.ConnectionFactory;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.ConnectionPoolConfig;
 import redis.clients.jedis.ConnectionTestHelper;
@@ -196,13 +195,6 @@ public class CacheConnectionMockTest {
     protected ConnectionPool createPool(HostAndPort hp, JedisClientConfig cfg,
         MaintenanceNotificationsConfig maint) {
       return new ConnectionPool(hp, cfg, cache, new ConnectionPoolConfig(), maint);
-    }
-
-    @Override
-    protected Connection buildDirect(HostAndPort hp, JedisClientConfig cfg,
-        MaintenanceNotificationsConfig maint) {
-      return CacheConnection.builder(cache).socketFactory(new DefaultJedisSocketFactory(hp, cfg))
-          .clientConfig(cfg).maintenanceConfig(maint).build();
     }
   }
 

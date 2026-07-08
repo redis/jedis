@@ -2,10 +2,7 @@ package redis.clients.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -13,34 +10,22 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.argThat;
-import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static redis.clients.jedis.JedisClientConfig.UNSET_TIMEOUT_MS;
 
 import java.io.IOException;
-import java.net.Socket;
-import java.net.SocketException;
-import java.time.Duration;
-import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.atomic.AtomicLong;
-
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.sch.AbstractMaintenanceEventHandlingTest;
 import redis.clients.jedis.sch.AbstractMaintenanceHandshakeTest;
 import redis.clients.jedis.sch.AbstractRelaxedTimeoutBehaviorTest;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.server.CommandHandler;
-import redis.clients.jedis.util.server.MaintenanceEventMessages;
-import redis.clients.jedis.util.server.RespResponse;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 /**
@@ -213,11 +198,5 @@ public class ConnectionMockTest {
       return new ConnectionPool(hp, cfg, /* cache */ null, new ConnectionPoolConfig(), maint);
     }
 
-    @Override
-    protected Connection buildDirect(HostAndPort hp, JedisClientConfig cfg,
-        MaintenanceNotificationsConfig maint) {
-      return Connection.builder().socketFactory(new DefaultJedisSocketFactory(hp, cfg))
-          .clientConfig(cfg).maintenanceConfig(maint).build();
-    }
   }
 }

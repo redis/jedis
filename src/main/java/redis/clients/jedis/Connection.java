@@ -171,6 +171,7 @@ public class Connection implements Closeable {
   private int appliedSoTimeout = -1;
 
   private boolean broken = false;
+  private volatile Throwable brokenCause = null;
   private boolean strValActive;
   private String strVal;
   protected String server;
@@ -419,16 +420,21 @@ public class Connection implements Closeable {
 
   public <T> T executeCommand(final CommandObject<T> commandObject) {
     final CommandArguments args = commandObject.getArguments();
+
     sendCommand(args);
+    final Object reply;
     if (!args.isBlocking()) {
-      return commandObject.getBuilder().build(getOne());
+      reply = getOne();
+    } else {
+      try {
+        setTimeoutInfinite();
+        reply = getOne();
+      } finally {
+        rollbackTimeout();
+      }
     }
-    try {
-      setTimeoutInfinite();
-      return commandObject.getBuilder().build(getOne());
-    } finally {
-      rollbackTimeout();
-    }
+
+    return commandObject.getBuilder().build(reply);
   }
 
   public void sendCommand(final ProtocolCommand cmd) {
@@ -448,30 +454,40 @@ public class Connection implements Closeable {
   }
 
   public void sendCommand(final CommandArguments args) {
+    connect();
+    if (broken) {
+      throw new JedisConnectionException("Attempting to write to a broken connection.", brokenCause);
+    }
+
     try {
-      connect();
       Protocol.sendCommand(outputStream, args);
     } catch (JedisConnectionException ex) {
-      /*
-       * When client send request which formed by invalid protocol, Redis send back error message
-       * before close connection. We try to read it to provide reason of failure.
-       */
-      try {
-        String errorMessage = Protocol.readErrorLineIfPossible(inputStream);
-        if (errorMessage != null && errorMessage.length() > 0) {
-          ex = new JedisConnectionException(errorMessage, ex.getCause());
-        }
-      } catch (Exception e) {
-        /*
-         * Catch any IOException or JedisConnectionException occurred from InputStream#read and just
-         * ignore. This approach is safe because reading error message is optional and connection
-         * will eventually be closed.
-         */
-      }
-      // Any other exceptions related to connection?
-      setBroken();
-      throw ex;
+      throw enrichWithRedisErrorLine(markBroken(ex));
+    } catch (RuntimeException ex) {
+      throw markBroken(ex);
+    } catch (Error err) {
+      throw markBroken(err);
     }
+  }
+
+  private JedisConnectionException enrichWithRedisErrorLine(JedisConnectionException ex) {
+    /*
+     * When client send request which formed by invalid protocol, Redis send back error message
+     * before close connection. We try to read it to provide reason of failure.
+     */
+    try {
+      String errorMessage = Protocol.readErrorLineIfPossible(inputStream);
+      if (errorMessage != null && !errorMessage.isEmpty()) {
+        return new JedisConnectionException(errorMessage, ex.getCause());
+      }
+    } catch (Exception e) {
+      /*
+       * Catch any IOException or JedisConnectionException occurred from InputStream#read and just
+       * ignore. This approach is safe because reading error message is optional and connection
+       * will eventually be closed.
+       */
+    }
+    return ex;
   }
 
   public void connect() throws JedisConnectionException {
@@ -498,13 +514,19 @@ public class Connection implements Closeable {
 
       } catch (JedisConnectionException jce) {
 
-        setBroken();
-        throw jce;
+        throw markBroken(jce);
 
       } catch (IOException ioe) {
 
-        setBroken();
-        throw new JedisConnectionException("Failed to create input/output stream", ioe);
+        throw markBroken(new JedisConnectionException("Failed to create input/output stream", ioe));
+
+      } catch (RuntimeException ex) {
+
+        throw markBroken(ex);
+
+      } catch (Error err) {
+
+        throw markBroken(err);
 
       } finally {
 
@@ -567,6 +589,29 @@ public class Connection implements Closeable {
 
   public void setBroken() {
     broken = true;
+  }
+
+  private JedisConnectionException markBroken(JedisConnectionException ex) {
+    setBroken(ex);
+    return ex;
+  }
+
+  private RuntimeException markBroken(RuntimeException ex) {
+    setBroken(ex);
+    return ex;
+  }
+
+  private Error markBroken(Error err) {
+    setBroken(err);
+    return err;
+  }
+
+  private void setBroken(Throwable cause) {
+    if (!broken) {
+      // first cause wins — that is the root failure later guard exceptions should point at
+      brokenCause = cause;
+    }
+    setBroken();
   }
 
   public String getStatusCodeReply() {
@@ -639,11 +684,16 @@ public class Connection implements Closeable {
   }
 
   protected void flush() {
+    if (broken) {
+      throw new JedisConnectionException("Attempting to write to a broken connection.", brokenCause);
+    }
+
     try {
       outputStream.flush();
     } catch (IOException ex) {
-      setBroken();
-      throw new JedisConnectionException(ex);
+      throw markBroken(new JedisConnectionException(ex));
+    } catch (Error err) {
+      throw markBroken(err);
     }
   }
 
@@ -658,20 +708,26 @@ public class Connection implements Closeable {
 
   protected Object readProtocolWithCheckingBroken() {
     if (broken) {
-      throw new JedisConnectionException("Attempting to read from a broken connection.");
+      throw new JedisConnectionException("Attempting to read from a broken connection.", brokenCause);
     }
     try {
       applyCurrentTimeout();
       return protocolRead(inputStream, pushConsumers);
-    } catch (JedisConnectionException exc) {
-      broken = true;
+    } catch (JedisDataException exc) {
+      // Redis error reply was fully parsed; the stream is aligned and the connection reusable.
       throw exc;
+    } catch (RuntimeException exc) {
+      // Transport failures (JedisConnectionException) and any other unexpected failure mid-read
+      // leave the stream position indeterminate.
+      throw markBroken(exc);
+    } catch (Error err) {
+      throw markBroken(err);
     }
   }
 
   protected void readPushesWithCheckingBroken() {
     if (broken) {
-      throw new JedisConnectionException("Attempting to read from a broken connection.");
+      throw new JedisConnectionException("Attempting to read from a broken connection.", brokenCause);
     }
 
     try {
@@ -680,11 +736,11 @@ public class Connection implements Closeable {
         protocolReadPushes(inputStream, pushConsumers);
       }
     } catch (IOException e) {
-      broken = true;
-      throw new JedisConnectionException("Failed to check buffer on connection.", e);
-    } catch (JedisConnectionException exc) {
-      setBroken();
-      throw exc;
+      throw markBroken(new JedisConnectionException("Failed to check buffer on connection.", e));
+    } catch (RuntimeException exc) {
+      throw markBroken(exc);
+    } catch (Error err) {
+      throw markBroken(err);
     }
   }
 

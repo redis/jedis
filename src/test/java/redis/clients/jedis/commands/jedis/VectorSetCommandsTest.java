@@ -1124,6 +1124,61 @@ public class VectorSetCommandsTest extends JedisCommandsTestBase {
   }
 
   /**
+   * Test VISMEMBER command functionality. Verifies that element existence in a vector set
+   * can be checked correctly throughout its lifecycle.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVismember(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:vector:set";
+    float[] vector1 = { 1.0f, 2.0f };
+    float[] vector2 = { 3.0f, 4.0f };
+
+    // Initially, vismember should return false for non-existent vector set
+    assertFalse(jedis.vismember(testKey, "element1"));
+    assertFalse(jedis.vismember(testKey.getBytes(), "element1".getBytes()));
+
+    // Add first element
+    boolean result1 = jedis.vadd(testKey, vector1, "element1");
+    assertTrue(result1);
+
+    // Check existence of added element (String & Binary)
+    assertTrue(jedis.vismember(testKey, "element1"));
+    assertTrue(jedis.vismember(testKey.getBytes(), "element1".getBytes()));
+
+    // Check non-existent element in an existing set
+    assertFalse(jedis.vismember(testKey, "element2"));
+    assertFalse(jedis.vismember(testKey.getBytes(), "element2".getBytes()));
+
+    // Add second element
+    boolean result2 = jedis.vadd(testKey, vector2, "element2");
+    assertTrue(result2);
+    assertTrue(jedis.vismember(testKey, "element2"));
+
+    // Remove an element and verify it's no longer a member
+    boolean removed = jedis.vrem(testKey, "element1");
+    assertTrue(removed);
+    assertFalse(jedis.vismember(testKey, "element1"));
+    assertFalse(jedis.vismember(testKey.getBytes(), "element1".getBytes()));
+
+    // Ensure the other element was not affected
+    assertTrue(jedis.vismember(testKey, "element2"));
+  }
+
+  /**
+   * Test VISMEMBER with non-existent vector set.
+   */
+  @Test
+  @SinceRedisVersion("8.0.0")
+  public void testVismemberNotExistingSet(TestInfo testInfo) {
+    String testKey = testInfo.getDisplayName() + ":test:empty:vector:set";
+
+    // VISMEMBER should return false for non-existent vector set
+    assertFalse(jedis.vismember(testKey, "any-element"));
+    assertFalse(jedis.vismember(testKey.getBytes(), "any-element".getBytes()));
+  }
+
+  /**
    * Test VDIM command functionality. Verifies that vector set dimension can be retrieved correctly.
    */
   @Test

@@ -211,6 +211,12 @@ public interface VectorSetPipelineCommands {
   Response<Long> vcard(String key);
 
   /**
+   * @since 8.0
+   */
+  @Experimental
+  Response<Boolean> vismember(String key, String element);
+
+  /**
    * <b><a href="https://redis.io/docs/latest/commands/vemb/">VEMB Command</a></b> Return the
    * approximate vector associated with a given element in the vector set.
    * <p>

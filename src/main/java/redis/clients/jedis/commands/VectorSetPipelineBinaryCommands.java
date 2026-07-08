@@ -210,6 +210,12 @@ public interface VectorSetPipelineBinaryCommands {
   Response<Long> vcard(byte[] key);
 
   /**
+   * @since 8.0
+   */
+  @Experimental
+  Response<Boolean> vismember(byte[] key, byte[] element);
+
+  /**
    * <b><a href="https://redis.io/docs/latest/commands/vemb/">VEMB Command</a></b> Return the
    * approximate vector associated with a given element in the vector set.
    * <p>

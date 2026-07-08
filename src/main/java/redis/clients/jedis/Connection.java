@@ -6,6 +6,7 @@ import java.io.Closeable;
 import java.io.IOException;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.SocketException;
 import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
@@ -362,9 +363,8 @@ public class Connection implements Closeable {
     }
     try {
       socket.setSoTimeout(timeout);
-    } catch (IOException e) {
-      setBroken();
-      throw new JedisConnectionException("Failed to set SO_TIMEOUT", e);
+    } catch (SocketException e) {
+      throw markBroken(new JedisConnectionException("Failed to set SO_TIMEOUT", e));
     }
     appliedSoTimeout = timeout;
   }
@@ -385,6 +385,10 @@ public class Connection implements Closeable {
    * @see MaintenanceNotificationsConfig#getRelaxedBlockingTimeout()
    */
   public void setTimeoutInfinite() {
+    if (!isConnected()) {
+      connect();
+    }
+
     isBlocking = true;
     applyCurrentTimeout();
   }

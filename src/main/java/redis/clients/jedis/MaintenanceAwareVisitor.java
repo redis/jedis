@@ -14,7 +14,7 @@ import redis.clients.jedis.util.JedisAsserts;
 
 public class MaintenanceAwareVisitor implements InitVisitor {
 
-  private static Logger logger = LoggerFactory.getLogger(MaintenanceAwareVisitor.class);
+  private static final Logger logger = LoggerFactory.getLogger(MaintenanceAwareVisitor.class);
 
   private final Connection.Builder builder;
   private final MaintenanceEventController controller;

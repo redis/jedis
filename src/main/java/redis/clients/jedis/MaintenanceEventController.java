@@ -115,10 +115,11 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     // dropping the connections immediately just by relying isAffected would be an issue, and cause
     // immediate drops while it is not supposed to be.
 
-    long deadline = NanoClock.INSTANCE.getAsLong() + ttlNanos;
+    long now = NanoClock.INSTANCE.getAsLong();
+    long deadline = now + ttlNanos;
     // HERE! we can control if an immediate gracefull drop needed,, or we need to delay in case
     // MOVING msg suggests a future renewal.
-    c.expireAt(deadline);
+    c.expireAt(now);
     SocketAddress affectedPeer = c.getRemoteSocketAddress();
     if (affectedPeer == null) {
       return; // receiver socket already closed; no peer to register

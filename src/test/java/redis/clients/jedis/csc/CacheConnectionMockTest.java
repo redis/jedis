@@ -32,6 +32,7 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.PushConsumer;
 import redis.clients.jedis.PushConsumerChainImpl;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.sch.AbstractMaintenanceEventHandlingTest;
 import redis.clients.jedis.sch.AbstractMaintenanceHandshakeTest;
 import redis.clients.jedis.sch.AbstractRelaxedTimeoutBehaviorTest;
@@ -209,8 +210,9 @@ public class CacheConnectionMockTest {
     @Override
     protected Connection buildConnection(HostAndPort hp, JedisClientConfig cfg,
         MaintenanceNotificationsConfig maint) {
-      return CacheConnection.builder(cache).socketFactory(new DefaultJedisSocketFactory(hp, cfg))
-          .clientConfig(cfg).maintenanceConfig(maint).build();
+      RedisClient client = RedisClient.builder().hostAndPort(hp).clientConfig(cfg)
+          .maintenanceNotifications(maint).build();
+      return client.getPool().getResource();
     }
   }
 }

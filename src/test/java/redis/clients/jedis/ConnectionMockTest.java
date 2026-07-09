@@ -147,8 +147,9 @@ public class ConnectionMockTest {
     @Override
     protected Connection buildConnection(HostAndPort hp, JedisClientConfig cfg,
         MaintenanceNotificationsConfig maint) {
-      return Connection.builder().socketFactory(new DefaultJedisSocketFactory(hp, cfg))
-          .clientConfig(cfg).maintenanceConfig(maint).build();
+      RedisClient client = RedisClient.builder().hostAndPort(hp).clientConfig(cfg)
+          .maintenanceNotifications(maint).build();
+      return client.provider.getConnection();
     }
 
     @Test

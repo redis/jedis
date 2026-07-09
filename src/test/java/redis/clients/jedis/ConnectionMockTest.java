@@ -145,11 +145,8 @@ public class ConnectionMockTest {
   class MaintenanceHandshake extends AbstractMaintenanceHandshakeTest {
 
     @Override
-    protected Connection buildConnection(HostAndPort hp, JedisClientConfig cfg,
-        MaintenanceNotificationsConfig maint) {
-      RedisClient client = RedisClient.builder().hostAndPort(hp).clientConfig(cfg)
-          .maintenanceNotifications(maint).build();
-      return client.provider.getConnection();
+    protected Connection.Builder newConnectionBuilder() {
+      return Connection.builder();
     }
 
     @Test

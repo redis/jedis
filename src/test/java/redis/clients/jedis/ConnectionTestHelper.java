@@ -28,6 +28,17 @@ public class ConnectionTestHelper {
   }
 
   /**
+   * Wires the production maintenance handshake onto a builder — same wiring as
+   * {@link ConnectionFactory}: maintenance config plus a {@link MaintenanceAwareVisitor} backed by
+   * a fresh {@link MaintenanceEventController}.
+   */
+  public static Connection.Builder withMaintenanceHandshake(Connection.Builder builder,
+      MaintenanceNotificationsConfig maintConfig) {
+    return builder.maintenanceConfig(maintConfig).addVisitor(
+      new MaintenanceAwareVisitor(builder, MaintenanceEventController.from(maintConfig)));
+  }
+
+  /**
    * Returns {@code true} if the consumer is a {@link MaintenanceEventConsumer}.
    * <p>
    * The maintenance consumer captures its owning connection, so it cannot be a shared singleton and

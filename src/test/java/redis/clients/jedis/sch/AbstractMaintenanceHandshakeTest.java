@@ -11,7 +11,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.Connection;
+import redis.clients.jedis.ConnectionTestHelper;
 import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.DefaultJedisSocketFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
@@ -49,13 +51,19 @@ public abstract class AbstractMaintenanceHandshakeTest {
     }
   }
 
+  /** Variant-specific connection builder: plain {@code Connection} vs {@code CacheConnection}. */
+  protected abstract Connection.Builder newConnectionBuilder();
+
   /**
-   * Build the connection under test (variant-specific: plain Connection or CacheConnection). The
-   * maintenance config is passed separately since it no longer lives on {@link JedisClientConfig};
-   * subclasses turn it into a controller via {@code Connection.Builder.maintenanceNotifications()}.
+   * Builds a connection with the maintenance handshake wired on exactly as
+   * {@code ConnectionFactory} does in production (config + visitor + controller).
    */
-  protected abstract Connection buildConnection(HostAndPort hostAndPort, JedisClientConfig config,
-      MaintenanceNotificationsConfig maintConfig);
+  protected final Connection buildConnection(HostAndPort hostAndPort, JedisClientConfig config,
+      MaintenanceNotificationsConfig maintConfig) {
+    Connection.Builder builder = newConnectionBuilder()
+        .socketFactory(new DefaultJedisSocketFactory(hostAndPort, config)).clientConfig(config);
+    return ConnectionTestHelper.withMaintenanceHandshake(builder, maintConfig).build();
+  }
 
   // ---- Tests ---------------------------------------------------------------
 

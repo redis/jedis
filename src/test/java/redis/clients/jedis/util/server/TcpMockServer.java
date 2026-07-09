@@ -4,7 +4,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
@@ -32,6 +34,9 @@ public class TcpMockServer {
   private ServerSocket serverSocket;
   private int port;
   private CommandHandler commandHandler;
+
+  /** Protocol assumed for a connection that never sent HELLO. Real Redis defaults to RESP2. */
+  private volatile RedisProtocol defaultProtocol = RedisProtocol.RESP2;
 
   /**
    * Start the server on an available port
@@ -100,12 +105,65 @@ public class TcpMockServer {
   }
 
   /**
-   * Generic method to send a push message to all connected clients.
+   * Generic method to send a push message to all connected clients. Generic method to send a push
+   * message to all connected clients. Can handle mixed types (Integer, Long, String, etc.).
+   * <p>
+   * For structured maintenance events, use {@link MaintenanceEventMessages} utility to create the
+   * message elements, then pass them to this method.
+   * <p>
+   * Example:
+   *
+   * <pre>
+   * {
+   *   &#64;code
+   *   // Using MaintenanceEventMessages utility
+   *   Object[] migrating = MaintenanceEventMessages.migrating(6, 2, "2", "4");
+   *   server.sendPushMessageToAll(migrating);
+   *
+   *   // Or directly
+   *   server.sendPushMessageToAll("MIGRATING", 6, 2, "[\"2\", \"4\"]");
+   * }
+   * </pre>
+   *
    * @param pushType the type of push message (e.g., "MIGRATING", "MIGRATED")
-   * @param args optional arguments for the push message
+   * @param args optional arguments for the push message (can be Integer, Long, String, etc.)
    */
-  public void sendPushMessageToAll(String pushType, String... args) {
-    connectedClients.values().forEach(client -> client.sendPushMessage(pushType, args));
+  public void sendPushMessageToAll(String pushType, Object... args) {
+    // Push frames are only meaningful to RESP3 clients; RESP2 connections silently drop them, as
+    // a real server would.
+    for (ClientHandler client : connectedClients.values()) {
+      if (client.activeProtocol() == RedisProtocol.RESP3) {
+        client.sendPushMessage(pushType, args);
+      }
+    }
+  }
+
+  /**
+   * Generic method to send a push message to all connected clients using a pre-built message array.
+   * The first element must be the push type (String), followed by message arguments.
+   * <p>
+   * This is designed to work with {@link MaintenanceEventMessages} utility methods.
+   * <p>
+   * Example:
+   *
+   * <pre>
+   * {
+   *   &#64;code
+   *   // Using MaintenanceEventMessages utility
+   *   server.sendPushMessageToAll(MaintenanceEventMessages.migrating(6, 2, "2", "4"));
+   * }
+   * </pre>
+   *
+   * @param messageElements array where first element is the push type, rest are arguments
+   */
+  public void sendPushMessageToAll(Object[] messageElements) {
+    if (messageElements == null || messageElements.length == 0) {
+      throw new IllegalArgumentException("Message elements cannot be null or empty");
+    }
+    String pushType = messageElements[0].toString();
+    Object[] args = new Object[messageElements.length - 1];
+    System.arraycopy(messageElements, 1, args, 0, args.length);
+    sendPushMessageToAll(pushType, args);
   }
 
   /**
@@ -114,7 +172,11 @@ public class TcpMockServer {
    * @param rawMessage the raw RESP3 protocol message to send
    */
   public void sendRawPushMessageToAll(String rawMessage) {
-    connectedClients.values().forEach(client -> client.sendRawPushMessage(rawMessage));
+    for (ClientHandler client : connectedClients.values()) {
+      if (client.activeProtocol() == RedisProtocol.RESP3) {
+        client.sendRawPushMessage(rawMessage);
+      }
+    }
   }
 
   /**
@@ -131,6 +193,15 @@ public class TcpMockServer {
    */
   public void setCommandHandler(CommandHandler commandHandler) {
     this.commandHandler = commandHandler;
+  }
+
+  /**
+   * Protocol applied to a connection that never sent HELLO. Real Redis defaults to RESP2; tests can
+   * change this if they want raw connections (no HELLO) to be treated as RESP3.
+   */
+  public TcpMockServer defaultProtocol(RedisProtocol protocol) {
+    this.defaultProtocol = protocol;
+    return this;
   }
 
   /**
@@ -153,20 +224,27 @@ public class TcpMockServer {
     connectedClients.clear();
   }
 
+  /** RESP3 HELLO reply (map). Server version 7.4.0. */
+  private static final String RESP3_HELLO_REPLY = "%7\r\n" + "$6\r\nserver\r\n$5\r\nredis\r\n"
+      + "$7\r\nversion\r\n$5\r\n7.4.0\r\n" + "$5\r\nproto\r\n:3\r\n" + "$2\r\nid\r\n:1\r\n"
+      + "$4\r\nmode\r\n$10\r\nstandalone\r\n" + "$4\r\nrole\r\n$6\r\nmaster\r\n"
+      + "$7\r\nmodules\r\n*0\r\n";
+
+  /** RESP2 HELLO reply (server array). Server version 7.4.0. */
+  private static final String RESP2_HELLO_REPLY = "*14\r\n" + "$6\r\nserver\r\n$5\r\nredis\r\n"
+      + "$7\r\nversion\r\n$5\r\n7.4.0\r\n" + "$5\r\nproto\r\n:2\r\n" + "$2\r\nid\r\n:1\r\n"
+      + "$4\r\nmode\r\n$10\r\nstandalone\r\n" + "$4\r\nrole\r\n$6\r\nmaster\r\n"
+      + "$7\r\nmodules\r\n*0\r\n";
+
   /**
    * Static registry of built-in command responses (shared across all client handlers). Commands are
-   * stored as CommandKey (command + optional subcommand) for smart lookup.
+   * stored as CommandKey (command + optional subcommand) for smart lookup. HELLO is handled
+   * separately by the per-connection negotiation in {@link ClientHandler}.
    */
   private static final java.util.Map<CommandKey, String> BUILTIN_RESPONSES;
 
   static {
     java.util.Map<CommandKey, String> responses = new java.util.HashMap<>();
-
-    // RESP3 HELLO response - version 7.4.0 to support client-side caching
-    responses.put(new CommandKey(Protocol.Command.HELLO),
-      "%7\r\n" + "$6\r\nserver\r\n$5\r\nredis\r\n" + "$7\r\nversion\r\n$5\r\n7.4.0\r\n"
-          + "$5\r\nproto\r\n:3\r\n" + "$2\r\nid\r\n:1\r\n" + "$4\r\nmode\r\n$10\r\nstandalone\r\n"
-          + "$4\r\nrole\r\n$6\r\nmaster\r\n" + "$7\r\nmodules\r\n*0\r\n");
 
     responses.put(new CommandKey(Protocol.Command.PING), "+PONG\r\n");
 
@@ -174,6 +252,7 @@ public class TcpMockServer {
     responses.put(new CommandKey(Protocol.Command.CLIENT, Protocol.Keyword.SETNAME), "+OK\r\n");
     responses.put(new CommandKey(Protocol.Command.CLIENT, Protocol.Keyword.SETINFO), "+OK\r\n");
     responses.put(new CommandKey("CLIENT", "TRACKING"), "+OK\r\n");
+    responses.put(new CommandKey("CLIENT", "MAINT_NOTIFICATIONS"), "+OK\r\n");
 
     BUILTIN_RESPONSES = java.util.Collections.unmodifiableMap(responses);
   }
@@ -268,9 +347,18 @@ public class TcpMockServer {
     private volatile boolean connected = true;
     private final Object outputLock = new Object(); // Lock to prevent interleaving
 
+    /**
+     * Protocol the client negotiated via HELLO; falls back to {@link #defaultProtocol} pre-HELLO.
+     */
+    private volatile RedisProtocol negotiatedProtocol;
+
     public ClientHandler(Socket clientSocket) {
       this.clientSocket = clientSocket;
       this.clientId = clientSocket.getRemoteSocketAddress().toString();
+    }
+
+    RedisProtocol activeProtocol() {
+      return negotiatedProtocol != null ? negotiatedProtocol : defaultProtocol;
     }
 
     @Override
@@ -297,7 +385,18 @@ public class TcpMockServer {
             // Process command with custom handler or built-in responses
             processCommand(commandArgs);
           } catch (IOException e) {
-            logger.debug("Client " + clientId + " disconnected: " + e.getMessage());
+            logger.trace("Client " + clientId + " disconnected: " + e.getMessage());
+            connected = false;
+            break;
+          } catch (JedisConnectionException e) {
+            // RedisInputStream wraps any IOException (including SocketException
+            // "Connection reset", which Jedis triggers via SO_LINGER(true, 0) on close)
+            // into JedisConnectionException. Treat those as a normal disconnect.
+            if (e.getCause() instanceof IOException) {
+              logger.trace("Client " + clientId + " disconnected: " + e.getMessage());
+            } else {
+              logger.debug("Client " + clientId + " connection error: " + e.getMessage());
+            }
             connected = false;
             break;
           } catch (Exception e) {
@@ -361,24 +460,52 @@ public class TcpMockServer {
      * @throws IOException if writing the response fails
      */
     private void processCommand(CommandArguments commandArgs) throws IOException {
+      String cmd = SafeEncoder.encode(commandArgs.getCommand().getRaw()).toUpperCase();
+
       String response = null;
 
-      // First, try custom command handler if available
+      // User-installed command handler wins: a returning non-null reply lets the test observe and /
+      // or override any command including HELLO. Returning null falls through to defaults.
       if (commandHandler != null) {
         response = commandHandler.handleCommand(commandArgs, clientId);
       }
 
-      // If no custom handler or it returned null, fall back to built-in responses
+      // HELLO is handled internally to track per-connection protocol negotiation when the handler
+      // did not return its own reply.
+      if (response == null && "HELLO".equals(cmd)) {
+        response = handleHello(commandArgs);
+      }
+
+      // Finally fall back to predefined built-in responses.
       if (response == null) {
         response = getBuiltinResponse(commandArgs);
       }
 
-      // Write the response
       if (response != null) {
         writeResponse(response);
       } else {
         throw new RuntimeException("Unknown command: " + commandArgs.getCommand());
       }
+    }
+
+    /**
+     * Handles HELLO with explicit version negotiation. {@code HELLO 2} replies with the RESP2-array
+     * form; {@code HELLO 3} with the RESP3-map form; an unversioned HELLO replies in the
+     * connection's current protocol (the server default until HELLO upgrades it).
+     */
+    private String handleHello(CommandArguments commandArgs) {
+      String version = commandArgs.size() > 1 ? SafeEncoder.encode(commandArgs.get(1).getRaw())
+          : null;
+      if ("3".equals(version)) {
+        this.negotiatedProtocol = RedisProtocol.RESP3;
+        return RESP3_HELLO_REPLY;
+      }
+      if ("2".equals(version)) {
+        this.negotiatedProtocol = RedisProtocol.RESP2;
+        return RESP2_HELLO_REPLY;
+      }
+      // Versionless HELLO: reply in whatever protocol the connection is currently on.
+      return activeProtocol() == RedisProtocol.RESP3 ? RESP3_HELLO_REPLY : RESP2_HELLO_REPLY;
     }
 
     /**
@@ -445,31 +572,21 @@ public class TcpMockServer {
     }
 
     /**
-     * Generic method to send a push message to this client. According to RESP3 spec, push messages
-     * may precede or follow command replies, but must not interleave with them. We use
-     * synchronization to ensure this.
+     * Generic method to send a push message with mixed types to this client. According to RESP3
+     * spec, push messages may precede or follow command replies, but must not interleave with them.
+     * We use synchronization to ensure this.
      * @param pushType the type of push message (e.g., "MIGRATING", "MIGRATED")
-     * @param args optional arguments for the push message
+     * @param args optional arguments for the push message (can be Integer or String)
      */
-    public void sendPushMessage(String pushType, String... args) {
+    public void sendPushMessage(String pushType, Object... args) {
       try {
-        StringBuilder pushMessage = new StringBuilder();
-
-        // Calculate total number of elements (push type + arguments)
-        int elementCount = 1 + args.length;
-        pushMessage.append(">").append(elementCount).append("\r\n");
-
-        // Add push type
-        pushMessage.append("$").append(pushType.length()).append("\r\n").append(pushType)
-            .append("\r\n");
-
-        // Add arguments
-        for (String arg : args) {
-          pushMessage.append("$").append(arg.length()).append("\r\n").append(arg).append("\r\n");
-        }
+        // Build push message with mixed types using RespResponse utility
+        List<Object> elements = new java.util.ArrayList<>(1 + args.length);
+        elements.add(pushType); // First element is the push type
+        elements.addAll(Arrays.asList(args));
 
         // Use synchronized writeResponse method to prevent interleaving
-        writeResponse(pushMessage.toString());
+        writeResponse(RespResponse.push(elements));
 
       } catch (IOException e) {
         logger.error("Error sending " + pushType + " push to " + clientId

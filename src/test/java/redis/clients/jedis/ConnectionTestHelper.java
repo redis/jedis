@@ -1,6 +1,11 @@
 package redis.clients.jedis;
 
+import java.net.Socket;
+import java.time.Duration;
 import java.util.List;
+import java.util.function.LongSupplier;
+
+import redis.clients.jedis.util.ReflectionTestUtil;
 
 /**
  * Test helper for accessing package-private/protected members of Connection.
@@ -20,6 +25,79 @@ public class ConnectionTestHelper {
    */
   public static List<PushConsumer> getPushConsumers(Connection connection) {
     return connection.getPushConsumers();
+  }
+
+  /**
+   * Wires the production maintenance handshake onto a builder — same wiring as
+   * {@link ConnectionFactory}: maintenance config plus a {@link MaintenanceAwareVisitor} backed by
+   * a fresh {@link MaintenanceEventController}.
+   */
+  public static Connection.Builder withMaintenanceHandshake(Connection.Builder builder,
+      MaintenanceNotificationsConfig maintConfig) {
+    return builder.maintenanceConfig(maintConfig).addVisitor(
+      new MaintenanceAwareVisitor(builder, MaintenanceEventController.from(maintConfig)));
+  }
+
+  /**
+   * Returns {@code true} if the consumer is a {@link MaintenanceEventConsumer}.
+   * <p>
+   * The maintenance consumer captures its owning connection, so it cannot be a shared singleton and
+   * must be matched by type rather than identity.
+   * </p>
+   */
+  public static boolean isMaintenanceEventConsumer(PushConsumer consumer) {
+    return consumer instanceof MaintenanceEventConsumer;
+  }
+
+  /**
+   * Maintenance relaxed-timeout state on {@link Connection}. The relaxed timeout is wired only when
+   * the maintenance feature is active (a {@link MaintenanceEventController} attached via the pool);
+   * these read the internal {@code relaxedTimeoutSource} directly so tests in other packages can
+   * observe it without a public accessor.
+   */
+  public static boolean isRelaxedTimeoutActive(Connection connection) {
+    ExpiringTimeoutSource source = ReflectionTestUtil.getField(connection, "relaxedTimeoutSource");
+    return source != null && source.get() != null;
+  }
+
+  public static void relaxTimeouts(Connection connection, Duration period) {
+    connection.relaxTimeouts(NanoClock.INSTANCE.getAsLong() + period.toNanos());
+  }
+
+  public static void resetRelaxedTimeouts(Connection connection) {
+    connection.resetRelaxedTimeouts();
+  }
+
+  public static int getRelaxedSoTimeout(Connection connection) {
+    return relaxedInfo(connection).timeout;
+  }
+
+  public static int getRelaxedBlockingSoTimeout(Connection connection) {
+    return relaxedInfo(connection).blockingTimeout;
+  }
+
+  /** The configured relaxed timeouts, or a zeroed pair when relaxation was never wired. */
+  private static TimeoutSource.TimeoutInfo relaxedInfo(Connection connection) {
+    ExpiringTimeoutSource source = ReflectionTestUtil.getField(connection, "relaxedTimeoutSource");
+    return source == null ? null : source.get();
+  }
+
+  /**
+   * Returns the underlying {@link Socket} of a Connection so tests can assert OS-level state (e.g.
+   * the applied {@code SO_TIMEOUT}). The field is private, so reflection is centralized here rather
+   * than repeated in test bodies.
+   */
+  public static Socket getSocket(Connection connection) {
+    return ReflectionTestUtil.getField(connection, "socket");
+  }
+
+  public static void setClockNanos(LongSupplier clock) {
+    NanoClock.INSTANCE = clock;
+  }
+
+  /** Restores the process-wide monotonic clock to {@link System#nanoTime()}. */
+  public static void resetClockNanos() {
+    NanoClock.INSTANCE = System::nanoTime;
   }
 
   private ConnectionTestHelper() {

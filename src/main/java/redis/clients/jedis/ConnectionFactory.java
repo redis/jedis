@@ -27,6 +27,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     private JedisSocketFactory jedisSocketFactory;
     private Cache cache;
     private HostAndPort hostAndPort;
+    private MaintenanceEventController maintenanceController;
 
     // Fluent API methods (preferred)
     public Builder clientConfig(JedisClientConfig clientConfig) {
@@ -54,6 +55,16 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       return this;
     }
 
+    /**
+     * Maintenance controller propagated to the default socket factory (as the post-DNS
+     * address mapper for MOVING redirects) and to the default {@link Connection.Builder} (so each
+     * connection forwards push frames to it). {@code null} disables maintenance for this factory.
+     */
+    Builder maintenanceController(MaintenanceEventController maintenanceController) {
+      this.maintenanceController = maintenanceController;
+      return this;
+    }
+
     public Connection.Builder getConnectionBuilder() {
       return connectionBuilder;
     }
@@ -72,6 +83,10 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
     public ConnectionFactory build() {
       withDefaults();
+      return create();
+    }
+
+    protected ConnectionFactory create() {
       return new ConnectionFactory(this);
     }
 
@@ -92,12 +107,16 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       if (hostAndPort == null) {
         throw new IllegalStateException("HostAndPort is required when no socketFactory is provided");
       }
-      return new DefaultJedisSocketFactory(hostAndPort, clientConfig);
+      return new DefaultJedisSocketFactory(hostAndPort, clientConfig, maintenanceController);
     }
 
     private Connection.Builder createDefaultConnectionBuilder() {
       Connection.Builder connBuilder = cache == null ? Connection.builder() : CacheConnection.builder(cache);
       connBuilder.socketFactory(jedisSocketFactory).clientConfig(clientConfig);
+      if (maintenanceController != null) {
+        connBuilder.maintenanceConfig(maintenanceController.getConfig())
+            .addVisitor(new MaintenanceAwareVisitor(connBuilder, maintenanceController));
+      }
       return connBuilder;
     }
   }

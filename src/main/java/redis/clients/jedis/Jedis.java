@@ -11062,5 +11062,4 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vsetattr(key, element, attributes));
   }
-
 }

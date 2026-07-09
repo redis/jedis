@@ -208,7 +208,7 @@ public class CacheConnectionMockTest {
 
     @Override
     protected Connection.Builder newConnectionBuilder() {
-      return CacheConnection.builder(new DefaultCache(1));
+      return CacheConnection.builder(cache);
     }
   }
 }

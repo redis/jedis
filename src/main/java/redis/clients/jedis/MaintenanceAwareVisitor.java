@@ -57,12 +57,15 @@ public class MaintenanceAwareVisitor implements InitVisitor {
     MaintenanceEventConsumer consumer = new MaintenanceEventConsumer(connection,
         maintenanceEventListeners);
     connection.addPushConsumer(consumer);
-    ExpiringTimeoutSource relaxedTimeoutSource = new ExpiringTimeoutSource(new TimeoutInfo(
-        maintenanceConfig.getRelaxedTimeout(), maintenanceConfig.getRelaxedBlockingTimeout()));
-    connection.enableTimeoutRelaxing(relaxedTimeoutSource);
+    ExpiringTimeoutSource relaxedTimeoutSource = new ExpiringTimeoutSource(
+        new TimeoutInfo(Math.max(connection.getSoTimeout(), maintenanceConfig.getRelaxedTimeout()),
+            Math.max(connection.getBlockingSoTimeout(),
+              maintenanceConfig.getRelaxedBlockingTimeout())));
 
-    ChainedTimeoutSource rebindTimeoutSource = new RebindTimeoutSource(controller);
+    ChainedTimeoutSource rebindTimeoutSource = new RebindTimeoutSource(controller,
+        connection.getSoTimeout(), connection.getBlockingSoTimeout());
     relaxedTimeoutSource.addOverride(rebindTimeoutSource);
+    connection.enableTimeoutRelaxing(relaxedTimeoutSource);
 
     connection.sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
       resolveEndpointType(maintenanceConfig.getEndpointType()));
@@ -101,15 +104,23 @@ public class MaintenanceAwareVisitor implements InitVisitor {
   private static final class RebindTimeoutSource extends ChainedTimeoutSource {
 
     private final MaintenanceEventController controller;
+    private final int configuredTimeout;
+    private final int configuredBlockingTimeout;
 
-    RebindTimeoutSource(MaintenanceEventController controller) {
+    RebindTimeoutSource(MaintenanceEventController controller, int configuredTimeout,
+        int configuredBlockingTimeout) {
       super(null);
       this.controller = controller;
+      this.configuredTimeout = configuredTimeout;
+      this.configuredBlockingTimeout = configuredBlockingTimeout;
     }
 
     @Override
     protected TimeoutInfo getOwnInfo() {
-      return controller.getTimeoutSupplier().get();
+      TimeoutInfo raw = controller.getTimeoutSupplier().get();
+      if (raw == null) return null;
+      return new TimeoutInfo(Math.max(configuredTimeout, raw.timeout),
+          Math.max(configuredBlockingTimeout, raw.blockingTimeout));
     }
   }
 }

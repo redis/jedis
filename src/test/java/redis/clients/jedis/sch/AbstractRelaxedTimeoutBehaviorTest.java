@@ -292,4 +292,40 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
     assertFalse(isRelaxedTimeoutActive(connection));
     assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
   }
+
+  /**
+   * When the maintenance-config relaxed timeout is SMALLER than the user-configured SO_TIMEOUT,
+   * activating relaxation must not tighten the deadline -- the effective socket timeout must remain
+   * at the configured value (issue #4602: apply max(configured, relaxed)).
+   */
+  @Test
+  public void testRelaxedTimeoutDoesNotReduceConfiguredTimeout() throws SocketException {
+    // Pick a relaxed value that is deliberately smaller than SO_TIMEOUT_MS so that applying it
+    // unconditionally would tighten the deadline instead of loosening it.
+    int smallerRelaxedTimeout = SO_TIMEOUT_MS / 2; // 1000 < 2000
+    MaintenanceNotificationsConfig tighterMaintConfig = MaintenanceNotificationsConfig.builder()
+        .relaxedTimeout(smallerRelaxedTimeout).relaxedBlockingTimeout(smallerRelaxedTimeout)
+        .build();
+
+    ConnectionPool localPool = createPool(new HostAndPort("localhost", mockServer.getPort()),
+      defaultClientConfig(), tighterMaintConfig);
+
+    try (Connection localConn = localPool.getResource()) {
+      Socket socket = ConnectionTestHelper.getSocket(localConn);
+      assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
+
+      // Trigger a MIGRATING push so the relaxed-timeout window opens.
+      mockServer.sendPushMessageToAll(
+        MaintenanceEventMessages.migrating(99, 10, Collections.singletonList("1")));
+      assertTrue(localConn.ping());
+      assertTrue(isRelaxedTimeoutActive(localConn),
+        "Relaxed timeout should be active after MIGRATING");
+
+      // The configured SO_TIMEOUT_MS must be the floor: a smaller relaxed value must not win.
+      assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout(),
+        "Relaxed timeout must not reduce the configured socket timeout (issue #4602)");
+    } finally {
+      localPool.close();
+    }
+  }
 }

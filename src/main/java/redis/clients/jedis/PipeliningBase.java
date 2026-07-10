@@ -5107,6 +5107,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Boolean> vismember(String key, String element) {
+    return appendCommand(commandObjects.vismember(key, element));
+  }
+
+  @Override
   public Response<List<Double>> vemb(String key, String element) {
     return appendCommand(commandObjects.vemb(key, element));
   }
@@ -5225,6 +5230,11 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> vcard(byte[] key) {
     return appendCommand(commandObjects.vcard(key));
+  }
+
+  @Override
+  public Response<Boolean> vismember(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vismember(key, element));
   }
 
   @Override

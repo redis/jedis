@@ -13,7 +13,6 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
-
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.CommandObject;
@@ -26,6 +25,7 @@ import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.ClientTestUtil;
 
 /**
@@ -38,11 +38,13 @@ import redis.clients.jedis.util.ClientTestUtil;
 public class MultiDbTransactionIT {
 
   private static EndpointConfig endpoint;
+  private static EndpointConfig endpoint2;
   private MultiDbClient client;
 
   @BeforeAll
   public static void prepareEndpoints() {
     endpoint = Endpoints.getRedisEndpoint("standalone0");
+    endpoint2 = Endpoints.getRedisEndpoint("standalone1");
   }
 
   @BeforeEach
@@ -195,4 +197,46 @@ public class MultiDbTransactionIT {
     assertEquals("OK", client.set("x", "y"));
     assertEquals("y", client.get("x"));
   }
+
+  /**
+   * When the active database changes while a transaction is open, {@link MultiDbTransaction#exec()}
+   * must detect the switch, roll back and refuse to run the buffered commands against the new
+   * database.
+   */
+  @Test
+  public void exec_whenActiveDatabaseChangesMidTransaction_throws() {
+    DatabaseConfig db1 = DatabaseConfig
+        .builder(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build())
+        .weight(100.0f).healthCheckEnabled(false).build();
+    DatabaseConfig db2 = DatabaseConfig
+        .builder(endpoint2.getHostAndPort(), endpoint2.getClientConfigBuilder().build())
+        .weight(1.0f).healthCheckEnabled(false).build();
+
+    MultiDbConfig config = MultiDbConfig.builder(new DatabaseConfig[] { db1, db2 }).build();
+
+    MultiDbClient twoDbClient = MultiDbClient.builder().multiDbConfig(config).build();
+
+    try {
+      try (MultiDbTransaction tx = twoDbClient.transaction(false)) {
+        // WATCH borrows a connection and pins the initial database without committing anything.
+        assertEquals("OK", tx.watch("a"));
+        tx.multi();
+        tx.set("a", "1");
+
+        // Switch the active database while the transaction is open. Without fast failover the
+        // already-borrowed connection stays usable, so exec() reaches its own switch check.
+        twoDbClient.setActiveDatabase(endpoint2.getHostAndPort());
+
+        JedisException ex = assertThrows(JedisException.class, tx::exec);
+        assertTrue(ex.getMessage().contains("Active database has changed"),
+          "expected active-database-changed error, got: " + ex.getMessage());
+      }
+
+      // The transaction was aborted, so nothing was committed on the new database.
+      assertNull(twoDbClient.get("a"));
+    } finally {
+      twoDbClient.close();
+    }
+  }
+
 }

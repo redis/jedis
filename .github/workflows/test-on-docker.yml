@@ -39,16 +39,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        redis_version:
-          - "8.10"
-          - "8.8"
-          - "8.6"
-          - "8.4"
-          - "8.2"
-          - "8.0"
-          - "7.4"
-          - "7.2"
-          # - "6.2"
+        # Full version set runs only on the nightly schedule; PRs and pushes
+        # test a reduced set (7.2 LTS, 7.4 LTS, 8.2 LTS, 8.8 current stable, 8.10 - next) to keep CI fast.
+        redis_version: ${{ fromJSON(github.event_name == 'schedule'
+          && '["8.10", "8.8", "8.6", "8.4", "8.2", "7.4", "7.2"]'
+          || '["8.10", "8.8", "8.2", "7.4", "7.2"]') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v6

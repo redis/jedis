@@ -638,7 +638,7 @@
 						<include>**/*Handler.java</include>
 						<include>**/InitVisitor.java</include>
 						<include>**/NanoClock.java</include>
-						<include>**/*TimeoutSource.java</include>
+						<include>**/*TimeoutSource*.java</include>
 						<include>**/RebindAwareEvictionPolicy.java</include>
 						<include>**/Maintenance*.java</include>
 					</includes>

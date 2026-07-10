@@ -335,8 +335,9 @@ public class Connection implements Closeable {
    * is already established. Otherwise, it will be applied when the socket is created.</p>
    *
    * <p>If the connection is currently in a <em>relaxed timeout</em> state (see {@link MaintenanceNotificationsConfig}),
-   * the relaxed value remains in effect on the socket; the value configured here takes effect
-   * once the relaxation window closes.</p>
+   * the looser of the value configured here and the relaxed value is in effect on the socket,
+   * {@code 0} (infinite) being the loosest; the configured value alone takes effect once the
+   * relaxation window closes.</p>
    *
    * @param millis the timeout value in milliseconds; a value of {@code 0} means infinite timeout
    * @throws JedisConnectionException if the underlying socket fails to apply the timeout
@@ -368,8 +369,9 @@ public class Connection implements Closeable {
    *
    * <p>The effective timeout applied depends on the current connection state:</p>
    * <ul>
-   *   <li>If relaxed timeout mode is active, the relaxed blocking timeout is used.</li>
-   *   <li>Otherwise, the configured infinite blocking timeout is applied.</li>
+   *   <li>If relaxed timeout mode is active, the looser of the configured blocking timeout and
+   *   the relaxed blocking timeout is used, {@code 0} (infinite) being the loosest.</li>
+   *   <li>Otherwise, the configured blocking timeout is applied.</li>
    * </ul>
    *
    * <p>This is typically used for blocking Redis commands (e.g. BLPOP, BRPOP) where
@@ -395,7 +397,8 @@ public class Connection implements Closeable {
    *
    * <p>The restored timeout depends on the current connection state:</p>
    * <ul>
-   *   <li>{@link MaintenanceNotificationsConfig#getRelaxedTimeout()} if relaxed timeout mode is active</li>
+   *   <li>The looser of {@link #getSoTimeout()} and {@link MaintenanceNotificationsConfig#getRelaxedTimeout()},
+   *   {@code 0} (infinite) being the loosest, if relaxed timeout mode is active</li>
    *   <li>{@link #getSoTimeout()} otherwise</li>
    * </ul>
    *
@@ -1094,9 +1097,11 @@ public class Connection implements Closeable {
 
   /**
    * Switches this connection to relaxed timeouts for at most {@code period}. While the window is
-   * open, commands use {@link MaintenanceNotificationsConfig#getRelaxedTimeout()} and {@link MaintenanceNotificationsConfig#getRelaxedBlockingTimeout()}
-   * instead of the configured values, giving in-flight commands extra headroom across a server-side
-   * maintenance event (MIGRATING / FAILING_OVER / MOVING-receiver). The original timeouts return
+   * open, commands use the looser of the configured value and {@link MaintenanceNotificationsConfig#getRelaxedTimeout()}
+   * (respectively {@link MaintenanceNotificationsConfig#getRelaxedBlockingTimeout()}), {@code 0}
+   * (infinite) being the loosest, giving in-flight commands extra headroom across a server-side
+   * maintenance event (MIGRATING / FAILING_OVER / MOVING-receiver) without ever tightening the
+   * configured deadline. The original timeouts return
    * into effect once the window closes or {@link #resetRelaxedTimeouts()} is called. Calling this
    * with a later deadline extends the window; an earlier one is ignored.
    * @param period maximum duration of the relaxation window

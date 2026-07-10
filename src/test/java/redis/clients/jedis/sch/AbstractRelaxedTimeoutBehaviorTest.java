@@ -50,6 +50,7 @@ import redis.clients.jedis.util.server.TcpMockServer;
 public abstract class AbstractRelaxedTimeoutBehaviorTest {
 
   protected static final int SO_TIMEOUT_MS = 2000;
+  protected static final int BLOCKING_SO_TIMEOUT_MS = 5000;
   protected static final int RELAXED_TIMEOUT_MS = 10000;
   protected static final int RELAXED_BLOCKING_TIMEOUT_MS = 15000;
 
@@ -90,10 +91,14 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
     ConnectionTestHelper.resetClockNanos();
   }
 
-  /** Default client config: RESP3, mock server's port. */
+  /**
+   * Default client config: RESP3, mock server's port. Both baseline timeouts are finite and smaller
+   * than their relaxed counterparts, so the relaxed values win the only-loosen fusing and land on
+   * the socket during a relaxation window.
+   */
   protected JedisClientConfig defaultClientConfig() {
     return DefaultJedisClientConfig.builder().socketTimeoutMillis(SO_TIMEOUT_MS)
-        .protocol(RedisProtocol.RESP3).build();
+        .blockingSocketTimeoutMillis(BLOCKING_SO_TIMEOUT_MS).protocol(RedisProtocol.RESP3).build();
   }
 
   /**
@@ -160,7 +165,7 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
     try {
       // Baseline (non-relaxed) timeouts are read from the default source.
       assertEquals(SO_TIMEOUT_MS, connection.getSoTimeout());
-      assertEquals(0, ConnectionTestHelper.getBlockingSoTimeout(connection));
+      assertEquals(BLOCKING_SO_TIMEOUT_MS, ConnectionTestHelper.getBlockingSoTimeout(connection));
 
       ConnectionTestHelper.relaxTimeouts(connection, Durations.FIVE_SECONDS);
       // Configured relaxed timeouts are read from the relaxed source, independent of whether a
@@ -292,5 +297,62 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
     assertTrue(connection.ping());
     assertFalse(isRelaxedTimeoutActive(connection));
     assertEquals(SO_TIMEOUT_MS, socket.getSoTimeout());
+  }
+
+  /**
+   * Relaxation may only ever loosen the deadline: when the configured socket timeout is already
+   * larger than the relaxed one, the configured value stays on the socket throughout the relaxation
+   * window.
+   */
+  @Test
+  public void testRelaxationDoesNotTightenLargerConfiguredTimeout()
+      throws IOException, SocketException {
+    int largeSoTimeout = RELAXED_TIMEOUT_MS + 5000;
+    JedisClientConfig config = DefaultJedisClientConfig.builder()
+        .socketTimeoutMillis(largeSoTimeout).protocol(RedisProtocol.RESP3).build();
+    try (
+        ConnectionPool loosePool = createPool(new HostAndPort("localhost", mockServer.getPort()),
+          config, defaultMaintConfig());
+        Connection looseConnection = loosePool.getResource()) {
+      Socket socket = ConnectionTestHelper.getSocket(looseConnection);
+      assertEquals(largeSoTimeout, socket.getSoTimeout());
+
+      mockServer.sendPushMessageToAll(
+        MaintenanceEventMessages.migrating(1, 10, Collections.singletonList("1")));
+      assertTrue(looseConnection.ping());
+      assertTrue(isRelaxedTimeoutActive(looseConnection));
+      assertEquals(largeSoTimeout, socket.getSoTimeout(),
+        "Relaxed timeout smaller than the configured one must not tighten the socket timeout");
+
+      mockServer.sendPushMessageToAll(
+        MaintenanceEventMessages.migrated(1, Collections.singletonList("1")));
+      assertTrue(looseConnection.ping());
+      assertFalse(isRelaxedTimeoutActive(looseConnection));
+      assertEquals(largeSoTimeout, socket.getSoTimeout());
+    }
+  }
+
+  /**
+   * An infinite ({@code 0}) configured socket timeout is the loosest possible deadline, so a
+   * relaxation window must keep it infinite instead of imposing the finite relaxed value.
+   */
+  @Test
+  public void testRelaxationKeepsInfiniteConfiguredTimeout() throws IOException, SocketException {
+    JedisClientConfig config = DefaultJedisClientConfig.builder().socketTimeoutMillis(0)
+        .protocol(RedisProtocol.RESP3).build();
+    try (
+        ConnectionPool infinitePool = createPool(new HostAndPort("localhost", mockServer.getPort()),
+          config, defaultMaintConfig());
+        Connection infiniteConnection = infinitePool.getResource()) {
+      Socket socket = ConnectionTestHelper.getSocket(infiniteConnection);
+      assertEquals(0, socket.getSoTimeout());
+
+      mockServer.sendPushMessageToAll(
+        MaintenanceEventMessages.migrating(1, 10, Collections.singletonList("1")));
+      assertTrue(infiniteConnection.ping());
+      assertTrue(isRelaxedTimeoutActive(infiniteConnection));
+      assertEquals(0, socket.getSoTimeout(),
+        "Relaxation must not replace an infinite configured timeout with a finite one");
+    }
   }
 }

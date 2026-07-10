@@ -16,14 +16,14 @@ class ChainedTimeoutSource implements TimeoutSource {
 
   @Override
   public TimeoutInfo get() {
+    TimeoutInfo fromOverride = getOverrideInfo();
+    return fromOverride != null ? fromOverride : getOwnInfo();
+  }
+
+  /** The deepest valid override's timeouts, or {@code null} when no override has an opinion. */
+  protected final TimeoutInfo getOverrideInfo() {
     ChainedTimeoutSource o = override;
-    if (o != null) {
-      TimeoutInfo fromOverride = o.get();
-      if (fromOverride != null) {
-        return fromOverride;
-      }
-    }
-    return getOwnInfo();
+    return o != null ? o.get() : null;
   }
 
   protected TimeoutInfo getOwnInfo() {

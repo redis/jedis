@@ -5,6 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -91,6 +95,69 @@ public abstract class AbstractMaintenanceHandshakeTest {
 
     HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
     assertThrows(JedisConnectionException.class, () -> buildConnection(hp, cfg, maint));
+  }
+
+  /**
+   * Captures each {@code CLIENT MAINT_NOTIFICATIONS} command as decoded tokens; replies stay on
+   * default handling ({@code +OK}).
+   */
+  private List<List<String>> captureMaintNotificationsCommands() {
+    List<List<String>> captured = new CopyOnWriteArrayList<>();
+    mockServer.setCommandHandler((args, clientId) -> {
+      List<String> tokens = new ArrayList<>();
+      args.forEach(arg -> tokens.add(SafeEncoder.encode(arg.getRaw())));
+      if (tokens.size() >= 2 && "CLIENT".equalsIgnoreCase(tokens.get(0))
+          && "MAINT_NOTIFICATIONS".equalsIgnoreCase(tokens.get(1))) {
+        captured.add(tokens);
+      }
+      return null;
+    });
+    return captured;
+  }
+
+  private MaintenanceNotificationsConfig.Builder enabledMaint() {
+    return MaintenanceNotificationsConfig.builder()
+        .mode(MaintenanceNotificationsConfig.Mode.ENABLED);
+  }
+
+  /**
+   * Default endpoint-type source auto-resolves per connection: the mock server peer is loopback
+   * (private) over plaintext, so the handshake must request {@code internal-ip}.
+   */
+  @Test
+  public void handshakeRequestsAutoResolvedEndpointType() {
+    List<List<String>> captured = captureMaintNotificationsCommands();
+
+    JedisClientConfig cfg = DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3)
+        .build();
+    HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
+    try (Connection c = buildConnection(hp, cfg, enabledMaint().build())) {
+      assertTrue(c.ping());
+    }
+
+    assertEquals(1, captured.size());
+    assertEquals(
+      Arrays.asList("CLIENT", "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type", "internal-ip"),
+      captured.get(0));
+  }
+
+  /** A fixed endpoint type overrides auto-resolution regardless of connection characteristics. */
+  @Test
+  public void handshakeRequestsFixedEndpointType() {
+    List<List<String>> captured = captureMaintNotificationsCommands();
+
+    JedisClientConfig cfg = DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3)
+        .build();
+    HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
+    try (Connection c = buildConnection(hp, cfg, enabledMaint()
+        .endpointType(MaintenanceNotificationsConfig.EndpointType.EXTERNAL_FQDN).build())) {
+      assertTrue(c.ping());
+    }
+
+    assertEquals(1, captured.size());
+    assertEquals(
+      Arrays.asList("CLIENT", "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type", "external-fqdn"),
+      captured.get(0));
   }
 
   /** {@code Mode.AUTO} with the server rejecting {@code CLIENT MAINT_NOTIFICATIONS}: succeeds. */

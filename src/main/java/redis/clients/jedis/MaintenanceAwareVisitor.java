@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import java.util.Set;
 
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.TimeoutSource.TimeoutInfo;
@@ -12,6 +13,8 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.JedisAsserts;
 
 public class MaintenanceAwareVisitor implements InitVisitor {
+
+  private static final Logger logger = LoggerFactory.getLogger(MaintenanceAwareVisitor.class);
 
   private final Connection.Builder builder;
   private final MaintenanceEventController controller;
@@ -26,7 +29,6 @@ public class MaintenanceAwareVisitor implements InitVisitor {
 
   @Override
   public void visit(Connection connection) {
-    Logger logger = Connection.logger;
     RedisProtocol protocol = connection.getRedisProtocol();
     Set<MaintenanceEventListener> maintenanceEventListeners = connection
         .getMaintenanceEventListeners();

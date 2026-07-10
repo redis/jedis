@@ -19,8 +19,6 @@ import java.util.function.Supplier;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.TimeoutSource.TimeoutInfo;
@@ -36,7 +34,6 @@ import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 
 public class Connection implements Closeable {
-  public static Logger logger = LoggerFactory.getLogger(Connection.class);
 
   public static class Builder {
     private JedisSocketFactory socketFactory;
@@ -324,7 +321,7 @@ public class Connection implements Closeable {
    * @return the configured timeout in milliseconds for blocking operations
    * @see MaintenanceNotificationsConfig#getRelaxedBlockingTimeout()
    */
-  public int getBlockingSoTimeout() {
+  int getBlockingSoTimeout() {
     return defaultTimeoutSource.getDefaults().blockingTimeout;
   }
 
@@ -1067,8 +1064,7 @@ public class Connection implements Closeable {
     this.pushConsumers.add(consumer);
   }
 
-  @Internal
-  protected void removePushConsumer(PushConsumer consumer) {
+  void removePushConsumer(PushConsumer consumer) {
     this.pushConsumers.remove(consumer);
   }
 

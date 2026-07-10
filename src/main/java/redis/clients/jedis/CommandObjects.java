@@ -5444,11 +5444,11 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(Command.VCARD).key(key), BuilderFactory.LONG);
   }
 
-  public CommandObject<Boolean> vismember(String key, String element) {
+  public final CommandObject<Boolean> vismember(String key, String element) {
     return new CommandObject<>(commandArguments(Command.VISMEMBER).key(key).add(element), BuilderFactory.BOOLEAN);
   }
 
-  public CommandObject<Boolean> vismember(byte[] key, byte[] element) {
+  public final CommandObject<Boolean> vismember(byte[] key, byte[] element) {
     return new CommandObject<>(commandArguments(Command.VISMEMBER).key(key).add(element), BuilderFactory.BOOLEAN);
   }
 

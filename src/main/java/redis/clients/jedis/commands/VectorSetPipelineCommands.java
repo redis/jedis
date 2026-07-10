@@ -211,7 +211,13 @@ public interface VectorSetPipelineCommands {
   Response<Long> vcard(String key);
 
   /**
-   * @since 8.0
+   * <b><a href="https://redis.io/docs/latest/commands/vismember/">VISMEMBER Command</a></b> Check
+   * whether an element exists in the vector set.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the name of the key that holds the vector set
+   * @param element the name of the element to check for existence
+   * @return Response wrapping true if the element is a member of the vector set, false otherwise
    */
   @Experimental
   Response<Boolean> vismember(String key, String element);

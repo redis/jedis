@@ -244,7 +244,6 @@ public interface VectorSetBinaryCommands {
    * @param key the name of the key that holds the vector set
    * @param element the name of the element to check for existence
    * @return true if the element is a member of the vector set, false otherwise
-   * @since 8.0
    */
   @Experimental
   boolean vismember(byte[] key, byte[] element);

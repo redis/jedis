@@ -165,7 +165,7 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
     try {
       // Baseline (non-relaxed) timeouts are read from the default source.
       assertEquals(SO_TIMEOUT_MS, connection.getSoTimeout());
-      assertEquals(BLOCKING_SO_TIMEOUT_MS, connection.getBlockingSoTimeout());
+      assertEquals(BLOCKING_SO_TIMEOUT_MS, ConnectionTestHelper.getBlockingSoTimeout(connection));
 
       ConnectionTestHelper.relaxTimeouts(connection, Durations.FIVE_SECONDS);
       // Configured relaxed timeouts are read from the relaxed source, independent of whether a
@@ -177,7 +177,8 @@ public abstract class AbstractRelaxedTimeoutBehaviorTest {
       // be
       // observable rather than masked by equal values.
       assertNotEquals(connection.getSoTimeout(), getRelaxedSoTimeout(connection));
-      assertNotEquals(connection.getBlockingSoTimeout(), getRelaxedBlockingSoTimeout(connection));
+      assertNotEquals(ConnectionTestHelper.getBlockingSoTimeout(connection),
+        getRelaxedBlockingSoTimeout(connection));
 
       // The relaxed source is plugged into the default source as its override, but the window is
       // not

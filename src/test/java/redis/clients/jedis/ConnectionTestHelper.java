@@ -100,6 +100,10 @@ public class ConnectionTestHelper {
     NanoClock.INSTANCE = System::nanoTime;
   }
 
+  public static int getBlockingSoTimeout(Connection connection) {
+    return connection.getBlockingSoTimeout();
+  }
+
   private ConnectionTestHelper() {
     // Utility class - prevent instantiation
   }

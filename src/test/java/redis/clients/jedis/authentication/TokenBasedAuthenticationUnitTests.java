@@ -12,7 +12,6 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 
 import java.lang.ref.WeakReference;
-import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -20,7 +19,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -41,6 +39,7 @@ import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.RedisCredentials;
+import redis.clients.jedis.util.ReflectionTestUtil;
 
 public class TokenBasedAuthenticationUnitTests {
 
@@ -254,7 +253,8 @@ public class TokenBasedAuthenticationUnitTests {
         new TokenManagerConfig(0.7F, 200, 2000, new TokenManagerConfig.RetryPolicy(5, 100)));
 
     AuthXManager manager = new AuthXManager(tokenManager);
-    JedisAuthenticationException e = assertThrows(JedisAuthenticationException.class, manager::start);
+    JedisAuthenticationException e = assertThrows(JedisAuthenticationException.class,
+      manager::start);
 
     assertEquals(exceptionMessage, e.getCause().getCause().getMessage());
   }
@@ -276,7 +276,8 @@ public class TokenBasedAuthenticationUnitTests {
         new TokenManagerConfig(0.7F, 200, 1000, new TokenManagerConfig.RetryPolicy(2, 100)));
 
     AuthXManager manager = new AuthXManager(tokenManager);
-    JedisAuthenticationException e = assertThrows(JedisAuthenticationException.class, manager::start);
+    JedisAuthenticationException e = assertThrows(JedisAuthenticationException.class,
+      manager::start);
 
     latch.countDown();
     assertEquals(exceptionMessage, e.getMessage());
@@ -361,26 +362,19 @@ public class TokenBasedAuthenticationUnitTests {
   }
 
   @Test
-  @SuppressWarnings("unchecked")
-  public void authenticateConnectionsPrunesClearedReferences() throws Exception {
-    // A real, never-started TokenManager; authenticateConnections is driven directly below.
-    TokenManager tokenManager = new TokenManager(() -> null,
-        new TokenManagerConfig(0.7F, 200, 2000, new RetryPolicy(1, 1)));
-    AuthXManager manager = new AuthXManager(tokenManager);
+  public void authenticateConnectionsPrunesClearedReferences() {
+    AuthXManager manager = new AuthXManager(mock(TokenManager.class));
 
-    // The single-arg socket-factory path builds a Connection without opening a socket.
-    Connection live1 = new Connection(new HostAndPort("localhost", 6379));
-    Connection live2 = new Connection(new HostAndPort("localhost", 6379));
+    Connection live1 = mock(Connection.class);
+    Connection live2 = mock(Connection.class);
 
     // A pooled connection that has been garbage collected leaves behind a cleared
     // WeakReference. Seed one ahead of the live connections so pruning happens mid-walk.
-    Field field = AuthXManager.class.getDeclaredField("connections");
-    field.setAccessible(true);
-    List<WeakReference<Connection>> connections =
-        (List<WeakReference<Connection>>) field.get(manager);
+    List<WeakReference<Connection>> connections = ReflectionTestUtil.getField(manager,
+      "connections");
     connections.add(new WeakReference<>(null));
-    connections.add(new WeakReference<>(live1));
-    connections.add(new WeakReference<>(live2));
+    manager.addConnection(live1);
+    manager.addConnection(live2);
 
     Token token = new SimpleToken("user1", "tokenVal", System.currentTimeMillis() + 5 * 1000,
         System.currentTimeMillis(), Collections.singletonMap("oid", "user1"));
@@ -388,14 +382,9 @@ public class TokenBasedAuthenticationUnitTests {
     manager.authenticateConnections(token);
 
     assertEquals(2, connections.size());
-    assertEquals("user1", currentUser(live1));
-    assertEquals("user1", currentUser(live2));
-  }
-
-  private static String currentUser(Connection connection) throws Exception {
-    Field field = Connection.class.getDeclaredField("currentCredentials");
-    field.setAccessible(true);
-    RedisCredentials credentials = ((AtomicReference<RedisCredentials>) field.get(connection)).get();
-    return credentials == null ? null : credentials.getUser();
+    ArgumentCaptor<RedisCredentials> credentials = ArgumentCaptor.forClass(RedisCredentials.class);
+    verify(live1).setCredentials(credentials.capture());
+    verify(live2).setCredentials(credentials.capture());
+    credentials.getAllValues().forEach(c -> assertEquals("user1", c.getUser()));
   }
 }

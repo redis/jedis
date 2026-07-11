@@ -6060,6 +6060,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public boolean vismember(String key, String element) {
+    return executeCommand(commandObjects.vismember(key, element));
+  }
+
+  @Override
   public List<Double> vemb(String key, String element) {
     return executeCommand(commandObjects.vemb(key, element));
   }
@@ -6188,6 +6193,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long vcard(byte[] key) {
     return executeCommand(commandObjects.vcard(key));
+  }
+
+  @Override
+  public boolean vismember(byte[] key, byte[] element) {
+    return executeCommand(commandObjects.vismember(key, element));
   }
 
   @Override

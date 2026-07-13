@@ -1,11 +1,11 @@
 package redis.clients.jedis;
 
 /**
- * Typed listener for server maintenance push events. Registered on a {@link Connection} via
- * {@link Connection#addMaintenanceEventListener}; the connection dispatches each parsed event to
- * the matching method synchronously on its read thread, before the triggering read returns. A
- * listener may mutate the delivering connection (e.g. relax timeouts, request rebind); exceptions
- * propagate to the read loop.
+ * Typed listener for server maintenance push events. Registered on a {@link Connection} through
+ * {@link MaintenanceNotificationsConfig#getMaintenanceListener()}; the connection dispatches each
+ * parsed event to the matching method synchronously on its read thread, before the triggering read
+ * returns. A listener may mutate the delivering connection (e.g. relax timeouts, request rebind);
+ * exceptions propagate to the read loop.
  */
 public interface MaintenanceEventListener {
 

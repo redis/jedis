@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1783821195244,
+  "lastUpdate": 1783907618797,
   "repoUrl": "https://github.com/redis/jedis",
   "entries": {
     "Benchmark": [
@@ -13130,6 +13130,274 @@ window.BENCHMARK_DATA = {
           {
             "name": "redis.clients.jedis.benchmark.util.SafeEncoderBenchmark.encodeStringToBytes",
             "value": 46.776504933094444,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Ivo Gaydazhiev",
+            "username": "ggivo",
+            "email": "ivo.gaydazhiev@redis.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "3e34adf3e99510c7827cb5241a47008927ed973c",
+          "message": "Fix flaky scanType test assuming SCAN page boundaries (#4615)\n\nSCAN COUNT is only a hint: over a 7-key dict a single COUNT 4 call may\nlegitimately return cursor 0, depending on the per-server random hash\nseed, so asserting the first page is incomplete fails sporadically.\nIterate until the cursor reports completion and assert on the collected\nkeys, mirroring the already-fixed unified variant in\nAllKindOfValuesCommandsTestBase#scanType.",
+          "timestamp": "2026-07-10T14:29:07Z",
+          "url": "https://github.com/redis/jedis/commit/3e34adf3e99510c7827cb5241a47008927ed973c"
+        },
+        "date": 1783907618402,
+        "tool": "jmh",
+        "benches": [
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.get",
+            "value": 7909.993183578469,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.pipelinedGet",
+            "value": 532509.6679296356,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.pipelinedSet",
+            "value": 471267.32915216795,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.set",
+            "value": 7794.395456957436,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.pubsub.PubSubPushBenchmark.publishAndReceive",
+            "value": 5255.928362048922,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.get",
+            "value": 7893.497132851492,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.pipelinedGet",
+            "value": 532457.2334832685,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.pipelinedSet",
+            "value": 465138.18332823523,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.set",
+            "value": 7760.677838723794,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.get",
+            "value": 47784.427355162,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.pipelinedGet",
+            "value": 1656670.501659838,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.pipelinedSet",
+            "value": 1199949.1840913654,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.set",
+            "value": 46732.83367975293,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.get",
+            "value": 31498.32068290443,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.pipelinedGet",
+            "value": 1354205.6008072447,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.pipelinedSet",
+            "value": 1003126.5208410273,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.set",
+            "value": 30845.921325851108,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.JedisPoolT1.workload",
+            "value": 7806.442085991834,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.JedisPoolT8.workload",
+            "value": 35878.181598639014,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.JedisT1.workload",
+            "value": 7864.465002452358,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientCSCT1.workload",
+            "value": 12244.374701630044,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientCSCT8.workload",
+            "value": 46496.900925021466,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientT1.workload",
+            "value": 7765.555319893332,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientT8.workload",
+            "value": 31185.057849880297,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadArray",
+            "value": 109.61927787312888,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadBulkString",
+            "value": 29.30173660997138,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadMultiBulkResponse",
+            "value": 153.04461915508816,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadSimpleString",
+            "value": 14.648898174629384,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readArray",
+            "value": 110.3197546670823,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readBulkString",
+            "value": 32.09378989913896,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readMultiBulkResponse",
+            "value": 147.8651508246277,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readSimpleString",
+            "value": 14.410463932188389,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readWith100PushMessages",
+            "value": 22887.247054343825,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readWith1PushMessage",
+            "value": 233.30713927554402,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadPushesBenchmark.drain1000Pending",
+            "value": 215650.35826698696,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadPushesBenchmark.drain1Pending",
+            "value": 243.6228665961352,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.SendCommandBenchmark.measureSendCommand",
+            "value": 103.0731929793244,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.CRC16Benchmark.getSlotBytes",
+            "value": 36.150966725638455,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.CRC16Benchmark.getSlotString",
+            "value": 98.28177247182651,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.SafeEncoderBenchmark.decodeBytesToString",
+            "value": 42.743622636910644,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.SafeEncoderBenchmark.encodeStringToBytes",
+            "value": 46.8848799851028,
             "unit": "ns/op",
             "extra": "iterations: 5\nforks: 1\nthreads: 1"
           }

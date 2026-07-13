@@ -2,7 +2,7 @@ package redis.clients.jedis;
 
 /**
  * A server maintenance event. One subclass per type, each carrying the fields relevant to that
- * type. Dispatched to a {@link MaintenanceEventListener} via {@link #accept}.
+ * type. Dispatched to a {@link MaintenanceEventListener} when provided.
  */
 public abstract class MaintenanceEvent {
 

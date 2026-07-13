@@ -13,8 +13,6 @@ public class MaintenanceNotificationsConfig {
 
   public static final int DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS = 0;
 
-  private MaintenanceEventListener maintenanceListener;
-
   private MaintenanceNotificationsConfig(Builder builder) {
     this.endpointType = builder.endpointType;
     this.mode = builder.mode;
@@ -61,6 +59,7 @@ public class MaintenanceNotificationsConfig {
   private final Duration relaxedWindowMaxDuration;
   private final int relaxedTimeout;
   private final int relaxedBlockingTimeout;
+  private final MaintenanceEventListener maintenanceListener;
 
   public EndpointType getEndpointType() {
     return endpointType;

@@ -641,6 +641,7 @@
 						<include>**/*TimeoutSource*.java</include>
 						<include>**/RebindAwareEvictionPolicy.java</include>
 						<include>**/Maintenance*.java</include>
+						<include>**/*Event.java</include>
 					</includes>
 				</configuration>
 				<executions>

@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.util.HashSet;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -30,8 +31,6 @@ public class MaintenanceAwareVisitor implements InitVisitor {
   @Override
   public void visit(Connection connection) {
     RedisProtocol protocol = connection.getRedisProtocol();
-    Set<MaintenanceEventListener> maintenanceEventListeners = connection
-        .getMaintenanceEventListeners();
     MaintenanceNotificationsConfig maintenanceConfig = builder.getMaintenanceConfig();
 
     if (maintenanceConfig == null
@@ -51,7 +50,16 @@ public class MaintenanceAwareVisitor implements InitVisitor {
       return;
     }
 
+    /*
+     * Listeners notified synchronously of this connection's maintenance events. One for controller,
+     * one for the config's listener (if any).
+     */
+    Set<MaintenanceEventListener> maintenanceEventListeners = new HashSet<>(
+        maintenanceConfig.getMaintenanceListener() == null ? 1 : 2);
     maintenanceEventListeners.add(controller);
+    if (maintenanceConfig.getMaintenanceListener() != null) {
+      maintenanceEventListeners.add(maintenanceConfig.getMaintenanceListener());
+    }
 
     // The server must accept CLIENT MAINT_NOTIFICATIONS ON. Pre-register the consumer so a
     // push

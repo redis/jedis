@@ -174,9 +174,6 @@ public class Connection implements Closeable {
   private static final long EXPIRE_NOT_SET = -1;
   private long expireAt = EXPIRE_NOT_SET;
 
-  /** Listeners notified synchronously of this connection's maintenance events (pool-injected). */
-  private final Set<MaintenanceEventListener> maintenanceEventListeners =  ConcurrentHashMap.newKeySet();
-
   private final DefaultTimeoutSource defaultTimeoutSource = new DefaultTimeoutSource(
       new TimeoutInfo(0, 0));
   private ExpiringTimeoutSource relaxedTimeoutSource;
@@ -1126,20 +1123,6 @@ public class Connection implements Closeable {
   /** The connected peer's address, or {@code null} if the socket is not (yet) open. */
   SocketAddress getRemoteSocketAddress() {
     return socket == null ? null : socket.getRemoteSocketAddress();
-  }
-
-  /** Registers a listener notified synchronously of this connection's maintenance events. */
-  void addMaintenanceEventListener(MaintenanceEventListener listener) {
-    maintenanceEventListeners.add(listener);
-  }
-
-  /** Removes a previously registered maintenance event listener. */
-  void removeMaintenanceEventListener(MaintenanceEventListener listener) {
-    maintenanceEventListeners.remove(listener);
-  }
-
-  Set<MaintenanceEventListener> getMaintenanceEventListeners() {
-    return maintenanceEventListeners;
   }
 
 }

@@ -13,12 +13,15 @@ public class MaintenanceNotificationsConfig {
 
   public static final int DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS = 0;
 
+  private MaintenanceEventListener maintenanceListener;
+
   private MaintenanceNotificationsConfig(Builder builder) {
     this.endpointType = builder.endpointType;
     this.mode = builder.mode;
     this.relaxedWindowMaxDuration = builder.relaxedWindowMaxDuration;
     this.relaxedTimeout = builder.relaxedTimeout;
     this.relaxedBlockingTimeout = builder.relaxedBlockingTimeout;
+    this.maintenanceListener = builder.maintenanceListener;
   }
 
   /**
@@ -93,6 +96,10 @@ public class MaintenanceNotificationsConfig {
     return relaxedBlockingTimeout;
   }
 
+  public MaintenanceEventListener getMaintenanceListener() {
+    return maintenanceListener;
+  }
+
   public static Builder builder() {
     return new Builder();
   }
@@ -110,6 +117,7 @@ public class MaintenanceNotificationsConfig {
     private Duration relaxedWindowMaxDuration = DEFAULT_RELAXED_WINDOW_MAX_DURATION;
     private int relaxedTimeout = DEFAULT_RELAXED_SOCKET_TIMEOUT_MS;
     private int relaxedBlockingTimeout = DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS;
+    private MaintenanceEventListener maintenanceListener;
 
     public Builder endpointType(EndpointType endpointType) {
       this.endpointType = endpointType;
@@ -128,6 +136,11 @@ public class MaintenanceNotificationsConfig {
 
     public Builder relaxedBlockingTimeout(int millis) {
       this.relaxedBlockingTimeout = millis;
+      return this;
+    }
+
+    public Builder maintenanceListener(MaintenanceEventListener listener) {
+      this.maintenanceListener = listener;
       return this;
     }
 

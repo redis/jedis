@@ -7,7 +7,7 @@ package redis.clients.jedis;
  * listener may mutate the delivering connection (e.g. relax timeouts, request rebind); exceptions
  * propagate to the read loop.
  */
-interface MaintenanceEventListener {
+public interface MaintenanceEventListener {
 
   void onMoving(MovingEvent e, Connection c);
 

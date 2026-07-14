@@ -414,6 +414,31 @@ public abstract class SearchCommandsTestBase extends UnifiedJedisCommandsTestBas
   }
 
   @Test
+  public void aliasList() {
+    Schema sc = new Schema().addTextField("field1", 1.0);
+    assertEquals("OK", jedis.ftCreate(INDEX, IndexOptions.defaultOptions(), sc));
+
+    // An existing index with no aliases returns an empty collection, not an error.
+    assertEquals(Collections.emptySet(), jedis.ftAliasList(INDEX));
+
+    assertEquals("OK", jedis.ftAliasAdd("ALIAS1", INDEX));
+    assertEquals(Collections.singleton("ALIAS1"), jedis.ftAliasList(INDEX));
+
+    assertEquals("OK", jedis.ftAliasAdd("ALIAS2", INDEX));
+    assertEquals(new HashSet<>(Arrays.asList("ALIAS1", "ALIAS2")), jedis.ftAliasList(INDEX));
+
+    assertEquals("OK", jedis.ftAliasDel("ALIAS1"));
+    assertEquals(Collections.singleton("ALIAS2"), jedis.ftAliasList(INDEX));
+
+    // A non-existent index propagates the server error unchanged.
+    try {
+      jedis.ftAliasList("nonexisting-index");
+      fail("Should throw JedisDataException");
+    } catch (JedisDataException e) {
+    }
+  }
+
+  @Test
   public void info() throws Exception {
     Schema sc = new Schema().addTextField("title", 5.0).addSortableTextField("plot", 1.0)
         .addSortableTagField("genre", ",").addSortableNumericField("release_year")

@@ -4002,6 +4002,10 @@ public class CommandObjects {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.ALIASDEL, aliasName), BuilderFactory.STRING);
   }
 
+  public final CommandObject<Set<String>> ftAliasList(String indexName) {
+    return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.ALIASLIST, indexName), BuilderFactory.STRING_SET);
+  }
+
   public final CommandObject<String> ftDropIndex(String indexName) {
     return new CommandObject<>(checkAndRoundRobinSearchCommand(SearchCommand.DROPINDEX, indexName), BuilderFactory.STRING);
   }

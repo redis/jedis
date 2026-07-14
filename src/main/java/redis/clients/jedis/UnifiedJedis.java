@@ -4712,6 +4712,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public Set<String> ftAliasList(String indexName) {
+    return executeCommand(commandObjects.ftAliasList(indexName));
+  }
+
+  @Override
   public String ftDropIndex(String indexName) {
     return executeCommand(commandObjects.ftDropIndex(indexName));
   }

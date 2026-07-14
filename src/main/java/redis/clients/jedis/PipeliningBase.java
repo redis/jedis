@@ -4118,6 +4118,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Set<String>> ftAliasList(String indexName) {
+    return appendCommand(commandObjects.ftAliasList(indexName));
+  }
+
+  @Override
   public Response<String> ftDropIndex(String indexName) {
     return appendCommand(commandObjects.ftDropIndex(indexName));
   }

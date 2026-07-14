@@ -205,6 +205,14 @@ public class TcpMockServer {
   }
 
   /**
+   * Server-side drop of all connected clients while the listener stays up: simulates the remote
+   * peer closing pooled connections (e.g. a server-side idle timeout or node restart).
+   */
+  public void disconnectAllClients() {
+    closeAllActiveConnections();
+  }
+
+  /**
    * Close all active client connections
    */
   private void closeAllActiveConnections() {

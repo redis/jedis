@@ -85,7 +85,9 @@ public class ConnectionPool extends Pool<Connection> {
       setEvictionPolicy(new RebindAwareEvictionPolicy(controller, getEvictionPolicy()));
       controller.addHandoffHook(handoff -> evictQuietly());
       returnHook = c -> {
-        if (controller.isAffected(c)) {
+        // Stamp affected peers with the reconnect deadline; drop only once past it (target MOVING
+        // stamps EXPIRED -> dropped now; 'none' within its window -> kept).
+        if (controller.stampExpiryIfAffected(c) && c.isExpired()) {
           super.returnBrokenResource(c);
         } else {
           super.returnResource(c);

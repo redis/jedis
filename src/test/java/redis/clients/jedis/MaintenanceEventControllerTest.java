@@ -190,6 +190,104 @@ public class MaintenanceEventControllerTest {
       "newer event after expiry applies again");
   }
 
+  // --- 'none' endpoint type (null target): lazy reconnect via per-connection deadline ---
+
+  private void movingNone(long seq, long ttlSeconds) {
+    controller.onMoving(new MovingEvent(seq, ttlSeconds, null), receiver);
+  }
+
+  @Test
+  public void target_stampsReceiverExpiredImmediately() {
+    moving(1L, TARGET_B, 100);
+    assertTrue(receiver.isExpired(),
+      "a real-target MOVING marks the receiver for immediate discard");
+  }
+
+  @Test
+  public void noneTarget_doesNotRemap() {
+    movingNone(1L, 10);
+    assertNull(controller.getSocketAddress(receiverPeer), "'none' MOVING never remaps");
+    assertTrue(controller.isAffected(receiver),
+      "receiver is still affected (relaxed) during the window");
+  }
+
+  @Test
+  public void noneTarget_reconnectsAtHalfGrace() {
+    movingNone(1L, 10); // reconnect deadline = now + ttl/2 = 5s
+    advanceSeconds(4);
+    assertFalse(receiver.isExpired(), "before half-grace: reconnect not yet due");
+    advanceSeconds(2); // total 6s > 5s
+    assertTrue(receiver.isExpired(), "past half-grace: reconnect due");
+  }
+
+  @Test
+  public void noneTarget_firesHandoffHookWithNullTarget() {
+    AtomicReference<MaintenanceHandoff> seen = new AtomicReference<>();
+    controller.addHandoffHook(seen::set);
+    movingNone(1L, 10);
+    // The hook drives the pool's eviction pass, which stamps idle affected connections with the
+    // reconnect deadline (evicting only those already past it).
+    assertNotNull(seen.get(), "'none' fires the handoff hook too");
+    assertNull(seen.get().getTarget(), "'none' handoff carries a null target");
+  }
+
+  @Test
+  public void olderSeqNone_stillStampsReceiver() {
+    moving(5L, TARGET_B, 100); // current state at seq 5
+    // A buffered older 'none' MOVING (seq 3) read late by this receiver: superseded (no state
+    // change) but the receiver must still get a reconnect deadline.
+    controller.onMoving(new MovingEvent(3L, 10, null), receiver);
+    assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer),
+      "state unchanged by older event");
+    advanceSeconds(6); // > ttl/2 (5s) of the older event
+    assertTrue(receiver.isExpired(), "older-seq receiver still marked for reconnect");
+  }
+
+  @Test
+  public void sameSeqNone_sharesFirstNotificationDeadline() {
+    movingNone(1L, 10); // deadline = 5s (now=0)
+    advanceSeconds(3); // now = 3s
+    controller.onMoving(new MovingEvent(1L, 10, null), receiver); // same seq, later now
+    advanceSeconds(2); // now = 5s == first deadline
+    assertTrue(receiver.isExpired(),
+      "same-seq reporter inherits the FIRST notification's deadline (5s), not 3+5=8s");
+  }
+
+  @Test
+  public void newerTarget_supersedesNoneDeadline() {
+    movingNone(1L, 100); // reconnect deadline = now + 50s
+    assertFalse(receiver.isExpired(), "'none' deadline is in the future");
+    moving(2L, TARGET_B, 100); // newer target seq: discard now
+    assertTrue(receiver.isExpired(), "newer target overwrites the future 'none' deadline");
+  }
+
+  @Test
+  public void stampExpiryIfAffected_overwritesStaleNoneDeadline() throws Exception {
+    movingNone(1L, 100); // receiver deadline = now + 50s
+    // Newer target MOVING delivered on a sibling connection to the same endpoint (same peer).
+    Connection sibling = new Connection(new HostAndPort("127.0.0.1", mockServer.getPort()));
+    sibling.connect();
+    try {
+      controller.onMoving(new MovingEvent(2L, 100, TARGET_B), sibling);
+      assertFalse(receiver.isExpired(), "receiver still holds the stale future 'none' deadline");
+      assertTrue(controller.stampExpiryIfAffected(receiver),
+        "receiver's peer is covered by the newer state");
+      assertTrue(receiver.isExpired(),
+        "stale 'none' deadline overwritten to immediate discard (last-writer-wins)");
+    } finally {
+      sibling.close();
+    }
+  }
+
+  @Test
+  public void stampExpiryIfAffected_onlyWithinWindow() {
+    assertFalse(controller.stampExpiryIfAffected(receiver), "no rebind yet");
+    movingNone(1L, 10);
+    assertTrue(controller.stampExpiryIfAffected(receiver));
+    advanceSeconds(11); // relax window (min(10,60)=10s) closed
+    assertFalse(controller.stampExpiryIfAffected(receiver), "not stamped after the window closes");
+  }
+
   // --- Handoff hooks ---
 
   @Test

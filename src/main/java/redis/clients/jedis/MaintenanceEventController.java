@@ -6,6 +6,7 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.TimeUnit;
@@ -62,8 +63,10 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   }
 
   /**
-   * Registers a hook invoked synchronously, once, when a MOVING handoff is applied (i.e. a real new
-   * target is committed under the seq guard). Hook exceptions propagate.
+   * Registers a hook invoked synchronously, once per MOVING committed under the seq guard —
+   * including a {@code none} (null-target) MOVING: the pool's hook runs an eviction pass that
+   * stamps idle affected connections with the reconnect deadline (and evicts only those already
+   * past it). Hook exceptions propagate.
    */
   public void addHandoffHook(Consumer<MaintenanceHandoff> hook) {
     handoffHooks.add(hook);
@@ -89,6 +92,20 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     return rebind.isValid() && rebind.affected.contains(c.getRemoteSocketAddress());
   }
 
+  /**
+   * If {@code c}'s peer is in the active rebind, stamp its reconnect deadline and report affected.
+   * Callers (pool return-hook, eviction policy) then discard {@code c} iff
+   * {@link Connection#isExpired()}.
+   */
+  boolean stampExpiryIfAffected(Connection c) {
+    RebindState st = rebind;
+    if (st.isValid() && st.affected.contains(c.getRemoteSocketAddress())) {
+      c.expireAt(st.expireAtNanos);
+      return true;
+    }
+    return false;
+  }
+
   /** True iff there is an active MOVING rebind window in the pool right now. */
   public boolean isRebindActive() {
     return rebind.isValid();
@@ -97,47 +114,41 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   @Override
   public void onMoving(MovingEvent e, Connection c) {
     logger.debug("Moving to {} (seq={}, ttl={}s)", e.target, e.seq, e.ttlSeconds);
-    // Cap the server-supplied ttl at the user-configured backstop so a generous or misbehaving
-    // server can't pin the pool in relaxed mode beyond {@code relaxedTimeoutMaxDuration}.
-    long ttlNanos = Math.min(TimeUnit.SECONDS.toNanos(e.ttlSeconds), maxRelaxedDurationNanos);
-    // Any MOVING affects the receiver: mark for discard and relax commands on it before return.
-    // QUESTION : are we relying on each in-use connection that connected to a rebinding endpoint
-    // will receive a MOVING and then eventually will be marked for discard? If so, we
-    // may want to consider a more aggressive approach to mark connections that are connected to
-    // the rebinding endpoint for discard.
-
-    // UPDATE: we have two different spots that causes connection to be dropped. One is setting
-    // expireAt for connections that received MOVING event, and the other is when a connection is
-    // returned to the pool, we check if it is connected to a rebinding endpoint(isAffected) and if
-    // so, we drop it. So we are covering for both cases.
-
-    // IMPORTANT: in case we like to delay the expiration since NONE as new target may be sent,
-    // dropping the connections immediately just by relying isAffected would be an issue, and cause
-    // immediate drops while it is not supposed to be.
-
     long now = NanoClock.INSTANCE.getAsLong();
-    long deadline = now + ttlNanos;
-    // HERE! we can control if an immediate gracefull drop needed,, or we need to delay in case
-    // MOVING msg suggests a future renewal.
-    c.expireAt(now);
+    // Relax window: cap the server ttl at the configured backstop so a generous or misbehaving
+    // server can't pin the pool in relaxed mode beyond relaxedWindowMaxDuration.
+    long relaxDeadline = now
+        + Math.min(TimeUnit.SECONDS.toNanos(e.ttlSeconds), maxRelaxedDurationNanos);
+    // Reconnect deadline, independent of the relax window: 'none' reconnects to the configured
+    // endpoint at half the raw grace; a real target discards receivers immediately.
+    long expireAt = e.target == null ? now + TimeUnit.SECONDS.toNanos(e.ttlSeconds) / 2
+        : Connection.EXPIRED;
+    // Every receiver gets its deadline up front, before any seq gating — this also covers a
+    // buffered, already-superseded MOVING read late by an idle connection (safety net) and the
+    // no-peer early return below.
+    c.expireAt(expireAt);
+
     SocketAddress affectedPeer = c.getRemoteSocketAddress();
     if (affectedPeer == null) {
       return; // receiver socket already closed; no peer to register
     }
-    SocketAddress target = new InetSocketAddress(e.target.getHost(), e.target.getPort());
+    SocketAddress target = e.target == null ? null
+        : new InetSocketAddress(e.target.getHost(), e.target.getPort());
 
     while (true) {
       RebindState cur = rebind;
       if (e.seq < cur.seq) {
-        return; // older event
+        return; // older event; receiver already stamped up front
       }
       if (e.seq == cur.seq) {
-        // Same handoff event from another affected connection: merge its peer into the set.
-        if (!target.equals(cur.target)) {
+        if (!Objects.equals(target, cur.target)) {
           logger.warn("Ignoring MOVING with conflicting target for seq {}: have {}, got {}", e.seq,
             cur.target, target);
           return;
         }
+        // Same handoff from another affected connection: align to the shared deadline committed by
+        // the first notification of this seq.
+        c.expireAt(cur.expireAtNanos);
         if (cur.affected.contains(affectedPeer)) {
           return; // already merged
         }
@@ -152,8 +163,7 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
       }
       // New seq (or first ever): replace state with a fresh single-source set.
       RebindState next = new RebindState(e.seq, Collections.singleton(affectedPeer), target,
-          deadline);
-
+          relaxDeadline, expireAt);
       if (REBIND.compareAndSet(this, cur, next)) {
         logger.debug("Rebinding {} -> {} (seq={}, ttl={}s)", affectedPeer, target, e.seq,
           e.ttlSeconds);
@@ -218,7 +228,10 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
       return seq;
     }
 
-    /** The new endpoint connections will be routed to during the handoff window. */
+    /**
+     * The new endpoint connections will be routed to during the handoff window, or {@code null} for
+     * a {@code none} MOVING (no remap; reconnect to the configured endpoint).
+     */
     public HostAndPort getTarget() {
       return target;
     }
@@ -242,26 +255,31 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
    */
   private static final class RebindState {
 
-    static final RebindState EXPIRED_STATE = new RebindState(-1, Collections.emptySet(), null, 0L);
+    static final RebindState EXPIRED_STATE = new RebindState(-1, Collections.emptySet(), null, 0L,
+        Connection.EXPIRED);
     final long seq;
     final Set<SocketAddress> affected;
     final SocketAddress target;
-    final long deadlineNanos;
+    final long deadlineNanos; // relax-window end; gates isValid()/remap
+    final long expireAtNanos; // shared per-connection reconnect deadline (EXPIRED |
+                              // now+ttl/2)
     volatile boolean expired = false;
 
     private RebindState(long seq, Set<SocketAddress> affected, SocketAddress target,
-        long deadlineNanos) {
+        long deadlineNanos, long expireAtNanos) {
       this.seq = seq;
       this.affected = affected;
       this.target = target;
       this.deadlineNanos = deadlineNanos;
+      this.expireAtNanos = expireAtNanos;
     }
 
     private RebindState merge(SocketAddress peer) {
       Set<SocketAddress> merged = new HashSet<>(affected.size() + 1, 1.0f);
       merged.addAll(affected);
       merged.add(peer);
-      return new RebindState(seq, Collections.unmodifiableSet(merged), target, deadlineNanos);
+      return new RebindState(seq, Collections.unmodifiableSet(merged), target, deadlineNanos,
+          expireAtNanos);
     }
 
     private boolean isValid() {

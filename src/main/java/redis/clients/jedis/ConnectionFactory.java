@@ -187,7 +187,9 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
   @Override
   public void activateObject(PooledObject<Connection> pooledConnection) throws Exception {
-    // what to do ??
+    // Deliberately no expiry check: a connection past its maintenance reconnect deadline is still
+    // usable, so borrowed work always gets to run. Expiry is enforced on return to the pool and,
+    // for users who opt into testOnBorrow/testWhileIdle, by validateObject.
   }
 
   @Override
@@ -228,8 +230,13 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       if (!jedis.isConnected()) {
         return false;
       }
+      if (jedis.isExpired()) {
+        return false; // past its maintenance reconnect deadline -> recycle
+      }
       reAuthenticate(jedis);
-      return jedis.ping();
+      // Re-check expiry after the ping: its read may consume a buffered MOVING push (the server
+      // sends one right after the maintenance subscription +OK) that stamps this connection.
+      return jedis.ping() && !jedis.isExpired();
     } catch (final Exception e) {
       logger.warn("Error while validating pooled Connection object.", e);
       return false;

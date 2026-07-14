@@ -8,9 +8,11 @@ import org.apache.commons.pool2.impl.EvictionConfig;
 import org.apache.commons.pool2.impl.EvictionPolicy;
 
 /**
- * commons-pool2 eviction policy that destroys idle connections whose peer matches the active MOVING
- * rebind's affected node; all other connections are deferred to the wrapped delegate (typically the
- * user's configured policy, defaulting to {@link DefaultEvictionPolicy}).
+ * commons-pool2 eviction policy for idle connections whose peer matches the active MOVING rebind:
+ * it stamps the reconnect deadline and evicts once the connection is past it (immediately for a
+ * real target, at half the grace for {@code none}). All other connections are deferred to the
+ * wrapped delegate (typically the user's configured policy, defaulting to
+ * {@link DefaultEvictionPolicy}).
  */
 final class RebindAwareEvictionPolicy implements EvictionPolicy<Connection> {
 
@@ -25,8 +27,9 @@ final class RebindAwareEvictionPolicy implements EvictionPolicy<Connection> {
 
   @Override
   public boolean evict(EvictionConfig config, PooledObject<Connection> underTest, int idleCount) {
-    if (controller.isAffected(underTest.getObject())) {
-      return true;
+    Connection conn = underTest.getObject();
+    if (controller.stampExpiryIfAffected(conn)) {
+      return conn.isExpired();
     }
     return delegate.evict(config, underTest, idleCount);
   }

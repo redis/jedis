@@ -235,6 +235,68 @@ public abstract class AbstractRebindBehaviorTest {
   }
 
   @Test
+  public void testNoneMovingKeepsConnectionDuringGraceWindow() {
+    ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
+    poolConfig.setMaxTotal(1);
+
+    try (
+        UnifiedJedis client = createClient(server1Address, clientConfig, maintConfig, poolConfig)) {
+      Pool<Connection> pool = poolOf(client);
+
+      Connection activeConnection = pool.getResource();
+      assertEquals(1, mockServer1.getConnectedClientCount());
+
+      // 'none' endpoint type: null target, 60s grace -> reconnect deadline 30s (far future).
+      mockServer1.sendPushMessageToAll("MOVING", 30, 60, null);
+
+      // Reads the push; unlike a target MOVING, the connection survives return and re-borrow.
+      assertTrue(activeConnection.ping());
+      activeConnection.close();
+      assertEquals(0, pool.getDestroyedCount(), "'none' must not discard within the grace window");
+      assertEquals(1, pool.getNumIdle());
+
+      assertEquals("PONG", client.ping());
+      assertEquals(0, pool.getDestroyedCount());
+      assertEquals(1, mockServer1.getConnectedClientCount(),
+        "no remap: still on the original endpoint");
+      assertEquals(0, mockServer2.getConnectedClientCount());
+    }
+  }
+
+  @Test
+  public void testNoneMovingReconnectsAfterHalfGrace() {
+    ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
+    poolConfig.setMaxTotal(1);
+
+    try (
+        UnifiedJedis client = createClient(server1Address, clientConfig, maintConfig, poolConfig)) {
+      Pool<Connection> pool = poolOf(client);
+
+      assertEquals("PONG", client.ping());
+      assertEquals(1, mockServer1.getConnectedClientCount());
+
+      // 'none' with a 2s grace -> reconnect deadline 1s after receipt.
+      mockServer1.sendPushMessageToAll("MOVING", 30, 2, null);
+      assertEquals("PONG", client.ping()); // reads the push, stamps the deadline; still usable
+      assertEquals(0, pool.getDestroyedCount());
+
+      // Past the half-grace deadline the borrow gate discards the idle connection and a fresh one
+      // is created against the CONFIGURED endpoint (no remap). The mock cannot repoint DNS, so the
+      // replacement re-lands on the same affected peer and is re-stamped on return until the relax
+      // window closes — assert >= 1 here; the churn-guard follow-up tightens this to exactly 1.
+      await().atMost(Duration.ofSeconds(4)).pollInterval(Duration.ofMillis(100))
+          .untilAsserted(() -> {
+            assertEquals("PONG", client.ping());
+            assertTrue(pool.getDestroyedCount() >= 1,
+              "expired connection replaced on borrow after half the grace period");
+            assertEquals(1, mockServer1.getConnectedClientCount(),
+              "reconnect targets the configured endpoint");
+            assertEquals(0, mockServer2.getConnectedClientCount());
+          });
+    }
+  }
+
+  @Test
   public void testRebindRevertsToOriginalEndpointAfterTtl() {
     ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
     poolConfig.setMaxTotal(1);

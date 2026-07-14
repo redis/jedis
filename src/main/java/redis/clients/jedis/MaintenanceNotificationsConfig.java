@@ -35,7 +35,13 @@ public class MaintenanceNotificationsConfig {
     /** External IP address (for public network connections) */
     EXTERNAL_IP,
     /** External fully qualified domain name (for public network connections with TLS) */
-    EXTERNAL_FQDN
+    EXTERNAL_FQDN,
+    /**
+     * No endpoint: MOVING carries a null target. The client does not remap; it reconnects to the
+     * currently-configured endpoint at half the grace period.
+     * @since 8.0
+     */
+    NONE
   }
 
   /**

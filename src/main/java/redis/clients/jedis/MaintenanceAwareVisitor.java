@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -54,18 +55,20 @@ public class MaintenanceAwareVisitor implements InitVisitor {
      * Listeners notified synchronously of this connection's maintenance events. One for controller,
      * one for the config's listener (if any).
      */
-    Set<MaintenanceEventListener> maintenanceEventListeners = new HashSet<>(
-        maintenanceConfig.getMaintenanceListener() == null ? 1 : 2);
-    maintenanceEventListeners.add(controller);
-    if (maintenanceConfig.getMaintenanceListener() != null) {
-      maintenanceEventListeners.add(maintenanceConfig.getMaintenanceListener());
+    Set<MaintenanceEventListener> maintenanceListeners;
+    if (maintenanceConfig.getMaintenanceListener() == null) {
+      maintenanceListeners = Collections.singleton(controller);
+    } else {
+      maintenanceListeners = new HashSet<>(2, 1f);
+      maintenanceListeners.add(controller);
+      maintenanceListeners.add(maintenanceConfig.getMaintenanceListener());
     }
 
     // The server must accept CLIENT MAINT_NOTIFICATIONS ON. Pre-register the consumer so a
     // push
     // frame the server emits immediately on accepting the subscription cannot race ahead.
     MaintenanceEventConsumer consumer = new MaintenanceEventConsumer(connection,
-        maintenanceEventListeners);
+        maintenanceListeners);
     connection.addPushConsumer(consumer);
     ExpiringTimeoutSource relaxedTimeoutSource = new ExpiringTimeoutSource(new TimeoutInfo(
         maintenanceConfig.getRelaxedTimeout(), maintenanceConfig.getRelaxedBlockingTimeout()));

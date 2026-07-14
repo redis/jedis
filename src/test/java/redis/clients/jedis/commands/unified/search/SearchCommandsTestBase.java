@@ -13,6 +13,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import java.util.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -414,6 +415,7 @@ public abstract class SearchCommandsTestBase extends UnifiedJedisCommandsTestBas
   }
 
   @Test
+  @SinceRedisVersion("8.10.0")
   public void aliasList() {
     Schema sc = new Schema().addTextField("field1", 1.0);
     assertEquals("OK", jedis.ftCreate(INDEX, IndexOptions.defaultOptions(), sc));

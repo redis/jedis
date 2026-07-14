@@ -1,7 +1,7 @@
 package redis.clients.jedis;
 
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -53,13 +53,17 @@ public class MaintenanceAwareVisitor implements InitVisitor {
 
     /*
      * Listeners notified synchronously of this connection's maintenance events. One for controller,
-     * one for the config's listener (if any).
+     * one for the config's listener (if any). Iteration order is significant and must stay
+     * controller-first: the controller registers the pool rebind off this connection's peer
+     * address, while the public listener may mutate the connection (e.g. close it). A LinkedHashSet
+     * preserves insertion order so the controller always completes its handoff bookkeeping before
+     * any user callback runs.
      */
     Set<MaintenanceEventListener> maintenanceListeners;
     if (maintenanceConfig.getMaintenanceListener() == null) {
       maintenanceListeners = Collections.singleton(controller);
     } else {
-      maintenanceListeners = new HashSet<>(2, 1f);
+      maintenanceListeners = new LinkedHashSet<>(2, 1f);
       maintenanceListeners.add(controller);
       maintenanceListeners.add(maintenanceConfig.getMaintenanceListener());
     }

@@ -50,11 +50,16 @@ public abstract class AbstractCache implements Cache {
 
   @Override
   public CacheEntry get(CacheKey cacheKey) {
-    CacheEntry entry = getFromStore(cacheKey);
-    if (entry != null) {
-      getEvictionPolicy().touch(cacheKey);
+    lock.lock();
+    try {
+      CacheEntry entry = getFromStore(cacheKey);
+      if (entry != null) {
+        getEvictionPolicy().touch(cacheKey);
+      }
+      return entry;
+    } finally {
+      lock.unlock();
     }
-    return entry;
   }
 
   @Override

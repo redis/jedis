@@ -59,7 +59,7 @@ public class ConnectionPoolExpiryMockTest {
   public void activateObject_passesEvenWhenExpired() {
     ConnectionFactory factory = new ConnectionFactory(mockAddress, clientConfig);
     Connection conn = new Connection(mockAddress);
-    conn.expireAt(Connection.EXPIRED);
+    conn.expireAt(NanoClock.INSTANCE.getAsLong()); // deadline == now -> expired on next check
     // Availability decision: expired connections are still usable and must reach borrowed work.
     assertDoesNotThrow(() -> factory.activateObject(pooled(conn)));
   }
@@ -69,7 +69,7 @@ public class ConnectionPoolExpiryMockTest {
     ConnectionFactory factory = new ConnectionFactory(mockAddress, clientConfig);
     PooledObject<Connection> pooled = factory.makeObject();
     try {
-      pooled.getObject().expireAt(Connection.EXPIRED);
+      pooled.getObject().expireAt(NanoClock.INSTANCE.getAsLong());
       assertFalse(factory.validateObject(pooled));
     } finally {
       factory.destroyObject(pooled);
@@ -99,7 +99,7 @@ public class ConnectionPoolExpiryMockTest {
     try (ConnectionPool pool = new ConnectionPool(mockAddress, clientConfig, poolConfig)) {
       Connection first = pool.getResource();
       first.close(); // healthy return -> idle
-      first.expireAt(Connection.EXPIRED); // expires while idle
+      first.expireAt(NanoClock.INSTANCE.getAsLong()); // expires while idle
 
       Connection second = pool.getResource();
       assertSame(first, second, "expired idle is still handed out");
@@ -127,7 +127,7 @@ public class ConnectionPoolExpiryMockTest {
     try (ConnectionPool pool = new ConnectionPool(mockAddress, clientConfig, poolConfig)) {
       Connection first = pool.getResource();
       first.close();
-      first.expireAt(Connection.EXPIRED);
+      first.expireAt(NanoClock.INSTANCE.getAsLong());
 
       Connection second = pool.getResource(); // validate fails -> destroy -> fresh, one call
       assertNotSame(first, second, "testOnBorrow never hands out an expired connection");
@@ -145,7 +145,7 @@ public class ConnectionPoolExpiryMockTest {
     try (ConnectionPool pool = new ConnectionPool(mockAddress, clientConfig, poolConfig)) {
       Connection conn = pool.getResource();
       conn.close();
-      conn.expireAt(Connection.EXPIRED);
+      conn.expireAt(NanoClock.INSTANCE.getAsLong()); // deadline == now -> expired on next check
       assertEquals(1, pool.getNumIdle());
 
       pool.evict(); // one synchronous pass: testWhileIdle -> validateObject false -> destroy
@@ -220,9 +220,13 @@ public class ConnectionPoolExpiryMockTest {
       conn.close();
       assertEquals(1, pool.getDestroyedCount(), "stamped connection recycled on first return");
 
-      Connection next = pool.getResource(); // pool stays functional
-      assertTrue(next.ping());
+      // The replacement is re-notified with the same-seq MOVING but postdates the reconnect
+      // deadline: it is this rebind's own reconnect and must not be stamped (churn guard).
+      Connection next = pool.getResource();
+      assertTrue(next.ping()); // consumes its own re-notification
+      assertFalse(next.isExpired(), "replacement is immune to the same-seq re-notification");
       next.close();
+      assertEquals(1, pool.getDestroyedCount(), "recycled once, then immune");
     }
   }
 

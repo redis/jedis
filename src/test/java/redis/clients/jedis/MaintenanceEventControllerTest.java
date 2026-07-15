@@ -280,6 +280,58 @@ public class MaintenanceEventControllerTest {
   }
 
   @Test
+  public void stampExpiryIfAffected_skipsConnectionsCreatedAfterDeadline() throws Exception {
+    movingNone(1L, 10); // committed at now=0, reconnect deadline 5s
+    advanceSeconds(6); // past the deadline; relax window (10s) still open
+    // The reconnect re-lands on the same peer; stamping it with the past shared deadline would
+    // churn it on every return for the rest of the relax window.
+    Connection reconnect = new Connection(new HostAndPort("127.0.0.1", mockServer.getPort()));
+    reconnect.connect();
+    try {
+      assertFalse(controller.stampExpiryIfAffected(reconnect),
+        "a connection created after the deadline is this rebind's own reconnect - never stamped");
+      assertFalse(reconnect.isExpired());
+      assertTrue(controller.stampExpiryIfAffected(receiver),
+        "pre-existing connection is still stamped");
+    } finally {
+      reconnect.close();
+    }
+  }
+
+  @Test
+  public void sameSeqRenotificationAfterDeadline_doesNotStamp() throws Exception {
+    movingNone(1L, 10); // reconnect deadline 5s
+    advanceSeconds(6);
+    // The moving node re-notifies every new connection (push follows the subscription +OK); a
+    // reconnect that re-landed on it receives the same-seq MOVING and must not inherit the past
+    // shared deadline.
+    Connection reconnect = new Connection(new HostAndPort("127.0.0.1", mockServer.getPort()));
+    reconnect.connect();
+    try {
+      controller.onMoving(new MovingEvent(1L, 10, null), reconnect);
+      assertFalse(reconnect.isExpired(), "re-notified reconnect is outside the rebind's scope");
+    } finally {
+      reconnect.close();
+    }
+  }
+
+  @Test
+  public void sameSeqNotificationBeforeDeadline_alignsToSharedDeadline() throws Exception {
+    movingNone(1L, 10); // reconnect deadline 5s
+    advanceSeconds(2); // first half: newcomers sit on the dying node and must participate
+    Connection newcomer = new Connection(new HostAndPort("127.0.0.1", mockServer.getPort()));
+    newcomer.connect();
+    try {
+      controller.onMoving(new MovingEvent(1L, 10, null), newcomer);
+      assertFalse(newcomer.isExpired(), "aligned to the shared deadline, which is still ahead");
+      advanceSeconds(4); // now=6s, past the shared 5s deadline (not the newcomer's own 2+5)
+      assertTrue(newcomer.isExpired(), "stamped with the FIRST notification's deadline");
+    } finally {
+      newcomer.close();
+    }
+  }
+
+  @Test
   public void stampExpiryIfAffected_onlyWithinWindow() {
     assertFalse(controller.stampExpiryIfAffected(receiver), "no rebind yet");
     movingNone(1L, 10);

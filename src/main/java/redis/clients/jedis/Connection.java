@@ -172,9 +172,9 @@ public class Connection implements Closeable {
   private Set<InitVisitor> initVisitors = new HashSet<>();
 
   private static final long EXPIRE_NOT_SET = -1;
-  /** Reconnect-deadline sentinel: always expired without a clock read (MOVING receiver discard). */
-  static final long EXPIRED = 0;
   private volatile long expireAt = EXPIRE_NOT_SET;
+    /** Birth instant; connections created after a MOVING's reconnect deadline are its own reconnects. */
+  private final long createdAtNanos = NanoClock.INSTANCE.getAsLong();
 
   /** Listeners notified synchronously of this connection's maintenance events (pool-injected). */
   private final Set<MaintenanceEventListener> maintenanceEventListeners =  ConcurrentHashMap.newKeySet();
@@ -553,9 +553,6 @@ public class Connection implements Closeable {
     long at = expireAt;
     if (at == EXPIRE_NOT_SET) {
       return false;
-    }
-    if (at == EXPIRED) {
-      return true;
     }
     return at <= NanoClock.INSTANCE.getAsLong();
   }
@@ -1075,6 +1072,10 @@ public class Connection implements Closeable {
 
   void expireAt(long expireAt) {
     this.expireAt = expireAt;
+  }
+
+  long createdAtNanos() {
+    return createdAtNanos;
   }
 
   void enableTimeoutRelaxing(ExpiringTimeoutSource relaxedTimeout) {

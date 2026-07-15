@@ -280,15 +280,15 @@ public abstract class AbstractRebindBehaviorTest {
       assertEquals("PONG", client.ping()); // reads the push, stamps the deadline; still usable
       assertEquals(0, pool.getDestroyedCount());
 
-      // Past the half-grace deadline the borrow gate discards the idle connection and a fresh one
-      // is created against the CONFIGURED endpoint (no remap). The mock cannot repoint DNS, so the
-      // replacement re-lands on the same affected peer and is re-stamped on return until the relax
-      // window closes — assert >= 1 here; the churn-guard follow-up tightens this to exactly 1.
+      // Past the half-grace deadline the stale connection is dropped on return and replaced
+      // against the CONFIGURED endpoint (no remap). Exactly one replacement: the mock cannot
+      // repoint DNS, so the fresh connection re-lands on the same affected peer — but it
+      // postdates the reconnect deadline, so it is never re-stamped (churn guard).
       await().atMost(Duration.ofSeconds(4)).pollInterval(Duration.ofMillis(100))
           .untilAsserted(() -> {
             assertEquals("PONG", client.ping());
-            assertTrue(pool.getDestroyedCount() >= 1,
-              "expired connection replaced on borrow after half the grace period");
+            assertEquals(1, pool.getDestroyedCount(),
+              "expired connection replaced exactly once after half the grace period");
             assertEquals(1, mockServer1.getConnectedClientCount(),
               "reconnect targets the configured endpoint");
             assertEquals(0, mockServer2.getConnectedClientCount());

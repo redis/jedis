@@ -93,13 +93,17 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   }
 
   /**
-   * If {@code c}'s peer is in the active rebind, stamp its reconnect deadline and report affected.
+   * If {@code c} is in the active rebind's scope — its peer is an affected source AND it was
+   * created before the rebind's reconnect deadline — stamp its deadline and report affected.
    * Callers (pool return-hook, eviction policy) then discard {@code c} iff
-   * {@link Connection#isExpired()}.
+   * {@link Connection#isExpired()}. Connections created after the deadline are the rebind's own
+   * reconnects: with a null target they re-land on the same peer, and stamping them with the (past)
+   * shared deadline would churn them on every return.
    */
   boolean stampExpiryIfAffected(Connection c) {
     RebindState st = rebind;
-    if (st.isValid() && st.affected.contains(c.getRemoteSocketAddress())) {
+    if (st.isValid() && c.createdAtNanos() <= st.expireAtNanos
+        && st.affected.contains(c.getRemoteSocketAddress())) {
       c.expireAt(st.expireAtNanos);
       return true;
     }
@@ -120,13 +124,10 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     long relaxDeadline = now
         + Math.min(TimeUnit.SECONDS.toNanos(e.ttlSeconds), maxRelaxedDurationNanos);
     // Reconnect deadline, independent of the relax window: 'none' reconnects to the configured
-    // endpoint at half the raw grace; a real target discards receivers immediately.
-    long expireAt = e.target == null ? now + TimeUnit.SECONDS.toNanos(e.ttlSeconds) / 2
-        : Connection.EXPIRED;
-    // Every receiver gets its deadline up front, before any seq gating — this also covers a
-    // buffered, already-superseded MOVING read late by an idle connection (safety net) and the
-    // no-peer early return below.
-    c.expireAt(expireAt);
+    // endpoint at half the raw grace; a real target discards receivers immediately (deadline is
+    // the commit instant itself). A real timestamp in both cases — it doubles as the rebind's
+    // scope bound: connections created after it are the rebind's own reconnects, never stamped.
+    long expireAt = e.target == null ? now + TimeUnit.SECONDS.toNanos(e.ttlSeconds) / 2 : now;
 
     SocketAddress affectedPeer = c.getRemoteSocketAddress();
     if (affectedPeer == null) {
@@ -138,7 +139,9 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     while (true) {
       RebindState cur = rebind;
       if (e.seq < cur.seq) {
-        return; // older event; receiver already stamped up front
+        // Stale replay of a superseded event: no stamp. Stragglers are covered by the gated
+        // return-hook (if still in the current rebind's scope) and by the remote close at time_s.
+        return;
       }
       if (e.seq == cur.seq) {
         if (!Objects.equals(target, cur.target)) {
@@ -146,9 +149,13 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
             cur.target, target);
           return;
         }
-        // Same handoff from another affected connection: align to the shared deadline committed by
-        // the first notification of this seq.
-        c.expireAt(cur.expireAtNanos);
+        // Same handoff from another affected connection: align to the shared deadline committed
+        // by the first notification — but only for connections that predate it. A connection
+        // created after the deadline is this rebind's own reconnect, re-notified because it
+        // re-landed on the still-moving node; stamping it would churn every replacement.
+        if (c.createdAtNanos() <= cur.expireAtNanos) {
+          c.expireAt(cur.expireAtNanos);
+        }
         if (cur.affected.contains(affectedPeer)) {
           return; // already merged
         }
@@ -167,6 +174,7 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
       if (REBIND.compareAndSet(this, cur, next)) {
         logger.debug("Rebinding {} -> {} (seq={}, ttl={}s)", affectedPeer, target, e.seq,
           e.ttlSeconds);
+        c.expireAt(expireAt); // the receiver predates the commit it just created
         fireHandoffHook(e);
         return;
       }
@@ -256,13 +264,13 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   private static final class RebindState {
 
     static final RebindState EXPIRED_STATE = new RebindState(-1, Collections.emptySet(), null, 0L,
-        Connection.EXPIRED);
+        0L);
     final long seq;
     final Set<SocketAddress> affected;
     final SocketAddress target;
     final long deadlineNanos; // relax-window end; gates isValid()/remap
-    final long expireAtNanos; // shared per-connection reconnect deadline (EXPIRED |
-                              // now+ttl/2)
+    final long expireAtNanos; // shared reconnect deadline (commit instant | commit+ttl/2) and the
+                              // rebind's scope bound: later-created connections are its reconnects
     volatile boolean expired = false;
 
     private RebindState(long seq, Set<SocketAddress> affected, SocketAddress target,

@@ -65,6 +65,7 @@ public class RespResponse {
    * Create an array response. Supports mixed data types. Not all RESP data types are supported.
    * Only the following are supported: Each element is automatically encoded based on its type:
    * <ul>
+   * <li>null → RESP3 null (_\r\n)</li>
    * <li>Integer → RESP integer (:123\r\n)</li>
    * <li>Long → RESP integer (:123\r\n)</li>
    * <li>String → RESP bulk string ($3\r\nabc\r\n)</li>
@@ -118,7 +119,9 @@ public class RespResponse {
    * @return RESP-encoded string
    */
   private static String encodeElement(Object element) {
-    if (element instanceof Integer) {
+    if (element == null) {
+      return "_\r\n"; // RESP3 null
+    } else if (element instanceof Integer) {
       return integer((Integer) element);
     } else if (element instanceof Long) {
       return integer((Long) element);

@@ -94,6 +94,8 @@ public class MaintenanceAwareVisitor implements InitVisitor {
         return "external-ip";
       case EXTERNAL_FQDN:
         return "external-fqdn";
+      case NONE:
+        return "none";
       default:
         throw new JedisException("Unknown endpoint type: " + endpointType);
     }

@@ -130,6 +130,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private final JedisClientConfig clientConfig;
   private Supplier<Connection> objectMaker;
   private Connection.Builder connectionBuilder;
+  private final MaintenanceEventController maintenanceController; // null = maintenance off
 
   private AuthXEventListener authXEventListener;
 
@@ -153,6 +154,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   public ConnectionFactory(Builder builder) {
     this.clientConfig = builder.getClientConfig();
     this.connectionBuilder = builder.getConnectionBuilder();
+    this.maintenanceController = builder.maintenanceController;
 
     initAuthXManager();
   }
@@ -171,8 +173,19 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
   private Connection build() {
     Connection conn = connectionBuilder.buildUninitialized();
+    registerForMaintenanceEvents(conn);
     initialize(conn);
     return conn;
+  }
+
+  /**
+   * Registers the connection for maintenance-event tracking.
+   * Must run before socket init.
+   */
+  private void registerForMaintenanceEvents(Connection conn) {
+    if (maintenanceController != null) {
+      maintenanceController.registry().register(conn);
+    }
   }
 
   /**
@@ -228,8 +241,13 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       if (!jedis.isConnected()) {
         return false;
       }
+      if (jedis.isMarkedForReconnect()) {
+        return false; // marked by a maintenance marking pass -> recycle
+      }
       reAuthenticate(jedis);
-      return jedis.ping();
+      // Re-check after the ping: its read may consume a buffered MOVING push whose inline
+      // marking pass marks this connection.
+      return jedis.ping() && !jedis.isMarkedForReconnect();
     } catch (final Exception e) {
       logger.warn("Error while validating pooled Connection object.", e);
       return false;

@@ -171,8 +171,12 @@ public class Connection implements Closeable {
   private boolean isBlocking = false;
   private Set<InitVisitor> initVisitors = new HashSet<>();
 
-  private static final long EXPIRE_NOT_SET = -1;
-  private long expireAt = EXPIRE_NOT_SET;
+  /**
+   * Maintenance mark, written by the controller's marking passes: this connection
+   * must be recycled instead of re-pooled. Advisory — enforced on return and by validation; never
+   * interrupts in-flight work.
+   */
+  private volatile boolean markedForReconnect;
 
   /** Listeners notified synchronously of this connection's maintenance events (pool-injected). */
   private final Set<MaintenanceEventListener> maintenanceEventListeners =  ConcurrentHashMap.newKeySet();
@@ -540,7 +544,7 @@ public class Connection implements Closeable {
     if (this.memberOf != null) {
       ConnectionPool pool = this.memberOf;
       this.memberOf = null;
-      if (isBroken() || isExpired()) {
+      if (isBroken() || markedForReconnect) {
         pool.returnBrokenResource(this);
       } else {
         pool.returnResource(this);
@@ -548,14 +552,6 @@ public class Connection implements Closeable {
     } else {
       disconnect();
     }
-  }
-
-  private boolean isExpired() {
-    if ( expireAt == EXPIRE_NOT_SET) {
-      return  false;
-    }
-
-    return expireAt <= NanoClock.INSTANCE.getAsLong();
   }
 
   /**
@@ -1071,8 +1067,12 @@ public class Connection implements Closeable {
     this.pushConsumers.remove(consumer);
   }
 
-  void expireAt(long expireAt) {
-    this.expireAt = expireAt;
+  void markForReconnect() {
+    this.markedForReconnect = true;
+  }
+
+  boolean isMarkedForReconnect() {
+    return markedForReconnect;
   }
 
   void enableTimeoutRelaxing(ExpiringTimeoutSource relaxedTimeout) {

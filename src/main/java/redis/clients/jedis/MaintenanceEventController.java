@@ -2,15 +2,17 @@ package redis.clients.jedis;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.time.Duration;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.Executors;
+import java.util.concurrent.RejectedExecutionException;
+import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
-import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
@@ -19,10 +21,11 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.TimeoutSource.TimeoutInfo;
 
 /**
- * Maintenance handler: owns the shared rebind overlay, the relax-window policy, and the handoff
- * hooks fired when a MOVING is applied.
+ * Maintenance handler: owns the shared rebind overlay, the relax-window policy, the registry of
+ * pool-managed connections, and the marking passes that flag affected connections for recycling.
  */
-final class MaintenanceEventController implements MaintenanceEventListener, SocketAddressMapper {
+final class MaintenanceEventController
+    implements MaintenanceEventListener, SocketAddressMapper, AutoCloseable {
 
   private static final Logger logger = LoggerFactory.getLogger(MaintenanceEventController.class);
 
@@ -31,13 +34,23 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   private static final AtomicReferenceFieldUpdater<MaintenanceEventController, RebindState> REBIND = AtomicReferenceFieldUpdater
       .newUpdater(MaintenanceEventController.class, RebindState.class, "rebind");
   private volatile RebindState rebind = RebindState.EXPIRED_STATE;
-  /** Synchronous hooks fired once per applied MOVING handoff; see {@link #addHandoffHook}. */
-  private final List<Consumer<MaintenanceHandoff>> handoffHooks = new CopyOnWriteArrayList<>();
+  /** Hooks fired once per completed marking pass; see {@link #addHandoffHook}. */
+  private final List<Runnable> handoffHooks = new CopyOnWriteArrayList<>();
   private final Supplier<TimeoutInfo> timeoutSupplier;
 
-  private MaintenanceEventController(MaintenanceNotificationsConfig config) {
+  private final ConnectionRegistry registry = new ConnectionRegistry();
+
+  /**
+   * Non-null iff a delayed marking pass is possible — i.e. the configured endpoint type is
+   * {@code NONE}.
+   */
+  private final ScheduledExecutorService scheduler;
+
+  private MaintenanceEventController(MaintenanceNotificationsConfig config,
+      ScheduledExecutorService scheduler) {
     this.config = config;
     this.maxRelaxedDurationNanos = config.getRelaxedWindowMaxDuration().toNanos();
+    this.scheduler = scheduler;
 
     TimeoutInfo relaxedTimeoutInfo = new TimeoutInfo(config.getRelaxedTimeout(),
         config.getRelaxedBlockingTimeout());
@@ -45,12 +58,34 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   }
 
   /**
-   * Construct a controller from the given config. Use this from a builder when the config
-   * {@link MaintenanceNotificationsConfig#isEnabledOrAuto()} — for DISABLED, leave the controller
-   * unset.
+   * Construct a controller from the given config. The creator owns the controller and must
+   * {@link #close()} it.
    */
   public static MaintenanceEventController from(MaintenanceNotificationsConfig cfg) {
-    return new MaintenanceEventController(cfg);
+    return new MaintenanceEventController(cfg,
+        cfg.getEndpointType() == MaintenanceNotificationsConfig.EndpointType.NONE
+            ? newMaintenanceScheduler()
+            : null);
+  }
+
+  /**
+   * Test seam: an explicit marking scheduler (overrides the config-based decision; may be null).
+   * The controller owns it and shuts it down on {@link #close()}.
+   */
+  static MaintenanceEventController from(MaintenanceNotificationsConfig cfg,
+      ScheduledExecutorService scheduler) {
+    return new MaintenanceEventController(cfg, scheduler);
+  }
+
+  private static final java.util.concurrent.atomic.AtomicInteger MAINTENANCE_THREAD_SEQ = new java.util.concurrent.atomic.AtomicInteger();
+
+  private static ScheduledExecutorService newMaintenanceScheduler() {
+    String name = "jedis-maintenance-" + MAINTENANCE_THREAD_SEQ.incrementAndGet();
+    return Executors.newSingleThreadScheduledExecutor(r -> {
+      Thread t = new Thread(r, name);
+      t.setDaemon(true);
+      return t;
+    });
   }
 
   /**
@@ -62,15 +97,12 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   }
 
   /**
-   * Registers a hook invoked synchronously, once, when a MOVING handoff is applied (i.e. a real new
-   * target is committed under the seq guard). Hook exceptions propagate.
+   * Registers a hook fired once a MOVING handoff has been processed — its tracked (affected)
+   * connections marked for reconnect. Runs on the marking thread and must not block; exceptions
+   * propagate. Hooks live as long as the controller.
    */
-  public void addHandoffHook(Consumer<MaintenanceHandoff> hook) {
+  void addHandoffHook(Runnable hook) {
     handoffHooks.add(hook);
-  }
-
-  public void removeHandoffHook(Consumer<MaintenanceHandoff> hook) {
-    handoffHooks.remove(hook);
   }
 
   /**
@@ -97,81 +129,122 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   @Override
   public void onMoving(MovingEvent e, Connection c) {
     logger.debug("Moving to {} (seq={}, ttl={}s)", e.target, e.seq, e.ttlSeconds);
-    // Cap the server-supplied ttl at the user-configured backstop so a generous or misbehaving
-    // server can't pin the pool in relaxed mode beyond {@code relaxedTimeoutMaxDuration}.
-    long ttlNanos = Math.min(TimeUnit.SECONDS.toNanos(e.ttlSeconds), maxRelaxedDurationNanos);
-    // Any MOVING affects the receiver: mark for discard and relax commands on it before return.
-    // QUESTION : are we relying on each in-use connection that connected to a rebinding endpoint
-    // will receive a MOVING and then eventually will be marked for discard? If so, we
-    // may want to consider a more aggressive approach to mark connections that are connected to
-    // the rebinding endpoint for discard.
-
-    // UPDATE: we have two different spots that causes connection to be dropped. One is setting
-    // expireAt for connections that received MOVING event, and the other is when a connection is
-    // returned to the pool, we check if it is connected to a rebinding endpoint(isAffected) and if
-    // so, we drop it. So we are covering for both cases.
-
-    // IMPORTANT: in case we like to delay the expiration since NONE as new target may be sent,
-    // dropping the connections immediately just by relying isAffected would be an issue, and cause
-    // immediate drops while it is not supposed to be.
-
     long now = NanoClock.INSTANCE.getAsLong();
-    long deadline = now + ttlNanos;
-    // HERE! we can control if an immediate gracefull drop needed,, or we need to delay in case
-    // MOVING msg suggests a future renewal.
-    c.expireAt(now);
+    // Relax window: cap the server ttl at the configured backstop so a generous or misbehaving
+    // server can't pin the pool in relaxed mode beyond relaxedWindowMaxDuration.
+    long relaxDeadline = now
+        + Math.min(TimeUnit.SECONDS.toNanos(e.ttlSeconds), maxRelaxedDurationNanos);
+    // Reconnect instant: a real target marks immediately; 'none' marks at half the raw grace,
+    // giving DNS time to repoint before affected connections reconnect to the configured endpoint.
+    long reconnectAt = e.target == null ? now + TimeUnit.SECONDS.toNanos(e.ttlSeconds) / 2 : now;
+
     SocketAddress affectedPeer = c.getRemoteSocketAddress();
     if (affectedPeer == null) {
       return; // receiver socket already closed; no peer to register
     }
-    SocketAddress target = new InetSocketAddress(e.target.getHost(), e.target.getPort());
+    SocketAddress target = e.target == null ? null
+        : new InetSocketAddress(e.target.getHost(), e.target.getPort());
 
     while (true) {
       RebindState cur = rebind;
       if (e.seq < cur.seq) {
-        return; // older event
+        return; // stale replay of a superseded event
       }
       if (e.seq == cur.seq) {
-        // Same handoff event from another affected connection: merge its peer into the set.
-        if (!target.equals(cur.target)) {
+        if (!Objects.equals(target, cur.target)) {
           logger.warn("Ignoring MOVING with conflicting target for seq {}: have {}, got {}", e.seq,
             cur.target, target);
           return;
         }
         if (cur.affected.contains(affectedPeer)) {
-          return; // already merged
+          // Re-delivery from an already-known source — e.g. the moving node notifying a
+          // connection created after the reconnect instant. No state change, no pass: such
+          // connections
+          // stay unmarked (temporal churn immunity).
+          return;
         }
         RebindState next = cur.merge(affectedPeer);
         if (REBIND.compareAndSet(this, cur, next)) {
           logger.debug("Merged source {} into rebind seq={} (sources={})", affectedPeer, cur.seq,
             next.affected.size());
-          fireHandoffHook(e);
+          handleRebind(next);
           return;
         }
         continue; // CAS lost; retry
       }
       // New seq (or first ever): replace state with a fresh single-source set.
       RebindState next = new RebindState(e.seq, Collections.singleton(affectedPeer), target,
-          deadline);
-
+          relaxDeadline, reconnectAt);
       if (REBIND.compareAndSet(this, cur, next)) {
         logger.debug("Rebinding {} -> {} (seq={}, ttl={}s)", affectedPeer, target, e.seq,
           e.ttlSeconds);
-        fireHandoffHook(e);
+        handleRebind(next);
         return;
       }
       // CAS lost (concurrent apply); retry — may then see same-seq merge path or older-seq exit.
     }
   }
 
-  public Supplier<TimeoutInfo> getTimeoutSupplier() {
-    return timeoutSupplier;
+  /**
+   * Reaction to an applied (seq-deduplicated) MOVING rebind: mark the snapshot's affected
+   * connections — inline if the reconnect instant is already due, otherwise at that instant. Marked
+   * connections are recycled on return to the pool; the handoff hooks evict marked idles. A marking
+   * pass pending from a superseded epoch is never cancelled — its stale fire is a no-op via the seq
+   * guard.
+   */
+  private void handleRebind(RebindState snapshot) {
+    if (snapshot.target != null) {
+      markAffected(snapshot); // real target: reconnect immediately
+      return;
+    }
+    if (scheduler == null) {
+      logger.warn("Ignoring null-target MOVING with endpoint type {}", config.getEndpointType());
+      return;
+    }
+    // 'none': mark at the reconnect instant (a late merge yields a non-positive delay: runs now)
+    long delayNanos = snapshot.reconnectAtNanos - NanoClock.INSTANCE.getAsLong();
+    try {
+      scheduler.schedule(() -> markAffected(snapshot), delayNanos, TimeUnit.NANOSECONDS);
+    } catch (RejectedExecutionException alreadyClosed) {
+      // Controller closed concurrently;
+    }
   }
 
-  private void fireHandoffHook(MovingEvent e) {
-    MaintenanceHandoff handoff = new MaintenanceHandoff(e.seq, e.target,
-        Duration.ofSeconds(e.ttlSeconds));
-    handoffHooks.forEach(hook -> hook.accept(handoff));
+  /**
+   * The marking pass: mark every registered connection whose peer is one of the snapshot's sources,
+   * then run the handoff hooks (the pool evicts marked idles). Mark-only — never any I/O; only the
+   * pool destroys. Every state transition (new seq or merged source) marks against the exact
+   * snapshot it produced, so every source is covered by the transition that admitted it;
+   * overlapping passes are harmless (marking is an idempotent one-way write). A stale fire
+   * (superseded epoch) is a no-op via the seq guard.
+   */
+  private void markAffected(RebindState snapshot) {
+    if (rebind.seq != snapshot.seq) {
+      return; // superseded; the new epoch's transitions run their own marking passes
+    }
+    registry.forEachLive(conn -> {
+      if (snapshot.affected.contains(conn.getRemoteSocketAddress())) {
+        conn.markForReconnect();
+      }
+    });
+    handoffHooks.forEach(Runnable::run);
+  }
+
+  /** Registry the owning pool's factory registers every created connection into. */
+  ConnectionRegistry registry() {
+    return registry;
+  }
+
+  /** Idempotent: stops the maintenance scheduler, dropping any queued marking pass. */
+  @Override
+  public void close() {
+    if (scheduler != null) {
+      scheduler.shutdownNow();
+    }
+  }
+
+  public Supplier<TimeoutInfo> getTimeoutSupplier() {
+    return timeoutSupplier;
   }
 
   @Override
@@ -201,39 +274,6 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     c.resetRelaxedTimeouts();
   }
 
-  /** Observation payload delivered to handoff hooks: seq, new endpoint, and the handoff window. */
-  public static final class MaintenanceHandoff {
-    private final long seq;
-    private final HostAndPort target;
-    private final Duration ttl;
-
-    MaintenanceHandoff(long seq, HostAndPort target, Duration ttl) {
-      this.seq = seq;
-      this.target = target;
-      this.ttl = ttl;
-    }
-
-    /** Monotonically-increasing sequence number of the originating MOVING event. */
-    public long getSeq() {
-      return seq;
-    }
-
-    /** The new endpoint connections will be routed to during the handoff window. */
-    public HostAndPort getTarget() {
-      return target;
-    }
-
-    /** Window the handoff is active for, after which the configured endpoint is used again. */
-    public Duration getTtl() {
-      return ttl;
-    }
-
-    @Override
-    public String toString() {
-      return "MaintenanceHandoff[seq=" + seq + ", target=" + target + ", ttl=" + ttl + "]";
-    }
-  }
-
   /**
    * Immutable snapshot of an active, time-bounded MOVING rebind. {@code affected} holds the
    * receivers' resolved peers (one per affected connection that delivered a MOVING with this
@@ -242,26 +282,30 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
    */
   private static final class RebindState {
 
-    static final RebindState EXPIRED_STATE = new RebindState(-1, Collections.emptySet(), null, 0L);
+    static final RebindState EXPIRED_STATE = new RebindState(-1, Collections.emptySet(), null, 0L,
+        0L);
     final long seq;
     final Set<SocketAddress> affected;
     final SocketAddress target;
-    final long deadlineNanos;
+    final long deadlineNanos; // relax-window end; gates isValid()/remap
+    final long reconnectAtNanos; // marking due: commit now (target) | commit now + ttl/2 (none)
     volatile boolean expired = false;
 
     private RebindState(long seq, Set<SocketAddress> affected, SocketAddress target,
-        long deadlineNanos) {
+        long deadlineNanos, long reconnectAtNanos) {
       this.seq = seq;
       this.affected = affected;
       this.target = target;
       this.deadlineNanos = deadlineNanos;
+      this.reconnectAtNanos = reconnectAtNanos;
     }
 
     private RebindState merge(SocketAddress peer) {
       Set<SocketAddress> merged = new HashSet<>(affected.size() + 1, 1.0f);
       merged.addAll(affected);
       merged.add(peer);
-      return new RebindState(seq, Collections.unmodifiableSet(merged), target, deadlineNanos);
+      return new RebindState(seq, Collections.unmodifiableSet(merged), target, deadlineNanos,
+          reconnectAtNanos);
     }
 
     private boolean isValid() {

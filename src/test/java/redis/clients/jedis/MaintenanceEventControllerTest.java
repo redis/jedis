@@ -23,7 +23,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import redis.clients.jedis.MaintenanceEventController.MaintenanceHandoff;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 /**
@@ -127,11 +126,11 @@ public class MaintenanceEventControllerTest {
   @Test
   public void sameSeqSameTarget_mergesAffectedSources() throws Exception {
     AtomicInteger fires = new AtomicInteger();
-    controller.addHandoffHook(handoff -> fires.incrementAndGet());
+    controller.addHandoffHook(fires::incrementAndGet);
 
     // First MOVING from `receiver` (connected to 127.0.0.1 in setUp()).
     moving(1L, TARGET_B, 100);
-    assertEquals(1, fires.get(), "handoff hook fires on new seq");
+    assertEquals(1, fires.get(), "hook fires on new seq");
     assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer));
 
     // Dual-stack receiver: connect the SAME mock server via the IPv6 loopback. The mock binds the
@@ -150,7 +149,7 @@ public class MaintenanceEventControllerTest {
         "original IPv4 peer still remaps");
       assertEquals(TARGET_B_ADDR, controller.getSocketAddress(ipv6Peer),
         "merged IPv6 peer also remaps to same target");
-      assertEquals(2, fires.get(), "handoff hook fires again on same-seq merge");
+      assertEquals(2, fires.get(), "hook fires again on same-seq merge");
 
       // Idempotent: re-delivering the same MOVING to the same connection is a no-op (source
       // already in the affected set; no state change → no hook fire).
@@ -195,7 +194,7 @@ public class MaintenanceEventControllerTest {
   @Test
   public void handoffHook_firesOncePerAppliedHandoff() {
     AtomicInteger fires = new AtomicInteger();
-    controller.addHandoffHook(handoff -> fires.incrementAndGet());
+    controller.addHandoffHook(fires::incrementAndGet);
 
     moving(5L, TARGET_B, 100);
     moving(5L, TARGET_C, 100); // stale: no fire
@@ -205,42 +204,16 @@ public class MaintenanceEventControllerTest {
   }
 
   @Test
-  public void handoffHook_payloadCarriesEventFields() {
-    AtomicReference<MaintenanceHandoff> seen = new AtomicReference<>();
-    controller.addHandoffHook(seen::set);
-
-    moving(7L, TARGET_B, 30);
-
-    MaintenanceHandoff h = seen.get();
-    assertEquals(7L, h.getSeq());
-    assertEquals(TARGET_B, h.getTarget());
-    assertEquals(Duration.ofSeconds(30), h.getTtl());
-  }
-
-  @Test
   public void handoffHook_multipleHooksAllFire() {
     AtomicInteger first = new AtomicInteger();
     AtomicInteger second = new AtomicInteger();
-    controller.addHandoffHook(handoff -> first.incrementAndGet());
-    controller.addHandoffHook(handoff -> second.incrementAndGet());
+    controller.addHandoffHook(first::incrementAndGet);
+    controller.addHandoffHook(second::incrementAndGet);
 
     moving(1L, TARGET_B, 100);
 
     assertEquals(1, first.get());
     assertEquals(1, second.get());
-  }
-
-  @Test
-  public void handoffHook_removedHookStopsFiring() {
-    AtomicInteger fires = new AtomicInteger();
-    Consumer<MaintenanceHandoff> hook = handoff -> fires.incrementAndGet();
-    controller.addHandoffHook(hook);
-
-    moving(1L, TARGET_B, 100);
-    controller.removeHandoffHook(hook);
-    moving(2L, TARGET_C, 100);
-
-    assertEquals(1, fires.get(), "removed hook should not fire on subsequent handoffs");
   }
 
   // --- Relax-on-borrow ---
@@ -293,4 +266,5 @@ public class MaintenanceEventControllerTest {
     assertNull(capped.getSocketAddress(receiverPeer),
       "ttl is capped at maxRelaxedDuration (10s), not the server-supplied 100s");
   }
+
 }

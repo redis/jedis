@@ -227,7 +227,7 @@ public class Connection implements Closeable {
    *   <li><b>Pub/Sub consumer</b> – Handles Pub/Sub messages and propagates them back to the caller.
    *       All other message types are considered processed and are not propagated further.</li>
    *   <li><b>Maintenance event consumer</b> (optional) – Dispatches server maintenance
-   *       notifications to the registered {@link MaintenanceEventListener}s. Registered only when
+   *       notifications to the registered {@link MaintenanceEventHandler}s. Registered only when
    *       maintenance is configured on the builder; non-pooled connections never have it.</li>
    * </ul>
    *

@@ -16,13 +16,18 @@ import java.util.function.Supplier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import redis.clients.jedis.MaintenanceEvent.FailedOverEvent;
+import redis.clients.jedis.MaintenanceEvent.FailingOverEvent;
+import redis.clients.jedis.MaintenanceEvent.MigratedEvent;
+import redis.clients.jedis.MaintenanceEvent.MigratingEvent;
+import redis.clients.jedis.MaintenanceEvent.MovingEvent;
 import redis.clients.jedis.TimeoutSource.TimeoutInfo;
 
 /**
  * Maintenance handler: owns the shared rebind overlay, the relax-window policy, and the handoff
  * hooks fired when a MOVING is applied.
  */
-final class MaintenanceEventController implements MaintenanceEventListener, SocketAddressMapper {
+final class MaintenanceEventController implements MaintenanceEventHandler, SocketAddressMapper {
 
   private static final Logger logger = LoggerFactory.getLogger(MaintenanceEventController.class);
 
@@ -34,6 +39,7 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   /** Synchronous hooks fired once per applied MOVING handoff; see {@link #addHandoffHook}. */
   private final List<Consumer<MaintenanceHandoff>> handoffHooks = new CopyOnWriteArrayList<>();
   private final Supplier<TimeoutInfo> timeoutSupplier;
+  private final MaintenanceEventListenerAdapter customListenerAdapter;
 
   private MaintenanceEventController(MaintenanceNotificationsConfig config) {
     this.config = config;
@@ -42,6 +48,12 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     TimeoutInfo relaxedTimeoutInfo = new TimeoutInfo(config.getRelaxedTimeout(),
         config.getRelaxedBlockingTimeout());
     this.timeoutSupplier = () -> rebind.isValid() ? relaxedTimeoutInfo : null;
+    if (config.getMaintenanceListener() != null) {
+      this.customListenerAdapter = new MaintenanceEventListenerAdapter(
+          config.getMaintenanceListener());
+    } else {
+      this.customListenerAdapter = null;
+    }
   }
 
   /**
@@ -166,6 +178,10 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
 
   public Supplier<TimeoutInfo> getTimeoutSupplier() {
     return timeoutSupplier;
+  }
+
+  public MaintenanceEventListenerAdapter getCustomListenerAdapter() {
+    return customListenerAdapter;
   }
 
   private void fireHandoffHook(MovingEvent e) {

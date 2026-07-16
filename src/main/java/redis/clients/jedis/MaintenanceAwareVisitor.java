@@ -52,27 +52,28 @@ public class MaintenanceAwareVisitor implements InitVisitor {
     }
 
     /*
-     * Listeners notified synchronously of this connection's maintenance events. One for controller,
-     * one for the config's listener (if any). Iteration order is significant and must stay
-     * controller-first: the controller registers the pool rebind off this connection's peer
-     * address, while the public listener may mutate the connection (e.g. close it). A LinkedHashSet
+     * Handlers notified synchronously of this connection's maintenance events. One for controller,
+     * one for the config's listener (if any). Iteration order is purposefully defined: the
+     * controller will always receive the event first, so it can rebind controller-first: the
+     * controller registers the pool rebind off this connection's peer address, while the public
+     * listener can not access connection or internals directly via the Event. A LinkedHashSet
      * preserves insertion order so the controller always completes its handoff bookkeeping before
      * any user callback runs.
      */
-    Set<MaintenanceEventListener> maintenanceListeners;
-    if (maintenanceConfig.getMaintenanceListener() == null) {
-      maintenanceListeners = Collections.singleton(controller);
+    Set<MaintenanceEventHandler> maintenanceHandlers;
+    if (controller.getCustomListenerAdapter() == null) {
+      maintenanceHandlers = Collections.singleton(controller);
     } else {
-      maintenanceListeners = new LinkedHashSet<>(2, 1f);
-      maintenanceListeners.add(controller);
-      maintenanceListeners.add(maintenanceConfig.getMaintenanceListener());
+      maintenanceHandlers = new LinkedHashSet<>(2, 1f);
+      maintenanceHandlers.add(controller);
+      maintenanceHandlers.add(controller.getCustomListenerAdapter());
     }
 
     // The server must accept CLIENT MAINT_NOTIFICATIONS ON. Pre-register the consumer so a
     // push
     // frame the server emits immediately on accepting the subscription cannot race ahead.
     MaintenanceEventConsumer consumer = new MaintenanceEventConsumer(connection,
-        maintenanceListeners);
+        maintenanceHandlers);
     connection.addPushConsumer(consumer);
     ExpiringTimeoutSource relaxedTimeoutSource = new ExpiringTimeoutSource(new TimeoutInfo(
         maintenanceConfig.getRelaxedTimeout(), maintenanceConfig.getRelaxedBlockingTimeout()));

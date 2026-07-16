@@ -4,6 +4,11 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
 
+import redis.clients.jedis.MaintenanceEvent.FailedOverEvent;
+import redis.clients.jedis.MaintenanceEvent.FailingOverEvent;
+import redis.clients.jedis.MaintenanceEvent.MigratedEvent;
+import redis.clients.jedis.MaintenanceEvent.MigratingEvent;
+import redis.clients.jedis.MaintenanceEvent.MovingEvent;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**

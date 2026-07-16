@@ -23,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import redis.clients.jedis.MaintenanceEvent.MovingEvent;
 import redis.clients.jedis.MaintenanceEventController.MaintenanceHandoff;
 import redis.clients.jedis.util.server.TcpMockServer;
 

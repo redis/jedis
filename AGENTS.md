@@ -1,5 +1,5 @@
 # Jedis Coding Conventions
-Jedis is synchronous Java client for Redis, shipped as a library on Maven Central as `redis.clients:jedis`.
+Jedis is a synchronous Java client for Redis, shipped as a library on Maven Central as `redis.clients:jedis`.
 It covers standalone, cluster, sentinel, and multi-db setups — with pipelining, transactions, pub/sub, and Redis Stack modules — and targets Java 8 for source/binary compatibility.
 
 ## General Principles

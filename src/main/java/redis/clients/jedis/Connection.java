@@ -178,7 +178,8 @@ public class Connection implements Closeable {
   private final Set<MaintenanceEventListener> maintenanceEventListeners = ConcurrentHashMap
       .newKeySet();
 
-  private final DefaultTimeoutSource defaultTimeoutSource = new DefaultTimeoutSource(new TimeoutInfo(0, 0));
+  private final DefaultTimeoutSource defaultTimeoutSource = new DefaultTimeoutSource(
+      new TimeoutInfo(0, 0));
 
   private JedisClientConfig clientConfig;
   private final ProtocolHandshake handshake = new ProtocolHandshake(this);

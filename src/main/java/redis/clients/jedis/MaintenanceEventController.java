@@ -203,6 +203,7 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
     if (source != null) {
       ((ExpiringTimeoutSource) source).setExpirationTime(expirationTime);
     }
+    c.applyCurrentTimeout();
   }
 
   /** Observation payload delivered to handoff hooks: seq, new endpoint, and the handoff window. */

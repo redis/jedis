@@ -348,7 +348,7 @@ public class Connection implements Closeable {
     return isBlocking ? defaultTimeoutSource.get().blockingTimeout : defaultTimeoutSource.get().timeout;
   }
 
-  private void applyCurrentTimeout() {
+  void applyCurrentTimeout() {
     int timeout = currentTimeout();
      if (timeout == appliedSoTimeout || socket == null) {
       return;

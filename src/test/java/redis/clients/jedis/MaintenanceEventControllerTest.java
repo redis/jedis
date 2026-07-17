@@ -331,13 +331,16 @@ public class MaintenanceEventControllerTest {
   private static void sleepUninterruptibly(long millis) {
     long deadline = System.currentTimeMillis() + millis;
     long remaining;
+    boolean interrupted = false;
     while ((remaining = deadline - System.currentTimeMillis()) > 0) {
       try {
         Thread.sleep(remaining);
       } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        return;
+        interrupted = true;
       }
+    }
+    if (interrupted) {
+      Thread.currentThread().interrupt();
     }
   }
 

@@ -868,14 +868,13 @@ public class Connection implements Closeable {
       }
       getMany(fireAndForgetMsg.size());
 
+      for (InitVisitor visitor : initVisitors) {
+        visitor.visitAfterHandshake(this);
+      }
 
       int dbIndex = config.getDatabase();
       if (dbIndex > 0) {
         select(dbIndex);
-      }
-
-      for (InitVisitor visitor : initVisitors) {
-        visitor.visitAfterHandshake(this);
       }
 
     } catch (JedisException je) {

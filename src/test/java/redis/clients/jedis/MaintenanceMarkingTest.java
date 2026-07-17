@@ -284,7 +284,9 @@ public class MaintenanceMarkingTest {
         poolConfig, maint);
     try {
       Connection conn = pool.getResource();
-      mockServer.sendPushMessageToAll("MOVING", 7, 60, null); // 'none': eager scheduler in use
+      assertEquals(preexisting, liveMaintenanceThreads(),
+        "no maintenance thread before the first null-target rebind");
+      mockServer.sendPushMessageToAll("MOVING", 7, 60, null);
       assertTrue(conn.ping()); // reads the push; schedules the pass (spawns the worker thread)
       conn.close();
       assertFalse(liveMaintenanceThreads().equals(preexisting),
@@ -296,7 +298,6 @@ public class MaintenanceMarkingTest {
         .until(() -> liveMaintenanceThreads().equals(preexisting));
   }
 
-  /** Names of live maintenance threads; uniquely numbered, so other tests' threads are excluded. */
   private static java.util.Set<String> liveMaintenanceThreads() {
     java.util.Set<String> names = new java.util.HashSet<>();
     for (Thread t : Thread.getAllStackTraces().keySet()) {

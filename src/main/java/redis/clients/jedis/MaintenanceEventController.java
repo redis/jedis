@@ -41,10 +41,11 @@ final class MaintenanceEventController
   private final ConnectionRegistry registry = new ConnectionRegistry();
 
   /**
-   * Non-null iff a delayed marking pass is possible — i.e. the configured endpoint type is
-   * {@code NONE}.
+   * Marking scheduler for delayed ('none') passes; created lazily on the first null-target rebind
    */
-  private final ScheduledExecutorService scheduler;
+  private volatile ScheduledExecutorService scheduler;
+  private boolean closed; // guarded by schedulerLock
+  private final Object schedulerLock = new Object();
 
   private MaintenanceEventController(MaintenanceNotificationsConfig config,
       ScheduledExecutorService scheduler) {
@@ -62,19 +63,35 @@ final class MaintenanceEventController
    * {@link #close()} it.
    */
   public static MaintenanceEventController from(MaintenanceNotificationsConfig cfg) {
-    return new MaintenanceEventController(cfg,
-        cfg.getEndpointType() == MaintenanceNotificationsConfig.EndpointType.NONE
-            ? newMaintenanceScheduler()
-            : null);
+    return new MaintenanceEventController(cfg, null);
   }
 
   /**
-   * Test seam: an explicit marking scheduler (overrides the config-based decision; may be null).
-   * The controller owns it and shuts it down on {@link #close()}.
+   * Test seam: an explicit marking scheduler (pre-populates the lazy field). The controller owns it
+   * and shuts it down on {@link #close()}.
    */
   static MaintenanceEventController from(MaintenanceNotificationsConfig cfg,
       ScheduledExecutorService scheduler) {
     return new MaintenanceEventController(cfg, scheduler);
+  }
+
+  /**
+   * The marking scheduler, created on first use.
+   */
+  private ScheduledExecutorService scheduler() {
+    ScheduledExecutorService s = scheduler;
+    if (s == null) {
+      synchronized (schedulerLock) {
+        if (closed) {
+          throw new RejectedExecutionException("controller closed");
+        }
+        s = scheduler;
+        if (s == null) {
+          scheduler = s = newMaintenanceScheduler();
+        }
+      }
+    }
+    return s;
   }
 
   private static final java.util.concurrent.atomic.AtomicInteger MAINTENANCE_THREAD_SEQ = new java.util.concurrent.atomic.AtomicInteger();
@@ -197,14 +214,10 @@ final class MaintenanceEventController
       markAffected(snapshot); // real target: reconnect immediately
       return;
     }
-    if (scheduler == null) {
-      logger.warn("Ignoring null-target MOVING with endpoint type {}", config.getEndpointType());
-      return;
-    }
     // 'none': mark at the reconnect instant (a late merge yields a non-positive delay: runs now)
     long delayNanos = snapshot.reconnectAtNanos - NanoClock.INSTANCE.getAsLong();
     try {
-      scheduler.schedule(() -> markAffected(snapshot), delayNanos, TimeUnit.NANOSECONDS);
+      scheduler().schedule(() -> markAffected(snapshot), delayNanos, TimeUnit.NANOSECONDS);
     } catch (RejectedExecutionException alreadyClosed) {
       // Controller closed concurrently;
     }
@@ -238,8 +251,11 @@ final class MaintenanceEventController
   /** Idempotent: stops the maintenance scheduler, dropping any queued marking pass. */
   @Override
   public void close() {
-    if (scheduler != null) {
-      scheduler.shutdownNow();
+    synchronized (schedulerLock) {
+      closed = true;
+      if (scheduler != null) {
+        scheduler.shutdownNow();
+      }
     }
   }
 

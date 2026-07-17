@@ -1,8 +1,10 @@
 package redis.clients.jedis;
 
+import java.net.SocketAddress;
 import java.time.Duration;
 
 import redis.clients.jedis.util.JedisAsserts;
+import redis.clients.jedis.util.NetUtils;
 
 public class MaintenanceNotificationsConfig {
 
@@ -14,7 +16,7 @@ public class MaintenanceNotificationsConfig {
   public static final int DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS = 0;
 
   private MaintenanceNotificationsConfig(Builder builder) {
-    this.endpointType = builder.endpointType;
+    this.endpointTypeResolver = builder.endpointTypeResolver;
     this.mode = builder.mode;
     this.relaxedWindowMaxDuration = builder.relaxedWindowMaxDuration;
     this.relaxedTimeout = builder.relaxedTimeout;
@@ -39,6 +41,65 @@ public class MaintenanceNotificationsConfig {
   }
 
   /**
+   * Strategy determining the {@link EndpointType} to request in MOVING notifications, evaluated per
+   * connection at handshake time.
+   * @since 8.0
+   */
+  public interface EndpointTypeResolver {
+
+    /**
+     * Determines the endpoint type based on connection characteristics.
+     * @param remoteAddress the remote socket address of the connection
+     * @param sslEnabled whether TLS/SSL is enabled for the connection
+     * @return the {@link EndpointType} to request
+     */
+    EndpointType getEndpointType(SocketAddress remoteAddress, boolean sslEnabled);
+  }
+
+  /**
+   * Auto-resolves from connection characteristics: private remote IP (see
+   * {@link NetUtils#isPrivateIp}) selects {@code INTERNAL_*}, public {@code EXTERNAL_*}; TLS
+   * selects {@code *_FQDN}, plaintext {@code *_IP}.
+   */
+  private static final class AutoEndpointTypeResolver implements EndpointTypeResolver {
+
+    static final AutoEndpointTypeResolver INSTANCE = new AutoEndpointTypeResolver();
+
+    @Override
+    public EndpointType getEndpointType(SocketAddress remoteAddress, boolean sslEnabled) {
+      if (NetUtils.isPrivateIp(remoteAddress)) {
+        return sslEnabled ? EndpointType.INTERNAL_FQDN : EndpointType.INTERNAL_IP;
+      }
+      return sslEnabled ? EndpointType.EXTERNAL_FQDN : EndpointType.EXTERNAL_IP;
+    }
+
+    @Override
+    public String toString() {
+      return "AutoEndpointTypeResolver";
+    }
+  }
+
+  /** Always requests the user-chosen endpoint type, ignoring connection characteristics. */
+  private static final class FixedEndpointTypeResolver implements EndpointTypeResolver {
+
+    private final EndpointType endpointType;
+
+    FixedEndpointTypeResolver(EndpointType endpointType) {
+      this.endpointType = endpointType;
+    }
+
+    @Override
+    public EndpointType getEndpointType(SocketAddress remoteAddress, boolean sslEnabled) {
+      return endpointType;
+    }
+
+    @Override
+    public String toString() {
+      return "FixedEndpointTypeResolver(" + endpointType + ")";
+    }
+  }
+
+  /**
    * Mode for maintenance event notifications.
    * <ul>
    * <li>ENABLED - Maintenance notifications are explicitly enabled. Both timeout relaxation and
@@ -53,14 +114,19 @@ public class MaintenanceNotificationsConfig {
     ENABLED, DISABLED, AUTO
   }
 
-  private final EndpointType endpointType;
+  private final EndpointTypeResolver endpointTypeResolver;
   private final Mode mode;
   private final Duration relaxedWindowMaxDuration;
   private final int relaxedTimeout;
   private final int relaxedBlockingTimeout;
 
-  public EndpointType getEndpointType() {
-    return endpointType;
+  /**
+   * The strategy that decides which endpoint type to request in MOVING notifications; defaults to
+   * auto-resolution from connection characteristics.
+   * @since 8.0
+   */
+  public EndpointTypeResolver getEndpointTypeResolver() {
+    return endpointTypeResolver;
   }
 
   public Mode getMode() {
@@ -105,14 +171,32 @@ public class MaintenanceNotificationsConfig {
       .build();
 
   public static class Builder {
-    private EndpointType endpointType = EndpointType.EXTERNAL_IP;
+    private EndpointTypeResolver endpointTypeResolver = AutoEndpointTypeResolver.INSTANCE;
     private Mode mode = Mode.AUTO;
     private Duration relaxedWindowMaxDuration = DEFAULT_RELAXED_WINDOW_MAX_DURATION;
     private int relaxedTimeout = DEFAULT_RELAXED_SOCKET_TIMEOUT_MS;
     private int relaxedBlockingTimeout = DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS;
 
+    /**
+     * Requests a fixed endpoint type for all MOVING notifications. Mutually exclusive with
+     * {@link #autoResolveEndpointType()}; the last call wins.
+     * @since 8.0
+     */
     public Builder endpointType(EndpointType endpointType) {
-      this.endpointType = endpointType;
+      JedisAsserts.notNull(endpointType, "endpointType must not be null");
+      this.endpointTypeResolver = new FixedEndpointTypeResolver(endpointType);
+      return this;
+    }
+
+    /**
+     * Requests the endpoint type resolved per connection from its characteristics: private remote
+     * IP selects {@code INTERNAL_*}, public {@code EXTERNAL_*}; TLS selects {@code *_FQDN},
+     * plaintext {@code *_IP}. This is the default. Mutually exclusive with
+     * {@link #endpointType(EndpointType)}; the last call wins.
+     * @since 8.0
+     */
+    public Builder autoResolveEndpointType() {
+      this.endpointTypeResolver = AutoEndpointTypeResolver.INSTANCE;
       return this;
     }
 

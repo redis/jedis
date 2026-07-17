@@ -84,6 +84,8 @@ public class MaintenanceAwareVisitor implements InitVisitor {
 
       connection.sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
         resolveEndpointType(mConfig.getEndpointType()));
+      connection.sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
+        resolveEndpointType(connection, maintenanceConfig));
       try {
         connection.getStatusCodeReply();
         keepOverrides = true;
@@ -114,7 +116,14 @@ public class MaintenanceAwareVisitor implements InitVisitor {
         && maintenanceConfig.getMode() != MaintenanceNotificationsConfig.Mode.DISABLED;
   }
 
-  private String resolveEndpointType(MaintenanceNotificationsConfig.EndpointType endpointType) {
+  /** The {@code moving-endpoint-type} value for this connection. */
+  private String resolveEndpointType(Connection connection, MaintenanceNotificationsConfig config) {
+    // TLS as declared by the client config: enabled when either ssl(true) or sslOptions is set,
+    // mirroring DefaultJedisSocketFactory#createSocket.
+    JedisClientConfig clientConfig = builder.getClientConfig();
+    boolean sslEnabled = clientConfig.isSsl() || clientConfig.getSslOptions() != null;
+    MaintenanceNotificationsConfig.EndpointType endpointType = config.getEndpointTypeResolver()
+        .getEndpointType(connection.getRemoteSocketAddress(), sslEnabled);
     switch (endpointType) {
       case INTERNAL_IP:
         return "internal-ip";

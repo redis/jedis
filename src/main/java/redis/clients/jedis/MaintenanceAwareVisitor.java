@@ -90,7 +90,7 @@ public class MaintenanceAwareVisitor implements InitVisitor {
     // mirroring DefaultJedisSocketFactory#createSocket.
     JedisClientConfig clientConfig = builder.getClientConfig();
     boolean sslEnabled = clientConfig.isSsl() || clientConfig.getSslOptions() != null;
-    MaintenanceNotificationsConfig.EndpointType endpointType = config.getEndpointTypeSource()
+    MaintenanceNotificationsConfig.EndpointType endpointType = config.getEndpointTypeResolver()
         .getEndpointType(connection.getRemoteSocketAddress(), sslEnabled);
     switch (endpointType) {
       case INTERNAL_IP:

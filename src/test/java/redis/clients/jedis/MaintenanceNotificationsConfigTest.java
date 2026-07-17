@@ -13,7 +13,7 @@ import java.net.SocketAddress;
 import java.time.Duration;
 
 import redis.clients.jedis.MaintenanceNotificationsConfig.EndpointType;
-import redis.clients.jedis.MaintenanceNotificationsConfig.EndpointTypeSource;
+import redis.clients.jedis.MaintenanceNotificationsConfig.EndpointTypeResolver;
 
 @Tag("unit")
 public class MaintenanceNotificationsConfigTest {
@@ -30,34 +30,34 @@ public class MaintenanceNotificationsConfigTest {
   }
 
   @Test
-  public void defaultSourceAutoResolvesFromConnectionCharacteristics() {
-    EndpointTypeSource source = MaintenanceNotificationsConfig.builder().build()
-        .getEndpointTypeSource();
+  public void defaultResolverAutoResolvesFromConnectionCharacteristics() {
+    EndpointTypeResolver resolver = MaintenanceNotificationsConfig.builder().build()
+        .getEndpointTypeResolver();
 
-    assertEquals(EndpointType.INTERNAL_IP, source.getEndpointType(PRIVATE_ADDR, false));
-    assertEquals(EndpointType.INTERNAL_FQDN, source.getEndpointType(PRIVATE_ADDR, true));
-    assertEquals(EndpointType.EXTERNAL_IP, source.getEndpointType(PUBLIC_ADDR, false));
-    assertEquals(EndpointType.EXTERNAL_FQDN, source.getEndpointType(PUBLIC_ADDR, true));
+    assertEquals(EndpointType.INTERNAL_IP, resolver.getEndpointType(PRIVATE_ADDR, false));
+    assertEquals(EndpointType.INTERNAL_FQDN, resolver.getEndpointType(PRIVATE_ADDR, true));
+    assertEquals(EndpointType.EXTERNAL_IP, resolver.getEndpointType(PUBLIC_ADDR, false));
+    assertEquals(EndpointType.EXTERNAL_FQDN, resolver.getEndpointType(PUBLIC_ADDR, true));
   }
 
   @Test
-  public void autoResolveEndpointTypeRestoresDefaultSource() {
-    EndpointTypeSource source = MaintenanceNotificationsConfig.builder()
+  public void autoResolveEndpointTypeRestoresDefaultResolver() {
+    EndpointTypeResolver resolver = MaintenanceNotificationsConfig.builder()
         .endpointType(EndpointType.EXTERNAL_FQDN).autoResolveEndpointType().build()
-        .getEndpointTypeSource();
+        .getEndpointTypeResolver();
 
-    assertEquals(EndpointType.INTERNAL_IP, source.getEndpointType(PRIVATE_ADDR, false));
-    assertEquals(EndpointType.EXTERNAL_FQDN, source.getEndpointType(PUBLIC_ADDR, true));
+    assertEquals(EndpointType.INTERNAL_IP, resolver.getEndpointType(PRIVATE_ADDR, false));
+    assertEquals(EndpointType.EXTERNAL_FQDN, resolver.getEndpointType(PUBLIC_ADDR, true));
   }
 
   @Test
   public void fixedEndpointTypeIgnoresConnectionCharacteristics() {
-    EndpointTypeSource source = MaintenanceNotificationsConfig.builder()
-        .endpointType(EndpointType.EXTERNAL_FQDN).build().getEndpointTypeSource();
+    EndpointTypeResolver resolver = MaintenanceNotificationsConfig.builder()
+        .endpointType(EndpointType.EXTERNAL_FQDN).build().getEndpointTypeResolver();
 
-    assertEquals(EndpointType.EXTERNAL_FQDN, source.getEndpointType(PRIVATE_ADDR, false));
-    assertEquals(EndpointType.EXTERNAL_FQDN, source.getEndpointType(PUBLIC_ADDR, true));
-    assertEquals(EndpointType.EXTERNAL_FQDN, source.getEndpointType(null, false));
+    assertEquals(EndpointType.EXTERNAL_FQDN, resolver.getEndpointType(PRIVATE_ADDR, false));
+    assertEquals(EndpointType.EXTERNAL_FQDN, resolver.getEndpointType(PUBLIC_ADDR, true));
+    assertEquals(EndpointType.EXTERNAL_FQDN, resolver.getEndpointType(null, false));
   }
 
   @Test

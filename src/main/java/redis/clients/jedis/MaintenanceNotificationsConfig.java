@@ -16,7 +16,7 @@ public class MaintenanceNotificationsConfig {
   public static final int DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS = 0;
 
   private MaintenanceNotificationsConfig(Builder builder) {
-    this.endpointTypeSource = builder.endpointTypeSource;
+    this.endpointTypeResolver = builder.endpointTypeResolver;
     this.mode = builder.mode;
     this.relaxedWindowMaxDuration = builder.relaxedWindowMaxDuration;
     this.relaxedTimeout = builder.relaxedTimeout;
@@ -45,7 +45,7 @@ public class MaintenanceNotificationsConfig {
    * connection at handshake time.
    * @since 8.0
    */
-  public interface EndpointTypeSource {
+  public interface EndpointTypeResolver {
 
     /**
      * Determines the endpoint type based on connection characteristics.
@@ -61,9 +61,9 @@ public class MaintenanceNotificationsConfig {
    * {@link NetUtils#isPrivateIp}) selects {@code INTERNAL_*}, public {@code EXTERNAL_*}; TLS
    * selects {@code *_FQDN}, plaintext {@code *_IP}.
    */
-  private static final class AutoResolveEndpointTypeSource implements EndpointTypeSource {
+  private static final class AutoEndpointTypeResolver implements EndpointTypeResolver {
 
-    static final AutoResolveEndpointTypeSource INSTANCE = new AutoResolveEndpointTypeSource();
+    static final AutoEndpointTypeResolver INSTANCE = new AutoEndpointTypeResolver();
 
     @Override
     public EndpointType getEndpointType(SocketAddress remoteAddress, boolean sslEnabled) {
@@ -75,16 +75,16 @@ public class MaintenanceNotificationsConfig {
 
     @Override
     public String toString() {
-      return "AutoResolveEndpointTypeSource";
+      return "AutoEndpointTypeResolver";
     }
   }
 
   /** Always requests the user-chosen endpoint type, ignoring connection characteristics. */
-  private static final class FixedEndpointTypeSource implements EndpointTypeSource {
+  private static final class FixedEndpointTypeResolver implements EndpointTypeResolver {
 
     private final EndpointType endpointType;
 
-    FixedEndpointTypeSource(EndpointType endpointType) {
+    FixedEndpointTypeResolver(EndpointType endpointType) {
       this.endpointType = endpointType;
     }
 
@@ -95,7 +95,7 @@ public class MaintenanceNotificationsConfig {
 
     @Override
     public String toString() {
-      return "FixedEndpointTypeSource(" + endpointType + ")";
+      return "FixedEndpointTypeResolver(" + endpointType + ")";
     }
   }
 
@@ -114,7 +114,7 @@ public class MaintenanceNotificationsConfig {
     ENABLED, DISABLED, AUTO
   }
 
-  private final EndpointTypeSource endpointTypeSource;
+  private final EndpointTypeResolver endpointTypeResolver;
   private final Mode mode;
   private final Duration relaxedWindowMaxDuration;
   private final int relaxedTimeout;
@@ -125,8 +125,8 @@ public class MaintenanceNotificationsConfig {
    * auto-resolution from connection characteristics.
    * @since 8.0
    */
-  public EndpointTypeSource getEndpointTypeSource() {
-    return endpointTypeSource;
+  public EndpointTypeResolver getEndpointTypeResolver() {
+    return endpointTypeResolver;
   }
 
   public Mode getMode() {
@@ -171,7 +171,7 @@ public class MaintenanceNotificationsConfig {
       .build();
 
   public static class Builder {
-    private EndpointTypeSource endpointTypeSource = AutoResolveEndpointTypeSource.INSTANCE;
+    private EndpointTypeResolver endpointTypeResolver = AutoEndpointTypeResolver.INSTANCE;
     private Mode mode = Mode.AUTO;
     private Duration relaxedWindowMaxDuration = DEFAULT_RELAXED_WINDOW_MAX_DURATION;
     private int relaxedTimeout = DEFAULT_RELAXED_SOCKET_TIMEOUT_MS;
@@ -184,7 +184,7 @@ public class MaintenanceNotificationsConfig {
      */
     public Builder endpointType(EndpointType endpointType) {
       JedisAsserts.notNull(endpointType, "endpointType must not be null");
-      this.endpointTypeSource = new FixedEndpointTypeSource(endpointType);
+      this.endpointTypeResolver = new FixedEndpointTypeResolver(endpointType);
       return this;
     }
 
@@ -196,7 +196,7 @@ public class MaintenanceNotificationsConfig {
      * @since 8.0
      */
     public Builder autoResolveEndpointType() {
-      this.endpointTypeSource = AutoResolveEndpointTypeSource.INSTANCE;
+      this.endpointTypeResolver = AutoEndpointTypeResolver.INSTANCE;
       return this;
     }
 

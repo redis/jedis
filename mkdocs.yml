@@ -24,7 +24,11 @@ markdown_extensions:
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - admonition
   - pymdownx.details
 
@@ -56,5 +60,6 @@ nav:
   - Development guide:
       - Contributing: .github/CONTRIBUTING.md
       - Integration Testing: integration-testing.md
+      - Redis Client Components Overview: redis-client-components-overview.md
       - Benchmark results: https://redis.github.io/jedis/benchmarks/
 

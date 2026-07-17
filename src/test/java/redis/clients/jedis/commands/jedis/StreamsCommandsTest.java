@@ -634,6 +634,32 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion("8.10.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void xreadWithMaxCountAndMaxSize() {
+
+    final String key1 = "xread-maxcount-stream1";
+    final String key2 = "xread-maxcount-stream2";
+
+    Map<String, String> map = singletonMap("f1", "v1");
+    for (int i = 1; i <= 3; i++) {
+      jedis.xadd(key1, new StreamEntryID(i), map);
+      jedis.xadd(key2, new StreamEntryID(i), map);
+    }
+
+    Map<String, StreamEntryID> streamQuery = new LinkedHashMap<>();
+    streamQuery.put(key1, new StreamEntryID());
+    streamQuery.put(key2, new StreamEntryID());
+
+    // MAXCOUNT caps the cumulative reply across both streams
+    List<Entry<String, List<StreamEntry>>> streams = jedis
+        .xread(XReadParams.xReadParams().count(3).maxCount(4).maxSize(65536), streamQuery);
+    assertEquals(2, streams.size());
+    assertEquals(3, streams.get(0).getValue().size());
+    assertEquals(1, streams.get(1).getValue().size());
+  }
+
+  @Test
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void xreadAsMap() {
 

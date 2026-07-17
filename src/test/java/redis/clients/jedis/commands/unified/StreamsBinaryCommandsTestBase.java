@@ -161,6 +161,21 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   }
 
   @Test
+  @SinceRedisVersion("8.10.0")
+  public void xreadBinaryMaxCountAndMaxSize() {
+
+    stream1Entries.forEach(
+        entry -> jedis.xadd(STREAM_KEY_1, new XAddParams().id(entry.getID()), entry.getFields()));
+
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> actualEntries = jedis.xreadBinary(
+        XReadParams.xReadParams().maxCount(1).maxSize(65536), offsets(STREAM_KEY_1, "0-0"));
+
+    assertThat(actualEntries, hasSize(1));
+    assertArrayEquals(STREAM_KEY_1, actualEntries.get(0).getKey());
+    assertThat(actualEntries.get(0).getValue(), equalsStreamEntries(stream1Entries.subList(0, 1)));
+  }
+
+  @Test
   public void xreadBinaryAsMapNoEntries() {
     Map<byte[], List<StreamEntryBinary>> actualEntries = jedis.xreadBinaryAsMap(
         XReadParams.xReadParams(), offsets(STREAM_KEY_1, "0-0"));
@@ -228,6 +243,22 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     assertArrayEquals(STREAM_KEY_1, actualEntries.get(0).getKey());
 
     assertThat(actualEntries.get(0).getValue(), equalsStreamEntries(stream1Entries));
+  }
+
+  @Test
+  @SinceRedisVersion("8.10.0")
+  public void xreadGroupBinaryMaxCountAndMaxSize() {
+
+    stream1Entries.forEach(
+        entry -> jedis.xadd(STREAM_KEY_1, new XAddParams().id(entry.getID()), entry.getFields()));
+
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> actualEntries = jedis.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().maxCount(1).maxSize(65536),
+        offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY));
+
+    assertThat(actualEntries, hasSize(1));
+    assertArrayEquals(STREAM_KEY_1, actualEntries.get(0).getKey());
+    assertThat(actualEntries.get(0).getValue(), equalsStreamEntries(stream1Entries.subList(0, 1)));
   }
 
   @Test

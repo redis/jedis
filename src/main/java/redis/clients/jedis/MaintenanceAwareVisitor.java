@@ -30,8 +30,8 @@ public class MaintenanceAwareVisitor implements InitVisitor {
   /**
    * Installs the pool-wide MOVING rebind timeout overlay before the handshake runs, so a connection
    * opened while a rebind window is open already relaxes its AUTH/HELLO handshake reads. The
-   * overlay is torn down again in {@link #visitAfterHandshake(Connection)} if the feature turns out to be
-   * unsupported on this connection.
+   * overlay is torn down again in {@link #visitAfterHandshake(Connection)} if the feature turns out
+   * to be unsupported on this connection.
    */
   @Override
   public void visitBeforeHandshake(Connection connection) {

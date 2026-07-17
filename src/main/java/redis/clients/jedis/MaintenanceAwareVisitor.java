@@ -83,9 +83,7 @@ public class MaintenanceAwareVisitor implements InitVisitor {
       connection.addPushConsumer(consumer);
 
       connection.sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
-        resolveEndpointType(mConfig.getEndpointType()));
-      connection.sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
-        resolveEndpointType(connection, maintenanceConfig));
+        resolveEndpointType(connection, mConfig));
       try {
         connection.getStatusCodeReply();
         keepOverrides = true;

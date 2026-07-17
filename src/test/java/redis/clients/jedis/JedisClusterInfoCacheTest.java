@@ -99,6 +99,25 @@ public class JedisClusterInfoCacheTest {
   }
 
   @Test
+  public void getSlotReplicaPoolsReturnsIndependentSnapshot() {
+    JedisClusterInfoCache cache = createCacheWithReplicasEnabled();
+
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(masterReplicaSlotsResponse(MASTER_HOST, REPLICA_1_HOST));
+
+    cache.discoverClusterNodesAndSlots(mockConnection);
+
+    List<ConnectionPool> pools = cache.getSlotReplicaPools(TEST_SLOT);
+    assertEquals(1, pools.size());
+
+    // A topology refresh clears the internal replica-slot lists in place. A leaked
+    // reference would be emptied under the caller between size() and get(idx).
+    cache.reset();
+
+    assertEquals(1, pools.size());
+  }
+
+  @Test
   public void getPrimaryNodesAfterReplicaNodeRemovalAndRediscovery() {
     // Create client config with read-only replicas enabled
     JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()

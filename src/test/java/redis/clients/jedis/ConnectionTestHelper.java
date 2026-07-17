@@ -61,11 +61,15 @@ public class ConnectionTestHelper {
   }
 
   public static void relaxTimeouts(Connection connection, Duration period) {
-    connection.relaxTimeouts(NanoClock.INSTANCE.getAsLong() + period.toNanos());
+    ChainedTimeoutSource dts = connection.getTimeoutSource();
+    ExpiringTimeoutSource ets = ((ExpiringTimeoutSource) dts.seekBy(ExpiringTimeoutSource.class));
+    ets.setExpirationTime(NanoClock.INSTANCE.getAsLong() + period.toNanos());
   }
 
   public static void resetRelaxedTimeouts(Connection connection) {
-    connection.resetRelaxedTimeouts();
+    ChainedTimeoutSource dts = connection.getTimeoutSource();
+    ExpiringTimeoutSource ets = ((ExpiringTimeoutSource) dts.seekBy(ExpiringTimeoutSource.class));
+    ets.setExpirationTime(0);
   }
 
   public static int getRelaxedSoTimeout(Connection connection) {

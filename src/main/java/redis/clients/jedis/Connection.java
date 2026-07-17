@@ -175,11 +175,10 @@ public class Connection implements Closeable {
   private long expireAt = EXPIRE_NOT_SET;
 
   /** Listeners notified synchronously of this connection's maintenance events (pool-injected). */
-  private final Set<MaintenanceEventListener> maintenanceEventListeners =  ConcurrentHashMap.newKeySet();
+  private final Set<MaintenanceEventListener> maintenanceEventListeners = ConcurrentHashMap
+      .newKeySet();
 
-  private final DefaultTimeoutSource defaultTimeoutSource = new DefaultTimeoutSource(
-      new TimeoutInfo(0, 0));
-  private ExpiringTimeoutSource relaxedTimeoutSource;
+  private final DefaultTimeoutSource defaultTimeoutSource = new DefaultTimeoutSource(new TimeoutInfo(0, 0));
 
   private JedisClientConfig clientConfig;
   private final ProtocolHandshake handshake = new ProtocolHandshake(this);
@@ -794,6 +793,12 @@ public class Connection implements Closeable {
 
   protected void initializeFromClientConfig(final JedisClientConfig config) {
     try {
+      // Pre-handshake hook: lets visitors install state that must already be in effect while the
+      // AUTH/HELLO handshake talks to the server (e.g. the maintenance rebind timeout overlay).
+      for (InitVisitor visitor : initVisitors) {
+        visitor.visitBeforeHandshake(this);
+      }
+
       defaultTimeoutSource.setDefaults(config.getSocketTimeoutMillis(),
         config.getBlockingSocketTimeoutMillis());
 
@@ -862,13 +867,14 @@ public class Connection implements Closeable {
       }
       getMany(fireAndForgetMsg.size());
 
-      for (InitVisitor visitor : initVisitors) {
-        visitor.visit(this);
-      }
 
       int dbIndex = config.getDatabase();
       if (dbIndex > 0) {
         select(dbIndex);
+      }
+
+      for (InitVisitor visitor : initVisitors) {
+        visitor.visitAfterHandshake(this);
       }
 
     } catch (JedisException je) {
@@ -1075,52 +1081,8 @@ public class Connection implements Closeable {
     this.expireAt = expireAt;
   }
 
-  void enableTimeoutRelaxing(ExpiringTimeoutSource relaxedTimeout) {
-    if (this.relaxedTimeoutSource != null) {
-      throw new IllegalStateException("Relaxed timeouts already activated");
-    }
-    this.relaxedTimeoutSource = relaxedTimeout;
-    this.defaultTimeoutSource.addOverride(relaxedTimeout);
-  }
-
-  void disableTimeoutRelaxing() {
-    if (this.relaxedTimeoutSource == null) {
-      throw new IllegalStateException("Relaxed timeouts not activated");
-    }
-    this.defaultTimeoutSource.removeOverride(relaxedTimeoutSource);
-    this.relaxedTimeoutSource = null;
-  }
-
-  /**
-   * Switches this connection to relaxed timeouts for at most {@code period}. While the window is
-   * open, commands use the looser of the configured value and {@link MaintenanceNotificationsConfig#getRelaxedTimeout()}
-   * (respectively {@link MaintenanceNotificationsConfig#getRelaxedBlockingTimeout()}), {@code 0}
-   * (infinite) being the loosest, giving in-flight commands extra headroom across a server-side
-   * maintenance event (MIGRATING / FAILING_OVER / MOVING-receiver) without ever tightening the
-   * configured deadline. The original timeouts return
-   * into effect once the window closes or {@link #resetRelaxedTimeouts()} is called. Calling this
-   * with a later deadline extends the window; an earlier one is ignored.
-   * @param period maximum duration of the relaxation window
-   */
-  @Experimental
-  void relaxTimeouts(long expiration) {
-    if (this.relaxedTimeoutSource == null) {
-      throw new IllegalStateException("Relaxed timeouts not activated");
-    }
-    relaxedTimeoutSource.setExpirationTime(expiration);
-    applyCurrentTimeout();
-  }
-
-  /**
-   * Clears the per-receiver relaxation deadline and eagerly realigns the socket (cache-checked).
-   */
-  @Experimental
-  void resetRelaxedTimeouts() {
-    if (this.relaxedTimeoutSource == null) {
-      throw new IllegalStateException("Relaxed timeouts not activated");
-    }
-    relaxedTimeoutSource.setExpirationTime(0);
-    applyCurrentTimeout();
+  ChainedTimeoutSource getTimeoutSource() {
+    return defaultTimeoutSource;
   }
 
   /** The connected peer's address, or {@code null} if the socket is not (yet) open. */

@@ -177,28 +177,32 @@ final class MaintenanceEventController implements MaintenanceEventListener, Sock
   @Override
   public void onMigrating(MigratingEvent e, Connection c) {
     logger.debug("Migrating shards {} (seq={}, ttl={}s)", e.shardIds, e.seq, e.ttlSeconds);
-    c.relaxTimeouts(maxRelaxedDurationNanos + NanoClock.INSTANCE.getAsLong()); // time_s = "starts
-                                                                               // within";
-    // backstop
+    relaxConnectionTimeoutsFor(c, maxRelaxedDurationNanos + NanoClock.INSTANCE.getAsLong());
   }
 
   @Override
   public void onFailingOver(FailingOverEvent e, Connection c) {
     logger.debug("Failing over shards {} (seq={}, ttl={}s)", e.shardIds, e.seq, e.ttlSeconds);
-    c.relaxTimeouts(maxRelaxedDurationNanos + NanoClock.INSTANCE.getAsLong()); // time_s = "starts
-                                                                               // within"; backstop
+    relaxConnectionTimeoutsFor(c, maxRelaxedDurationNanos + NanoClock.INSTANCE.getAsLong());
   }
 
   @Override
   public void onMigrated(MigratedEvent e, Connection c) {
     logger.debug("Migrated shards {} (seq={})", e.shardIds, e.seq);
-    c.resetRelaxedTimeouts();
+    relaxConnectionTimeoutsFor(c, 0);
   }
 
   @Override
   public void onFailedOver(FailedOverEvent e, Connection c) {
     logger.debug("Failed over shards {} (seq={})", e.shardIds, e.seq);
-    c.resetRelaxedTimeouts();
+    relaxConnectionTimeoutsFor(c, 0);
+  }
+
+  private void relaxConnectionTimeoutsFor(Connection c, long expirationTime) {
+    ChainedTimeoutSource source = c.getTimeoutSource().seekBy(ExpiringTimeoutSource.class);
+    if (source != null) {
+      ((ExpiringTimeoutSource) source).setExpirationTime(expirationTime);
+    }
   }
 
   /** Observation payload delivered to handoff hooks: seq, new endpoint, and the handoff window. */

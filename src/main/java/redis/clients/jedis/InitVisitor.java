@@ -2,5 +2,7 @@ package redis.clients.jedis;
 
 interface InitVisitor {
 
-  void visit(Connection connection);
+  void visitBeforeHandshake(Connection connection);
+
+  void visitAfterHandshake(Connection connection);
 }

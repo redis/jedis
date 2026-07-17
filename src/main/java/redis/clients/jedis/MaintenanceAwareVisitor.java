@@ -27,61 +27,91 @@ public class MaintenanceAwareVisitor implements InitVisitor {
     this.controller = maintenanceController;
   }
 
+  /**
+   * Installs the pool-wide MOVING rebind timeout overlay before the handshake runs, so a connection
+   * opened while a rebind window is open already relaxes its AUTH/HELLO handshake reads. The
+   * overlay is torn down again in {@link #visit(Connection)} if the feature turns out to be
+   * unsupported on this connection.
+   */
   @Override
-  public void visit(Connection connection) {
-    RedisProtocol protocol = connection.getRedisProtocol();
-    Set<MaintenanceEventListener> maintenanceEventListeners = connection
-        .getMaintenanceEventListeners();
-    MaintenanceNotificationsConfig maintenanceConfig = builder.getMaintenanceConfig();
-
-    if (maintenanceConfig == null
-        || maintenanceConfig.getMode() == MaintenanceNotificationsConfig.Mode.DISABLED) {
-      return;
-    }
-    boolean strict = maintenanceConfig.getMode() == MaintenanceNotificationsConfig.Mode.ENABLED;
-
-    // Maintenance push frames require RESP3.
-    if (protocol != RedisProtocol.RESP3) {
-      String reason = "RESP3 is required but the established protocol is "
-          + (protocol == null ? "RESP2" : protocol);
-      if (strict) {
-        throw new JedisConnectionException("Maintenance notifications: " + reason);
-      }
-      logger.debug("Maintenance notifications disabled: {}.", reason);
+  public void visitBeforeHandshake(Connection connection) {
+    MaintenanceNotificationsConfig mConfig = builder.getMaintenanceConfig();
+    if (!isMaintenanceEnabled(mConfig)) {
       return;
     }
 
-    maintenanceEventListeners.add(controller);
+    ChainedTimeoutSource dts = connection.getTimeoutSource();
+    dts.addOverride(new RebindTimeoutSource(controller));
 
-    // The server must accept CLIENT MAINT_NOTIFICATIONS ON. Pre-register the consumer so a
-    // push
-    // frame the server emits immediately on accepting the subscription cannot race ahead.
-    MaintenanceEventConsumer consumer = new MaintenanceEventConsumer(connection,
-        maintenanceEventListeners);
-    connection.addPushConsumer(consumer);
-    ExpiringTimeoutSource relaxedTimeoutSource = new ExpiringTimeoutSource(new TimeoutInfo(
-        maintenanceConfig.getRelaxedTimeout(), maintenanceConfig.getRelaxedBlockingTimeout()));
-    connection.enableTimeoutRelaxing(relaxedTimeoutSource);
+    TimeoutInfo relaxedTimeout = new TimeoutInfo(mConfig.getRelaxedTimeout(),
+        mConfig.getRelaxedBlockingTimeout());
+    dts.addOverride(new ExpiringTimeoutSource(relaxedTimeout));
+  }
 
-    ChainedTimeoutSource rebindTimeoutSource = new RebindTimeoutSource(controller);
-    relaxedTimeoutSource.addOverride(rebindTimeoutSource);
+  @Override
+  public void visitAfterHandshake(Connection connection) {
+    MaintenanceNotificationsConfig mConfig = builder.getMaintenanceConfig();
+    if (!isMaintenanceEnabled(mConfig)) {
+      return;
+    }
 
-    connection.sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
-      resolveEndpointType(maintenanceConfig.getEndpointType()));
+    boolean strict = mConfig.getMode() == MaintenanceNotificationsConfig.Mode.ENABLED;
+    boolean keepOverrides = false;
+
     try {
-      connection.getStatusCodeReply();
-    } catch (JedisDataException e) {
-      connection.removePushConsumer(consumer);
-      relaxedTimeoutSource.removeOverride(rebindTimeoutSource);
-      connection.disableTimeoutRelaxing();
-      if (strict) {
-        throw new JedisConnectionException(
-            "Maintenance notifications: events not supported on server", e);
+      // Maintenance push frames require RESP3.
+      RedisProtocol protocol = connection.getRedisProtocol();
+      if (protocol != RedisProtocol.RESP3) {
+        String reason = "RESP3 is required but the established protocol is "
+            + (protocol == null ? "RESP2" : protocol);
+        if (strict) {
+          throw new JedisConnectionException("Maintenance notifications: " + reason);
+        }
+        logger.debug("Maintenance notifications disabled: {}.", reason);
+        return;
       }
-      logger.debug(
-        "Maintenance notifications disabled: server rejected CLIENT MAINT_NOTIFICATIONS ({}).",
-        e.getMessage());
+
+      Set<MaintenanceEventListener> maintenanceEventListeners = connection
+          .getMaintenanceEventListeners();
+      maintenanceEventListeners.add(controller);
+
+      // The server must accept CLIENT MAINT_NOTIFICATIONS ON. Pre-register the consumer so a
+      // push
+      // frame the server emits immediately on accepting the subscription cannot race ahead.
+      MaintenanceEventConsumer consumer = new MaintenanceEventConsumer(connection,
+          maintenanceEventListeners);
+      connection.addPushConsumer(consumer);
+
+      connection.sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
+        resolveEndpointType(mConfig.getEndpointType()));
+      try {
+        connection.getStatusCodeReply();
+        keepOverrides = true;
+      } catch (JedisDataException e) {
+        connection.removePushConsumer(consumer);
+
+        if (strict) {
+          throw new JedisConnectionException(
+              "Maintenance notifications: events not supported on server", e);
+        }
+        logger.debug(
+          "Maintenance notifications disabled: server rejected CLIENT MAINT_NOTIFICATIONS ({}).",
+          e.getMessage());
+      }
+    } finally {
+      if (!keepOverrides) {
+        // Undo the rebind overlay installed before the handshake — this connection does NOT support
+        // maintenance notifications.
+        ChainedTimeoutSource dts = connection.getTimeoutSource();
+        dts.removeOverride(dts.seekBy(controller));
+        dts.removeOverride(dts.seekBy(ExpiringTimeoutSource.class));
+      }
     }
+  }
+
+  private static boolean isMaintenanceEnabled(MaintenanceNotificationsConfig maintenanceConfig) {
+    return maintenanceConfig != null
+        && maintenanceConfig.getMode() != MaintenanceNotificationsConfig.Mode.DISABLED;
   }
 
   private String resolveEndpointType(MaintenanceNotificationsConfig.EndpointType endpointType) {
@@ -105,7 +135,7 @@ public class MaintenanceAwareVisitor implements InitVisitor {
     private final MaintenanceEventController controller;
 
     RebindTimeoutSource(MaintenanceEventController controller) {
-      super(null);
+      super(null, controller);
       this.controller = controller;
     }
 

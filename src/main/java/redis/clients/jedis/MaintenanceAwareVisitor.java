@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import java.util.Collections;
+import java.util.LinkedHashSet;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -30,8 +32,6 @@ public class MaintenanceAwareVisitor implements InitVisitor {
   @Override
   public void visit(Connection connection) {
     RedisProtocol protocol = connection.getRedisProtocol();
-    Set<MaintenanceEventListener> maintenanceEventListeners = connection
-        .getMaintenanceEventListeners();
     MaintenanceNotificationsConfig maintenanceConfig = builder.getMaintenanceConfig();
 
     if (maintenanceConfig == null
@@ -51,13 +51,29 @@ public class MaintenanceAwareVisitor implements InitVisitor {
       return;
     }
 
-    maintenanceEventListeners.add(controller);
+    /*
+     * Handlers notified synchronously of this connection's maintenance events. One for controller,
+     * one for the config's listener (if any). Iteration order is purposefully defined: the
+     * controller will always receive the event first, so it can rebind controller-first: the
+     * controller registers the pool rebind off this connection's peer address, while the public
+     * listener can not access connection or internals directly via the Event. A LinkedHashSet
+     * preserves insertion order so the controller always completes its handoff bookkeeping before
+     * any user callback runs.
+     */
+    Set<MaintenanceEventHandler> maintenanceHandlers;
+    if (controller.getCustomListenerAdapter() == null) {
+      maintenanceHandlers = Collections.singleton(controller);
+    } else {
+      maintenanceHandlers = new LinkedHashSet<>(2, 1f);
+      maintenanceHandlers.add(controller);
+      maintenanceHandlers.add(controller.getCustomListenerAdapter());
+    }
 
     // The server must accept CLIENT MAINT_NOTIFICATIONS ON. Pre-register the consumer so a
     // push
     // frame the server emits immediately on accepting the subscription cannot race ahead.
     MaintenanceEventConsumer consumer = new MaintenanceEventConsumer(connection,
-        maintenanceEventListeners);
+        maintenanceHandlers);
     connection.addPushConsumer(consumer);
     ExpiringTimeoutSource relaxedTimeoutSource = new ExpiringTimeoutSource(new TimeoutInfo(
         maintenanceConfig.getRelaxedTimeout(), maintenanceConfig.getRelaxedBlockingTimeout()));

@@ -18,6 +18,11 @@ import java.util.Set;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import redis.clients.jedis.MaintenanceEvent.FailedOverEvent;
+import redis.clients.jedis.MaintenanceEvent.FailingOverEvent;
+import redis.clients.jedis.MaintenanceEvent.MigratedEvent;
+import redis.clients.jedis.MaintenanceEvent.MigratingEvent;
+import redis.clients.jedis.MaintenanceEvent.MovingEvent;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
@@ -81,7 +86,7 @@ public class MaintenanceEventConsumerTest {
 
   @Test
   public void listenerExceptionPropagates() {
-    MaintenanceEventListener boom = new RecordingListener() {
+    MaintenanceEventHandler boom = new RecordingListener() {
       @Override
       public void onMoving(MovingEvent e, Connection c) {
         throw new IllegalStateException("boom");
@@ -102,7 +107,7 @@ public class MaintenanceEventConsumerTest {
     assertSame(connection, l.calls.get(0).connection);
   }
 
-  private PushConsumerContext consume(Set<MaintenanceEventListener> listeners, PushMessage msg) {
+  private PushConsumerContext consume(Set<MaintenanceEventHandler> listeners, PushMessage msg) {
     PushConsumerContext ctx = new PushConsumerContext(msg);
     new MaintenanceEventConsumer(connection, listeners).handle(ctx);
     return ctx;
@@ -132,7 +137,7 @@ public class MaintenanceEventConsumerTest {
     }
   }
 
-  private static class RecordingListener implements MaintenanceEventListener {
+  private static class RecordingListener implements MaintenanceEventHandler {
     final List<Call> calls = new ArrayList<>();
 
     @Override

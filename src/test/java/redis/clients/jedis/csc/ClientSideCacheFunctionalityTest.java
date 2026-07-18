@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.CommandObjects;
+import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.RedisProtocol;
@@ -65,9 +66,14 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   public void invalidateAllWithLargeCacheTest() {
     final int count = 10000;
 
-    // 1. Populate Redis with 10k keys
-    for (int i = 0; i < count; i++) {
-      control.set("key" + i, "value" + i);
+    // 1. Populate Redis with 10k keys. Pipeline the population so setup is a handful
+    // of round-trips instead of 10k sequential ones, which otherwise dominates the
+    // runtime against a remote server and pushes the test past its execution timeout.
+    try (Pipeline pipeline = control.pipelined()) {
+      for (int i = 0; i < count; i++) {
+        pipeline.set("key" + i, "value" + i);
+      }
+      pipeline.sync();
     }
 
     try (RedisClient jedis = RedisClient.builder().hostAndPort(hnp).clientConfig(clientConfig.get())
@@ -137,7 +143,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       // `omem` (output buffer memory) report what the server still has buffered for
       // that client; once both are zero, every invalidation has been handed to the
       // kernel and is on its way / already in the tracked socket's receive buffer.
-      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+      await().atMost(60, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
               .until(() -> {
                 String info = control.clientList(trackedClientId);
                 return info != null && info.contains(" oll=0 ") && info.contains(" omem=0 ");

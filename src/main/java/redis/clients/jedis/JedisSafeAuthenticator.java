@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.util.Arrays;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicReference;
@@ -70,9 +71,11 @@ class JedisSafeAuthenticator {
   }
 
   private void safeReAuthenticate(Token token) {
+    byte[] rawPass = null;
+    byte[] rawUser = null;
     try {
-      byte[] rawPass = client.encodeToBytes(token.getValue().toCharArray());
-      byte[] rawUser = client.encodeToBytes(token.getUser().toCharArray());
+      rawPass = client.encodeToBytes(token.getValue().toCharArray());
+      rawUser = client.encodeToBytes(token.getUser().toCharArray());
 
       Token newToken = pendingTokenRef.getAndSet(token);
       if (newToken == null) {
@@ -88,6 +91,9 @@ class JedisSafeAuthenticator {
     } catch (Exception e) {
       logger.error("Error while re-authenticating connection", e);
       client.getAuthXManager().getListener().onConnectionAuthenticationError(e);
+    } finally {
+      if (rawPass != null) Arrays.fill(rawPass, (byte) 0);
+      if (rawUser != null) Arrays.fill(rawUser, (byte) 0);
     }
   }
 

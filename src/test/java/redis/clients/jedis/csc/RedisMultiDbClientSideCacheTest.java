@@ -76,7 +76,7 @@ public class RedisMultiDbClientSideCacheTest extends UnifiedJedisClientSideCache
       // JedisTemporarilyNotAvailable before the endpoint recovers (more likely against
       // a remote server than a local one). Retry the triggering read until the endpoint
       // is back, then assert the cache was cleared down to just this key.
-      await().atMost(Duration.ofSeconds(30)).ignoreExceptions().until(() -> {
+      await().atMost(Duration.ofSeconds(120)).ignoreExceptions().until(() -> {
         jedis.get("foo");
         return cache.getSize() == 1;
       });

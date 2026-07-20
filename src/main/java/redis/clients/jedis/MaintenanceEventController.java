@@ -147,10 +147,8 @@ final class MaintenanceEventController
   public void onMoving(MovingEvent e, Connection c) {
     logger.debug("Moving to {} (seq={}, ttl={}s)", e.target, e.seq, e.ttlSeconds);
     long now = NanoClock.INSTANCE.getAsLong();
-    // Relax window: cap the server ttl at the configured backstop so a generous or misbehaving
-    // server can't pin the pool in relaxed mode beyond relaxedWindowMaxDuration.
-    long relaxDeadline = now
-        + Math.min(TimeUnit.SECONDS.toNanos(e.ttlSeconds), maxRelaxedDurationNanos);
+    // expires at = observed at + time_s
+    long deadline = now + TimeUnit.SECONDS.toNanos(e.ttlSeconds);
     // Reconnect instant: a real target marks immediately; 'none' marks at half the raw grace,
     // giving DNS time to repoint before affected connections reconnect to the configured endpoint.
     long reconnectAt = e.target == null ? now + TimeUnit.SECONDS.toNanos(e.ttlSeconds) / 2 : now;
@@ -191,7 +189,7 @@ final class MaintenanceEventController
       }
       // New seq (or first ever): replace state with a fresh single-source set.
       RebindState next = new RebindState(e.seq, Collections.singleton(affectedPeer), target,
-          relaxDeadline, reconnectAt);
+          deadline, reconnectAt);
       if (REBIND.compareAndSet(this, cur, next)) {
         logger.debug("Rebinding {} -> {} (seq={}, ttl={}s)", affectedPeer, target, e.seq,
           e.ttlSeconds);

@@ -2,27 +2,26 @@ package redis.clients.jedis;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Objects;
-import java.util.Set;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import redis.clients.jedis.MovingOperations.MovingOperation;
 import redis.clients.jedis.TimeoutSource.TimeoutInfo;
 
 /**
- * Maintenance handler: owns the shared rebind overlay, the relax-window policy, the registry of
- * pool-managed connections, and the marking passes that flag affected connections for recycling.
+ * Maintenance coordinator: reacts to maintenance events. MOVING deliveries are deduplicated into
+ * pool-wide operations by {@link MovingOperations}; the controller reacts to each applied operation
+ * — marking passes over the {@link ConnectionRegistry} that flag affected connections for
+ * recycling, the relax-window policy, and the post-DNS remap of affected peers.
  */
 final class MaintenanceEventController
     implements MaintenanceEventListener, SocketAddressMapper, AutoCloseable {
@@ -31,9 +30,7 @@ final class MaintenanceEventController
 
   private final MaintenanceNotificationsConfig config;
   private final long maxRelaxedDurationNanos; // MIGRATING/FAILING_OVER backstop window
-  private static final AtomicReferenceFieldUpdater<MaintenanceEventController, RebindState> REBIND = AtomicReferenceFieldUpdater
-      .newUpdater(MaintenanceEventController.class, RebindState.class, "rebind");
-  private volatile RebindState rebind = RebindState.EXPIRED_STATE;
+  private final MovingOperations movingOperations = new MovingOperations();
   /** Hooks fired once per completed marking pass; see {@link #addHandoffHook}. */
   private final List<Runnable> handoffHooks = new CopyOnWriteArrayList<>();
   private final Supplier<TimeoutInfo> timeoutSupplier;
@@ -55,7 +52,7 @@ final class MaintenanceEventController
 
     TimeoutInfo relaxedTimeoutInfo = new TimeoutInfo(config.getRelaxedTimeout(),
         config.getRelaxedBlockingTimeout());
-    this.timeoutSupplier = () -> rebind.isValid() ? relaxedTimeoutInfo : null;
+    this.timeoutSupplier = () -> movingOperations.hasActive() ? relaxedTimeoutInfo : null;
   }
 
   /**
@@ -94,7 +91,7 @@ final class MaintenanceEventController
     return s;
   }
 
-  private static final java.util.concurrent.atomic.AtomicInteger MAINTENANCE_THREAD_SEQ = new java.util.concurrent.atomic.AtomicInteger();
+  private static final AtomicInteger MAINTENANCE_THREAD_SEQ = new AtomicInteger();
 
   private static ScheduledExecutorService newMaintenanceScheduler() {
     String name = "jedis-maintenance-" + MAINTENANCE_THREAD_SEQ.incrementAndGet();
@@ -123,96 +120,57 @@ final class MaintenanceEventController
   }
 
   /**
-   * Post-DNS address mapper: remaps the resolved peer to the rebind target when the resolved peer
-   * is one of the active rebind's affected sources and the window is still open; else returns null
-   * (no remap). Lock-free read; {@link HashSet#contains} is O(1).
+   * Post-DNS address mapper: remaps the resolved peer to its active operation's endpoint when the
+   * peer is an affected source of an unexpired MOVING operation; else returns null (no remap). The
+   * endpoint is resolved here, at connect time, so a DNS repoint mid-window is honored..
    */
   @Override
   public SocketAddress getSocketAddress(SocketAddress resolved) {
-    return (rebind.isValid() && rebind.affected.contains(resolved)) ? rebind.target : null;
+    MovingOperation op = movingOperations.findActive(o -> o.affected.contains(resolved));
+    if (op == null || op.endpoint == null) {
+      return null; // no active operation for this peer, or 'none': reconnect to configured endpoint
+    }
+    return new InetSocketAddress(op.endpoint.getHost(), op.endpoint.getPort());
   }
 
   public boolean isAffected(Connection c) {
-    // map is expected to be empty most of the time, considering the lifecyle of controller and
-    // rebinding operations.
-    return rebind.isValid() && rebind.affected.contains(c.getRemoteSocketAddress());
+    SocketAddress peer = c.getRemoteSocketAddress();
+    return movingOperations.findActive(o -> o.affected.contains(peer)) != null;
   }
 
   /** True iff there is an active MOVING rebind window in the pool right now. */
   public boolean isRebindActive() {
-    return rebind.isValid();
+    return movingOperations.hasActive();
   }
 
   @Override
   public void onMoving(MovingEvent e, Connection c) {
     logger.debug("Moving to {} (seq={}, ttl={}s)", e.target, e.seq, e.ttlSeconds);
-    long now = NanoClock.INSTANCE.getAsLong();
-    // expires at = observed at + time_s
-    long deadline = now + TimeUnit.SECONDS.toNanos(e.ttlSeconds);
-    // Reconnect instant: a real target marks immediately; 'none' marks at half the raw grace,
-    // giving DNS time to repoint before affected connections reconnect to the configured endpoint.
-    long reconnectAt = e.target == null ? now + TimeUnit.SECONDS.toNanos(e.ttlSeconds) / 2 : now;
-
     SocketAddress affectedPeer = c.getRemoteSocketAddress();
     if (affectedPeer == null) {
       return; // receiver socket already closed; no peer to register
     }
-    SocketAddress target = e.target == null ? null
-        : new InetSocketAddress(e.target.getHost(), e.target.getPort());
-
-    while (true) {
-      RebindState cur = rebind;
-      if (e.seq < cur.seq) {
-        return; // stale replay of a superseded event
-      }
-      if (e.seq == cur.seq) {
-        if (!Objects.equals(target, cur.target)) {
-          logger.warn("Ignoring MOVING with conflicting target for seq {}: have {}, got {}", e.seq,
-            cur.target, target);
-          return;
-        }
-        if (cur.affected.contains(affectedPeer)) {
-          // Re-delivery from an already-known source — e.g. the moving node notifying a
-          // connection created after the reconnect instant. No state change, no pass: such
-          // connections
-          // stay unmarked (temporal churn immunity).
-          return;
-        }
-        RebindState next = cur.merge(affectedPeer);
-        if (REBIND.compareAndSet(this, cur, next)) {
-          logger.debug("Merged source {} into rebind seq={} (sources={})", affectedPeer, cur.seq,
-            next.affected.size());
-          handleRebind(next);
-          return;
-        }
-        continue; // CAS lost; retry
-      }
-      // New seq (or first ever): replace state with a fresh single-source set.
-      RebindState next = new RebindState(e.seq, Collections.singleton(affectedPeer), target,
-          deadline, reconnectAt);
-      if (REBIND.compareAndSet(this, cur, next)) {
-        logger.debug("Rebinding {} -> {} (seq={}, ttl={}s)", affectedPeer, target, e.seq,
-          e.ttlSeconds);
-        handleRebind(next);
-        return;
-      }
-      // CAS lost (concurrent apply); retry — may then see same-seq merge path or older-seq exit.
+    MovingOperation applied = movingOperations.process(e, affectedPeer);
+    if (applied == null) {
+      // Re-delivery from an already-known source.
+      return;
     }
+    logger.debug("Applied MOVING {} -> {} (seq={}, ttl={}s, sources={})", affectedPeer, e.target,
+      e.seq, e.ttlSeconds, applied.affected.size());
+    handleRebind(applied);
   }
 
   /**
-   * Reaction to an applied (seq-deduplicated) MOVING rebind: mark the snapshot's affected
-   * connections — inline if the reconnect instant is already due, otherwise at that instant. Marked
-   * connections are recycled on return to the pool; the handoff hooks evict marked idles. A marking
-   * pass pending from a superseded epoch is never cancelled — its stale fire is a no-op via the seq
-   * guard.
+   * Marks the snapshot's affected connections. Marked connections are recycled on return to the
+   * pool, and the handoff hooks evict marked idle connections. When the endpoint is {@code null}
+   * ({@link MaintenanceNotificationsConfig.EndpointType#NONE}), marking is deferred to the
+   * reconnect instant — half of the MOVING ttl.
    */
-  private void handleRebind(RebindState snapshot) {
-    if (snapshot.target != null) {
+  private void handleRebind(MovingOperation snapshot) {
+    if (snapshot.endpoint != null) {
       markAffected(snapshot); // real target: reconnect immediately
       return;
     }
-    // 'none': mark at the reconnect instant (a late merge yields a non-positive delay: runs now)
     long delayNanos = snapshot.reconnectAtNanos - NanoClock.INSTANCE.getAsLong();
     try {
       scheduler().schedule(() -> markAffected(snapshot), delayNanos, TimeUnit.NANOSECONDS);
@@ -223,15 +181,11 @@ final class MaintenanceEventController
 
   /**
    * The marking pass: mark every registered connection whose peer is one of the snapshot's sources,
-   * then run the handoff hooks (the pool evicts marked idles). Mark-only — never any I/O; only the
-   * pool destroys. Every state transition (new seq or merged source) marks against the exact
-   * snapshot it produced, so every source is covered by the transition that admitted it;
-   * overlapping passes are harmless (marking is an idempotent one-way write). A stale fire
-   * (superseded epoch) is a no-op via the seq guard.
+   * then run the handoff hooks (the pool evicts marked idles).
    */
-  private void markAffected(RebindState snapshot) {
-    if (rebind.seq != snapshot.seq) {
-      return; // superseded; the new epoch's transitions run their own marking passes
+  private void markAffected(MovingOperation snapshot) {
+    if (!snapshot.isValid()) {
+      return;
     }
     registry.forEachLive(conn -> {
       if (snapshot.affected.contains(conn.getRemoteSocketAddress())) {
@@ -241,12 +195,10 @@ final class MaintenanceEventController
     handoffHooks.forEach(Runnable::run);
   }
 
-  /** Registry the owning pool's factory registers every created connection into. */
   ConnectionRegistry registry() {
     return registry;
   }
 
-  /** Idempotent: stops the maintenance scheduler, dropping any queued marking pass. */
   @Override
   public void close() {
     synchronized (schedulerLock) {
@@ -286,51 +238,5 @@ final class MaintenanceEventController
   public void onFailedOver(FailedOverEvent e, Connection c) {
     logger.debug("Failed over shards {} (seq={})", e.shardIds, e.seq);
     c.resetRelaxedTimeouts();
-  }
-
-  /**
-   * Immutable snapshot of an active, time-bounded MOVING rebind. {@code affected} holds the
-   * receivers' resolved peers (one per affected connection that delivered a MOVING with this
-   * {@code seq}); same-seq events with the same target merge by adding to this set under CAS. The
-   * set is always immutable; updates swap the whole state.
-   */
-  private static final class RebindState {
-
-    static final RebindState EXPIRED_STATE = new RebindState(-1, Collections.emptySet(), null, 0L,
-        0L);
-    final long seq;
-    final Set<SocketAddress> affected;
-    final SocketAddress target;
-    final long deadlineNanos; // relax-window end; gates isValid()/remap
-    final long reconnectAtNanos; // marking due: commit now (target) | commit now + ttl/2 (none)
-    volatile boolean expired = false;
-
-    private RebindState(long seq, Set<SocketAddress> affected, SocketAddress target,
-        long deadlineNanos, long reconnectAtNanos) {
-      this.seq = seq;
-      this.affected = affected;
-      this.target = target;
-      this.deadlineNanos = deadlineNanos;
-      this.reconnectAtNanos = reconnectAtNanos;
-    }
-
-    private RebindState merge(SocketAddress peer) {
-      Set<SocketAddress> merged = new HashSet<>(affected.size() + 1, 1.0f);
-      merged.addAll(affected);
-      merged.add(peer);
-      return new RebindState(seq, Collections.unmodifiableSet(merged), target, deadlineNanos,
-          reconnectAtNanos);
-    }
-
-    private boolean isValid() {
-      if (expired) {
-        return false;
-      }
-      if (deadlineNanos - NanoClock.INSTANCE.getAsLong() > 0) {
-        return true;
-      }
-      expired = true;
-      return false;
-    }
   }
 }

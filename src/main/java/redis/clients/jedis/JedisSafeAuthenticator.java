@@ -92,8 +92,12 @@ class JedisSafeAuthenticator {
       logger.error("Error while re-authenticating connection", e);
       client.getAuthXManager().getListener().onConnectionAuthenticationError(e);
     } finally {
-      if (rawPass != null) Arrays.fill(rawPass, (byte) 0);
-      if (rawUser != null) Arrays.fill(rawUser, (byte) 0);
+      if (rawPass != null) {
+        Arrays.fill(rawPass, (byte) 0); // clear sensitive data
+      }
+      if (rawUser != null) {
+        Arrays.fill(rawUser, (byte) 0); // clear sensitive data
+      }
     }
   }
 

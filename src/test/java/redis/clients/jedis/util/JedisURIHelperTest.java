@@ -149,6 +149,37 @@ public class JedisURIHelperTest {
   }
 
   @Test
+  public void toStringWithMaskedCredentials_masksUserAndPassword() throws URISyntaxException {
+    String masked = toStringWithMaskedCredentials(new URI("redis://user:s3cr3t@host:9000/0"));
+    assertFalse(masked.contains("s3cr3t"));
+    assertFalse(masked.contains("user"));
+    assertEquals("redis://****@host:9000/0", masked);
+  }
+
+  @Test
+  public void toStringWithMaskedCredentials_masksPasswordOnlyUserInfo() throws URISyntaxException {
+    String masked = toStringWithMaskedCredentials(new URI("redis://:s3cr3t@host:9000"));
+    assertFalse(masked.contains("s3cr3t"));
+    assertEquals("redis://****@host:9000", masked);
+  }
+
+  @Test
+  public void toStringWithMaskedCredentials_masksOnInvalidURI() throws URISyntaxException {
+    // Port omitted, so the URI is rejected by isValid and its string reaches the error path.
+    String masked = toStringWithMaskedCredentials(new URI("redis://user:s3cr3t@host"));
+    assertFalse(JedisURIHelper.isValid(new URI("redis://user:s3cr3t@host")));
+    assertFalse(masked.contains("s3cr3t"));
+    assertEquals("redis://****@host", masked);
+  }
+
+  @Test
+  public void toStringWithMaskedCredentials_leavesCredentialFreeURIUnchanged()
+      throws URISyntaxException {
+    assertEquals("redis://host:9000/0",
+      toStringWithMaskedCredentials(new URI("redis://host:9000/0")));
+  }
+
+  @Test
   public void isRedisSSLScheme_shouldBeCaseInsensitive() throws URISyntaxException {
     assertTrue(JedisURIHelper.isRedisSSLScheme(new URI("rediss://host:9000")));
     assertTrue(JedisURIHelper.isRedisSSLScheme(new URI("Rediss://host:9000")));

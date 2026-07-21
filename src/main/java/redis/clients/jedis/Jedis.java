@@ -231,7 +231,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public Jedis(URI uri) {
     if (!JedisURIHelper.isValid(uri)) {
       throw new InvalidURIException(String.format(
-        "Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
+        "Cannot open Redis connection due invalid URI \"%s\".",
+        JedisURIHelper.toStringWithMaskedCredentials(uri)));
     }
     connection = new Connection(new HostAndPort(uri.getHost(), uri.getPort()),
         DefaultJedisClientConfig.builder().autoNegotiateProtocol(false)
@@ -294,7 +295,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public Jedis(final URI uri, JedisClientConfig config) {
     if (!JedisURIHelper.isValid(uri)) {
       throw new InvalidURIException(String.format(
-        "Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
+        "Cannot open Redis connection due invalid URI \"%s\".",
+        JedisURIHelper.toStringWithMaskedCredentials(uri)));
     }
     JedisClientConfig effective = sanitize(config);
     connection = new Connection(new HostAndPort(uri.getHost(), uri.getPort()),

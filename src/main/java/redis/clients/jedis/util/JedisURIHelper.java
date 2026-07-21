@@ -182,4 +182,27 @@ public final class JedisURIHelper {
     return REDISS.equalsIgnoreCase(uri.getScheme());
   }
 
+  /**
+   * Returns the string form of the URI with any user-info (username and password) replaced by a
+   * fixed placeholder. Use this instead of {@link URI#toString()} when a URI is embedded in a log
+   * or exception message, so that credentials carried in the userinfo are not disclosed.
+   *
+   * @param uri the URI to render
+   * @return the URI string with credentials masked
+   * @since 8.0
+   */
+  public static String toStringWithMaskedCredentials(URI uri) {
+    String rawUserInfo = uri.getRawUserInfo();
+    String uriString = uri.toString();
+    if (rawUserInfo == null || rawUserInfo.isEmpty()) {
+      return uriString;
+    }
+    int index = uriString.indexOf(rawUserInfo + "@");
+    if (index < 0) {
+      return uriString;
+    }
+    return uriString.substring(0, index) + "****@"
+        + uriString.substring(index + rawUserInfo.length() + 1);
+  }
+
 }

@@ -159,7 +159,8 @@ public class JedisFactory implements PooledObjectFactory<Jedis> {
       final SSLParameters sslParameters, final HostnameVerifier hostnameVerifier) {
     if (!JedisURIHelper.isValid(uri)) {
       throw new InvalidURIException(
-          String.format("Cannot open Redis connection due invalid URI. %s", uri.toString()));
+          String.format("Cannot open Redis connection due invalid URI. %s",
+              JedisURIHelper.toStringWithMaskedCredentials(uri)));
     }
     this.clientConfig = legacyConfigBuilderWithoutProtocolNegotiation().connectionTimeoutMillis(connectionTimeout)
         .socketTimeoutMillis(soTimeout).blockingSocketTimeoutMillis(infiniteSoTimeout)

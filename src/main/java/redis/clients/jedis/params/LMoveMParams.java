@@ -10,9 +10,9 @@ import redis.clients.jedis.Protocol.Keyword;
  * {@code [<COUNT | EXACTLY> count <OBO | BULK>]} block that turns a single-element move into a
  * multi-element move.
  * <p>
- * A count selector ({@link #count(int)} or {@link #exactly(int)}) and an ordering ({@link #obo()}
- * or {@link #bulk()}) are both mandatory; the wire arguments are emitted in the order
- * {@code <COUNT | EXACTLY> count <OBO | BULK>}.
+ * A count selector ({@link #count(int)} or {@link #exactly(int)}) is required. The ordering
+ * ({@link #obo()} or {@link #bulk()}) is optional and defaults to {@code BULK}. The wire arguments
+ * are emitted in the order {@code <COUNT | EXACTLY> count <OBO | BULK>}.
  * @since 8.0
  */
 public class LMoveMParams implements IParams {
@@ -47,7 +47,7 @@ public class LMoveMParams implements IParams {
 
   /**
    * Move elements one by one, so they arrive at the destination in pop order. Mutually exclusive
-   * with {@link #bulk()} (last call wins).
+   * with {@link #bulk()} (last call wins). When neither is set, ordering defaults to {@code BULK}.
    */
   public LMoveMParams obo() {
     this.ordering = Keyword.OBO;
@@ -56,7 +56,7 @@ public class LMoveMParams implements IParams {
 
   /**
    * Move all elements in bulk, preserving the source sub-list order at the destination. Mutually
-   * exclusive with {@link #obo()} (last call wins).
+   * exclusive with {@link #obo()} (last call wins). This is the default ordering.
    */
   public LMoveMParams bulk() {
     this.ordering = Keyword.BULK;
@@ -68,10 +68,7 @@ public class LMoveMParams implements IParams {
     if (selector == null || count == null) {
       throw new IllegalArgumentException("COUNT or EXACTLY must be specified.");
     }
-    if (ordering == null) {
-      throw new IllegalArgumentException("OBO or BULK must be specified.");
-    }
-    args.add(selector).add(count).add(ordering);
+    args.add(selector).add(count).add(ordering != null ? ordering : Keyword.BULK);
   }
 
   @Override

@@ -23,21 +23,8 @@ public class LMoveMParamsTest {
   class ValidationTests {
 
     @Test
-    public void countWithoutOrderingThrows() {
-      LMoveMParams params = LMoveMParams.lMoveMParams().count(2);
-      assertThrows(IllegalArgumentException.class,
-        () -> params.addParams(new CommandArguments(Protocol.Command.LMOVEM)));
-    }
-
-    @Test
-    public void exactlyWithoutOrderingThrows() {
-      LMoveMParams params = LMoveMParams.lMoveMParams().exactly(3);
-      assertThrows(IllegalArgumentException.class,
-        () -> params.addParams(new CommandArguments(Protocol.Command.LMOVEM)));
-    }
-
-    @Test
     public void orderingWithoutSelectorThrows() {
+      // Ordering set but no COUNT/EXACTLY: the count value has no default.
       LMoveMParams params = LMoveMParams.lMoveMParams().obo();
       assertThrows(IllegalArgumentException.class,
         () -> params.addParams(new CommandArguments(Protocol.Command.LMOVEM)));
@@ -74,6 +61,17 @@ public class LMoveMParamsTest {
       assertThat(args, hasArgumentCount(4));
       assertThat(args, hasArguments(Protocol.Command.LMOVEM, Keyword.EXACTLY,
         RawableFactory.from(3), Keyword.BULK));
+    }
+
+    @Test
+    public void orderingDefaultsToBulk() {
+      LMoveMParams params = LMoveMParams.lMoveMParams().count(2);
+      CommandArguments args = new CommandArguments(Protocol.Command.LMOVEM);
+      params.addParams(args);
+
+      assertThat(args, hasArgumentCount(4));
+      assertThat(args,
+        hasArguments(Protocol.Command.LMOVEM, Keyword.COUNT, RawableFactory.from(2), Keyword.BULK));
     }
 
     @Test

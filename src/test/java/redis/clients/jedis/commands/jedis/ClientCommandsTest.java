@@ -342,6 +342,30 @@ public class ClientCommandsTest extends JedisCommandsTestBase {
     assertEquals(0, trackingInfo.getPrefixes().size());
   }
 
+  @Test
+  public void clientGetredirWhenTrackingDisabled() {
+    // When tracking is not enabled, CLIENT GETREDIR returns -1.
+    assertEquals(-1, client.clientGetredir());
+  }
+
+  @Test
+  public void clientGetredirWithRedirect() {
+    // Use a separate target connection to receive invalidation messages.
+    try (Jedis target = new Jedis(endpoint.getHost(), endpoint.getPort(), 500)) {
+      target.auth(endpoint.getPassword());
+      long targetId = target.clientId();
+
+      // Enable tracking on `client` with redirection to `target`.
+      client.sendCommand(redis.clients.jedis.Protocol.Command.CLIENT, "TRACKING", "ON", "REDIRECT",
+        Long.toString(targetId));
+      try {
+        assertEquals(targetId, client.clientGetredir());
+      } finally {
+        client.sendCommand(redis.clients.jedis.Protocol.Command.CLIENT, "TRACKING", "OFF");
+      }
+    }
+  }
+
   private void assertDisconnected(Jedis j) {
     try {
       j.ping();

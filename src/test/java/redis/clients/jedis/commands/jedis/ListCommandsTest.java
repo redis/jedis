@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
@@ -27,6 +28,7 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.params.LMoveMParams;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.TestEnvUtil;
@@ -878,6 +880,42 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(b3, jedis.blmove(bfoo, bbar, ListDirection.RIGHT, ListDirection.LEFT, 0));
     assertByteArrayListEquals(Collections.singletonList(b3), jedis.lrange(bbar, 0, -1));
     assertByteArrayListEquals(Arrays.asList(b1, b2), jedis.lrange(bfoo, 0, -1));
+  }
+
+  @Test
+  @EnabledOnCommand("LMOVEM")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void lmovem() {
+    // Dedicated keys: sibling blocking tests push to "foo"/"bar" from background threads.
+    jedis.rpush("lmsrc", "1", "2", "3", "4");
+    assertEquals(Arrays.asList("1", "2"),
+        jedis.lmovem("lmsrc", "lmdst", ListDirection.LEFT, ListDirection.LEFT,
+            LMoveMParams.lMoveMParams().count(2).bulk()));
+    assertEquals(Arrays.asList("1", "2"), jedis.lrange("lmdst", 0, -1));
+
+    // EXACTLY unsatisfied returns null.
+    assertNull(jedis.lmovem("lmsrc", "lmdst", ListDirection.LEFT, ListDirection.LEFT,
+        LMoveMParams.lMoveMParams().exactly(5).obo()));
+
+    // Binary
+    jedis.rpush(bfoo, b1, b2, b3);
+    assertByteArrayListEquals(Arrays.asList(b1, b2),
+        jedis.lmovem(bfoo, bbar, ListDirection.LEFT, ListDirection.LEFT,
+            LMoveMParams.lMoveMParams().count(2).bulk()));
+  }
+
+  @Test
+  @EnabledOnCommand("BLMOVEM")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void blmovem() {
+    // Dedicated keys: sibling blocking tests push to "foo"/"bar" from background threads.
+    // Source already populated: returns immediately. (Blocking/timeout semantics are covered by
+    // the unified and cluster integration tests.)
+    jedis.rpush("blmsrc", "1", "2", "3");
+    assertEquals(Arrays.asList("1", "2"),
+        jedis.blmovem("blmsrc", "blmdst", ListDirection.LEFT, ListDirection.RIGHT, 1,
+            LMoveMParams.lMoveMParams().count(2).bulk()));
+    assertEquals(Arrays.asList("1", "2"), jedis.lrange("blmdst", 0, -1));
   }
 
   @Test

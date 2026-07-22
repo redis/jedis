@@ -11,10 +11,131 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
+import redis.clients.jedis.params.LMoveMParams;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
 
 public class PipeliningBaseListCommandsTest extends PipeliningBaseMockedTestBase {
+
+  @Test
+  public void testLmovem() {
+    ListDirection from = ListDirection.LEFT;
+    ListDirection to = ListDirection.RIGHT;
+
+    when(commandObjects.lmovem("srcKey", "dstKey", from, to)).thenReturn(listStringCommandObject);
+
+    Response<List<String>> response = pipeliningBase.lmovem("srcKey", "dstKey", from, to);
+
+    assertThat(commands, contains(listStringCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testLmovemBinary() {
+    byte[] srcKey = "srcKey".getBytes();
+    byte[] dstKey = "dstKey".getBytes();
+    ListDirection from = ListDirection.LEFT;
+    ListDirection to = ListDirection.RIGHT;
+
+    when(commandObjects.lmovem(srcKey, dstKey, from, to)).thenReturn(listBytesCommandObject);
+
+    Response<List<byte[]>> response = pipeliningBase.lmovem(srcKey, dstKey, from, to);
+
+    assertThat(commands, contains(listBytesCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testLmovemWithParams() {
+    ListDirection from = ListDirection.LEFT;
+    ListDirection to = ListDirection.LEFT;
+    LMoveMParams params = LMoveMParams.lMoveMParams().count(2).obo();
+
+    when(commandObjects.lmovem("srcKey", "dstKey", from, to, params)).thenReturn(listStringCommandObject);
+
+    Response<List<String>> response = pipeliningBase.lmovem("srcKey", "dstKey", from, to, params);
+
+    assertThat(commands, contains(listStringCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testLmovemWithParamsBinary() {
+    byte[] srcKey = "srcKey".getBytes();
+    byte[] dstKey = "dstKey".getBytes();
+    ListDirection from = ListDirection.LEFT;
+    ListDirection to = ListDirection.LEFT;
+    LMoveMParams params = LMoveMParams.lMoveMParams().exactly(2).bulk();
+
+    when(commandObjects.lmovem(srcKey, dstKey, from, to, params)).thenReturn(listBytesCommandObject);
+
+    Response<List<byte[]>> response = pipeliningBase.lmovem(srcKey, dstKey, from, to, params);
+
+    assertThat(commands, contains(listBytesCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testBlmovem() {
+    ListDirection from = ListDirection.LEFT;
+    ListDirection to = ListDirection.RIGHT;
+    double timeout = 1.0;
+
+    when(commandObjects.blmovem("srcKey", "dstKey", from, to, timeout)).thenReturn(listStringCommandObject);
+
+    Response<List<String>> response = pipeliningBase.blmovem("srcKey", "dstKey", from, to, timeout);
+
+    assertThat(commands, contains(listStringCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testBlmovemWithParams() {
+    ListDirection from = ListDirection.LEFT;
+    ListDirection to = ListDirection.RIGHT;
+    double timeout = 1.0;
+    LMoveMParams params = LMoveMParams.lMoveMParams().count(2).bulk();
+
+    when(commandObjects.blmovem("srcKey", "dstKey", from, to, timeout, params)).thenReturn(listStringCommandObject);
+
+    Response<List<String>> response = pipeliningBase.blmovem("srcKey", "dstKey", from, to, timeout, params);
+
+    assertThat(commands, contains(listStringCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testBlmovemBinary() {
+    byte[] srcKey = "srcKey".getBytes();
+    byte[] dstKey = "dstKey".getBytes();
+    ListDirection from = ListDirection.LEFT;
+    ListDirection to = ListDirection.RIGHT;
+    double timeout = 10.5;
+
+    when(commandObjects.blmovem(srcKey, dstKey, from, to, timeout)).thenReturn(listBytesCommandObject);
+
+    Response<List<byte[]>> response = pipeliningBase.blmovem(srcKey, dstKey, from, to, timeout);
+
+    assertThat(commands, contains(listBytesCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testBlmovemWithParamsBinary() {
+    byte[] srcKey = "srcKey".getBytes();
+    byte[] dstKey = "dstKey".getBytes();
+    ListDirection from = ListDirection.LEFT;
+    ListDirection to = ListDirection.RIGHT;
+    double timeout = 10.5;
+    LMoveMParams params = LMoveMParams.lMoveMParams().exactly(2).obo();
+
+    when(commandObjects.blmovem(srcKey, dstKey, from, to, timeout, params)).thenReturn(listBytesCommandObject);
+
+    Response<List<byte[]>> response = pipeliningBase.blmovem(srcKey, dstKey, from, to, timeout, params);
+
+    assertThat(commands, contains(listBytesCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
 
   @Test
   public void testBlmove() {

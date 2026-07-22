@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.nullValue;
 
 import java.util.List;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
@@ -16,6 +17,7 @@ import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
+import redis.clients.jedis.params.LMoveMParams;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.TestEnvUtil;
@@ -618,6 +620,56 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
 
     dstList = exec(commandObjects.lrange(dstKey, 0, -1));
     assertThat(dstList, contains(equalTo(value2), equalTo(value1)));
+  }
+
+  @Test
+  @EnabledOnCommand("LMOVEM")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void testLmovemAndBlmovem() {
+    String srcKey = "sourceList";
+    String dstKey = "destinationList";
+
+    exec(commandObjects.rpush(srcKey, "1", "2", "3", "4"));
+
+    List<String> result = exec(commandObjects.lmovem(srcKey, dstKey,
+        ListDirection.LEFT, ListDirection.LEFT, LMoveMParams.lMoveMParams().count(2).bulk()));
+    assertThat(result, contains("1", "2"));
+    assertThat(exec(commandObjects.lrange(dstKey, 0, -1)), contains("1", "2"));
+
+    // No count block: single-element list.
+    List<String> single = exec(commandObjects.lmovem(srcKey, dstKey,
+        ListDirection.LEFT, ListDirection.RIGHT));
+    assertThat(single, contains("3"));
+
+    // EXACTLY that cannot be satisfied: null.
+    List<String> none = exec(commandObjects.lmovem(srcKey, dstKey,
+        ListDirection.LEFT, ListDirection.LEFT, LMoveMParams.lMoveMParams().exactly(5).obo()));
+    assertThat(none, nullValue());
+
+    // Blocking variant returns immediately when the source has data.
+    List<String> bResult = exec(commandObjects.blmovem(srcKey, dstKey,
+        ListDirection.LEFT, ListDirection.RIGHT, 1.0, LMoveMParams.lMoveMParams().count(1).bulk()));
+    assertThat(bResult, contains("4"));
+  }
+
+  @Test
+  @EnabledOnCommand("LMOVEM")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void testLmovemAndBlmovemBinary() {
+    byte[] srcKey = "sourceList".getBytes();
+    byte[] dstKey = "destinationList".getBytes();
+    byte[] value1 = "value1".getBytes();
+    byte[] value2 = "value2".getBytes();
+
+    exec(commandObjects.rpush(srcKey, value1, value2));
+
+    List<byte[]> result = exec(commandObjects.lmovem(srcKey, dstKey,
+        ListDirection.LEFT, ListDirection.LEFT, LMoveMParams.lMoveMParams().count(2).bulk()));
+    assertThat(result, contains(equalTo(value1), equalTo(value2)));
+
+    List<byte[]> none = exec(commandObjects.lmovem(srcKey, dstKey,
+        ListDirection.LEFT, ListDirection.LEFT, LMoveMParams.lMoveMParams().exactly(2).obo()));
+    assertThat(none, nullValue());
   }
 
   @Test

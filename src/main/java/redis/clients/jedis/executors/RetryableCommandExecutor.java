@@ -15,6 +15,26 @@ import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.util.JedisAsserts;
 
+/**
+ * A command executor that retries failed commands on connection failures.
+ *
+ * <p><strong>This class is deprecated.</strong> The {@link DefaultCommandExecutor} now natively supports
+ * command retries. Use {@link DefaultCommandExecutor#DefaultCommandExecutor(ConnectionProvider, int, Duration)}
+ * instead, which accepts the same {@code maxAttempts} and {@code maxTotalRetriesDuration} parameters.
+ *
+ * <p>Example migration:
+ * <pre>{@code
+ * // Before (deprecated):
+ * CommandExecutor executor = new RetryableCommandExecutor(provider, 3, Duration.ofSeconds(5));
+ *
+ * // After:
+ * CommandExecutor executor = new DefaultCommandExecutor(provider, 3, Duration.ofSeconds(5));
+ * }</pre>
+ *
+ * @deprecated Use {@link DefaultCommandExecutor} which now supports command retries out of the box.
+ * @see DefaultCommandExecutor
+ */
+@Deprecated
 public class RetryableCommandExecutor implements CommandExecutor {
 
   private final Logger log = LoggerFactory.getLogger(getClass());

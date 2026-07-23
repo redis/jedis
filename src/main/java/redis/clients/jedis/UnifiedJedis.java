@@ -2014,6 +2014,26 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long sdiffcard(String... keys) {
+    return executeCommand(commandObjects.sdiffcard(keys));
+  }
+
+  @Override
+  public long sdiffcard(List<String> keys) {
+    return executeCommand(commandObjects.sdiffcard(keys));
+  }
+
+  @Override
+  public long sdiffcard(String key1, String key2, SDiffCardParams params) {
+    return executeCommand(commandObjects.sdiffcard(key1, key2, params));
+  }
+
+  @Override
+  public long sdiffcard(List<String> keys, SDiffCardParams params) {
+    return executeCommand(commandObjects.sdiffcard(keys, params));
+  }
+
+  @Override
   public Set<String> sinter(String... keys) {
     return executeCommand(commandObjects.sinter(keys));
   }
@@ -2044,6 +2064,26 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long sunioncard(String... keys) {
+    return executeCommand(commandObjects.sunioncard(keys));
+  }
+
+  @Override
+  public long sunioncard(List<String> keys) {
+    return executeCommand(commandObjects.sunioncard(keys));
+  }
+
+  @Override
+  public long sunioncard(String key1, String key2, SUnionCardParams params) {
+    return executeCommand(commandObjects.sunioncard(key1, key2, params));
+  }
+
+  @Override
+  public long sunioncard(List<String> keys, SUnionCardParams params) {
+    return executeCommand(commandObjects.sunioncard(keys, params));
+  }
+
+  @Override
   public long smove(String srckey, String dstkey, String member) {
     return executeCommand(commandObjects.smove(srckey, dstkey, member));
   }
@@ -2056,6 +2096,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long sdiffstore(byte[] dstkey, byte[]... keys) {
     return executeCommand(commandObjects.sdiffstore(dstkey, keys));
+  }
+
+  @Override
+  public long sdiffcard(byte[]... keys) {
+    return executeCommand(commandObjects.sdiffcard(keys));
+  }
+
+  @Override
+  public long sdiffcard(byte[] key1, byte[] key2, SDiffCardParams params) {
+    return executeCommand(commandObjects.sdiffcard(key1, key2, params));
+  }
+
+  @Override
+  public long sdiffcard(byte[][] keys, SDiffCardParams params) {
+    return executeCommand(commandObjects.sdiffcard(keys, params));
   }
 
   @Override
@@ -2086,6 +2141,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long sunionstore(byte[] dstkey, byte[]... keys) {
     return executeCommand(commandObjects.sunionstore(dstkey, keys));
+  }
+
+  @Override
+  public long sunioncard(byte[]... keys) {
+    return executeCommand(commandObjects.sunioncard(keys));
+  }
+
+  @Override
+  public long sunioncard(byte[] key1, byte[] key2, SUnionCardParams params) {
+    return executeCommand(commandObjects.sunioncard(key1, key2, params));
+  }
+
+  @Override
+  public long sunioncard(byte[][] keys, SUnionCardParams params) {
+    return executeCommand(commandObjects.sunioncard(keys, params));
   }
 
   @Override

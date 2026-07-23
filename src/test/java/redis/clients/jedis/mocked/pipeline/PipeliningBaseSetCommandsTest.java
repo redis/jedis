@@ -5,11 +5,14 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.params.SDiffCardParams;
+import redis.clients.jedis.params.SUnionCardParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -101,6 +104,92 @@ public class PipeliningBaseSetCommandsTest extends PipeliningBaseMockedTestBase 
     when(commandObjects.sdiffstore(dstkey, keys)).thenReturn(longCommandObject);
 
     Response<Long> response = pipeliningBase.sdiffstore(dstkey, keys);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSdiffcard() {
+    when(commandObjects.sdiffcard("key1", "key2")).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.sdiffcard("key1", "key2");
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSdiffcardList() {
+    List<String> keys = Arrays.asList("key1", "key2");
+
+    when(commandObjects.sdiffcard(keys)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.sdiffcard(keys);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSdiffcardTwoKeysWithParams() {
+    SDiffCardParams params = new SDiffCardParams().limit(1);
+
+    when(commandObjects.sdiffcard("key1", "key2", params)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.sdiffcard("key1", "key2", params);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSdiffcardListWithParams() {
+    List<String> keys = Arrays.asList("key1", "key2");
+    SDiffCardParams params = new SDiffCardParams().limit(1);
+
+    when(commandObjects.sdiffcard(keys, params)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.sdiffcard(keys, params);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSdiffcardBinary() {
+    byte[][] keys = { "key1".getBytes(), "key2".getBytes() };
+
+    when(commandObjects.sdiffcard(keys)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.sdiffcard(keys);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSdiffcardTwoKeysWithParamsBinary() {
+    byte[] key1 = "key1".getBytes();
+    byte[] key2 = "key2".getBytes();
+    SDiffCardParams params = new SDiffCardParams().limit(1);
+
+    when(commandObjects.sdiffcard(key1, key2, params)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.sdiffcard(key1, key2, params);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSdiffcardWithParamsBinary() {
+    byte[][] keys = { "key1".getBytes(), "key2".getBytes() };
+    SDiffCardParams params = new SDiffCardParams().limit(1);
+
+    when(commandObjects.sdiffcard(keys, params)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.sdiffcard(keys, params);
 
     assertThat(commands, contains(longCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -476,6 +565,92 @@ public class PipeliningBaseSetCommandsTest extends PipeliningBaseMockedTestBase 
     when(commandObjects.sunionstore(dstkey, keys)).thenReturn(longCommandObject);
 
     Response<Long> response = pipeliningBase.sunionstore(dstkey, keys);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSunioncard() {
+    when(commandObjects.sunioncard("key1", "key2")).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.sunioncard("key1", "key2");
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSunioncardList() {
+    List<String> keys = Arrays.asList("key1", "key2");
+
+    when(commandObjects.sunioncard(keys)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.sunioncard(keys);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSunioncardTwoKeysWithParams() {
+    SUnionCardParams params = new SUnionCardParams().limit(1);
+
+    when(commandObjects.sunioncard("key1", "key2", params)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.sunioncard("key1", "key2", params);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSunioncardListWithParams() {
+    List<String> keys = Arrays.asList("key1", "key2");
+    SUnionCardParams params = new SUnionCardParams().limit(1);
+
+    when(commandObjects.sunioncard(keys, params)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.sunioncard(keys, params);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSunioncardBinary() {
+    byte[][] keys = { "key1".getBytes(), "key2".getBytes() };
+
+    when(commandObjects.sunioncard(keys)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.sunioncard(keys);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSunioncardTwoKeysWithParamsBinary() {
+    byte[] key1 = "key1".getBytes();
+    byte[] key2 = "key2".getBytes();
+    SUnionCardParams params = new SUnionCardParams().limit(1);
+
+    when(commandObjects.sunioncard(key1, key2, params)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.sunioncard(key1, key2, params);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSunioncardWithParamsBinary() {
+    byte[][] keys = { "key1".getBytes(), "key2".getBytes() };
+    SUnionCardParams params = new SUnionCardParams().limit(1);
+
+    when(commandObjects.sunioncard(keys, params)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.sunioncard(keys, params);
 
     assertThat(commands, contains(longCommandObject));
     assertThat(response, is(predefinedResponse));

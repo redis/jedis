@@ -3,6 +3,8 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import java.util.Set;
 
+import redis.clients.jedis.params.SDiffCardParams;
+import redis.clients.jedis.params.SUnionCardParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -162,6 +164,60 @@ public interface SetCommands {
   long sdiffstore(String dstkey, String... keys);
 
   /**
+   * <b><a href="https://redis.io/commands/sdiffcard">SDIFFCARD Command</a></b>
+   * This command works exactly like {@link SetCommands#sdiff(String...) SDIFF} but instead of returning
+   * the result set, it returns just the cardinality of the result. The first key is the minuend set;
+   * the remaining keys are subtracted from it. Non existing keys are considered like empty sets, so
+   * if the first key does not exist the result is {@code 0}. The command is read-only.
+   * <p>
+   * Time complexity O(N) where N is the total number of elements in all the provided sets
+   * @param keys group of sets; the first key is the minuend set
+   * @return The cardinality of the set which would result from the difference of the given sets
+   * @since 8.0
+   */
+  long sdiffcard(String... keys);
+
+  /**
+   * <b><a href="https://redis.io/commands/sdiffcard">SDIFFCARD Command</a></b>
+   * This command works exactly like {@link SetCommands#sdiffcard(String...) SDIFFCARD}, taking the
+   * keys as a list.
+   * <p>
+   * Time complexity O(N) where N is the total number of elements in all the provided sets
+   * @param keys group of sets; the first key is the minuend set
+   * @return The cardinality of the set which would result from the difference of the given sets
+   * @since 8.0
+   */
+  long sdiffcard(List<String> keys);
+
+  /**
+   * <b><a href="https://redis.io/commands/sdiffcard">SDIFFCARD Command</a></b>
+   * This command works exactly like {@link SetCommands#sdiffcard(String...) SDIFFCARD} with
+   * additional options, for the common two-key case.
+   * <p>
+   * Time complexity O(N) where N is the total number of elements in all the provided sets
+   * @param key1 the minuend set
+   * @param key2 the set subtracted from the first one
+   * @param params additional options, e.g. {@code LIMIT}
+   * @return The cardinality of the set which would result from the difference of the given sets
+   * @since 8.0
+   */
+  long sdiffcard(String key1, String key2, SDiffCardParams params);
+
+  /**
+   * <b><a href="https://redis.io/commands/sdiffcard">SDIFFCARD Command</a></b>
+   * This command works exactly like {@link SetCommands#sdiffcard(String...) SDIFFCARD} with
+   * additional options. With {@code LIMIT}, the returned cardinality is capped at the limit and the
+   * server may stop the computation early; {@code LIMIT 0} means no limit.
+   * <p>
+   * Time complexity O(N) where N is the total number of elements in all the provided sets
+   * @param keys group of sets; the first key is the minuend set
+   * @param params additional options, e.g. {@code LIMIT}
+   * @return The cardinality of the set which would result from the difference of the given sets
+   * @since 8.0
+   */
+  long sdiffcard(List<String> keys, SDiffCardParams params);
+
+  /**
    * Return the members of a set resulting from the intersection of all the sets hold at the
    * specified keys. Like in {@link ListCommands#lrange(String, long, long) LRANGE} the result is sent to
    * the connection as a multi-bulk reply (see the protocol specification for more information). If
@@ -238,6 +294,62 @@ public interface SetCommands {
    * @return The number of elements in the resulting set
    */
   long sunionstore(String dstkey, String... keys);
+
+  /**
+   * <b><a href="https://redis.io/commands/sunioncard">SUNIONCARD Command</a></b>
+   * This command works exactly like {@link SetCommands#sunion(String...) SUNION} but instead of
+   * returning the result set, it returns just the cardinality of the result. Elements appearing in
+   * multiple input sets are counted once. Non existing keys are considered like empty sets. The
+   * command is read-only.
+   * <p>
+   * Time complexity O(N) where N is the total number of elements in all the provided sets
+   * @param keys group of sets
+   * @return The cardinality of the set which would result from the union of all the given sets
+   * @since 8.0
+   */
+  long sunioncard(String... keys);
+
+  /**
+   * <b><a href="https://redis.io/commands/sunioncard">SUNIONCARD Command</a></b>
+   * This command works exactly like {@link SetCommands#sunioncard(String...) SUNIONCARD}, taking
+   * the keys as a list.
+   * <p>
+   * Time complexity O(N) where N is the total number of elements in all the provided sets
+   * @param keys group of sets
+   * @return The cardinality of the set which would result from the union of all the given sets
+   * @since 8.0
+   */
+  long sunioncard(List<String> keys);
+
+  /**
+   * <b><a href="https://redis.io/commands/sunioncard">SUNIONCARD Command</a></b>
+   * This command works exactly like {@link SetCommands#sunioncard(String...) SUNIONCARD} with
+   * additional options, for the common two-key case.
+   * <p>
+   * Time complexity O(N) where N is the total number of elements in all the provided sets
+   * @param key1 the first set
+   * @param key2 the second set
+   * @param params additional options, e.g. {@code APPROX} and {@code LIMIT}
+   * @return The cardinality of the set which would result from the union of the given sets
+   * @since 8.0
+   */
+  long sunioncard(String key1, String key2, SUnionCardParams params);
+
+  /**
+   * <b><a href="https://redis.io/commands/sunioncard">SUNIONCARD Command</a></b>
+   * This command works exactly like {@link SetCommands#sunioncard(String...) SUNIONCARD} with
+   * additional options. With {@code APPROX}, the cardinality is estimated using HyperLogLog
+   * (standard error ~0.81%) with fixed, small server-memory overhead. With {@code LIMIT}, the
+   * returned cardinality is capped at the limit and the server may stop the computation early;
+   * {@code LIMIT 0} means no limit.
+   * <p>
+   * Time complexity O(N) where N is the total number of elements in all the provided sets
+   * @param keys group of sets
+   * @param params additional options, e.g. {@code APPROX} and {@code LIMIT}
+   * @return The cardinality of the set which would result from the union of all the given sets
+   * @since 8.0
+   */
+  long sunioncard(List<String> keys, SUnionCardParams params);
 
   /**
    * Move the specified member from the set at srckey to the set at dstkey. This operation is

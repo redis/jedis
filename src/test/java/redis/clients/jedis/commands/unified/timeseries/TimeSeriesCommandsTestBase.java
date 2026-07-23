@@ -1,10 +1,11 @@
 package redis.clients.jedis.commands.unified.timeseries;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.util.AssertUtil.assertEqualsByProtocol;
@@ -1575,5 +1576,134 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
         .filter("kind=mrevrange-multi-no-match"));
     assertNotNull(revRanges);
     assertTrue(revRanges.isEmpty());
+  }
+
+  /**
+   * Sets up the three series used by the EXCLUDEEMPTY examples in the design document. Series
+   * {@code s} and {@code t} have samples inside {@code [-, 500]}; series {@code u} only has a
+   * sample at {@code 2000}, so it is empty for a query bounded at {@code 500}.
+   */
+  private void setupExcludeEmptySeries() {
+    jedis.tsCreate("s",
+      TSCreateParams.createParams().labels(convertMap("sensor", "1", "type", "demo")));
+    jedis.tsCreate("t",
+      TSCreateParams.createParams().labels(convertMap("sensor", "1", "type", "demo")));
+    jedis.tsCreate("u",
+      TSCreateParams.createParams().labels(convertMap("sensor", "1", "type", "demo")));
+
+    jedis.tsAdd("s", 100, 100);
+    jedis.tsAdd("t", 100, 100);
+    jedis.tsAdd("s", 200, 200);
+    jedis.tsAdd("t", 300, 300);
+    jedis.tsAdd("s", 400, 400);
+    jedis.tsAdd("t", 400, 400);
+    jedis.tsAdd("u", 2000, 2000);
+  }
+
+  /**
+   * TS.MRANGE with EXCLUDEEMPTY omits matching series that have no samples in the requested range.
+   * Mirrors the design document success example: series {@code u} is dropped, {@code s} and
+   * {@code t} remain unchanged. The default (include-empty) behavior is asserted first to show the
+   * option is what makes the difference (R.1, NF.3).
+   */
+  @Test
+  @SinceRedisVersion(value = "8.9.241", message = "Requires RedisTimeSeries EXCLUDEEMPTY support for TS.MRANGE / TS.MREVRANGE.")
+  public void mRangeExcludeEmpty() {
+    setupExcludeEmptySeries();
+
+    // Default: matching series u is still reported, with an empty samples array.
+    Map<String, TSMRangeElements> included = jedis.tsMRange(
+      TSMRangeParams.multiRangeParams().toTimestamp(500L).withLabels().filter("sensor=1"));
+    assertEquals(3, included.size());
+    assertTrue(included.containsKey("u"));
+    assertTrue(included.get("u").getValue().isEmpty());
+
+    // EXCLUDEEMPTY: series u is omitted from the reply; s and t are unchanged.
+    Map<String, TSMRangeElements> excluded = jedis.tsMRange(TSMRangeParams.multiRangeParams()
+        .toTimestamp(500L).withLabels().excludeEmpty().filter("sensor=1"));
+    assertEquals(2, excluded.size());
+    assertFalse(excluded.containsKey("u"));
+    assertEquals(
+      Arrays.asList(new TSElement(100, 100), new TSElement(200, 200), new TSElement(400, 400)),
+      excluded.get("s").getValue());
+    assertEquals(
+      Arrays.asList(new TSElement(100, 100), new TSElement(300, 300), new TSElement(400, 400)),
+      excluded.get("t").getValue());
+  }
+
+  /**
+   * TS.MREVRANGE with EXCLUDEEMPTY omits empty matching series and keeps the reverse sample order
+   * for the series that remain (R.1, R.3).
+   */
+  @Test
+  @SinceRedisVersion(value = "8.9.241", message = "Requires RedisTimeSeries EXCLUDEEMPTY support for TS.MRANGE / TS.MREVRANGE.")
+  public void mRevRangeExcludeEmpty() {
+    setupExcludeEmptySeries();
+
+    Map<String, TSMRangeElements> excluded = jedis.tsMRevRange(
+      TSMRangeParams.multiRangeParams().toTimestamp(500L).excludeEmpty().filter("sensor=1"));
+    assertEquals(2, excluded.size());
+    assertFalse(excluded.containsKey("u"));
+    // Samples inside each returned series are ordered in reverse timestamp order.
+    assertEquals(
+      Arrays.asList(new TSElement(400, 400), new TSElement(200, 200), new TSElement(100, 100)),
+      excluded.get("s").getValue());
+  }
+
+  /**
+   * EXCLUDEEMPTY composes with AGGREGATION: a matching series with no reported buckets for the
+   * requested range and aggregation is omitted (R.5, NF.2).
+   */
+  @Test
+  @SinceRedisVersion(value = "8.9.241", message = "Requires RedisTimeSeries EXCLUDEEMPTY support for TS.MRANGE / TS.MREVRANGE.")
+  public void mRangeExcludeEmptyWithAggregation() {
+    setupExcludeEmptySeries();
+
+    Map<String, TSMRangeElements> excluded = jedis
+        .tsMRange(TSMRangeParams.multiRangeParams().toTimestamp(500L).withLabels()
+            .aggregation(AggregationType.MIN, 100L).excludeEmpty().filter("sensor=1"));
+    assertEquals(2, excluded.size());
+    assertFalse(excluded.containsKey("u"));
+  }
+
+  /**
+   * When every matching series is empty, EXCLUDEEMPTY yields an empty top-level reply (R.3).
+   */
+  @Test
+  @SinceRedisVersion(value = "8.9.241", message = "Requires RedisTimeSeries EXCLUDEEMPTY support for TS.MRANGE / TS.MREVRANGE.")
+  public void mRangeExcludeEmptyAllEmpty() {
+    setupExcludeEmptySeries();
+
+    // No matching series has a sample in [1, 50].
+    Map<String, TSMRangeElements> excluded = jedis
+        .tsMRange(TSMRangeParams.multiRangeParams(1L, 50L).excludeEmpty().filter("sensor=1"));
+    assertNotNull(excluded);
+    assertTrue(excluded.isEmpty());
+  }
+
+  /**
+   * The typed helper API rejects EXCLUDEEMPTY combined with GROUPBY locally, before a command is
+   * sent (R.4).
+   */
+  @Test
+  public void mRangeExcludeEmptyWithGroupByRejectedLocally() {
+    assertThrows(IllegalArgumentException.class, () -> jedis.tsMRange(TSMRangeParams
+        .multiRangeParams(0L, 100L).excludeEmpty().filter("sensor=1").groupBy("type", "max")));
+  }
+
+  /**
+   * A raw TS.MRANGE that combines EXCLUDEEMPTY with GROUPBY must be sent unchanged and the server
+   * error propagated as-is (R.4, R.6).
+   */
+  @Test
+  @SinceRedisVersion(value = "8.9.241", message = "Requires RedisTimeSeries EXCLUDEEMPTY support for TS.MRANGE / TS.MREVRANGE.")
+  public void rawMRangeExcludeEmptyWithGroupByPropagatesServerError() {
+    setupExcludeEmptySeries();
+
+    JedisDataException error = assertThrows(JedisDataException.class,
+      () -> jedis.sendCommand(TimeSeriesProtocol.TimeSeriesCommand.MRANGE, "-", "500",
+        "EXCLUDEEMPTY", "FILTER", "sensor=1", "GROUPBY", "type", "REDUCE", "max"));
+    assertTrue(error.getMessage().contains("EXCLUDEEMPTY"),
+      "Server error must be propagated as-is, was: " + error.getMessage());
   }
 }

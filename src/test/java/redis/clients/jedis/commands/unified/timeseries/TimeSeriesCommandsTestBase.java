@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.util.AssertUtil.assertEqualsByProtocol;
@@ -12,6 +13,7 @@ import static redis.clients.jedis.util.AssertUtil.assertEqualsByProtocol;
 import java.util.*;
 
 import io.redis.test.annotations.ConditionalOnEnv;
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -19,6 +21,7 @@ import org.junit.jupiter.api.Tag;
 
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.timeseries.*;
@@ -1575,5 +1578,149 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
         .filter("kind=mrevrange-multi-no-match"));
     assertNotNull(revRanges);
     assertTrue(revRanges.isEmpty());
+  }
+
+  /**
+   * Non-blocking TS.READ returns samples with timestamp {@code >=} the cursor, ascending; a cursor
+   * past the newest sample and a missing key both return an empty list, not an error.
+   */
+  @Test
+  @EnabledOnCommand("TS.READ")
+  public void read() {
+    jedis.tsCreate("read-series");
+    assertEquals(100L, jedis.tsAdd("read-series", 100L, 1.0));
+    assertEquals(200L, jedis.tsAdd("read-series", 200L, 2.0));
+    assertEquals(300L, jedis.tsAdd("read-series", 300L, 3.0));
+
+    List<TSElement> all = jedis.tsRead("read-series", 0L);
+    assertEquals(
+      Arrays.asList(new TSElement(100L, 1.0), new TSElement(200L, 2.0), new TSElement(300L, 3.0)),
+      all);
+
+    // A cursor after the newest sample yields an empty list.
+    assertTrue(jedis.tsRead("read-series", 301L).isEmpty());
+
+    // Missing key is not an error; it returns an empty list.
+    assertTrue(jedis.tsRead("read-missing", 0L).isEmpty());
+  }
+
+  /**
+   * MAX_COUNT caps the reply to the oldest N samples, enabling cursor-based paging with
+   * {@code lastTimestamp + 1}.
+   */
+  @Test
+  @EnabledOnCommand("TS.READ")
+  public void readPagingWithMaxCount() {
+    jedis.tsCreate("read-page");
+    jedis.tsAdd("read-page", 100L, 1.0);
+    jedis.tsAdd("read-page", 200L, 2.0);
+    jedis.tsAdd("read-page", 300L, 3.0);
+
+    List<TSElement> page1 = jedis.tsRead("read-page",
+      TSReadParams.readParams().earliest().maxCount(2));
+    assertEquals(Arrays.asList(new TSElement(100L, 1.0), new TSElement(200L, 2.0)), page1);
+
+    long next = page1.get(page1.size() - 1).getTimestamp() + 1;
+    List<TSElement> page2 = jedis.tsRead("read-page",
+      TSReadParams.readParams().timestamp(next).maxCount(2));
+    assertEquals(Collections.singletonList(new TSElement(300L, 3.0)), page2);
+  }
+
+  /**
+   * The {@code +} sentinel resolves to the latest existing sample, inclusive, so it is returned
+   * even without BLOCK; the {@code $} sentinel excludes all existing samples, so without BLOCK it
+   * yields an empty list.
+   */
+  @Test
+  @EnabledOnCommand("TS.READ")
+  public void readSentinels() {
+    jedis.tsCreate("read-sentinel");
+    jedis.tsAdd("read-sentinel", 100L, 1.0);
+    jedis.tsAdd("read-sentinel", 300L, 3.0);
+
+    assertEquals(Collections.singletonList(new TSElement(300L, 3.0)),
+      jedis.tsRead("read-sentinel", TSReadParams.readParams().latest()));
+
+    assertTrue(jedis.tsRead("read-sentinel", TSReadParams.readParams().newSamples()).isEmpty());
+  }
+
+  /**
+   * A blocking call whose {@code min_count} threshold cannot be reached returns the samples that
+   * are available once the timeout elapses (a successful, possibly-partial reply).
+   */
+  @Test
+  @EnabledOnCommand("TS.READ")
+  public void readBlockingTimeoutFlush() {
+    jedis.tsCreate("read-block");
+    jedis.tsAdd("read-block", 100L, 1.0);
+    jedis.tsAdd("read-block", 200L, 2.0);
+    jedis.tsAdd("read-block", 300L, 3.0);
+
+    // min_count 10 can never be met; after 500ms the two qualifying samples flush out.
+    List<TSElement> samples = jedis.tsRead("read-block",
+      TSReadParams.readParams().timestamp(101L).block(500L, 10));
+    assertEquals(Arrays.asList(new TSElement(200L, 2.0), new TSElement(300L, 3.0)), samples);
+  }
+
+  /**
+   * A blocking call returns immediately, without waiting, when {@code min_count} qualifying samples
+   * already exist at execution time.
+   */
+  @Test
+  @EnabledOnCommand("TS.READ")
+  public void readBlockingReturnsImmediatelyWhenThresholdMet() {
+    jedis.tsCreate("read-block-now");
+    jedis.tsAdd("read-block-now", 100L, 1.0);
+    jedis.tsAdd("read-block-now", 200L, 2.0);
+
+    List<TSElement> samples = jedis.tsRead("read-block-now",
+      TSReadParams.readParams().earliest().block(0L, 2));
+    assertEquals(Arrays.asList(new TSElement(100L, 1.0), new TSElement(200L, 2.0)), samples);
+  }
+
+  /**
+   * A client blocked on {@code $} wakes and returns a sample appended by another connection while
+   * it waits.
+   */
+  @Test
+  @EnabledOnCommand("TS.READ")
+  public void readBlockingWakesOnAppend() throws InterruptedException {
+    jedis.tsCreate("read-tail");
+    jedis.tsAdd("read-tail", 100L, 1.0);
+
+    Thread producer = new Thread(() -> {
+      try (UnifiedJedis other = createTestClient()) {
+        Thread.sleep(300L);
+        other.tsAdd("read-tail", 200L, 2.0);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    });
+    producer.start();
+
+    // Blocks on $ (only samples added after the call) until the producer appends 200.
+    List<TSElement> samples = jedis.tsRead("read-tail",
+      TSReadParams.readParams().newSamples().block(5000L, 1));
+    producer.join();
+
+    assertEquals(Collections.singletonList(new TSElement(200L, 2.0)), samples);
+  }
+
+  /**
+   * Server-side errors (invalid cursor, wrong key type) must be propagated as-is.
+   */
+  @Test
+  @EnabledOnCommand("TS.READ")
+  public void readErrorsPropagate() {
+    jedis.tsCreate("read-err");
+    jedis.tsAdd("read-err", 100L, 1.0);
+
+    // Negative literal cursor is rejected by the server.
+    assertThrows(JedisDataException.class,
+      () -> jedis.tsRead("read-err", TSReadParams.readParams().timestamp(-1L)));
+
+    // Reading a key that holds a non-timeseries value is a WRONGTYPE error.
+    jedis.set("read-str", "not a series");
+    assertThrows(JedisDataException.class, () -> jedis.tsRead("read-str", 0L));
   }
 }

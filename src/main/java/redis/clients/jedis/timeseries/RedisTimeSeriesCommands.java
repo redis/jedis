@@ -185,6 +185,35 @@ public interface RedisTimeSeriesCommands {
   List<TSElement> tsRevRange(String key, TSRangeParams rangeParams);
 
   /**
+   * {@code TS.READ key timestamp}
+   * <p>
+   * Non-blocking read of up to unlimited samples with timestamp greater than or equal to the given
+   * literal cursor, in ascending timestamp order. An empty list is a successful reply.
+   *
+   * @param key the time series key
+   * @param timestamp inclusive literal cursor (non-negative Unix milliseconds; {@code 0} reads from
+   *          the beginning)
+   * @return samples with timestamp {@code >= timestamp}
+   * @since 8.0
+   */
+  List<TSElement> tsRead(String key, long timestamp);
+
+  /**
+   * {@code TS.READ key timestamp [BLOCK milliseconds min_count] [MAX_COUNT max_count]}
+   * <p>
+   * Returns up to {@code max_count} samples with timestamp greater than or equal to the cursor, in
+   * ascending timestamp order. With {@code BLOCK} the call waits until at least {@code min_count}
+   * qualifying samples exist or until the timeout elapses; without it the call returns immediately.
+   * An empty list is a successful reply, including when a blocking call times out.
+   *
+   * @param key the time series key
+   * @param readParams the cursor and optional {@code BLOCK} / {@code MAX_COUNT} arguments
+   * @return samples with timestamp {@code >=} the resolved cursor
+   * @since 8.0
+   */
+  List<TSElement> tsRead(String key, TSReadParams readParams);
+
+  /**
    * {@code TS.MRANGE fromTimestamp toTimestamp FILTER filter...}
    *
    * @param fromTimestamp

@@ -2,12 +2,12 @@ package redis.clients.jedis;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
-import redis.clients.jedis.util.JedisClusterCRC16;
 
 /**
  * Cluster {@code HIMPORT} handle. Pins one {@link Connection} per master at construction (from
@@ -15,9 +15,9 @@ import redis.clients.jedis.util.JedisClusterCRC16;
  * &mdash; never borrowing fresh connections, so the connection-scoped fieldsets survive.
  * <p>
  * {@code PREPARE} / {@code DISCARD} / {@code DISCARDALL} fan out to every pinned master (each holds
- * an identical copy of the session-local fieldsets); {@code SET} routes by the key's hash slot to
- * the pinned connection for that master. A slot that maps off the pinned set (resharding) is
- * session-fatal.
+ * an identical copy of the session-local fieldsets); {@code SET} routes by the (post key
+ * preprocessing) hash slot of its key to the pinned connection for that master. A slot that maps
+ * off the pinned set (resharding) is session-fatal.
  * @since 8.0
  */
 @Experimental
@@ -57,8 +57,10 @@ class HashImportClusterHandler extends AbstractHashImportHandler {
 
   @Override
   public String himportSet(String key, String fieldset, String... values) {
-    return guarded(() -> connectionForSlot(JedisClusterCRC16.getSlot(key))
-        .executeCommand(commandObjects.himportSet(key, fieldset, values)));
+    return guarded(() -> {
+      CommandObject<String> command = commandObjects.himportSet(key, fieldset, values);
+      return connectionForSlot(slotOf(command)).executeCommand(command);
+    });
   }
 
   @Override
@@ -74,8 +76,10 @@ class HashImportClusterHandler extends AbstractHashImportHandler {
 
   @Override
   public String himportSet(byte[] key, byte[] fieldset, byte[]... values) {
-    return guarded(() -> connectionForSlot(JedisClusterCRC16.getSlot(key))
-        .executeCommand(commandObjects.himportSet(key, fieldset, values)));
+    return guarded(() -> {
+      CommandObject<String> command = commandObjects.himportSet(key, fieldset, values);
+      return connectionForSlot(slotOf(command)).executeCommand(command);
+    });
   }
 
   @Override
@@ -99,6 +103,20 @@ class HashImportClusterHandler extends AbstractHashImportHandler {
       pinned.values().forEach(Connection::close);
       pinned.clear();
     }
+  }
+
+  /**
+   * Hash slot of the (single-key) command, derived from its built arguments so that any configured
+   * key preprocessor (e.g. prefixed keys) is honored &mdash; matching how the regular cluster
+   * executor routes.
+   */
+  private int slotOf(CommandObject<?> command) {
+    Set<Integer> slots = command.getArguments().getKeyHashSlots();
+    if (slots.size() != 1) {
+      state = State.BROKEN;
+      throw new JedisException("HashImport SET must target exactly one hash slot, got " + slots);
+    }
+    return slots.iterator().next();
   }
 
   /** Runs {@code op} on the pinned connection for {@code slot}, failing the session if it moved. */

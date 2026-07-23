@@ -12,8 +12,10 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static redis.clients.jedis.util.AssertUtil.assertIndexSize;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
 import static redis.clients.jedis.util.RedisConditions.ModuleVersion.SEARCH_MOD_VER_80M3;
+import static redis.clients.jedis.util.RedisConditions.ModuleVersion.SEARCH_MOD_VER_810M3;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -33,6 +35,7 @@ import org.locationtech.jts.geom.Polygon;
 import org.locationtech.jts.io.ParseException;
 import org.locationtech.jts.io.WKTReader;
 
+import redis.clients.jedis.AbstractPipeline;
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.RedisProtocol;
@@ -43,6 +46,8 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.RediSearchUtil;
+import redis.clients.jedis.search.aggr.AggregationBuilder;
+import redis.clients.jedis.search.aggr.AggregationResult;
 import redis.clients.jedis.search.schemafields.*;
 import redis.clients.jedis.search.schemafields.GeoShapeField.CoordinateSystem;
 import redis.clients.jedis.search.schemafields.VectorField.VectorAlgorithm;
@@ -1536,5 +1541,144 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     assertEquals(3, stringMap.size());
     assertEquals("hello world", stringMap.get("title"));
     assertEquals(geo.getLongitude() + "," + geo.getLatitude(), stringMap.get("loc"));
+  }
+
+  /**
+   * Number of documents indexed by the on-timeout tests. Large enough that scanning, scoring and
+   * sorting them cannot complete within the 1ms per-query timeout, so the query engine's on-timeout
+   * policy is guaranteed to kick in.
+   */
+  private static final int ON_TIMEOUT_DOC_COUNT = 10_000;
+
+  private void populateOnTimeoutIndex() {
+    assertOK(jedis.ftCreate(INDEX, FTCreateParams.createParams(), TextField.of("title"),
+      NumericField.of("n").sortable()));
+
+    AbstractPipeline pipeline = jedis.pipelined();
+    for (int i = 0; i < ON_TIMEOUT_DOC_COUNT; i++) {
+      Map<String, String> fields = new HashMap<>();
+      fields.put("title", "hello world " + i);
+      fields.put("n", Integer.toString(i));
+      pipeline.hset("doc:" + i, fields);
+    }
+    pipeline.sync();
+    assertIndexSize(jedis, INDEX, ON_TIMEOUT_DOC_COUNT);
+  }
+
+  /**
+   * A query heavy enough that it cannot finish within a 1ms timeout: it matches every document and
+   * forces a full scan, scoring and sort over the whole index.
+   */
+  private FTSearchParams timingOutSearchParams() {
+    return FTSearchParams.searchParams().timeout(1).withScores().sortBy("n", SortingOrder.DESC)
+        .limit(0, ON_TIMEOUT_DOC_COUNT);
+  }
+
+  /**
+   * With the {@code FAIL} on-timeout policy the server returns an error on a timed-out search
+   * instead of partial results. The client must surface that error (as a
+   * {@link JedisDataException}) rather than swallowing it into an empty/partial result, and it must
+   * not be automatically retried. See CAE-3003 (initiative RED-132340: "Timeout guardrails").
+   */
+  @Test
+  public void searchOnTimeoutFailReturnsError() {
+    assumeTrue(RedisConditions.of(jedis).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_810M3),
+      "ON_TIMEOUT FAIL policy");
+
+    populateOnTimeoutIndex();
+
+    // Use the unified CONFIG SET (search-on-timeout) rather than FT.CONFIG SET: in a cluster the
+    // former is broadcast to all nodes (RequestPolicy.ALL_NODES), while FT.CONFIG SET is routed to
+    // a single node and would not take effect on every shard.
+    assertOK(jedis.configSet("search-on-timeout", "fail"));
+    try {
+      JedisDataException e = assertThrows(JedisDataException.class,
+        () -> jedis.ftSearch(INDEX, "hello world", timingOutSearchParams()));
+      assertThat(e.getMessage(), containsStringIgnoringCase("timeout"));
+    } finally {
+      // Restore the default policy so we don't leak the FAIL setting into other tests.
+      assertOK(jedis.configSet("search-on-timeout", "return"));
+    }
+  }
+
+  /**
+   * With the default {@code RETURN} on-timeout policy the server returns a (possibly partial)
+   * result together with a warning instead of failing. The client must not throw and must expose
+   * the warning via {@link SearchResult#getWarnings()}. Warnings are only carried on RESP3 for
+   * FT.SEARCH, so this is asserted on RESP3 only. See CAE-3003.
+   */
+  @Test
+  public void searchOnTimeoutReturnPopulatesWarnings() {
+    assumeTrue(RedisConditions.of(jedis).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_810M3),
+      "ON_TIMEOUT RETURN warnings");
+    assumeTrue(AssertUtil.expectsResp3OnWire(protocol),
+      "Search warnings are only returned on RESP3");
+
+    populateOnTimeoutIndex();
+
+    // RETURN is the default, but set it explicitly (and cluster-wide) to keep the test independent
+    // of any policy left behind by other tests.
+    assertOK(jedis.configSet("search-on-timeout", "return"));
+    SearchResult result = jedis.ftSearch(INDEX, "hello world", timingOutSearchParams());
+
+    // RETURN must not fail the query, and the timeout must be reported as a warning.
+    assertThat(result.getWarnings(), Matchers.notNullValue());
+    assertThat(result.getWarnings(), Matchers.not(Matchers.empty()));
+    assertThat(result.getWarnings().toString(), containsStringIgnoringCase("timeout"));
+  }
+
+  /**
+   * A heavy FT.AGGREGATE that cannot finish within a 1ms timeout.
+   */
+  private AggregationBuilder timingOutAggregation() {
+    return new AggregationBuilder("hello world").addScores().load("@title")
+        .apply("format(\"%s%s%s\",@title,@title,@title)", "a")
+        .apply("format(\"%s%s%s\",@a,@a,@a)", "a").apply("format(\"%s%s%s\",@a,@a,@a)", "a")
+        .apply("format(\"%s%s%s\",@a,@a,@a)", "a").apply("format(\"%s%s%s\",@a,@a,@a)", "a")
+        .sortByDesc("@__score").timeout(1);
+  }
+
+  /**
+   * FT.AGGREGATE counterpart of {@link #searchOnTimeoutFailReturnsError()}: the {@code FAIL}
+   * on-timeout policy must surface a server error rather than partial results. See CAE-3003.
+   */
+  @Test
+  public void aggregateOnTimeoutFailReturnsError() {
+    assumeTrue(RedisConditions.of(jedis).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_810M3),
+      "ON_TIMEOUT FAIL policy");
+
+    populateOnTimeoutIndex();
+
+    assertOK(jedis.configSet("search-on-timeout", "fail"));
+    try {
+      JedisDataException e = assertThrows(JedisDataException.class,
+        () -> jedis.ftAggregate(INDEX, timingOutAggregation()));
+      assertThat(e.getMessage(), containsStringIgnoringCase("timeout"));
+    } finally {
+      assertOK(jedis.configSet("search-on-timeout", "return"));
+    }
+  }
+
+  /**
+   * FT.AGGREGATE counterpart of {@link #searchOnTimeoutReturnPopulatesWarnings()}: the
+   * {@code RETURN} policy must not throw and must expose the timeout via
+   * {@link AggregationResult#getWarnings()}. Warnings are only carried on RESP3 for FT.AGGREGATE.
+   * See CAE-3003.
+   */
+  @Test
+  public void aggregateOnTimeoutReturnPopulatesWarnings() {
+    assumeTrue(RedisConditions.of(jedis).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_810M3),
+      "ON_TIMEOUT RETURN warnings");
+    assumeTrue(AssertUtil.expectsResp3OnWire(protocol),
+      "Aggregate warnings are only returned on RESP3");
+
+    populateOnTimeoutIndex();
+
+    assertOK(jedis.configSet("search-on-timeout", "return"));
+    AggregationResult result = jedis.ftAggregate(INDEX, timingOutAggregation());
+
+    assertThat(result.getWarnings(), Matchers.notNullValue());
+    assertThat(result.getWarnings(), Matchers.not(Matchers.empty()));
+    assertThat(result.getWarnings().toString(), containsStringIgnoringCase("timeout"));
   }
 }

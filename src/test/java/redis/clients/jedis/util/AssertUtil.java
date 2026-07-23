@@ -7,10 +7,12 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import org.opentest4j.AssertionFailedError;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.UnifiedJedis;
 
 public class AssertUtil {
 
@@ -18,7 +20,32 @@ public class AssertUtil {
     assertEquals("OK", str);
   }
 
-  public static void assertEqualsByProtocol(RedisProtocol protocol, Object expectedResp2, Object expectedResp3, Object actual) {
+  /**
+   * Waits until RediSearch reports that {@code index} contains exactly {@code expected} documents,
+   * then asserts it. Indexing can lag behind the HSET writes, so tests that query right after a
+   * bulk load should call this first (otherwise the query may run against a partially built index).
+   * Polls {@code FT.INFO num_docs} up to 10 times before asserting.
+   */
+  public static void assertIndexSize(UnifiedJedis jedis, String index, long expected) {
+    long actual = -1;
+    // allow search time to catch up
+    for (int i = 0; i < 10; i++) {
+      Map<String, Object> info = jedis.ftInfo(index);
+      actual = Long.parseLong(String.valueOf(info.get("num_docs")));
+      if (actual == expected) {
+        break;
+      }
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    assertEquals(expected, actual);
+  }
+
+  public static void assertEqualsByProtocol(RedisProtocol protocol, Object expectedResp2,
+      Object expectedResp3, Object actual) {
     if (expectsResp3OnWire(protocol)) {
       assertEquals(expectedResp3, actual);
     } else {
@@ -27,9 +54,9 @@ public class AssertUtil {
   }
 
   /**
-   * Returns {@code true} when the parametrized {@link RedisProtocol} value corresponds to RESP3
-   * on the wire for {@link redis.clients.jedis.UnifiedJedis}-based tests. {@code null} is the
-   * alias for "auto-negotiate" which resolves to RESP3 on the test environment.
+   * Returns {@code true} when the parametrized {@link RedisProtocol} value corresponds to RESP3 on
+   * the wire for {@link redis.clients.jedis.UnifiedJedis}-based tests. {@code null} is the alias
+   * for "auto-negotiate" which resolves to RESP3 on the test environment.
    * <p>
    * Do not use this helper in legacy {@link redis.clients.jedis.Jedis} tests — there, {@code null}
    * means "no HELLO sent / assumes RESP2", so a direct {@code protocol == RedisProtocol.RESP3}
@@ -45,16 +72,19 @@ public class AssertUtil {
         return true;
       }
     }
-    throw new AssertionFailedError("element is missing", Objects.toString(expected), array.toString());
+    throw new AssertionFailedError("element is missing", Objects.toString(expected),
+        array.toString());
   }
 
-  public static boolean assertByteArrayCollectionContains(Collection<byte[]> array, byte[] expected) {
+  public static boolean assertByteArrayCollectionContains(Collection<byte[]> array,
+      byte[] expected) {
     for (byte[] bytes : array) {
       if (Arrays.equals(bytes, expected)) {
         return true;
       }
     }
-    throw new AssertionFailedError("element is missing", Arrays.toString(expected), array.toString());
+    throw new AssertionFailedError("element is missing", Arrays.toString(expected),
+        array.toString());
   }
 
   public static void assertByteArrayListEquals(List<byte[]> expected, List<byte[]> actual) {
@@ -77,7 +107,8 @@ public class AssertUtil {
         }
       }
       if (!contained) {
-        throw new AssertionFailedError("element is missing", Arrays.toString(next), actual.toString());
+        throw new AssertionFailedError("element is missing", Arrays.toString(next),
+            actual.toString());
       }
     }
   }

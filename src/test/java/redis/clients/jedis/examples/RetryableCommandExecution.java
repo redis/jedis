@@ -25,7 +25,7 @@ public class RetryableCommandExecution {
   public static void main(String[] args) {
 
     // Connection and pool parameters
-    HostAndPort hostAndPort = new HostAndPort("127.0.0.1", 6379);
+    HostAndPort hostAndPort = new HostAndPort("localhost", 6379);
     JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().user("myuser").password("mypassword").build();
     GenericObjectPoolConfig<Connection> poolConfig = new ConnectionPoolConfig();
 

@@ -94,15 +94,23 @@ class HashImportClusterHandler extends AbstractHashImportHandler {
 
   @Override
   public void close() {
-    try {
-      if (state == State.ACTIVE) {
-        himportDiscardAll();
+    state = State.CLOSED;
+    // Best-effort DISCARDALL on every pinned connection so no prepared, connection-scoped fieldset
+    // is left behind for the next borrower, then return each connection to its pool. This runs even
+    // for a BROKEN session (e.g. a SET got MOVED/ASK): a redirection is a data error, not a
+    // connection error, so the pinned connections are still alive and worth reusing. A connection
+    // that is genuinely dead makes DISCARDALL throw and is already flagged broken internally, so
+    // close() hands it back as broken and the pool discards it.
+    for (Connection c : pinned.values()) {
+      try {
+        c.executeCommand(commandObjects.himportDiscardAll());
+      } catch (RuntimeException ignored) {
+        // best-effort cleanup
+      } finally {
+        c.close();
       }
-    } finally {
-      state = State.CLOSED;
-      pinned.values().forEach(Connection::close);
-      pinned.clear();
     }
+    pinned.clear();
   }
 
   /**

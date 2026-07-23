@@ -1214,6 +1214,36 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(HSETNX).key(key).add(field).add(value), BuilderFactory.LONG);
   }
 
+  // Hash Import commands
+  public final CommandObject<String> himportPrepare(HashImport fieldset) {
+    CommandArguments args = commandArguments(HIMPORT).add(Keyword.PREPARE).add(fieldset.name());
+    if (fieldset.isBinary()) {
+      args.addObjects((Object[]) fieldset.binaryFields());
+    } else {
+      args.addObjects((Object[]) fieldset.fields());
+    }
+    return new CommandObject<>(args, BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> himportSet(String key, HashImport fieldset, String... values) {
+    return new CommandObject<>(commandArguments(HIMPORT).add(Keyword.SET).key(key)
+        .add(fieldset.name()).addObjects((Object[]) values), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> himportSet(byte[] key, HashImport fieldset, byte[]... values) {
+    return new CommandObject<>(commandArguments(HIMPORT).add(Keyword.SET).key(key)
+        .add(fieldset.name()).addObjects((Object[]) values), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<Long> himportDiscard(HashImport fieldset) {
+    return new CommandObject<>(commandArguments(HIMPORT).add(Command.DISCARD).add(fieldset.name()),
+        BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> himportDiscardAll() {
+    return new CommandObject<>(commandArguments(HIMPORT).add(Keyword.DISCARDALL), BuilderFactory.LONG);
+  }
+
   public final CommandObject<String> hmset(byte[] key, Map<byte[], byte[]> hash) {
     return new CommandObject<>(addFlatMapArgs(commandArguments(HMSET).key(key), hash), BuilderFactory.STRING);
   }

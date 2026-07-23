@@ -1,13 +1,16 @@
 package redis.clients.jedis.commands.unified.pipeline;
 
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static redis.clients.jedis.util.AssertUtil.assertPipelineSyncAll;
 
 import java.util.*;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import redis.clients.jedis.HashImport;
 import redis.clients.jedis.RedisProtocol;
 
 @ParameterizedClass
@@ -373,5 +376,58 @@ public class HashesPipelineCommandsTest extends PipelineCommandsTestBase {
     assertPipelineSyncAll(
         Arrays.<Object>asList(0L, 1L, 5L, 0L, 1L, 4L),
         pipe.syncAndReturnAll());
+  }
+
+  @Test
+  @EnabledOnCommand("HIMPORT")
+  public void himport() {
+    HashImport fs = HashImport.of("name", "email", "age");
+
+    pipe.himportPrepare(fs);
+    pipe.himportSet("user:1", fs, "alice", "alice@example.com", "25");
+    pipe.himportSet("user:2", fs, "bob", "bob@example.com", "30");
+    pipe.hget("user:1", "name");
+    pipe.hget("user:2", "age");
+
+    assertPipelineSyncAll(
+        Arrays.<Object>asList("OK", "OK", "OK", "alice", "30"),
+        pipe.syncAndReturnAll());
+  }
+
+  @Test
+  @EnabledOnCommand("HIMPORT")
+  public void himportBinary() {
+    HashImport fs = HashImport.of(bbar, bcar);
+
+    pipe.himportPrepare(fs);
+    pipe.himportSet(bfoo, fs, bbar1, bbar2);
+    pipe.hget(bfoo, bbar);
+
+    assertPipelineSyncAll(
+        Arrays.<Object>asList("OK", "OK", bbar1),
+        pipe.syncAndReturnAll());
+  }
+
+  @Test
+  @EnabledOnCommand("HIMPORT")
+  public void himportDiscard() {
+    HashImport fs = HashImport.of("f1", "f2");
+
+    pipe.himportPrepare(fs);
+    pipe.himportSet("d:1", fs, "a", "b");
+    pipe.himportDiscard(fs);   // prepared on this same connection → removed
+    pipe.himportDiscardAll();  // nothing left afterwards
+
+    assertPipelineSyncAll(
+        Arrays.<Object>asList("OK", "OK", 1L, 0L),
+        pipe.syncAndReturnAll());
+  }
+
+  @Test
+  @EnabledOnCommand("HIMPORT")
+  public void himportSetRejectsWrongValueCount() {
+    HashImport fs = HashImport.of("name", "age");
+    // Local validation — thrown before anything is queued.
+    assertThrows(IllegalArgumentException.class, () -> pipe.himportSet("k", fs, "only-one"));
   }
 }

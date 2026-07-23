@@ -94,7 +94,7 @@ import redis.clients.jedis.util.Pool;
  */
 public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, JedisBinaryCommands,
     ControlCommands, ControlBinaryCommands, ClusterCommands, ModuleCommands, GenericControlCommands,
-    SentinelCommands, CommandCommands,  Closeable {
+    SentinelCommands, CommandCommands, Closeable {
 
   private static final Logger logger = LoggerFactory.getLogger(Jedis.class);
 

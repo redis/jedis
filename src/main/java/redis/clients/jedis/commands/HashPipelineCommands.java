@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.HashImport;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.HGetExParams;
 import redis.clients.jedis.params.HSetExParams;
@@ -94,4 +96,47 @@ public interface HashPipelineCommands {
   Response<List<Long>> hpttl(String key, String... fields);
 
   Response<List<Long>> hpersist(String key, String... fields);
+
+  /**
+   * Pipeline variant of {@code HIMPORT PREPARE} (Hinted Hash Templates, Redis 8.10) — queues
+   * preparation of {@code fieldset} on the pipeline's connection. A pipeline runs all its commands
+   * on a single held connection, so queue this once before the dependent {@code SET}s.
+   * @param fieldset the fieldset template
+   * @return the deferred {@code OK} reply
+   * @since 8.0
+   */
+  @Experimental
+  Response<String> himportPrepare(HashImport fieldset);
+
+  /**
+   * Pipeline variant of {@code HIMPORT SET} (Hinted Hash Templates, Redis 8.10) — queues creation of
+   * a hash at {@code key} from {@code values}, positionally paired against {@code fieldset}'s fields
+   * ({@code values.length} must equal {@link HashImport#size()}).
+   * @param key the hash key
+   * @param fieldset the fieldset template (must be prepared earlier in the pipeline)
+   * @param values the values, positionally matching the fieldset's fields
+   * @return the deferred {@code OK} reply
+   * @since 8.0
+   */
+  @Experimental
+  Response<String> himportSet(String key, HashImport fieldset, String... values);
+
+  /**
+   * Pipeline variant of {@code HIMPORT DISCARD} (Hinted Hash Templates, Redis 8.10) — queues removal
+   * of {@code fieldset} from the pipeline's connection.
+   * @param fieldset the fieldset template
+   * @return the deferred reply: {@code 1} if removed, {@code 0} if it did not exist
+   * @since 8.0
+   */
+  @Experimental
+  Response<Long> himportDiscard(HashImport fieldset);
+
+  /**
+   * Pipeline variant of {@code HIMPORT DISCARDALL} (Hinted Hash Templates, Redis 8.10) — queues
+   * removal of all session-local fieldsets from the pipeline's connection.
+   * @return the deferred reply: the number of fieldsets removed
+   * @since 8.0
+   */
+  @Experimental
+  Response<Long> himportDiscardAll();
 }

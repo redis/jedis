@@ -4,19 +4,23 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.is;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.HashImport;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase {
 
@@ -819,6 +823,70 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
 
     assertThat(pipeliningBase.hpersist(key, fields), is(predefinedResponse));
     assertThat(listLongCommandObject, in(commands));
+  }
+
+  @Test
+  public void testHimportPrepare() {
+    HashImport fs = HashImport.of("name", "age");
+    when(commandObjects.himportPrepare(fs)).thenReturn(stringCommandObject);
+
+    assertThat(pipeliningBase.himportPrepare(fs), is(predefinedResponse));
+    assertThat(stringCommandObject, in(commands));
+  }
+
+  @Test
+  public void testHimportPrepareBinary() {
+    HashImport fs = HashImport.of(SafeEncoder.encode("name"), SafeEncoder.encode("age"));
+    when(commandObjects.himportPrepare(fs)).thenReturn(stringCommandObject);
+
+    assertThat(pipeliningBase.himportPrepare(fs), is(predefinedResponse));
+    assertThat(stringCommandObject, in(commands));
+  }
+
+  @Test
+  public void testHimportSet() {
+    HashImport fs = HashImport.of("name", "age");
+    when(commandObjects.himportSet("k", fs, "alice", "30")).thenReturn(stringCommandObject);
+
+    assertThat(pipeliningBase.himportSet("k", fs, "alice", "30"), is(predefinedResponse));
+    assertThat(stringCommandObject, in(commands));
+  }
+
+  @Test
+  public void testHimportSetBinary() {
+    byte[] key = SafeEncoder.encode("k");
+    byte[] v1 = SafeEncoder.encode("alice");
+    byte[] v2 = SafeEncoder.encode("30");
+    HashImport fs = HashImport.of("name", "age");
+    when(commandObjects.himportSet(key, fs, v1, v2)).thenReturn(stringCommandObject);
+
+    assertThat(pipeliningBase.himportSet(key, fs, v1, v2), is(predefinedResponse));
+    assertThat(stringCommandObject, in(commands));
+  }
+
+  @Test
+  public void testHimportSetRejectsWrongValueCount() {
+    HashImport fs = HashImport.of("name", "age");
+    // Local validation happens before anything is queued.
+    assertThrows(IllegalArgumentException.class, () -> pipeliningBase.himportSet("k", fs, "one"));
+    assertThat(commands, is(Collections.emptyList()));
+  }
+
+  @Test
+  public void testHimportDiscard() {
+    HashImport fs = HashImport.of("name");
+    when(commandObjects.himportDiscard(fs)).thenReturn(longCommandObject);
+
+    assertThat(pipeliningBase.himportDiscard(fs), is(predefinedResponse));
+    assertThat(longCommandObject, in(commands));
+  }
+
+  @Test
+  public void testHimportDiscardAll() {
+    when(commandObjects.himportDiscardAll()).thenReturn(longCommandObject);
+
+    assertThat(pipeliningBase.himportDiscardAll(), is(predefinedResponse));
+    assertThat(longCommandObject, in(commands));
   }
 
 }

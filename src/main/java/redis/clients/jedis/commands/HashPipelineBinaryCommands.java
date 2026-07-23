@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.HashImport;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.HGetExParams;
 import redis.clients.jedis.params.HSetExParams;
@@ -94,4 +96,13 @@ public interface HashPipelineBinaryCommands {
   Response<List<Long>> hpttl(byte[] key, byte[]... fields);
 
   Response<List<Long>> hpersist(byte[] key, byte[]... fields);
+
+  /**
+   * Binary variant of {@link HashPipelineCommands#himportSet(String, HashImport, String...)}
+   * (Hinted Hash Templates, Redis 8.10).
+   * @see HashPipelineCommands#himportSet(String, HashImport, String...)
+   * @since 8.0
+   */
+  @Experimental
+  Response<String> himportSet(byte[] key, HashImport fieldset, byte[]... values);
 }

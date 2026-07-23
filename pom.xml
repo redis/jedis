@@ -638,6 +638,7 @@
 						<include>src/test/jmh/**/*.java</include>
 						<include>**/RedisMultiDbClientSideCacheTest.java</include>
 						<include>**/MultiDbCSCTest.java</include>
+						<include>**/*HashImport*.java</include>
 					</includes>
 				</configuration>
 				<executions>

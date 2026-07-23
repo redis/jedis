@@ -24,10 +24,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import redis.clients.jedis.HashImport;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.HGetExParams;
@@ -697,5 +699,44 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
 
     assertThat(exec(commandObjects.httl(bfoo, bbar1, bbar2, bbar3)),
         contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
+  }
+
+  @Test
+  @EnabledOnCommand("HIMPORT")
+  public void himport() {
+    // A fieldset is session state on the executor's (reused) connection, so PREPARE and the
+    // dependent SETs run on the same socket in this single-threaded test.
+    HashImport fs = HashImport.of("name", "email", "age");
+    assertThat(exec(commandObjects.himportPrepare(fs)), equalTo("OK"));
+    assertThat(exec(commandObjects.himportSet("user:1", fs, "alice", "alice@example.com", "25")),
+        equalTo("OK"));
+    assertThat(exec(commandObjects.himportSet("user:2", fs, "bob", "bob@example.com", "30")),
+        equalTo("OK"));
+
+    Map<String, String> expected = new HashMap<>();
+    expected.put("name", "alice");
+    expected.put("email", "alice@example.com");
+    expected.put("age", "25");
+    assertThat(exec(commandObjects.hgetAll("user:1")), equalTo(expected));
+    assertThat(exec(commandObjects.hget("user:2", "name")), equalTo("bob"));
+
+    assertThat(exec(commandObjects.himportDiscard(fs)), equalTo(1L));
+    assertThat(exec(commandObjects.himportDiscardAll()), equalTo(0L));
+  }
+
+  @Test
+  @EnabledOnCommand("HIMPORT")
+  public void himportBinary() {
+    byte[] fName = "name".getBytes();
+    byte[] fAge = "age".getBytes();
+    byte[] key = "buser:1".getBytes();
+    byte[] vName = "carol".getBytes();
+    byte[] vAge = "41".getBytes();
+    HashImport fs = HashImport.of(fName, fAge);
+
+    assertThat(exec(commandObjects.himportPrepare(fs)), equalTo("OK"));
+    assertThat(exec(commandObjects.himportSet(key, fs, vName, vAge)), equalTo("OK"));
+    assertThat(exec(commandObjects.hget(key, fName)), equalTo(vName));
+    assertThat(exec(commandObjects.himportDiscard(fs)), equalTo(1L));
   }
 }

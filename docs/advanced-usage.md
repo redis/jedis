@@ -88,6 +88,53 @@ try (RedisClusterClient pipelineClient = RedisClusterClient.builder()
 Keep each pipeline single-shard when possible. This avoids borrowing multiple node connections at the same time.
 
 
+## Hinted Hash Templates (HIMPORT)
+
+*Requires Redis 8.10 or newer. This API is `@Experimental` and may change.*
+
+When many hashes share the same field names (one hash per user, order, session…), each key
+normally stores its own copy of those field names. `HIMPORT` lets you name a set of field names
+once with `PREPARE`, then create keys with `SET` sending only the values. This cuts the traffic
+from client to server and lets the server store the keys in a memory-efficient *template*
+encoding. The keys are ordinary hashes — every hash command still works on them.
+
+A fieldset is scoped to the **physical connection** that prepared it, so `PREPARE` and `SET` must
+run on the same socket. `HIMPORT` is therefore exposed on the **pipeline** API: a pipeline runs all
+of its queued commands on a single held connection, so `PREPARE` and the dependent `SET`s co-locate
+naturally. Build a `HashImport` template once, queue `PREPARE` followed by the `SET`s, and `sync()`:
+
+```java
+HashImport fs = HashImport.of("name", "email", "age");
+
+try (AbstractPipeline p = jedis.pipelined()) {
+    p.himportPrepare(fs);
+    p.himportSet("user:1", fs, "alice", "alice@example.com", "25");
+    p.himportSet("user:2", fs, "bob",   "bob@example.com",   "30");
+    p.himportSet("user:3", fs, "carol", "carol@example.com", "35");
+    p.sync();
+}
+```
+
+Each method queues exactly one command and returns its deferred `Response<T>` — `Response<String>`
+(`"OK"`) for `himportPrepare`/`himportSet`, `Response<Long>` for `himportDiscard` (`1`/`0`) and
+`himportDiscardAll` (count). Queue `himportPrepare(fs)` before the dependent `himportSet`s. A binary
+(`byte[]`) `himportSet` overload and `HashImport.of(byte[]...)` are available for binary field
+names/values.
+
+Notes:
+
+- **Positional pairing.** Value *N* maps to field *N* of the template's field order. Do not reorder,
+  deduplicate or sort fields/values; `HashImport.of(...)` rejects empty/null/duplicate field names,
+  and `himportSet` rejects a value count that does not match `fs.size()` (before anything is queued).
+  Other errors are server-authoritative and propagate as `JedisDataException` when you read the
+  `Response`.
+- **Scope.** `HIMPORT` is exposed only on the pipeline surface (`Pipeline`, `Transaction`, and the
+  cluster/multi-node pipelines that extend `PipeliningBase`). The connection-agnostic client
+  (`UnifiedJedis`) and the single-connection legacy `Jedis` do not expose it, because `HIMPORT`'s
+  per-connection session state maps cleanly onto a pipeline's single held connection but not onto a
+  per-command borrow/return model.
+
+
 ## Publish/Subscribe
 
 To subscribe to a channel in Redis, create an instance of JedisPubSub and call subscribe on the Jedis instance:

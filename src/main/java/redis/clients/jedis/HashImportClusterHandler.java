@@ -1,0 +1,116 @@
+package redis.clients.jedis;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.function.Function;
+
+import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.providers.ClusterConnectionProvider;
+import redis.clients.jedis.util.JedisClusterCRC16;
+
+/**
+ * Cluster {@code HIMPORT} handle. Pins one {@link Connection} per master at construction (from
+ * {@link ClusterConnectionProvider#getPrimaryNodes()}) and reuses them for the whole session
+ * &mdash; never borrowing fresh connections, so the connection-scoped fieldsets survive.
+ * <p>
+ * {@code PREPARE} / {@code DISCARD} / {@code DISCARDALL} fan out to every pinned master (each holds
+ * an identical copy of the session-local fieldsets); {@code SET} routes by the key's hash slot to
+ * the pinned connection for that master. A slot that maps off the pinned set (resharding) is
+ * session-fatal.
+ * @since 8.0
+ */
+@Experimental
+class HashImportClusterHandler extends AbstractHashImportHandler {
+
+  private final ClusterConnectionProvider provider;
+  private final Map<HostAndPort, Connection> pinned = new HashMap<>();
+
+  HashImportClusterHandler(ClusterConnectionProvider provider, CommandObjects commandObjects) {
+    super(commandObjects);
+    this.provider = provider;
+    provider.getPrimaryNodes()
+        .forEach((node, pool) -> pinned.put(HostAndPort.from(node), pool.getResource()));
+  }
+
+  @Override
+  public String himportPrepare(String fieldset, String... fields) {
+    return guarded(
+      () -> broadcast(c -> c.executeCommand(commandObjects.himportPrepare(fieldset, fields))));
+  }
+
+  @Override
+  public String himportSet(String key, String fieldset, String... values) {
+    return guarded(() -> connectionForSlot(JedisClusterCRC16.getSlot(key))
+        .executeCommand(commandObjects.himportSet(key, fieldset, values)));
+  }
+
+  @Override
+  public long himportDiscard(String fieldset) {
+    return guarded(() -> aggregate(c -> c.executeCommand(commandObjects.himportDiscard(fieldset))));
+  }
+
+  @Override
+  public String himportPrepare(byte[] fieldset, byte[]... fields) {
+    return guarded(
+      () -> broadcast(c -> c.executeCommand(commandObjects.himportPrepare(fieldset, fields))));
+  }
+
+  @Override
+  public String himportSet(byte[] key, byte[] fieldset, byte[]... values) {
+    return guarded(() -> connectionForSlot(JedisClusterCRC16.getSlot(key))
+        .executeCommand(commandObjects.himportSet(key, fieldset, values)));
+  }
+
+  @Override
+  public long himportDiscard(byte[] fieldset) {
+    return guarded(() -> aggregate(c -> c.executeCommand(commandObjects.himportDiscard(fieldset))));
+  }
+
+  @Override
+  public long himportDiscardAll() {
+    return guarded(() -> aggregate(c -> c.executeCommand(commandObjects.himportDiscardAll())));
+  }
+
+  @Override
+  public void close() {
+    try {
+      if (state == State.ACTIVE) {
+        himportDiscardAll();
+      }
+    } finally {
+      state = State.CLOSED;
+      pinned.values().forEach(Connection::close);
+      pinned.clear();
+    }
+  }
+
+  /** Runs {@code op} on the pinned connection for {@code slot}, failing the session if it moved. */
+  private Connection connectionForSlot(int slot) {
+    Connection c = pinned.get(provider.getNode(slot));
+    if (c == null) {
+      state = State.BROKEN;
+      throw new JedisException("HashImport: slot " + slot + " moved off the pinned masters");
+    }
+    return c;
+  }
+
+  /** Fans {@code op} out to all pinned masters; replies are identical, returns {@code OK}. */
+  private String broadcast(Function<Connection, String> op) {
+    pinned.values().forEach(op::apply);
+    return "OK";
+  }
+
+  /**
+   * Fans {@code op} out to all pinned masters and returns the maximum reply. Every master mirrors
+   * the same fieldset state so the replies should agree; the maximum degrades gracefully if one
+   * master missed a {@code PREPARE}.
+   */
+  private long aggregate(Function<Connection, Long> op) {
+    long result = 0L;
+    for (Connection c : pinned.values()) {
+      result = Math.max(result, op.apply(c));
+    }
+    return result;
+  }
+}

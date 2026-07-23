@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.Protocol.*;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.util.CompareCondition;
@@ -94,7 +95,7 @@ import redis.clients.jedis.util.Pool;
  */
 public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, JedisBinaryCommands,
     ControlCommands, ControlBinaryCommands, ClusterCommands, ModuleCommands, GenericControlCommands,
-    SentinelCommands, CommandCommands,  Closeable {
+    SentinelCommands, CommandCommands, HashImportCommands, HashImportBinaryCommands, Closeable {
 
   private static final Logger logger = LoggerFactory.getLogger(Jedis.class);
 
@@ -6194,6 +6195,55 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public List<String> hgetdel(String key, String... fields) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.hgetdel(key, fields));
+  }
+
+  @Override
+  @Experimental
+  public String himportPrepare(String fieldset, String... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.himportPrepare(fieldset, fields));
+  }
+
+  @Override
+  @Experimental
+  public String himportSet(String key, String fieldset, String... values) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.himportSet(key, fieldset, values));
+  }
+
+  @Override
+  @Experimental
+  public long himportDiscard(String fieldset) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.himportDiscard(fieldset));
+  }
+
+  @Override
+  @Experimental
+  public long himportDiscardAll() {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.himportDiscardAll());
+  }
+
+  @Override
+  @Experimental
+  public String himportPrepare(byte[] fieldset, byte[]... fields) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.himportPrepare(fieldset, fields));
+  }
+
+  @Override
+  @Experimental
+  public String himportSet(byte[] key, byte[] fieldset, byte[]... values) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.himportSet(key, fieldset, values));
+  }
+
+  @Override
+  @Experimental
+  public long himportDiscard(byte[] fieldset) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.himportDiscard(fieldset));
   }
 
   /**

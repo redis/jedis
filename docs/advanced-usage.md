@@ -65,6 +65,61 @@ Set<String> setBack = sose.get();
 For more explanations see code comments in the transaction section.
 
 
+## Hinted Hash Templates (HIMPORT)
+
+*Requires Redis 8.10 or newer. This API is `@Experimental` and may change.*
+
+When many hashes share the same field names (one hash per user, order, session…), each key
+normally stores its own copy of those field names. `HIMPORT` lets you name a set of field names
+once with `PREPARE`, then create keys with `SET` sending only the values. This cuts the traffic
+from client to server and lets the server store the keys in a memory-efficient *template*
+encoding. The keys are ordinary hashes — every hash command still works on them.
+
+A fieldset is scoped to the **physical connection** that prepared it, so `PREPARE` and `SET` must
+run on the same socket. How you use `HIMPORT` therefore depends on the client:
+
+**Pooled / cluster (`UnifiedJedis`, `RedisClient`, `JedisPooled`, `RedisClusterClient`).** These
+clients borrow and return a pooled connection per command, so `HIMPORT` is exposed as a scoped,
+`AutoCloseable` handle that **holds** its connection(s) for its whole lifetime. Obtain it from
+`hashImport()` and use it with try-with-resources, mirroring `pipelined()` and `multi()`. The handle
+exposes both the String and binary (`byte[]`) command surfaces:
+
+```java
+try (AbstractHashImportHandler hi = client.hashImport()) {
+    hi.himportPrepare("u", "name", "email", "age");
+    hi.himportSet("user:1", "u", "alice", "alice@example.com", "30");
+    hi.himportSet("user:2", "u", "bob",   "bob@example.com",   "25");
+} // close() discards the fieldsets and releases the connection(s) to the pool
+```
+
+**Single-connection (`Jedis`).** A `Jedis` owns one connection, so affinity is already guaranteed —
+call the commands directly, no handle needed:
+
+```java
+try (Jedis jedis = new Jedis(host, port)) {
+    jedis.himportPrepare("u", "name", "email", "age");
+    jedis.himportSet("user:1", "u", "alice", "alice@example.com", "30");
+    jedis.himportSet("user:2", "u", "bob",   "bob@example.com",   "25");
+}
+```
+
+`himportPrepare` and `himportSet` return the status reply `"OK"`; `himportDiscard` returns `1`/`0`
+(removed or not found) and `himportDiscardAll` returns the number of fieldsets removed. Binary
+(`byte[]`) overloads are available for all of them.
+
+Notes:
+
+- **Positional pairing.** Value *N* maps to field *N* of the fieldset's `PREPARE` order. Do not
+  reorder, deduplicate or sort fields/values — field order, value counts and duplicates are
+  validated by the server, and its errors (`no such fieldset`, `duplicate field name in fieldset`,
+  `value count does not match fieldset field count`, `WRONGTYPE`) propagate unchanged.
+- **No recovery.** A dropped connection or a cluster topology change (`MOVED`/`ASK`) is
+  session-fatal: the handle refuses all further use and you must create a fresh one. Command-level
+  errors (above) are not fatal — the handle stays usable.
+- **Cluster.** The handle pins one connection per master; `PREPARE`/`DISCARD`/`DISCARDALL` fan out
+  to all masters, and `SET` routes by the key's hash slot.
+
+
 ## Publish/Subscribe
 
 To subscribe to a channel in Redis, create an instance of JedisPubSub and call subscribe on the Jedis instance:

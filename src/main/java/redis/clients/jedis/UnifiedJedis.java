@@ -9,6 +9,8 @@ import org.json.JSONArray;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
+import redis.clients.jedis.commands.HashImportBinaryCommands;
+import redis.clients.jedis.commands.HashImportCommands;
 import redis.clients.jedis.commands.JedisCommands;
 import redis.clients.jedis.commands.JedisBinaryCommands;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -5816,6 +5818,32 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.tdigestByRevRank(key, ranks));
   }
   // RedisBloom commands
+
+  /**
+   * Opens a scoped {@code HIMPORT} (Hinted Hash Templates) handle. The handle borrows and
+   * <b>holds</b> its connection(s) for its whole lifetime so that {@code PREPARE} and {@code SET}
+   * land on the same socket (a fieldset is scoped to the connection that prepared it). It exposes
+   * both the String ({@link HashImportCommands}) and binary ({@link HashImportBinaryCommands})
+   * surfaces and is {@link AutoCloseable} &mdash; use it with try-with-resources; {@code close()}
+   * discards remaining fieldsets and releases the connection(s) to the pool.
+   *
+   * <pre>{@code
+   * try (AbstractHashImportHandler hi = jedis.hashImport()) {
+   *   hi.himportPrepare("u", "name", "email", "age");
+   *   hi.himportSet("user:1", "u", "alice", "alice@example.com", "30");
+   * }
+   * }</pre>
+   *
+   * @return a connection-holding, {@link AutoCloseable} {@code HIMPORT} handle
+   * @since 8.0
+   */
+  @Experimental
+  public AbstractHashImportHandler hashImport() {
+    if (provider == null) {
+      throw new IllegalStateException("It is not allowed to create a HashImport session from this " + getClass());
+    }
+    return HashImport.create(provider, commandObjects);
+  }
 
   /**
    * @return pipeline object

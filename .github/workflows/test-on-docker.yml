@@ -56,6 +56,25 @@ jobs:
           redis_env_work_dir: ${{ github.workspace }}/redis-env-work
           redis_env_conf_dir: ${{ github.workspace }}/src/test/resources/env
 
+  build_jdk25:
+    name: Build and Test (JDK 25, Redis 8.8)
+    if: github.event.inputs.client_libs_test_image_tag == ''
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - uses: ./.github/actions/run-tests
+        with:
+          redis_version: "8.8"
+          java_version: "25"
+          specific_test: ${{ github.event.inputs.specific_test || '' }}
+          # codecov upload skipped for JDK 25 (canonical coverage comes from JDK 8)
+          codecov_token: ''
+          maven_extra_args: '-DJVM_OPTS=-Dnet.bytebuddy.experimental=true'
+          redis_env_work_dir: ${{ github.workspace }}/redis-env-work
+          redis_env_conf_dir: ${{ github.workspace }}/src/test/resources/env
+
   build_using_custom_image:
     name: Build and Test using custom image
     if: github.event.inputs.client_libs_test_image_tag != ''

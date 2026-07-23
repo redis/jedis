@@ -23,14 +23,18 @@ on:
 jobs:
 
   build:
-    name: Build and Test
+    name: Build and Test (JDK ${{ matrix.java }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        java: ['8', '25']
     steps:
       - uses: actions/checkout@v6
-      - name: Set up publishing to maven central
+      - name: Set up Java
         uses: actions/setup-java@v5
         with:
-          java-version: '8'
+          java-version: ${{ matrix.java }}
           distribution: 'temurin'
       - name: System setup
         run: |
@@ -43,7 +47,7 @@ jobs:
           path: |
             ~/.m2/repository
             /var/cache/apt
-          key: jedis-${{hashFiles('**/pom.xml')}}
+          key: jedis-jdk${{ matrix.java }}-${{ hashFiles('**/pom.xml') }}
       - name: Maven offline
         run: |
           mvn -q dependency:go-offline
@@ -57,3 +61,4 @@ jobs:
         env:
           JVM_OPTS: -Xmx3200m
           TERM: dumb
+          MAVEN_ARGS: ${{ matrix.java == '25' && '-DJVM_OPTS=-Dnet.bytebuddy.experimental=true' || '' }}

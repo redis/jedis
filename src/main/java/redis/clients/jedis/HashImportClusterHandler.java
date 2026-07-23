@@ -29,8 +29,24 @@ class HashImportClusterHandler extends AbstractHashImportHandler {
   HashImportClusterHandler(ClusterConnectionProvider provider, CommandObjects commandObjects) {
     super(commandObjects);
     this.provider = provider;
-    provider.getPrimaryNodes()
-        .forEach((node, pool) -> pinned.put(HostAndPort.from(node), pool.getResource()));
+    // A pool may fail to hand out a connection (e.g. exhausted) after earlier ones were borrowed;
+    // the constructor would then abort before a handle is returned, so close() would never run.
+    // Roll back the already-pinned connections on failure to avoid leaking them from their pools.
+    for (Map.Entry<String, ConnectionPool> entry : provider.getPrimaryNodes().entrySet()) {
+      try {
+        pinned.put(HostAndPort.from(entry.getKey()), entry.getValue().getResource());
+      } catch (RuntimeException e) {
+        pinned.values().forEach(c -> {
+          try {
+            c.close();
+          } catch (RuntimeException ignored) {
+            // best-effort release
+          }
+        });
+        pinned.clear();
+        throw e;
+      }
+    }
   }
 
   @Override

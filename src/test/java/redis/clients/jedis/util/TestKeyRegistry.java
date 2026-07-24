@@ -1,6 +1,5 @@
 package redis.clients.jedis.util;
 
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -18,9 +17,15 @@ import redis.clients.jedis.exceptions.JedisDataException;
  * Generates unique, human-readable Redis test keys and tracks them for cleanup.
  * <p>
  * Test endpoints are shared across the suite, so well-known keys (e.g. {@code "foo"}) may be left
- * behind by earlier tests holding an unexpected type. Keys produced here are namespaced by the
- * test identifier {@code ClassName.methodName}, and every generated key is registered so it can
- * be deleted after the test.
+ * behind by earlier tests holding an unexpected type. Keys produced here are namespaced by a test
+ * identifier, and every generated key is registered so it can be deleted after the test.
+ * <p>
+ * The identifier — and thereby the registry's scope — depends on the lifecycle context the
+ * registry is created in: {@code ClassName.methodName} in a method context
+ * ({@code @BeforeEach}/{@code @Test}), {@code ClassName} in a class context ({@code @BeforeAll}).
+ * A registry created in {@code @BeforeAll} and cleaned in {@code @AfterAll} holds class-level
+ * keys that survive between individual tests; the two scopes cannot collide because method-scoped
+ * keys always contain {@code .methodName}.
  * <p>
  * The {@code %test%} placeholder is replaced with the test identifier. Substitution is purely
  * textual — braces are never added implicitly, so to pin all keys of one test to the same Redis
@@ -82,8 +87,9 @@ public interface TestKeyRegistry {
 
     Default(TestInfo testInfo) {
       String className = testInfo.getTestClass().map(Class::getSimpleName).orElse("UnknownClass");
-      String methodName = testInfo.getTestMethod().map(Method::getName).orElse("unknownMethod");
-      this.testId = className + "." + methodName;
+      // No test method in a class context (@BeforeAll) — the registry is class-scoped
+      this.testId = testInfo.getTestMethod().map(m -> className + "." + m.getName())
+          .orElse(className);
     }
 
     @Override

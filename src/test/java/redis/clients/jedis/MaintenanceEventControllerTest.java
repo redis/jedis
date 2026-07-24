@@ -30,10 +30,11 @@ import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 /**
- * Unit tests for {@link MaintenanceEventController}: the sequence-guarded, time-bounded MOVING
- * rebind overlay; the {@link SocketAddressMapper} contract (affected-only redirect); the
- * relax-on-borrow scope; and the handoff hook fan-out. The receiver connection is given a real
- * (TcpMockServer-backed) socket so {@code getRemoteSocketAddress()} returns a real peer.
+ * Unit tests for {@link MaintenanceEventController}: the (seq, endpoint)-deduplicated, time-bounded
+ * MOVING events (overlapping events coexist until each expires); the {@link SocketAddressMapper}
+ * contract (affected-only redirect); the relax-on-borrow scope; and the handoff hook fan-out. The
+ * receiver connections are given real (TcpMockServer-backed) sockets so
+ * {@code getRemoteSocketAddress()} returns real, distinct peers.
  */
 @Tag("sch")
 public class MaintenanceEventControllerTest {
@@ -46,9 +47,12 @@ public class MaintenanceEventControllerTest {
       6381);
 
   private TcpMockServer mockServer;
+  private TcpMockServer mockServer2;
   private MaintenanceEventController controller;
   private Connection receiver;
+  private Connection receiver2;
   private SocketAddress receiverPeer;
+  private SocketAddress receiver2Peer;
   private AtomicLong now;
 
   @BeforeEach
@@ -59,23 +63,35 @@ public class MaintenanceEventControllerTest {
 
     mockServer = new TcpMockServer();
     mockServer.start();
+    mockServer2 = new TcpMockServer();
+    mockServer2.start();
 
-    HostAndPort mock = new HostAndPort("127.0.0.1", mockServer.getPort());
-    receiver = new Connection(mock);
+    receiver = new Connection(new HostAndPort("127.0.0.1", mockServer.getPort()));
     receiver.connect();
     receiverPeer = receiver.getRemoteSocketAddress();
     assertNotNull(receiverPeer, "receiver must have a real peer for the affected-key tests");
+
+    receiver2 = new Connection(new HostAndPort("127.0.0.1", mockServer2.getPort()));
+    receiver2.connect();
+    receiver2Peer = receiver2.getRemoteSocketAddress();
+    assertNotNull(receiver2Peer, "second receiver must have a real, distinct peer");
   }
 
   @AfterEach
   public void tearDown() throws Exception {
     if (receiver != null) receiver.close();
+    if (receiver2 != null) receiver2.close();
     if (mockServer != null) mockServer.stop();
+    if (mockServer2 != null) mockServer2.stop();
     NanoClock.INSTANCE = System::nanoTime;
   }
 
   private void moving(long seq, HostAndPort target, long ttlSeconds) {
     controller.onMoving(new MovingEvent(seq, ttlSeconds, target), receiver);
+  }
+
+  private void movingOn(Connection c, long seq, HostAndPort target, long ttlSeconds) {
+    controller.onMoving(new MovingEvent(seq, ttlSeconds, target), c);
   }
 
   private void advanceSeconds(long seconds) {
@@ -110,21 +126,26 @@ public class MaintenanceEventControllerTest {
     assertFalse(controller.isAffected(receiver), "after deadline");
   }
 
-  // --- Seq guard ---
+  // --- Event identity: (seq, endpoint); overlapping events coexist ---
 
   @Test
-  public void sameSeqDifferentTarget_isRejected() {
+  public void sameSeqDifferentTarget_isDistinctEvent() {
+    // seq is per-source, so the same seq with a different endpoint from another set of
+    // connections is a distinct concurrent event — each peer remaps to its own event's target.
     moving(5L, TARGET_B, 100);
-    moving(5L, TARGET_C, 100); // conflicting target for the same seq is treated as a server bug
-    assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer),
-      "target unchanged by conflicting-target same-seq event");
+    movingOn(receiver2, 5L, TARGET_C, 100);
+
+    assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer));
+    assertEquals(TARGET_C_ADDR, controller.getSocketAddress(receiver2Peer));
   }
 
   @Test
-  public void lowerSeq_isIgnored() {
+  public void lowerSeqDifferentTarget_coexists() {
     moving(5L, TARGET_B, 100);
-    moving(3L, TARGET_C, 100); // older event
+    movingOn(receiver2, 3L, TARGET_C, 100); // lower seq from another source: not a stale replay
+
     assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer));
+    assertEquals(TARGET_C_ADDR, controller.getSocketAddress(receiver2Peer));
   }
 
   @Test
@@ -176,10 +197,62 @@ public class MaintenanceEventControllerTest {
   }
 
   @Test
-  public void higherSeqNewTarget_supersedes() {
+  public void newerEventDoesNotDisplaceEarlier() {
     moving(5L, TARGET_B, 100);
-    moving(6L, TARGET_C, 100);
-    assertEquals(TARGET_C_ADDR, controller.getSocketAddress(receiverPeer));
+    movingOn(receiver2, 6L, TARGET_C, 10); // newer, shorter-lived event on another peer
+
+    assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer));
+    assertEquals(TARGET_C_ADDR, controller.getSocketAddress(receiver2Peer));
+
+    advanceSeconds(11); // the newer event expires first
+    assertNull(controller.getSocketAddress(receiver2Peer));
+    assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer),
+      "earlier event survives the newer event's expiry");
+    assertTrue(controller.isRebindActive(), "rebind active until the last event expires");
+
+    advanceSeconds(90); // 101s: past the earlier event's ttl too
+    assertNull(controller.getSocketAddress(receiverPeer));
+    assertFalse(controller.isRebindActive());
+  }
+
+  @Test
+  public void relaxActiveUntilLastEventExpires() {
+    moving(1L, TARGET_B, 10);
+    movingOn(receiver2, 2L, TARGET_C, 30);
+
+    advanceSeconds(11); // first event expired, second still active
+    assertNotNull(controller.getTimeoutSupplier().get(),
+      "pool stays relaxed while any MOVING event is active");
+    assertTrue(controller.isRebindActive());
+
+    advanceSeconds(20); // 31s: both expired
+    assertNull(controller.getTimeoutSupplier().get());
+    assertFalse(controller.isRebindActive());
+  }
+
+  @Test
+  public void noneAndTargetedOverlap_coexist() {
+    moving(5L, TARGET_B, 100);
+    movingOn(receiver2, 6L, null, 100); // 'none' event on another peer
+
+    assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer));
+    assertNull(controller.getSocketAddress(receiver2Peer),
+      "'none' never remaps: reconnect to the configured endpoint");
+    assertTrue(controller.isAffected(receiver2), "'none' peer is still affected");
+    assertTrue(controller.isRebindActive());
+  }
+
+  @Test
+  public void redeliveryAfterExpiry_startsFreshOperation() {
+    moving(1L, TARGET_B, 10);
+    advanceSeconds(11);
+    assertNull(controller.getSocketAddress(receiverPeer)); // expired (and removed on this read)
+
+    // The server never delivers a MOVING past its ttl (connections are dropped at window end);
+    // a delivery that does arrive is a new announcement and starts a fresh operation.
+    moving(1L, TARGET_B, 10);
+    assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer));
+    assertTrue(controller.isRebindActive());
   }
 
   @Test
@@ -200,11 +273,12 @@ public class MaintenanceEventControllerTest {
     AtomicInteger fires = new AtomicInteger();
     controller.addHandoffHook(fires::incrementAndGet);
 
-    moving(5L, TARGET_B, 100);
-    moving(5L, TARGET_C, 100); // stale: no fire
-    moving(6L, TARGET_C, 100); // newer: fire
+    moving(5L, TARGET_B, 100); // new event: fire
+    moving(5L, TARGET_C, 100); // distinct key (same seq, other endpoint): fire
+    moving(6L, TARGET_C, 100); // distinct key (other seq): fire
+    moving(6L, TARGET_C, 100); // known key, known peer: no fire
 
-    assertEquals(2, fires.get());
+    assertEquals(3, fires.get());
   }
 
   @Test

@@ -12,6 +12,7 @@ import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.apache.commons.pool2.PooledObject;
 
@@ -225,28 +226,59 @@ public class MaintenanceMarkingTest {
     }
   }
 
-  // --- supersession and stale fires ---
+  // --- overlapping events and stale fires ---
 
   @Test
-  public void supersededPendingMarkingFiresAsNoop() throws Exception {
+  public void pendingNonePassSurvivesNewerEvent() throws Exception {
     AtomicInteger notified = new AtomicInteger();
     controller.addHandoffHook(notified::incrementAndGet);
 
-    movingNone(1L, 10);
-    Runnable staleMarking = scheduler.pending.peek();
+    movingNone(1L, 10); // pass pending at +5s
+    Runnable pendingPass = scheduler.pending.poll();
 
-    moving(2L, TARGET_B, 30); // supersedes; pending passes are never cancelled by design
-    assertTrue(receiver.isMarkedForReconnect(), "new epoch marked inline");
-    assertEquals(1, notified.get());
-
-    // Staleness is the seq guard's job: the superseded epoch's fire is a complete no-op.
-    Connection fresh = connect(mockServer);
+    // An overlapping newer event on another peer marks inline; the earlier unexpired event is NOT
+    // orphaned — its pending pass still covers its own affected set.
+    Connection otherSource = connect(otherServer);
     try {
-      staleMarking.run();
-      assertFalse(fresh.isMarkedForReconnect(), "stale pass marks nothing");
-      assertEquals(1, notified.get(), "stale pass notifies nothing");
+      controller.onMoving(new MovingEvent(2L, 30, TARGET_B), otherSource);
+      assertTrue(otherSource.isMarkedForReconnect(), "newer event marked inline");
+      assertEquals(1, notified.get());
+      assertFalse(receiver.isMarkedForReconnect(), "earlier 'none' event never marks early");
+
+      pendingPass.run();
+      assertTrue(receiver.isMarkedForReconnect(),
+        "the pending pass of a still-active event runs despite the newer event");
+      assertEquals(2, notified.get(), "the pending pass fires the hooks");
     } finally {
-      fresh.close();
+      otherSource.close();
+    }
+  }
+
+  @Test
+  public void expiredOperationPassIsNoop() throws Exception {
+    AtomicLong now = new AtomicLong(0);
+    NanoClock.INSTANCE = now::get;
+    try {
+      AtomicInteger notified = new AtomicInteger();
+      controller.addHandoffHook(notified::incrementAndGet);
+
+      movingNone(1L, 10); // pass pending at +5s
+      Runnable stalePass = scheduler.pending.poll();
+
+      now.addAndGet(TimeUnit.SECONDS.toNanos(11)); // past the ttl: operation expired
+
+      // The server has dropped the affected connections by the window end; a pass firing late
+      // must not mark connections that landed on the same peer afterwards.
+      Connection fresh = connect(mockServer);
+      try {
+        stalePass.run();
+        assertFalse(fresh.isMarkedForReconnect(), "expired operation's pass marks nothing");
+        assertEquals(0, notified.get(), "expired operation's pass notifies nothing");
+      } finally {
+        fresh.close();
+      }
+    } finally {
+      NanoClock.INSTANCE = System::nanoTime;
     }
   }
 

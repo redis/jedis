@@ -2,12 +2,16 @@ package redis.clients.jedis.sch;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.jupiter.api.AfterEach;
@@ -308,6 +312,115 @@ public abstract class AbstractRebindBehaviorTest {
           "reconnect targets the configured endpoint");
         assertEquals(0, mockServer2.getConnectedClientCount());
       });
+    }
+  }
+
+  /**
+   * Real-world overlap: DNS round-robin spreads the pool over two backends (simulated with a
+   * host-port mapper alternating server1/server2). Each backend announces its own MOVING to a
+   * different target; server2's arrives within server1's window. Pool-wide relaxation holds until
+   * the last event expires, and connections created during each window land on that window's target
+   * — only while it is still open.
+   */
+  @Test
+  public void testOverlappingMovingOnDistinctEndpoints() throws Exception {
+    TcpMockServer target1 = new TcpMockServer(); // server1's MOVING target
+    target1.start();
+    TcpMockServer target2 = new TcpMockServer(); // server2's MOVING target
+    target2.start();
+    try {
+      HostAndPort target1Address = new HostAndPort("127.0.0.1", target1.getPort());
+      HostAndPort target2Address = new HostAndPort("127.0.0.1", target2.getPort());
+      SocketAddress server1Peer = new InetSocketAddress("127.0.0.1", mockServer1.getPort());
+      SocketAddress server2Peer = new InetSocketAddress("127.0.0.1", mockServer2.getPort());
+      SocketAddress target1Peer = new InetSocketAddress("127.0.0.1", target1.getPort());
+      SocketAddress target2Peer = new InetSocketAddress("127.0.0.1", target2.getPort());
+
+      // "DNS round-robin": consecutive socket creations resolve the configured endpoint to
+      // alternating backends, so any two consecutive creations land one on each.
+      AtomicInteger resolutions = new AtomicInteger();
+      JedisClientConfig roundRobinConfig = DefaultJedisClientConfig.builder()
+          .socketTimeoutMillis(5000).protocol(RedisProtocol.RESP3).hostAndPortMapper(
+            h -> resolutions.getAndIncrement() % 2 == 0 ? server1Address : server2Address)
+          .build();
+      ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
+      poolConfig.setMaxTotal(2);
+
+      try (UnifiedJedis client = createClient(server1Address, roundRobinConfig, maintConfig,
+        poolConfig)) {
+        ConnectionPool pool = poolOf(client);
+
+        // The pool spans both backends.
+        Connection conn1 = pool.getResource();
+        Connection conn2 = pool.getResource();
+        assertTrue(conn1.ping());
+        assertTrue(conn2.ping());
+        assertEquals(1, mockServer1.getConnectedClientCount());
+        assertEquals(1, mockServer2.getConnectedClientCount());
+
+        // Each backend announces its own MOVING; server2's (short window) arrives while server1's
+        // (long window) is active. Independent events, not a chain.
+        mockServer1.sendPushMessageToAll("MOVING", 31, 60, target1Address.toString());
+        mockServer2.sendPushMessageToAll("MOVING", 32, 3, target2Address.toString());
+        assertTrue(conn1.ping());
+        assertTrue(conn2.ping());
+
+        // Pool-wide relaxation while any event is active; each peer maps to its own target.
+        assertTrue(ConnectionTestHelper.isRelaxedTimeoutActive(conn1));
+        assertTrue(ConnectionTestHelper.isRelaxedTimeoutActive(conn2));
+        assertEquals(target1Peer, ConnectionTestHelper.getMappedAddress(pool, server1Peer));
+        assertEquals(target2Peer, ConnectionTestHelper.getMappedAddress(pool, server2Peer));
+
+        // Both receivers are marked; connections created during the windows land on each resolved
+        // backend's own target.
+        conn1.close();
+        conn2.close();
+        Connection fresh1 = pool.getResource();
+        Connection fresh2 = pool.getResource();
+        assertTrue(fresh1.ping());
+        assertTrue(fresh2.ping());
+        await().atMost(Duration.ofSeconds(1)).pollInterval(Duration.ofMillis(20))
+            .untilAsserted(() -> {
+              assertEquals(0, mockServer1.getConnectedClientCount());
+              assertEquals(0, mockServer2.getConnectedClientCount());
+              assertEquals(1, target1.getConnectedClientCount(),
+                "server1-resolved connection lands on server1's target");
+              assertEquals(1, target2.getConnectedClientCount(),
+                "server2-resolved connection lands on server2's target");
+            });
+        fresh1.close(); // unmarked: back to idle
+        fresh2.close();
+
+        // server2's window closes first: its mapping ends with it.
+        await().atMost(Duration.ofSeconds(5)).pollInterval(Duration.ofMillis(200)).untilAsserted(
+          () -> assertNull(ConnectionTestHelper.getMappedAddress(pool, server2Peer),
+            "server2's mapping expires with its event"));
+        assertEquals(target1Peer, ConnectionTestHelper.getMappedAddress(pool, server1Peer),
+          "server1's mapping unaffected by server2's expiry");
+
+        // New connections: server1-resolved are still remapped (window open); server2-resolved
+        // revert to server2. The pool stays relaxed until the last active MOVING expires.
+        pool.clear();
+        Connection lateA = pool.getResource();
+        Connection lateB = pool.getResource();
+        assertTrue(lateA.ping());
+        assertTrue(lateB.ping());
+        assertTrue(ConnectionTestHelper.isRelaxedTimeoutActive(lateA),
+          "pool stays relaxed until the last active MOVING expires");
+        await().atMost(Duration.ofSeconds(1)).pollInterval(Duration.ofMillis(20))
+            .untilAsserted(() -> {
+              assertEquals(1, target1.getConnectedClientCount(),
+                "server1-resolved connections still remapped while its window is open");
+              assertEquals(1, mockServer2.getConnectedClientCount(),
+                "server2-resolved connections revert once its window closed");
+              assertEquals(0, target2.getConnectedClientCount());
+            });
+        lateA.close();
+        lateB.close();
+      }
+    } finally {
+      target1.stop();
+      target2.stop();
     }
   }
 

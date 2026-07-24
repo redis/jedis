@@ -412,7 +412,8 @@ public class JedisClusterInfoCache {
   public List<ConnectionPool> getSlotReplicaPools(int slot) {
     r.lock();
     try {
-      return replicaSlots[slot];
+      List<ConnectionPool> pools = replicaSlots[slot];
+      return pools == null ? null : new ArrayList<>(pools);
     } finally {
       r.unlock();
     }

@@ -1656,9 +1656,9 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
     jedis.tsAdd("read-block", 200L, 2.0);
     jedis.tsAdd("read-block", 300L, 3.0);
 
-    // min_count 10 can never be met; after 500ms the two qualifying samples flush out.
+    // min_count 10 can never be met; after 10ms the two qualifying samples flush out.
     List<TSElement> samples = jedis.tsRead("read-block",
-      TSReadParams.readParams().timestamp(101L).block(500L, 10));
+      TSReadParams.readParams().timestamp(101L).block(10L, 10));
     assertEquals(Arrays.asList(new TSElement(200L, 2.0), new TSElement(300L, 3.0)), samples);
   }
 

@@ -77,6 +77,7 @@ public class RedisClientTest {
     config.setBlockWhenExhausted(false);
     try (
         RedisClient pool = RedisClient.builder().hostAndPort(endpointStandalone7.getHostAndPort())
+            .clientConfig(endpointStandalone7.getClientConfigBuilder().build())
             .poolConfig(config).build();
         Connection jedis = pool.getPool().getResource()) {
       assertThrows(JedisException.class, () -> pool.getPool().getResource());
@@ -148,7 +149,7 @@ public class RedisClientTest {
     try (
         RedisClient pool = RedisClient.builder().hostAndPort(endpointStandalone7.getHostAndPort())
             .clientConfig(
-              DefaultJedisClientConfig.builder().clientName("invalid client name").build())
+              endpointStandalone7.getClientConfigBuilder().clientName("invalid client name").build())
             .build();
         Connection jedis = pool.getPool().getResource()) {
     } catch (Exception e) {
@@ -176,7 +177,7 @@ public class RedisClientTest {
   public void getNumActiveReturnsTheCorrectNumber() {
     try (RedisClient pool = RedisClient.builder()
         .hostAndPort(endpointStandalone7.getHost(), endpointStandalone7.getPort())
-        .clientConfig(DefaultJedisClientConfig.builder().timeoutMillis(2000).build())
+        .clientConfig(endpointStandalone7.getClientConfigBuilder().timeoutMillis(2000).build())
         .poolConfig(new ConnectionPoolConfig()).build()) {
 
       Connection jedis = pool.getPool().getResource();

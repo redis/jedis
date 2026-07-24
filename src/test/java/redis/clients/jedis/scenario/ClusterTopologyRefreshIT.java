@@ -4,6 +4,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tags;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import redis.clients.jedis.*;
@@ -13,6 +14,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -45,6 +47,7 @@ public class ClusterTopologyRefreshIT {
   }
 
   @Test
+  @Timeout(value = 8, unit = TimeUnit.MINUTES)
   public void testWithPool() {
     Set<HostAndPort> jedisClusterNode = new HashSet<>();
     jedisClusterNode.add(endpoint.getHostAndPort());

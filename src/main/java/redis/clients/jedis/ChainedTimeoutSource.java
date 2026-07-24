@@ -9,9 +9,16 @@ class ChainedTimeoutSource implements TimeoutSource {
 
   private volatile ChainedTimeoutSource override;
   private final TimeoutInfo info;
+  private final Object identity;
 
   ChainedTimeoutSource(TimeoutInfo info) {
     this.info = info;
+    this.identity = this.getClass();
+  }
+
+  ChainedTimeoutSource(TimeoutInfo info, Object identity) {
+    this.info = info;
+    this.identity = identity;
   }
 
   @Override
@@ -50,5 +57,16 @@ class ChainedTimeoutSource implements TimeoutSource {
     } else if (override != null) {
       override.removeOverride(other);
     }
+  }
+
+  ChainedTimeoutSource seekBy(Object identity) {
+    if (this.identity == identity) {
+      return this;
+    }
+    ChainedTimeoutSource override = this.override;
+    if (override == null) {
+      return null;
+    }
+    return override.seekBy(identity);
   }
 }

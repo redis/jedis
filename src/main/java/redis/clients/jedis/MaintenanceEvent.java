@@ -16,11 +16,15 @@ abstract class MaintenanceEvent {
 }
 
 /**
- * {@code [MOVING, seq, time_s, host:port]} — endpoint moves to {@code target} within
- * {@code ttlSeconds}.
+ * {@code [MOVING, seq, time_s, host:port | null]} — endpoint moves to {@code target} within
+ * {@code ttlSeconds}. A {@code null} target is the {@code none} endpoint type: no remap; reconnect
+ * to the configured endpoint.
  */
 final class MovingEvent extends MaintenanceEvent {
   final long ttlSeconds;
+  /**
+   * New endpoint, or {@code null} for the {@code none} type (reconnect to the configured endpoint).
+   */
   final HostAndPort target;
 
   MovingEvent(long seq, long ttlSeconds, HostAndPort target) {

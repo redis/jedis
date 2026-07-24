@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.jupiter.api.AfterEach;
@@ -13,8 +15,10 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPoolConfig;
+import redis.clients.jedis.ConnectionTestHelper;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
@@ -43,6 +47,11 @@ public abstract class AbstractRebindBehaviorTest {
   protected final MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig
       .builder().mode(MaintenanceNotificationsConfig.Mode.AUTO).build();
 
+  /** 'none' endpoint type: null-target MOVINGs, maintenance scheduler owned from construction. */
+  protected final MaintenanceNotificationsConfig noneMaintConfig = MaintenanceNotificationsConfig
+      .builder().mode(MaintenanceNotificationsConfig.Mode.AUTO)
+      .endpointType(MaintenanceNotificationsConfig.EndpointType.NONE).build();
+
   protected HostAndPort server1Address;
   protected HostAndPort server2Address;
 
@@ -54,7 +63,7 @@ public abstract class AbstractRebindBehaviorTest {
       GenericObjectPoolConfig<Connection> poolConfig);
 
   /** Test-only access to the pool backing {@code client}'s active endpoint (no public API). */
-  protected abstract Pool<Connection> poolOf(UnifiedJedis client);
+  protected abstract ConnectionPool poolOf(UnifiedJedis client);
 
   @BeforeEach
   public void setUp() throws IOException {
@@ -231,6 +240,74 @@ public abstract class AbstractRebindBehaviorTest {
       assertEquals(0, pool.getDestroyedCount());
       assertEquals(2, mockServer1.getConnectedClientCount());
       assertEquals(0, mockServer2.getConnectedClientCount());
+    }
+  }
+
+  @Test
+  public void testNoneMovingKeepsConnectionDuringGraceWindow() {
+    ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
+    poolConfig.setMaxTotal(1);
+
+    try (UnifiedJedis client = createClient(server1Address, clientConfig, noneMaintConfig,
+      poolConfig)) {
+      Pool<Connection> pool = poolOf(client);
+
+      Connection activeConnection = pool.getResource();
+      assertEquals(1, mockServer1.getConnectedClientCount());
+
+      // 'none' endpoint type: null target, 60s grace -> marking is scheduled at 30s (far
+      // future), so nothing is marked yet.
+      mockServer1.sendPushMessageToAll("MOVING", 30, 60, null);
+
+      // Reads the push; unlike a target MOVING, the connection survives return and re-borrow.
+      assertTrue(activeConnection.ping());
+      activeConnection.close();
+      assertEquals(0, pool.getDestroyedCount(), "'none' must not discard within the grace window");
+      assertEquals(1, pool.getNumIdle());
+
+      assertEquals("PONG", client.ping());
+      assertEquals(0, pool.getDestroyedCount());
+      assertEquals(1, mockServer1.getConnectedClientCount(),
+        "no remap: still on the original endpoint");
+      assertEquals(0, mockServer2.getConnectedClientCount());
+    }
+  }
+
+  @Test
+  public void testNoneMovingReconnectsAfterHalfGrace() throws Exception {
+    ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
+    poolConfig.setMaxTotal(1);
+
+    try (UnifiedJedis client = createClient(server1Address, clientConfig, noneMaintConfig,
+      poolConfig)) {
+      ConnectionPool pool = poolOf(client);
+
+      assertEquals("PONG", client.ping());
+      assertEquals(1, mockServer1.getConnectedClientCount());
+
+      // Fires after the pool's own hook (registration order), i.e. after the evict pass ran.
+      CountDownLatch marked = new CountDownLatch(1);
+      ConnectionTestHelper.addHandoffHook(pool, marked::countDown);
+
+      // 'none' with a 1s grace -> the marking pass fires 0.5s after receipt.
+      mockServer1.sendPushMessageToAll("MOVING", 30, 1, null);
+      assertEquals("PONG", client.ping()); // reads the push; schedules the marking pass
+      assertEquals(0, pool.getDestroyedCount());
+
+      // At half the grace the pass marks the idle connection and the pool evicts it; the
+      // replacement is created against the CONFIGURED endpoint (no remap). Exactly one
+      // replacement: it is created after the pass, and the same-seq re-notification from the
+      // still-moving node changes no state, so nothing ever marks it (temporal churn immunity).
+      assertTrue(marked.await(3, TimeUnit.SECONDS), "marking pass fired at half the grace");
+      assertEquals(1, pool.getDestroyedCount(),
+        "idle connection drained exactly once after half the grace period");
+      assertEquals("PONG", client.ping());
+      // Only the server-side socket count is async (TCP close observed on the mock's thread).
+      await().atMost(Duration.ofSeconds(1)).untilAsserted(() -> {
+        assertEquals(1, mockServer1.getConnectedClientCount(),
+          "reconnect targets the configured endpoint");
+        assertEquals(0, mockServer2.getConnectedClientCount());
+      });
     }
   }
 

@@ -58,6 +58,15 @@ public class MaintenancePushCodecTest {
   }
 
   @Test
+  public void buildMovingNoneTarget() { // null endpoint => 'none' type, no remap
+    MovingEvent m = assertInstanceOf(MovingEvent.class,
+      build(PushType.MOVING, push(type("MOVING"), 30L, 15L, null)));
+    assertEquals(30L, m.seq);
+    assertEquals(15L, m.ttlSeconds);
+    assertNull(m.target);
+  }
+
+  @Test
   public void buildMigrating() {
     MigratingEvent e = assertInstanceOf(MigratingEvent.class,
       build(PushType.MIGRATING, push(type("MIGRATING"), 6L, 2L, SHARDS)));

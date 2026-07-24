@@ -559,6 +559,7 @@
 						<include>**/scenario/RestEndpointUtil.java</include>
 						<include>src/main/java/redis/clients/jedis/MultiDbConfig.java</include>
 						<include>**/Maintenance*.java</include>
+						<include>**/ConnectionRegistry.java</include>
 						<include>**/SocketAddress*.java</include>
 						<include>src/test/java/redis/clients/jedis/sch/*.java</include>
 						<include>src/main/java/redis/clients/jedis/util/NumberUtils.java</include>

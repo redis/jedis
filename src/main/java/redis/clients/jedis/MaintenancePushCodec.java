@@ -57,19 +57,22 @@ final class MaintenancePushCodec {
   /**
    * Builds the domain event for an already-resolved push type.
    * @throws MalformedMaintenanceEventException if the frame's fields are malformed (missing or
-   *           wrong-typed seq/time/shards, or a MOVING with an absent or unparseable target)
+   *           wrong-typed seq/time/shards, or a MOVING with a missing or unparseable target — a
+   *           null target is valid and denotes the {@code none} endpoint type)
    */
   static MaintenanceEvent build(PushType type, PushMessage msg) {
     return type.decoder.apply(msg.getContent());
   }
 
-  private static MaintenanceEvent moving(List<Object> c) { // [MOVING, seq, time_s, host:port]
-    if (c.size() < 3 || !(c.get(1) instanceof Long) || !(c.get(2) instanceof Long)) {
+  private static MaintenanceEvent moving(List<Object> c) { // [MOVING, seq, time_s, host:port |
+                                                           // null]
+    if (c.size() < 4 || !(c.get(1) instanceof Long) || !(c.get(2) instanceof Long)) {
       throw malformed("MOVING", c);
     }
-    // TODO: once explicit 'none' target support lands, build a MovingEvent with a null target for
-    // that case instead of treating an absent target as malformed.
-    return new MovingEvent((Long) c.get(1), (Long) c.get(2), parseHostPort(c, 3));
+    // Explicit RESP3 null target => 'none' endpoint type (no remap). A byte[] target is parsed;
+    // anything else (wrong type, unparseable) is malformed.
+    HostAndPort target = c.get(3) == null ? null : parseHostPort(c, 3);
+    return new MovingEvent((Long) c.get(1), (Long) c.get(2), target);
   }
 
   private static MaintenanceEvent migrating(List<Object> c) { // [MIGRATING, seq, time_s, shards]

@@ -13,13 +13,13 @@ import redis.clients.jedis.mcf.ProbingPolicy.BuiltIn;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisPermanentlyNotAvailableException;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisTemporarilyNotAvailableException;
 
-import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import redis.clients.jedis.util.TestKeyRegistry;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
@@ -34,6 +34,7 @@ public class MultiDbConnectionProviderTest {
   private static EndpointConfig endpointStandalone1;
 
   private MultiDbConnectionProvider provider;
+  private TestKeyRegistry keys;
 
   @BeforeAll
   public static void prepareEndpoints() {
@@ -42,7 +43,8 @@ public class MultiDbConnectionProviderTest {
   }
 
   @BeforeEach
-  public void setUp() {
+  public void setUp(TestInfo testInfo) {
+    keys = TestKeyRegistry.create(testInfo);
 
     DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
     databaseConfigs[0] = DatabaseConfig.builder(endpointStandalone0.getHostAndPort(),
@@ -104,17 +106,8 @@ public class MultiDbConnectionProviderTest {
         .until(() -> Arrays.stream(databases).allMatch(Database::isHealthy));
   }
 
-  /**
-   * Unique per-test key. The Redis endpoints are shared across the test suite without cleanup, so a
-   * well-known key like "foo" may be left holding a non-string type by an earlier test.
-   */
-  private static String testKey(TestInfo testInfo) {
-    return testInfo.getTestMethod().map(Method::getName).orElse("unknown") + ":"
-        + UUID.randomUUID().toString().substring(0, 8);
-  }
-
   @Test
-  public void testDatabaseSwitchListener(TestInfo testInfo) {
+  public void testDatabaseSwitchListener() {
     DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
     databaseConfigs[0] = DatabaseConfig
         .builder(new HostAndPort("purposefully-incorrect", 0000),
@@ -142,8 +135,9 @@ public class MultiDbConnectionProviderTest {
 
       // This will fail due to unable to connect and open the circuit which will trigger the post
       // processor
+      String key = keys.key("foo");
       try {
-        jedis.get(testKey(testInfo));
+        jedis.get(key);
       } catch (Exception e) {
       }
 
@@ -246,7 +240,7 @@ public class MultiDbConnectionProviderTest {
   }
 
   @Test
-  public void userCommand_firstTemporary_thenPermanent_inOrder(TestInfo testInfo) {
+  public void userCommand_firstTemporary_thenPermanent_inOrder() {
     DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
     databaseConfigs[0] = DatabaseConfig.builder(endpointStandalone0.getHostAndPort(),
       endpointStandalone0.getClientConfigBuilder().build()).weight(0.5f).build();
@@ -258,7 +252,7 @@ public class MultiDbConnectionProviderTest {
             .maxNumFailoverAttempts(2)
             .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).build()).build());
 
-    String key = testKey(testInfo);
+    String key = keys.key("foo");
     try (MultiDbClient jedis = MultiDbClient.builder().connectionProvider(testProvider).build()) {
       jedis.get(key);
 
@@ -278,8 +272,7 @@ public class MultiDbConnectionProviderTest {
   }
 
   @Test
-  public void userCommand_connectionExceptions_thenMultipleTemporary_thenPermanent_inOrder(
-      TestInfo testInfo) {
+  public void userCommand_connectionExceptions_thenMultipleTemporary_thenPermanent_inOrder() {
     DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
     databaseConfigs[0] = DatabaseConfig
         .builder(endpointStandalone0.getHostAndPort(),
@@ -302,7 +295,7 @@ public class MultiDbConnectionProviderTest {
             .build()) {
     };
 
-    String key = testKey(testInfo);
+    String key = keys.key("foo");
     try (MultiDbClient jedis = MultiDbClient.builder().connectionProvider(testProvider).build()) {
       jedis.get(key);
 

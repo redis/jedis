@@ -15,6 +15,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -29,6 +30,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -1123,6 +1125,132 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
           String.format("Stream order mismatch at position %d: expected '%s' but got '%s'",
               i, expectedOrder[i], actualOrder[i]));
     }
+  }
+
+  // ========== XREAD / XREADGROUP MAXCOUNT & MAXSIZE Tests ==========
+
+  private Map<String, StreamEntryID> bothStreamsFromStart() {
+    Map<String, StreamEntryID> streams = new LinkedHashMap<>();
+    streams.put(STREAM_KEY_1, new StreamEntryID("0-0"));
+    streams.put(STREAM_KEY_2, new StreamEntryID("0-0"));
+    return streams;
+  }
+
+  private static int totalEntries(List<Map.Entry<String, List<StreamEntry>>> result) {
+    return result.stream().mapToInt(entry -> entry.getValue().size()).sum();
+  }
+
+  @Test
+  @SinceRedisVersion("8.10.0")
+  public void xreadMaxCountCapsCumulativeReplyWhileCountIsPerStream() {
+    populateTestStreamWithValues(STREAM_KEY_1, 4, HASH_1);
+    populateTestStreamWithValues(STREAM_KEY_2, 4, HASH_2);
+
+    // COUNT is per stream: 2 entries from each of the two streams
+    List<Map.Entry<String, List<StreamEntry>>> uncapped = jedis
+        .xread(XReadParams.xReadParams().count(2), bothStreamsFromStart());
+    assertEquals(4, totalEntries(uncapped));
+
+    // MAXCOUNT caps the whole reply: 2 from the first stream, 1 from the second
+    List<Map.Entry<String, List<StreamEntry>>> capped = jedis
+        .xread(XReadParams.xReadParams().count(2).maxCount(3), bothStreamsFromStart());
+    assertEquals(3, totalEntries(capped));
+    assertEquals(STREAM_KEY_1, capped.get(0).getKey());
+    assertThat(capped.get(0).getValue(), hasSize(2));
+    assertEquals(STREAM_KEY_2, capped.get(1).getKey());
+    assertThat(capped.get(1).getValue(), hasSize(1));
+  }
+
+  @Test
+  @SinceRedisVersion("8.10.0")
+  public void xreadMaxCountAloneFillsStreamsInCallerOrder() {
+    populateTestStreamWithValues(STREAM_KEY_1, 4, HASH_1);
+    populateTestStreamWithValues(STREAM_KEY_2, 4, HASH_2);
+
+    List<Map.Entry<String, List<StreamEntry>>> result = jedis
+        .xread(XReadParams.xReadParams().maxCount(3), bothStreamsFromStart());
+
+    // all three entries come from the first stream; the second stream is skipped entirely
+    assertThat(result, hasSize(1));
+    assertEquals(STREAM_KEY_1, result.get(0).getKey());
+    assertThat(result.get(0).getValue(), hasSize(3));
+    // within-stream ordering is preserved
+    assertEquals(new StreamEntryID("1-0"), result.get(0).getValue().get(0).getID());
+    assertEquals(new StreamEntryID("3-0"), result.get(0).getValue().get(2).getID());
+  }
+
+  @Test
+  @SinceRedisVersion("8.10.0")
+  public void xreadMaxSizeStillReturnsOversizedFirstEntry() {
+    char[] chars = new char[5000];
+    Arrays.fill(chars, 'x');
+    jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().id(new StreamEntryID("1-0")),
+        singletonMap("payload", new String(chars)));
+    jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().id(new StreamEntryID("2-0")),
+        singletonMap("payload", "small"));
+
+    // MAXSIZE is a soft cap: the first available entry exceeds it but is still returned,
+    // the following entry is suppressed
+    List<Map.Entry<String, List<StreamEntry>>> result = jedis.xread(
+        XReadParams.xReadParams().maxSize(50), singletonMap(STREAM_KEY_1, new StreamEntryID("0-0")));
+
+    assertThat(result, hasSize(1));
+    assertThat(result.get(0).getValue(), hasSize(1));
+    assertEquals(new StreamEntryID("1-0"), result.get(0).getValue().get(0).getID());
+  }
+
+  @Test
+  @SinceRedisVersion("8.10.0")
+  public void xreadTighterOfMaxCountAndMaxSizeWins() {
+    populateTestStreamWithValues(STREAM_KEY_1, 4, HASH_1);
+
+    List<Map.Entry<String, List<StreamEntry>>> result = jedis.xread(
+        XReadParams.xReadParams().maxCount(2).maxSize(1_000_000),
+        singletonMap(STREAM_KEY_1, new StreamEntryID("0-0")));
+
+    assertEquals(2, totalEntries(result));
+  }
+
+  @Test
+  @SinceRedisVersion("8.10.0")
+  public void xreadMaxCountAndMaxSizeServerErrorsPropagate() {
+    populateTestStreamWithValues(STREAM_KEY_1, 1, HASH_1);
+    Map<String, StreamEntryID> streams = singletonMap(STREAM_KEY_1, new StreamEntryID("0-0"));
+
+    JedisDataException nonPositiveMaxCount = assertThrows(JedisDataException.class,
+        () -> jedis.xread(XReadParams.xReadParams().maxCount(0), streams));
+    assertTrue(nonPositiveMaxCount.getMessage().contains("MAXCOUNT must be a positive integer"));
+
+    JedisDataException nonPositiveMaxSize = assertThrows(JedisDataException.class,
+        () -> jedis.xread(XReadParams.xReadParams().maxSize(0), streams));
+    assertTrue(nonPositiveMaxSize.getMessage().contains("MAXSIZE must be a positive integer"));
+
+    JedisDataException maxCountBelowCount = assertThrows(JedisDataException.class,
+        () -> jedis.xread(XReadParams.xReadParams().count(5).maxCount(1), streams));
+    assertTrue(maxCountBelowCount.getMessage()
+        .contains("MAXCOUNT must be greater than or equal to COUNT"));
+  }
+
+  @Test
+  @SinceRedisVersion("8.10.0")
+  public void xreadGroupMaxCountCapsReplyWithoutConsumingSkippedEntries() {
+    // groups were created at last-entry in setUp; these are all new (undelivered) entries
+    populateTestStreamWithValues(STREAM_KEY_1, 3, HASH_1);
+    populateTestStreamWithValues(STREAM_KEY_2, 3, HASH_2);
+
+    Map<String, StreamEntryID> streams = new LinkedHashMap<>();
+    streams.put(STREAM_KEY_1, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    streams.put(STREAM_KEY_2, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+
+    List<Map.Entry<String, List<StreamEntry>>> capped = jedis.xreadGroup(GROUP_NAME, CONSUMER_NAME,
+        XReadGroupParams.xReadGroupParams().count(2).maxCount(3).maxSize(65536), streams);
+    assertEquals(3, totalEntries(capped));
+
+    // entries skipped by the caps were neither delivered nor added to the PEL:
+    // a second read picks up exactly the remainder
+    List<Map.Entry<String, List<StreamEntry>>> remainder = jedis.xreadGroup(GROUP_NAME,
+        CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(10), streams);
+    assertEquals(3, totalEntries(remainder));
   }
 
   // ========== Idempotent Producer Tests ==========

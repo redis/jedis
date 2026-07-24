@@ -11,7 +11,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.junit.jupiter.api.TestInfo;
 
-import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.commands.KeyBinaryCommands;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 /**
@@ -82,11 +82,15 @@ public interface TestKeyRegistry {
    */
   byte[] register(byte[] key);
 
-  /** Deletes all registered keys on each client, then clears the registry. */
-  void cleanup(UnifiedJedis... clients);
+  /**
+   * Deletes all registered keys on each client (any Jedis client type), then clears the registry.
+   */
+  void cleanup(KeyBinaryCommands... clients);
 
-  /** Deletes all registered keys on each client, then clears the registry. */
-  void cleanup(Iterable<? extends UnifiedJedis> clients);
+  /**
+   * Deletes all registered keys on each client (any Jedis client type), then clears the registry.
+   */
+  void cleanup(Iterable<? extends KeyBinaryCommands> clients);
 
   /** Clears the registry without deleting anything. */
   void reset();
@@ -130,12 +134,12 @@ public interface TestKeyRegistry {
     }
 
     @Override
-    public void cleanup(UnifiedJedis... clients) {
+    public void cleanup(KeyBinaryCommands... clients) {
       cleanup(Arrays.asList(clients));
     }
 
     @Override
-    public void cleanup(Iterable<? extends UnifiedJedis> clients) {
+    public void cleanup(Iterable<? extends KeyBinaryCommands> clients) {
       if (registeredKeys.isEmpty()) {
         return;
       }
@@ -144,7 +148,7 @@ public interface TestKeyRegistry {
         allKeys.add(key.array());
       }
       byte[][] keys = allKeys.toArray(new byte[0][]);
-      for (UnifiedJedis client : clients) {
+      for (KeyBinaryCommands client : clients) {
         delete(client, keys);
       }
       registeredKeys.clear();
@@ -160,7 +164,7 @@ public interface TestKeyRegistry {
           : testId + ":" + pattern;
     }
 
-    private static void delete(UnifiedJedis client, byte[][] keys) {
+    private static void delete(KeyBinaryCommands client, byte[][] keys) {
       try {
         client.del(keys);
       } catch (JedisDataException e) {
@@ -175,7 +179,7 @@ public interface TestKeyRegistry {
       return e.getMessage() != null && e.getMessage().startsWith("CROSSSLOT");
     }
 
-    private static void deletePerSlot(UnifiedJedis client, byte[][] keys) {
+    private static void deletePerSlot(KeyBinaryCommands client, byte[][] keys) {
       Map<Integer, List<byte[]>> keysBySlot = new HashMap<>();
       for (byte[] key : keys) {
         keysBySlot.computeIfAbsent(JedisClusterCRC16.getSlot(key), slot -> new ArrayList<>())

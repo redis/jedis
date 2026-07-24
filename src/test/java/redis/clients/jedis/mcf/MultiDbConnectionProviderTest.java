@@ -33,6 +33,9 @@ public class MultiDbConnectionProviderTest {
   private static EndpointConfig endpointStandalone0;
   private static EndpointConfig endpointStandalone1;
 
+  private static Jedis controlJedis0;
+  private static Jedis controlJedis1;
+
   private MultiDbConnectionProvider provider;
   private TestKeyRegistry keys;
 
@@ -40,6 +43,17 @@ public class MultiDbConnectionProviderTest {
   public static void prepareEndpoints() {
     endpointStandalone0 = Endpoints.getRedisEndpoint("standalone0");
     endpointStandalone1 = Endpoints.getRedisEndpoint("standalone1");
+
+    controlJedis0 = new Jedis(endpointStandalone0.getHostAndPort(),
+        endpointStandalone0.getClientConfigBuilder().build());
+    controlJedis1 = new Jedis(endpointStandalone1.getHostAndPort(),
+        endpointStandalone1.getClientConfigBuilder().build());
+  }
+
+  @AfterAll
+  public static void releaseControlClients() {
+    controlJedis0.close();
+    controlJedis1.close();
   }
 
   @BeforeEach
@@ -59,6 +73,8 @@ public class MultiDbConnectionProviderTest {
   public void destroy() {
     provider.close();
     provider = null;
+
+    keys.cleanup(controlJedis0, controlJedis1);
   }
 
   @Test

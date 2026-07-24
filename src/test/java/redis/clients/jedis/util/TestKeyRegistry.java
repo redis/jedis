@@ -174,10 +174,6 @@ public interface TestKeyRegistry {
       }
     }
 
-    private static boolean isCrossSlotError(JedisDataException e) {
-      return e.getMessage() != null && e.getMessage().startsWith("CROSSSLOT");
-    }
-
     private static void deletePerSlot(KeyBinaryCommands client, byte[][] keys) {
       Map<Integer, List<byte[]>> keysBySlot = new HashMap<>();
       for (byte[] key : keys) {

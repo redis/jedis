@@ -52,8 +52,13 @@ public class MultiDbConnectionProviderTest {
 
   @AfterAll
   public static void releaseControlClients() {
-    controlJedis0.close();
-    controlJedis1.close();
+    // @BeforeAll may fail before the clients are created (e.g. endpoints unavailable)
+    if (controlJedis0 != null) {
+      controlJedis0.close();
+    }
+    if (controlJedis1 != null) {
+      controlJedis1.close();
+    }
   }
 
   @BeforeEach

@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.junit.jupiter.api.TestInfo;
 
 import redis.clients.jedis.commands.KeyBinaryCommands;
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisDataException;
 
 /**
@@ -167,10 +168,8 @@ public interface TestKeyRegistry {
     private static void delete(KeyBinaryCommands client, byte[][] keys) {
       try {
         client.del(keys);
-      } catch (JedisDataException e) {
-        if (!isCrossSlotError(e)) {
-          throw e;
-        }
+      } catch (JedisClusterOperationException e) {
+        // legacy cluster clients reject cross-slot multi-key commands client-side
         deletePerSlot(client, keys);
       }
     }

@@ -67,6 +67,7 @@ public class TimeSeriesProtocol {
     DEBUG,
     LATEST,
     EMPTY,
+    EXCLUDEEMPTY,
     BUCKETTIMESTAMP;
 
     private final byte[] raw;

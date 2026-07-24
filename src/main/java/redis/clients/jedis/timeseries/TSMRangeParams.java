@@ -38,6 +38,8 @@ public class TSMRangeParams implements IParams {
 
   private boolean empty;
 
+  private boolean excludeEmpty;
+
   private String[] filters;
 
   private String groupByLabel;
@@ -209,6 +211,24 @@ public class TSMRangeParams implements IParams {
     return this;
   }
 
+  /**
+   * Omits matching time series with no reported samples for the queried range and options from the
+   * {@code TS.MRANGE} / {@code TS.MREVRANGE} reply by sending the {@code EXCLUDEEMPTY} flag.
+   * <p>
+   * By default, matching series can be returned with an empty samples array. When enabled, a matching
+   * series is returned only when the command reports at least one sample for that series; if every
+   * matching series is empty, the reply is an empty array.
+   * <p>
+   * This flag must not be combined with {@link #groupBy(String, String)}.
+   *
+   * @return this
+   * @since 8.0
+   */
+  public TSMRangeParams excludeEmpty() {
+    this.excludeEmpty = true;
+    return this;
+  }
+
   public TSMRangeParams filter(String... filters) {
     this.filters = filters;
     return this;
@@ -225,6 +245,10 @@ public class TSMRangeParams implements IParams {
 
     if (filters == null) {
       throw new IllegalArgumentException("FILTER arguments must be set.");
+    }
+
+    if (excludeEmpty && groupByLabel != null && groupByReduce != null) {
+      throw new IllegalArgumentException("EXCLUDEEMPTY is not allowed with GROUPBY.");
     }
 
     if (fromTimestamp == null) {
@@ -288,6 +312,10 @@ public class TSMRangeParams implements IParams {
       }
     }
 
+    if (excludeEmpty) {
+      args.add(EXCLUDEEMPTY);
+    }
+
     args.add(FILTER);
     for (String filter : filters) {
       args.add(filter);
@@ -310,6 +338,7 @@ public class TSMRangeParams implements IParams {
     TSMRangeParams that = (TSMRangeParams) o;
     return latest == that.latest && withLabels == that.withLabels &&
         bucketDuration == that.bucketDuration && empty == that.empty &&
+        excludeEmpty == that.excludeEmpty &&
         Objects.equals(fromTimestamp, that.fromTimestamp) &&
         Objects.equals(toTimestamp, that.toTimestamp) &&
         Arrays.equals(filterByTimestamps, that.filterByTimestamps) &&
@@ -338,6 +367,7 @@ public class TSMRangeParams implements IParams {
     result = 31 * result + Long.hashCode(bucketDuration);
     result = 31 * result + Arrays.hashCode(bucketTimestamp);
     result = 31 * result + Boolean.hashCode(empty);
+    result = 31 * result + Boolean.hashCode(excludeEmpty);
     result = 31 * result + Arrays.hashCode(filters);
     result = 31 * result + Objects.hashCode(groupByLabel);
     result = 31 * result + Objects.hashCode(groupByReduce);

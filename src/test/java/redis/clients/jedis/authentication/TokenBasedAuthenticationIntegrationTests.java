@@ -18,6 +18,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -106,7 +107,7 @@ public class TokenBasedAuthenticationIntegrationTests {
 
     AuthXManager authXManager = new AuthXManager(tokenAuthConfig);
     authXManager = spy(authXManager);
-    List<Connection> connections = new ArrayList<>();
+    List<Connection> connections = new CopyOnWriteArrayList<>();
     doAnswer(invocation -> {
       Connection connection = spy((Connection) invocation.getArgument(0));
       invocation.getArguments()[0] = connection;

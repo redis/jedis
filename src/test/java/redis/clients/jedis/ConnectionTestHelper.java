@@ -50,22 +50,27 @@ public class ConnectionTestHelper {
   }
 
   /**
-   * Maintenance relaxed-timeout state on {@link Connection}. The relaxed timeout is wired only when
-   * the maintenance feature is active (a {@link MaintenanceEventController} attached via the pool);
-   * these read the internal {@code relaxedTimeoutSource} directly so tests in other packages can
-   * observe it without a public accessor.
+   * Maintenance relaxed-timeout state on {@link Connection}. Relaxation is wired only when the
+   * maintenance feature is active (a {@link MaintenanceEventController} attached via the pool), and
+   * is layered as overrides on the connection's timeout source chain — the pool-wide rebind window
+   * ({@code RebindTimeoutSource}) and the per-connection MOVING window
+   * ({@code ExpiringTimeoutSource}). The timeout is relaxed whenever any override currently has an
+   * opinion, so this observes the chain rather than a single source.
    */
   public static boolean isRelaxedTimeoutActive(Connection connection) {
-    ExpiringTimeoutSource source = ReflectionTestUtil.getField(connection, "relaxedTimeoutSource");
-    return source != null && source.get() != null;
+    return connection.getTimeoutSource().getOverrideInfo() != null;
   }
 
   public static void relaxTimeouts(Connection connection, Duration period) {
-    connection.relaxTimeouts(NanoClock.INSTANCE.getAsLong() + period.toNanos());
+    ChainedTimeoutSource dts = connection.getTimeoutSource();
+    ExpiringTimeoutSource ets = ((ExpiringTimeoutSource) dts.seekBy(ExpiringTimeoutSource.class));
+    ets.setExpirationTime(NanoClock.INSTANCE.getAsLong() + period.toNanos());
   }
 
   public static void resetRelaxedTimeouts(Connection connection) {
-    connection.resetRelaxedTimeouts();
+    ChainedTimeoutSource dts = connection.getTimeoutSource();
+    ExpiringTimeoutSource ets = ((ExpiringTimeoutSource) dts.seekBy(ExpiringTimeoutSource.class));
+    ets.setExpirationTime(0);
   }
 
   public static int getRelaxedSoTimeout(Connection connection) {
@@ -76,9 +81,10 @@ public class ConnectionTestHelper {
     return relaxedInfo(connection).blockingTimeout;
   }
 
-  /** The configured relaxed timeouts, or a zeroed pair when relaxation was never wired. */
+  /** The configured relaxed timeouts, or {@code null} when relaxation was never wired. */
   private static TimeoutSource.TimeoutInfo relaxedInfo(Connection connection) {
-    ExpiringTimeoutSource source = ReflectionTestUtil.getField(connection, "relaxedTimeoutSource");
+    ExpiringTimeoutSource source = (ExpiringTimeoutSource) connection.getTimeoutSource()
+        .seekBy(ExpiringTimeoutSource.class);
     return source == null ? null : source.get();
   }
 

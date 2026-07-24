@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.InetSocketAddress;
@@ -23,6 +24,9 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import redis.clients.jedis.MaintenanceEventController.MaintenanceHandoff;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 /**
@@ -250,25 +254,84 @@ public class MaintenanceEventControllerTest {
     }
   }
 
+  /**
+   * A connection opened while a pool-wide rebind window is open must relax its read timeouts from
+   * before the AUTH/HELLO handshake, not only afterwards. The server delays its HELLO reply beyond
+   * the tight configured socket timeout but within the looser relaxed timeout: the handshake only
+   * survives if the rebind overlay is already in effect when the handshake runs.
+   */
   @Test
-  public void onMoving_relaxWindowUsesServerTtl() {
-    // MOVING's time_s is the server's completion bound, so the window runs the full
-    // server-supplied ttl; the relaxedWindowMaxDuration backstop applies only to
-    // MIGRATING/FAILING_OVER.
-    MaintenanceEventController backstopped = MaintenanceEventController
+  public void handshakeReadsRelaxed_whenConnectionOpensDuringRebindWindow() throws Exception {
+    int soTimeoutMs = 250;
+    int relaxedTimeoutMs = 4000;
+    long helloDelayMs = 900;
+
+    mockServer.setCommandHandler((args, clientId) -> {
+      String cmd = SafeEncoder.encode(args.getCommand().getRaw()).toUpperCase();
+      if ("HELLO".equals(cmd)) {
+        sleepUninterruptibly(helloDelayMs);
+      }
+      return null; // fall through to the built-in handler
+    });
+
+    MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
+        .relaxedTimeout(relaxedTimeoutMs).build();
+    DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
+        .socketTimeoutMillis(soTimeoutMs).protocol(RedisProtocol.RESP3).build();
+    HostAndPort mock = new HostAndPort("127.0.0.1", mockServer.getPort());
+
+    MaintenanceEventController poolCtl = MaintenanceEventController.from(maintConfig);
+    ConnectionFactory factory = ConnectionFactory.builder().hostAndPort(mock)
+        .clientConfig(clientConfig).maintenanceController(poolCtl).build();
+
+    // No rebind window: the tight configured timeout applies to the slow HELLO, so the handshake
+    // times out.
+    assertThrows(JedisConnectionException.class, factory::makeObject,
+      "without a rebind window the slow HELLO exceeds the configured socket timeout");
+
+    // Open a pool-wide rebind window, then open a fresh connection: its handshake reads are relaxed
+    // from before the HELLO, so the slow HELLO now completes within the relaxed timeout.
+    poolCtl.onMoving(new MovingEvent(1L, 100, mock), receiver);
+    PooledObject<Connection> pooled = factory.makeObject();
+    try {
+      Connection borrowed = pooled.getObject();
+      assertTrue(borrowed.isConnected());
+      assertEquals(RedisProtocol.RESP3, borrowed.getRedisProtocol());
+    } finally {
+      pooled.getObject().close();
+    }
+  }
+
+  private static void sleepUninterruptibly(long millis) {
+    long deadline = System.currentTimeMillis() + millis;
+    long remaining;
+    boolean interrupted = false;
+    while ((remaining = deadline - System.currentTimeMillis()) > 0) {
+      try {
+        Thread.sleep(remaining);
+      } catch (InterruptedException e) {
+        interrupted = true;
+      }
+    }
+    if (interrupted) {
+      Thread.currentThread().interrupt();
+    }
+  }
+
+  @Test
+  public void onMoving_capsRelaxDurationAtMax() {
+    // Configure a 10s max-relax backstop.
+    MaintenanceEventController capped = MaintenanceEventController
         .from(MaintenanceNotificationsConfig.builder()
             .relaxedWindowMaxDuration(Duration.ofSeconds(10)).build());
     NanoClock.INSTANCE = now::get;
 
-    backstopped.onMoving(new MovingEvent(1L, 100, TARGET_B), receiver);
-    assertNotNull(backstopped.getSocketAddress(receiverPeer), "active just after MOVING");
+    // Server says 100s; the cap shortens it to 10s.
+    capped.onMoving(new MovingEvent(1L, 100, TARGET_B), receiver);
+    assertNotNull(capped.getSocketAddress(receiverPeer), "active just after MOVING");
 
     advanceSeconds(11);
-    assertNotNull(backstopped.getSocketAddress(receiverPeer),
-      "window outlives the 10s backstop: MOVING uses the raw server ttl");
-
-    advanceSeconds(90); // 101s total, past the server-supplied 100s
-    assertNull(backstopped.getSocketAddress(receiverPeer), "window ends at the server ttl");
+    assertNull(capped.getSocketAddress(receiverPeer),
+      "ttl is capped at maxRelaxedDuration (10s), not the server-supplied 100s");
   }
-
 }

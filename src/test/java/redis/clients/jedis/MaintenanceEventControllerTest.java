@@ -24,7 +24,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
-import redis.clients.jedis.MaintenanceEventController.MaintenanceHandoff;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.server.TcpMockServer;
@@ -319,19 +318,23 @@ public class MaintenanceEventControllerTest {
   }
 
   @Test
-  public void onMoving_capsRelaxDurationAtMax() {
-    // Configure a 10s max-relax backstop.
-    MaintenanceEventController capped = MaintenanceEventController
+  public void onMoving_relaxWindowUsesServerTtl() {
+    // MOVING's time_s is the server's completion bound, so the window runs the full
+    // server-supplied ttl; the relaxedWindowMaxDuration backstop applies only to
+    // MIGRATING/FAILING_OVER.
+    MaintenanceEventController backstopped = MaintenanceEventController
         .from(MaintenanceNotificationsConfig.builder()
             .relaxedWindowMaxDuration(Duration.ofSeconds(10)).build());
     NanoClock.INSTANCE = now::get;
 
-    // Server says 100s; the cap shortens it to 10s.
-    capped.onMoving(new MovingEvent(1L, 100, TARGET_B), receiver);
-    assertNotNull(capped.getSocketAddress(receiverPeer), "active just after MOVING");
+    backstopped.onMoving(new MovingEvent(1L, 100, TARGET_B), receiver);
+    assertNotNull(backstopped.getSocketAddress(receiverPeer), "active just after MOVING");
 
     advanceSeconds(11);
-    assertNull(capped.getSocketAddress(receiverPeer),
-      "ttl is capped at maxRelaxedDuration (10s), not the server-supplied 100s");
+    assertNotNull(backstopped.getSocketAddress(receiverPeer),
+      "window outlives the 10s backstop: MOVING uses the raw server ttl");
+
+    advanceSeconds(90); // 101s total, past the server-supplied 100s
+    assertNull(backstopped.getSocketAddress(receiverPeer), "window ends at the server ttl");
   }
 }

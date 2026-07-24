@@ -132,12 +132,6 @@ final class MaintenanceEventController
     return (rebind.isValid() && rebind.affected.contains(resolved)) ? rebind.target : null;
   }
 
-  public boolean isAffected(Connection c) {
-    // map is expected to be empty most of the time, considering the lifecyle of controller and
-    // rebinding operations.
-    return rebind.isValid() && rebind.affected.contains(c.getRemoteSocketAddress());
-  }
-
   /** True iff there is an active MOVING rebind window in the pool right now. */
   public boolean isRebindActive() {
     return rebind.isValid();

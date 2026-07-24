@@ -100,15 +100,6 @@ public class MaintenanceEventControllerTest {
     assertNull(controller.getSocketAddress(receiverPeer));
   }
 
-  @Test
-  public void isAffected_matchesActiveAffectedWithinWindow() {
-    assertFalse(controller.isAffected(receiver), "no rebind yet");
-    moving(1L, TARGET_B, 10);
-    assertTrue(controller.isAffected(receiver));
-    advanceSeconds(11);
-    assertFalse(controller.isAffected(receiver), "after deadline");
-  }
-
   // --- Seq guard ---
 
   @Test

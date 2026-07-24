@@ -13,9 +13,11 @@ import redis.clients.jedis.mcf.ProbingPolicy.BuiltIn;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisPermanentlyNotAvailableException;
 import redis.clients.jedis.mcf.JedisFailoverException.JedisTemporarilyNotAvailableException;
 
+import java.lang.reflect.Method;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.UUID;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -102,8 +104,17 @@ public class MultiDbConnectionProviderTest {
         .until(() -> Arrays.stream(databases).allMatch(Database::isHealthy));
   }
 
+  /**
+   * Unique per-test key. The Redis endpoints are shared across the test suite without cleanup, so a
+   * well-known key like "foo" may be left holding a non-string type by an earlier test.
+   */
+  private static String testKey(TestInfo testInfo) {
+    return testInfo.getTestMethod().map(Method::getName).orElse("unknown") + ":"
+        + UUID.randomUUID().toString().substring(0, 8);
+  }
+
   @Test
-  public void testDatabaseSwitchListener() {
+  public void testDatabaseSwitchListener(TestInfo testInfo) {
     DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
     databaseConfigs[0] = DatabaseConfig
         .builder(new HostAndPort("purposefully-incorrect", 0000),
@@ -132,7 +143,7 @@ public class MultiDbConnectionProviderTest {
       // This will fail due to unable to connect and open the circuit which will trigger the post
       // processor
       try {
-        jedis.get("foo");
+        jedis.get(testKey(testInfo));
       } catch (Exception e) {
       }
 
@@ -235,7 +246,7 @@ public class MultiDbConnectionProviderTest {
   }
 
   @Test
-  public void userCommand_firstTemporary_thenPermanent_inOrder() {
+  public void userCommand_firstTemporary_thenPermanent_inOrder(TestInfo testInfo) {
     DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
     databaseConfigs[0] = DatabaseConfig.builder(endpointStandalone0.getHostAndPort(),
       endpointStandalone0.getClientConfigBuilder().build()).weight(0.5f).build();
@@ -247,26 +258,28 @@ public class MultiDbConnectionProviderTest {
             .maxNumFailoverAttempts(2)
             .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).build()).build());
 
+    String key = testKey(testInfo);
     try (MultiDbClient jedis = MultiDbClient.builder().connectionProvider(testProvider).build()) {
-      jedis.get("foo");
+      jedis.get(key);
 
       // Disable both databases so any attempt to switch results in 'no healthy database' path
       testProvider.getDatabase(endpointStandalone0.getHostAndPort()).setDisabled(true);
       testProvider.getDatabase(endpointStandalone1.getHostAndPort()).setDisabled(true);
 
       // Simulate user running a command that fails and triggers failover iteration
-      assertThrows(JedisTemporarilyNotAvailableException.class, () -> jedis.get("foo"));
+      assertThrows(JedisTemporarilyNotAvailableException.class, () -> jedis.get(key));
 
       // Next immediate attempt should exceed max attempts and become permanent (expected to fail
       // until feature exists)
       await().atMost(Durations.ONE_SECOND).pollInterval(Durations.ONE_HUNDRED_MILLISECONDS)
           .until(() -> (assertThrows(JedisFailoverException.class,
-            () -> jedis.get("foo")) instanceof JedisPermanentlyNotAvailableException));
+            () -> jedis.get(key)) instanceof JedisPermanentlyNotAvailableException));
     }
   }
 
   @Test
-  public void userCommand_connectionExceptions_thenMultipleTemporary_thenPermanent_inOrder() {
+  public void userCommand_connectionExceptions_thenMultipleTemporary_thenPermanent_inOrder(
+      TestInfo testInfo) {
     DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
     databaseConfigs[0] = DatabaseConfig
         .builder(endpointStandalone0.getHostAndPort(),
@@ -289,31 +302,32 @@ public class MultiDbConnectionProviderTest {
             .build()) {
     };
 
+    String key = testKey(testInfo);
     try (MultiDbClient jedis = MultiDbClient.builder().connectionProvider(testProvider).build()) {
-      jedis.get("foo");
+      jedis.get(key);
 
       // disable most weighted database so that it will fail on initial requests
       testProvider.getDatabase(endpointStandalone0.getHostAndPort()).setDisabled(true);
 
-      Exception e = assertThrows(JedisConnectionException.class, () -> jedis.get("foo"));
+      Exception e = assertThrows(JedisConnectionException.class, () -> jedis.get(key));
       assertEquals(JedisConnectionException.class, e.getClass());
 
-      e = assertThrows(JedisConnectionException.class, () -> jedis.get("foo"));
+      e = assertThrows(JedisConnectionException.class, () -> jedis.get(key));
       assertEquals(JedisConnectionException.class, e.getClass());
 
       // then disable the second ones
       testProvider.getDatabase(endpointStandalone1.getHostAndPort()).setDisabled(true);
-      assertThrows(JedisTemporarilyNotAvailableException.class, () -> jedis.get("foo"));
-      assertThrows(JedisTemporarilyNotAvailableException.class, () -> jedis.get("foo"));
+      assertThrows(JedisTemporarilyNotAvailableException.class, () -> jedis.get(key));
+      assertThrows(JedisTemporarilyNotAvailableException.class, () -> jedis.get(key));
 
       // Third get request should exceed max attempts and throw
       // JedisPermanentlyNotAvailableException
       await().atMost(Durations.FIVE_HUNDRED_MILLISECONDS).pollInterval(Duration.ofMillis(50))
           .until(() -> (assertThrows(JedisFailoverException.class,
-            () -> jedis.get("foo")) instanceof JedisPermanentlyNotAvailableException));
+            () -> jedis.get(key)) instanceof JedisPermanentlyNotAvailableException));
 
       // Fourth get request should continue to throw JedisPermanentlyNotAvailableException
-      assertThrows(JedisPermanentlyNotAvailableException.class, () -> jedis.get("foo"));
+      assertThrows(JedisPermanentlyNotAvailableException.class, () -> jedis.get(key));
     }
   }
 }

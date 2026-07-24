@@ -21,12 +21,12 @@ import redis.clients.jedis.exceptions.JedisDataException;
  * behind by earlier tests holding an unexpected type. Keys produced here are namespaced by a test
  * identifier, and every generated key is registered so it can be deleted after the test.
  * <p>
- * The identifier — and thereby the registry's scope — depends on the lifecycle context the
- * registry is created in: {@code ClassName.methodName} in a method context
- * ({@code @BeforeEach}/{@code @Test}), {@code ClassName} in a class context ({@code @BeforeAll}).
- * A registry created in {@code @BeforeAll} and cleaned in {@code @AfterAll} holds class-level
- * keys that survive between individual tests; the two scopes cannot collide because method-scoped
- * keys always contain {@code .methodName}.
+ * The identifier — and thereby the registry's scope — depends on the lifecycle context the registry
+ * is created in: {@code ClassName.methodName} in a method context
+ * ({@code @BeforeEach}/{@code @Test}), {@code ClassName} in a class context ({@code @BeforeAll}). A
+ * registry created in {@code @BeforeAll} and cleaned in {@code @AfterAll} holds class-level keys
+ * that survive between individual tests; the two scopes cannot collide because method-scoped keys
+ * always contain {@code .methodName}.
  * <p>
  * The {@code %test%} placeholder is replaced with the test identifier. Substitution is purely
  * textual — braces are never added implicitly, so to pin all keys of one test to the same Redis

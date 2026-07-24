@@ -554,6 +554,7 @@
 						<include>src/main/java/redis/clients/jedis/mcf/*.java</include>
 						<include>src/test/java/redis/clients/jedis/failover/*.java</include>
 						<include>src/test/java/redis/clients/jedis/mcf/*.java</include>
+						<include>src/test/java/redis/clients/jedis/util/TestKeyRegistry.java</include>
 						<include>**/Health*.java</include>
 						<include>**/*IT.java</include>
 						<include>**/scenario/RestEndpointUtil.java</include>

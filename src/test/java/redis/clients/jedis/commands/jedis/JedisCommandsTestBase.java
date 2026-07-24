@@ -56,6 +56,7 @@ public abstract class JedisCommandsTestBase {
 
   @AfterEach
   public void tearDown() throws Exception {
+    jedis.flushAll();
     jedis.close();
   }
 

@@ -11,10 +11,171 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
+import redis.clients.jedis.params.LMoveMParams;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
 
 public class UnifiedJedisListCommandsTest extends UnifiedJedisMockedTestBase {
+
+  @Test
+  public void testLmovem() {
+    String srcKey = "sourceList";
+    String dstKey = "destinationList";
+    ListDirection from = ListDirection.LEFT;
+    ListDirection to = ListDirection.RIGHT;
+    List<String> expected = Arrays.asList("a", "b");
+
+    when(commandObjects.lmovem(srcKey, dstKey, from, to)).thenReturn(listStringCommandObject);
+    when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expected);
+
+    List<String> result = jedis.lmovem(srcKey, dstKey, from, to);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listStringCommandObject);
+    verify(commandObjects).lmovem(srcKey, dstKey, from, to);
+  }
+
+  @Test
+  public void testLmovemBinary() {
+    byte[] srcKey = "sourceList".getBytes();
+    byte[] dstKey = "destinationList".getBytes();
+    ListDirection from = ListDirection.LEFT;
+    ListDirection to = ListDirection.RIGHT;
+    List<byte[]> expected = Arrays.asList("a".getBytes(), "b".getBytes());
+
+    when(commandObjects.lmovem(srcKey, dstKey, from, to)).thenReturn(listBytesCommandObject);
+    when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expected);
+
+    List<byte[]> result = jedis.lmovem(srcKey, dstKey, from, to);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listBytesCommandObject);
+    verify(commandObjects).lmovem(srcKey, dstKey, from, to);
+  }
+
+  @Test
+  public void testLmovemWithParams() {
+    String srcKey = "sourceList";
+    String dstKey = "destinationList";
+    ListDirection from = ListDirection.LEFT;
+    ListDirection to = ListDirection.LEFT;
+    LMoveMParams params = LMoveMParams.lMoveMParams().count(2).obo();
+    List<String> expected = Arrays.asList("b", "a");
+
+    when(commandObjects.lmovem(srcKey, dstKey, from, to, params)).thenReturn(listStringCommandObject);
+    when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expected);
+
+    List<String> result = jedis.lmovem(srcKey, dstKey, from, to, params);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listStringCommandObject);
+    verify(commandObjects).lmovem(srcKey, dstKey, from, to, params);
+  }
+
+  @Test
+  public void testLmovemWithParamsBinary() {
+    byte[] srcKey = "sourceList".getBytes();
+    byte[] dstKey = "destinationList".getBytes();
+    ListDirection from = ListDirection.LEFT;
+    ListDirection to = ListDirection.LEFT;
+    LMoveMParams params = LMoveMParams.lMoveMParams().exactly(2).bulk();
+    List<byte[]> expected = Arrays.asList("a".getBytes(), "b".getBytes());
+
+    when(commandObjects.lmovem(srcKey, dstKey, from, to, params)).thenReturn(listBytesCommandObject);
+    when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expected);
+
+    List<byte[]> result = jedis.lmovem(srcKey, dstKey, from, to, params);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listBytesCommandObject);
+    verify(commandObjects).lmovem(srcKey, dstKey, from, to, params);
+  }
+
+  @Test
+  public void testBlmovem() {
+    String srcKey = "sourceList";
+    String dstKey = "destinationList";
+    ListDirection from = ListDirection.LEFT;
+    ListDirection to = ListDirection.RIGHT;
+    double timeout = 10.5;
+    List<String> expected = Arrays.asList("a");
+
+    when(commandObjects.blmovem(srcKey, dstKey, from, to, timeout)).thenReturn(listStringCommandObject);
+    when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expected);
+
+    List<String> result = jedis.blmovem(srcKey, dstKey, from, to, timeout);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listStringCommandObject);
+    verify(commandObjects).blmovem(srcKey, dstKey, from, to, timeout);
+  }
+
+  @Test
+  public void testBlmovemWithParams() {
+    String srcKey = "sourceList";
+    String dstKey = "destinationList";
+    ListDirection from = ListDirection.LEFT;
+    ListDirection to = ListDirection.RIGHT;
+    double timeout = 10.5;
+    LMoveMParams params = LMoveMParams.lMoveMParams().count(3).bulk();
+    List<String> expected = Arrays.asList("a", "b", "c");
+
+    when(commandObjects.blmovem(srcKey, dstKey, from, to, timeout, params)).thenReturn(listStringCommandObject);
+    when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expected);
+
+    List<String> result = jedis.blmovem(srcKey, dstKey, from, to, timeout, params);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listStringCommandObject);
+    verify(commandObjects).blmovem(srcKey, dstKey, from, to, timeout, params);
+  }
+
+  @Test
+  public void testBlmovemBinary() {
+    byte[] srcKey = "sourceList".getBytes();
+    byte[] dstKey = "destinationList".getBytes();
+    ListDirection from = ListDirection.LEFT;
+    ListDirection to = ListDirection.RIGHT;
+    double timeout = 10.5;
+    List<byte[]> expected = Arrays.asList("a".getBytes());
+
+    when(commandObjects.blmovem(srcKey, dstKey, from, to, timeout)).thenReturn(listBytesCommandObject);
+    when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expected);
+
+    List<byte[]> result = jedis.blmovem(srcKey, dstKey, from, to, timeout);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listBytesCommandObject);
+    verify(commandObjects).blmovem(srcKey, dstKey, from, to, timeout);
+  }
+
+  @Test
+  public void testBlmovemWithParamsBinary() {
+    byte[] srcKey = "sourceList".getBytes();
+    byte[] dstKey = "destinationList".getBytes();
+    ListDirection from = ListDirection.LEFT;
+    ListDirection to = ListDirection.RIGHT;
+    double timeout = 10.5;
+    LMoveMParams params = LMoveMParams.lMoveMParams().exactly(2).obo();
+    List<byte[]> expected = Arrays.asList("b".getBytes(), "a".getBytes());
+
+    when(commandObjects.blmovem(srcKey, dstKey, from, to, timeout, params)).thenReturn(listBytesCommandObject);
+    when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expected);
+
+    List<byte[]> result = jedis.blmovem(srcKey, dstKey, from, to, timeout, params);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listBytesCommandObject);
+    verify(commandObjects).blmovem(srcKey, dstKey, from, to, timeout, params);
+  }
 
   @Test
   public void testBlmove() {

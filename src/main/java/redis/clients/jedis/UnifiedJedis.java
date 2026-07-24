@@ -1470,6 +1470,46 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<String> lmovem(String srcKey, String dstKey, ListDirection from, ListDirection to) {
+    return executeCommand(commandObjects.lmovem(srcKey, dstKey, from, to));
+  }
+
+  @Override
+  public List<String> lmovem(String srcKey, String dstKey, ListDirection from, ListDirection to, LMoveMParams params) {
+    return executeCommand(commandObjects.lmovem(srcKey, dstKey, from, to, params));
+  }
+
+  @Override
+  public List<String> blmovem(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout) {
+    return executeCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public List<String> blmovem(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout, LMoveMParams params) {
+    return executeCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout, params));
+  }
+
+  @Override
+  public List<byte[]> lmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
+    return executeCommand(commandObjects.lmovem(srcKey, dstKey, from, to));
+  }
+
+  @Override
+  public List<byte[]> lmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, LMoveMParams params) {
+    return executeCommand(commandObjects.lmovem(srcKey, dstKey, from, to, params));
+  }
+
+  @Override
+  public List<byte[]> blmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
+    return executeCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public List<byte[]> blmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout, LMoveMParams params) {
+    return executeCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout, params));
+  }
+
+  @Override
   public KeyValue<String, List<String>> lmpop(ListDirection direction, String... keys) {
     return executeCommand(commandObjects.lmpop(direction, keys));
   }

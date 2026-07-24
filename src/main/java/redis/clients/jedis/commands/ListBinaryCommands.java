@@ -4,6 +4,7 @@ import java.util.List;
 
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
+import redis.clients.jedis.params.LMoveMParams;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
 
@@ -72,6 +73,40 @@ public interface ListBinaryCommands {
   byte[] lmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to);
 
   byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout);
+
+  /**
+   * Binary variant of {@link ListCommands#lmovem(String, String, ListDirection, ListDirection)}.
+   * @see ListCommands#lmovem(String, String, ListDirection, ListDirection)
+   * @since 8.0
+   */
+  List<byte[]> lmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to);
+
+  /**
+   * Binary variant of
+   * {@link ListCommands#lmovem(String, String, ListDirection, ListDirection, LMoveMParams)}.
+   * @see ListCommands#lmovem(String, String, ListDirection, ListDirection, LMoveMParams)
+   * @since 8.0
+   */
+  List<byte[]> lmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to,
+      LMoveMParams params);
+
+  /**
+   * Binary variant of
+   * {@link ListCommands#blmovem(String, String, ListDirection, ListDirection, double)}.
+   * @see ListCommands#blmovem(String, String, ListDirection, ListDirection, double)
+   * @since 8.0
+   */
+  List<byte[]> blmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to,
+      double timeout);
+
+  /**
+   * Binary variant of
+   * {@link ListCommands#blmovem(String, String, ListDirection, ListDirection, double, LMoveMParams)}.
+   * @see ListCommands#blmovem(String, String, ListDirection, ListDirection, double, LMoveMParams)
+   * @since 8.0
+   */
+  List<byte[]> blmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to,
+      double timeout, LMoveMParams params);
 
   KeyValue<byte[], List<byte[]>> lmpop(ListDirection direction, byte[]... keys);
 

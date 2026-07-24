@@ -45,6 +45,10 @@ public interface RedisTimeSeriesPipelineCommands {
 
   Response<List<TSElement>> tsRevRange(String key, TSRangeParams rangeParams);
 
+  Response<List<TSElement>> tsRead(String key, long timestamp);
+
+  Response<List<TSElement>> tsRead(String key, TSReadParams readParams);
+
   Response<Map<String, TSMRangeElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters);
 
   Response<Map<String, TSMRangeElements>> tsMRange(TSMRangeParams multiRangeParams);

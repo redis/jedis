@@ -109,4 +109,12 @@ public class TimeSeriesClusterCommandsIT extends TimeSeriesCommandsTestBase {
   public void mRevRangeMultipleAggregatorsEmptyResult() {
   }
 
+  // The producer client obtained via createTestClient() flushes the cluster on creation
+  // (getCleanCluster), which removes the key and wakes the blocked reader with an empty reply.
+  // The blocking-wake behavior is fully covered by the standalone runner.
+  @Disabled("Second cluster client flushes the cluster, waking the blocked reader")
+  @Override
+  public void readBlockingWakesOnAppend() {
+  }
+
 }

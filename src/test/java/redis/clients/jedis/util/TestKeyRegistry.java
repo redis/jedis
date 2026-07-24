@@ -1,5 +1,6 @@
 package redis.clients.jedis.util;
 
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -66,8 +67,20 @@ public interface TestKeyRegistry {
    */
   String key(String pattern);
 
+  /**
+   * Binary counterpart of {@link #key(String)}: same pattern rules, returns the generated key
+   * encoded with {@link SafeEncoder}. Names the same Redis key as {@code key(pattern)}.
+   */
+  byte[] bKey(String pattern);
+
   /** Registers an externally-created key for cleanup and returns it. Duplicates are ignored. */
   String register(String key);
+
+  /**
+   * Registers an externally-created binary key for cleanup and returns it. A copy is stored, so
+   * later mutation of the array does not affect cleanup. Duplicates are ignored.
+   */
+  byte[] register(byte[] key);
 
   /** Deletes all registered keys on each client, then clears the registry. */
   void cleanup(UnifiedJedis... clients);
@@ -83,7 +96,9 @@ public interface TestKeyRegistry {
     private static final String TEST_PLACEHOLDER = "%test%";
 
     private final String testId;
-    private final Set<String> registeredKeys = ConcurrentHashMap.newKeySet();
+    // Keys are stored as bytes so string- and binary-created keys share one registry entry
+    // and cleanup covers both with a single binary DEL.
+    private final Set<ByteBuffer> registeredKeys = ConcurrentHashMap.newKeySet();
 
     Default(TestInfo testInfo) {
       String className = testInfo.getTestClass().map(Class::getSimpleName).orElse("UnknownClass");
@@ -94,15 +109,23 @@ public interface TestKeyRegistry {
 
     @Override
     public String key(String pattern) {
-      String key = pattern.contains(TEST_PLACEHOLDER)
-          ? pattern.replace(TEST_PLACEHOLDER, testId)
-          : testId + ":" + pattern;
-      return register(key);
+      return register(expand(pattern));
+    }
+
+    @Override
+    public byte[] bKey(String pattern) {
+      return register(SafeEncoder.encode(expand(pattern)));
     }
 
     @Override
     public String register(String key) {
-      registeredKeys.add(key);
+      registeredKeys.add(ByteBuffer.wrap(SafeEncoder.encode(key)));
+      return key;
+    }
+
+    @Override
+    public byte[] register(byte[] key) {
+      registeredKeys.add(ByteBuffer.wrap(Arrays.copyOf(key, key.length)));
       return key;
     }
 
@@ -116,7 +139,11 @@ public interface TestKeyRegistry {
       if (registeredKeys.isEmpty()) {
         return;
       }
-      String[] keys = registeredKeys.toArray(new String[0]);
+      List<byte[]> allKeys = new ArrayList<>(registeredKeys.size());
+      for (ByteBuffer key : registeredKeys) {
+        allKeys.add(key.array());
+      }
+      byte[][] keys = allKeys.toArray(new byte[0][]);
       for (UnifiedJedis client : clients) {
         delete(client, keys);
       }
@@ -128,7 +155,12 @@ public interface TestKeyRegistry {
       registeredKeys.clear();
     }
 
-    private static void delete(UnifiedJedis client, String[] keys) {
+    private String expand(String pattern) {
+      return pattern.contains(TEST_PLACEHOLDER) ? pattern.replace(TEST_PLACEHOLDER, testId)
+          : testId + ":" + pattern;
+    }
+
+    private static void delete(UnifiedJedis client, byte[][] keys) {
       try {
         client.del(keys);
       } catch (JedisDataException e) {
@@ -143,14 +175,14 @@ public interface TestKeyRegistry {
       return e.getMessage() != null && e.getMessage().startsWith("CROSSSLOT");
     }
 
-    private static void deletePerSlot(UnifiedJedis client, String[] keys) {
-      Map<Integer, List<String>> keysBySlot = new HashMap<>();
-      for (String key : keys) {
+    private static void deletePerSlot(UnifiedJedis client, byte[][] keys) {
+      Map<Integer, List<byte[]>> keysBySlot = new HashMap<>();
+      for (byte[] key : keys) {
         keysBySlot.computeIfAbsent(JedisClusterCRC16.getSlot(key), slot -> new ArrayList<>())
             .add(key);
       }
-      for (List<String> slotKeys : keysBySlot.values()) {
-        client.del(slotKeys.toArray(new String[0]));
+      for (List<byte[]> slotKeys : keysBySlot.values()) {
+        client.del(slotKeys.toArray(new byte[0][]));
       }
     }
   }

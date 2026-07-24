@@ -2118,6 +2118,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.sunionstore(dstkey, keys));
   }
 
+  @Override
+  public long sunioncard(final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sunioncard(keys));
+  }
+
+  @Override
+  public long sunioncard(final byte[] key1, final byte[] key2, final SUnionCardParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sunioncard(key1, key2, params));
+  }
+
+  @Override
+  public long sunioncard(final byte[][] keys, final SUnionCardParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sunioncard(keys, params));
+  }
+
   /**
    * Return the difference between the Set stored at key1 and all the Sets key2, ..., keyN
    * <p>
@@ -2155,6 +2173,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long sdiffstore(final byte[] dstkey, final byte[]... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.sdiffstore(dstkey, keys));
+  }
+
+  @Override
+  public long sdiffcard(final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sdiffcard(keys));
+  }
+
+  @Override
+  public long sdiffcard(final byte[] key1, final byte[] key2, final SDiffCardParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sdiffcard(key1, key2, params));
+  }
+
+  @Override
+  public long sdiffcard(final byte[][] keys, final SDiffCardParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sdiffcard(keys, params));
   }
 
   /**
@@ -6924,6 +6960,30 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.sunionstore(dstkey, keys));
   }
 
+  @Override
+  public long sunioncard(final String... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sunioncard(keys));
+  }
+
+  @Override
+  public long sunioncard(final List<String> keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sunioncard(keys));
+  }
+
+  @Override
+  public long sunioncard(final String key1, final String key2, final SUnionCardParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sunioncard(key1, key2, params));
+  }
+
+  @Override
+  public long sunioncard(final List<String> keys, final SUnionCardParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sunioncard(keys, params));
+  }
+
   /**
    * Return the difference between the Set stored at key1 and all the Sets key2, ..., keyN
    * <p>
@@ -6961,6 +7021,30 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long sdiffstore(final String dstkey, final String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.sdiffstore(dstkey, keys));
+  }
+
+  @Override
+  public long sdiffcard(final String... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sdiffcard(keys));
+  }
+
+  @Override
+  public long sdiffcard(final List<String> keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sdiffcard(keys));
+  }
+
+  @Override
+  public long sdiffcard(final String key1, final String key2, final SDiffCardParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sdiffcard(key1, key2, params));
+  }
+
+  @Override
+  public long sdiffcard(final List<String> keys, final SDiffCardParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sdiffcard(keys, params));
   }
 
   /**

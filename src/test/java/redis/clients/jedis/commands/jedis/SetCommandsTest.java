@@ -28,6 +28,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.params.SDiffCardParams;
+import redis.clients.jedis.params.SUnionCardParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.TestEnvUtil;
@@ -401,6 +403,47 @@ public class SetCommandsTest extends JedisCommandsTestBase {
     assertEquals(2, bcard);
     long blimitedCard = jedis.sintercard(1, bfoo, bbar);
     assertEquals(1, blimitedCard);
+  }
+
+  @Test
+  @SinceRedisVersion("8.9.241")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void sunioncard() {
+    jedis.sadd("foo", "a", "b", "c");
+    jedis.sadd("bar", "c", "d");
+
+    assertEquals(4, jedis.sunioncard("foo", "bar"));
+    assertEquals(4, jedis.sunioncard(Arrays.asList("foo", "bar")));
+    assertEquals(3, jedis.sunioncard("foo", "bar", new SUnionCardParams().approx().limit(3)));
+
+    // Binary
+    jedis.sadd(bfoo, ba, bb, bc);
+    jedis.sadd(bbar, bc, bd);
+
+    assertEquals(4, jedis.sunioncard(bfoo, bbar));
+    assertEquals(3, jedis.sunioncard(bfoo, bbar, new SUnionCardParams().limit(3)));
+    assertEquals(4, jedis.sunioncard(new byte[][] { bfoo, bbar }, new SUnionCardParams().approx()));
+  }
+
+  @Test
+  @SinceRedisVersion("8.9.241")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void sdiffcard() {
+    jedis.sadd("foo", "x", "a", "b", "c");
+    jedis.sadd("bar", "c");
+
+    assertEquals(3, jedis.sdiffcard("foo", "bar"));
+    assertEquals(3, jedis.sdiffcard(Arrays.asList("foo", "bar")));
+    assertEquals(1, jedis.sdiffcard("foo", "bar", new SDiffCardParams().limit(1)));
+    assertEquals(0, jedis.sdiffcard("nosuchset", "foo"));
+
+    // Binary
+    jedis.sadd(bfoo, bx, ba, bb, bc);
+    jedis.sadd(bbar, bc);
+
+    assertEquals(3, jedis.sdiffcard(bfoo, bbar));
+    assertEquals(1, jedis.sdiffcard(bfoo, bbar, new SDiffCardParams().limit(1)));
+    assertEquals(3, jedis.sdiffcard(new byte[][] { bfoo, bbar }, new SDiffCardParams().limit(0)));
   }
 
   @Test

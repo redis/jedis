@@ -10,6 +10,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
@@ -18,6 +19,8 @@ import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.params.SDiffCardParams;
+import redis.clients.jedis.params.SUnionCardParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.TestEnvUtil;
@@ -262,6 +265,77 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
 
     Long interCardLimitedBinary = exec(commandObjects.sintercard(1, key1.getBytes(), key2.getBytes()));
     assertThat(interCardLimitedBinary, equalTo(1L));
+  }
+
+  @Test
+  @SinceRedisVersion("8.9.241")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void testSunioncard() {
+    String key1 = "testSetUnionCard1";
+    String key2 = "testSetUnionCard2";
+
+    exec(commandObjects.sadd(key1, "member1", "member2", "member3"));
+    exec(commandObjects.sadd(key2, "member3", "member4"));
+
+    Long unionCard = exec(commandObjects.sunioncard(key1, key2));
+    assertThat(unionCard, equalTo(4L));
+
+    Long unionCardList = exec(commandObjects.sunioncard(Arrays.asList(key1, key2)));
+    assertThat(unionCardList, equalTo(4L));
+
+    Long unionCardLimited = exec(
+      commandObjects.sunioncard(key1, key2, new SUnionCardParams().limit(3)));
+    assertThat(unionCardLimited, equalTo(3L));
+
+    Long unionCardApprox = exec(
+      commandObjects.sunioncard(Arrays.asList(key1, key2), new SUnionCardParams().approx()));
+    assertThat(unionCardApprox, equalTo(4L));
+
+    Long unionCardBinary = exec(commandObjects.sunioncard(key1.getBytes(), key2.getBytes()));
+    assertThat(unionCardBinary, equalTo(4L));
+
+    Long unionCardParamsBinary = exec(commandObjects.sunioncard(key1.getBytes(), key2.getBytes(),
+      new SUnionCardParams().approx().limit(3)));
+    assertThat(unionCardParamsBinary, equalTo(3L));
+
+    Long unionCardArrayBinary = exec(commandObjects.sunioncard(
+      new byte[][] { key1.getBytes(), key2.getBytes() }, new SUnionCardParams().limit(0)));
+    assertThat(unionCardArrayBinary, equalTo(4L));
+  }
+
+  @Test
+  @SinceRedisVersion("8.9.241")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void testSdiffcard() {
+    String key1 = "testSetDiffCard1";
+    String key2 = "testSetDiffCard2";
+
+    exec(commandObjects.sadd(key1, "member1", "member2", "member3"));
+    exec(commandObjects.sadd(key2, "member3", "member4"));
+
+    Long diffCard = exec(commandObjects.sdiffcard(key1, key2));
+    assertThat(diffCard, equalTo(2L));
+
+    Long diffCardList = exec(commandObjects.sdiffcard(Arrays.asList(key1, key2)));
+    assertThat(diffCardList, equalTo(2L));
+
+    Long diffCardLimited = exec(commandObjects.sdiffcard(key1, key2, new SDiffCardParams().limit(1)));
+    assertThat(diffCardLimited, equalTo(1L));
+
+    Long diffCardNoLimit = exec(
+      commandObjects.sdiffcard(Arrays.asList(key1, key2), new SDiffCardParams().limit(0)));
+    assertThat(diffCardNoLimit, equalTo(2L));
+
+    Long diffCardBinary = exec(commandObjects.sdiffcard(key1.getBytes(), key2.getBytes()));
+    assertThat(diffCardBinary, equalTo(2L));
+
+    Long diffCardParamsBinary = exec(
+      commandObjects.sdiffcard(key1.getBytes(), key2.getBytes(), new SDiffCardParams().limit(1)));
+    assertThat(diffCardParamsBinary, equalTo(1L));
+
+    Long diffCardArrayBinary = exec(commandObjects.sdiffcard(
+      new byte[][] { key1.getBytes(), key2.getBytes() }, new SDiffCardParams().limit(0)));
+    assertThat(diffCardArrayBinary, equalTo(2L));
   }
 
   @Test

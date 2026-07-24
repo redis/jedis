@@ -528,6 +528,10 @@
 						<!-- Specific files -->
 						<include>src/main/java/redis/clients/jedis/annots/*.java</include>
 						<include>src/main/java/redis/clients/jedis/params/XCfgSetParams.java</include>
+						<include>src/main/java/redis/clients/jedis/params/SUnionCardParams.java</include>
+						<include>src/main/java/redis/clients/jedis/params/SDiffCardParams.java</include>
+						<include>src/test/java/redis/clients/jedis/params/SUnionCardParamsTest.java</include>
+						<include>src/test/java/redis/clients/jedis/params/SDiffCardParamsTest.java</include>
 						<include>src/main/java/redis/clients/jedis/resps/StreamEntryDeletionResult.java</include>
 						<include>src/main/java/redis/clients/jedisargs/StreamDeletionPolicy.java</include>
 						<include>src/test/java/redis/clients/jedis/commands/StreamsCommandsTestBase.java</include>

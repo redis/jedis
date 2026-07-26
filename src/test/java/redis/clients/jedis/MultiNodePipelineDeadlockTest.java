@@ -82,7 +82,7 @@ public class MultiNodePipelineDeadlockTest {
         // Simple routing based on key
         for (Object arg : args) {
           if (arg instanceof byte[]) {
-            String s = new String((byte[])arg);
+            String s = redis.clients.jedis.util.SafeEncoder.encode((byte[])arg);
             if (s.equals("A")) return shardA;
             if (s.equals("B")) return shardB;
           }
@@ -134,10 +134,16 @@ public class MultiNodePipelineDeadlockTest {
     });
 
     // If the fix works, both threads should complete quickly. If not, they timeout.
-    assertDoesNotThrow(() -> {
-      f1.get(5, TimeUnit.SECONDS);
-      f2.get(5, TimeUnit.SECONDS);
-    }, "Pipelines deadlocked while acquiring connections!");
+    try {
+      assertDoesNotThrow(() -> {
+        f1.get(5, TimeUnit.SECONDS);
+        f2.get(5, TimeUnit.SECONDS);
+      }, "Pipelines deadlocked while acquiring connections!");
+    } finally {
+      f1.cancel(true);
+      f2.cancel(true);
+      executor.shutdownNow();
+    }
 
     executor.shutdownNow();
   }

@@ -113,6 +113,8 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
       CountDownLatch countDownLatch = multiNode
           ? new CountDownLatch(pipelinedResponses.size())
           : null;
+      
+      java.util.concurrent.atomic.AtomicReference<RuntimeException> syncException = new java.util.concurrent.atomic.AtomicReference<>();
 
       for (Map.Entry<HostAndPort, Queue<Response<?>>> entry : pipelinedResponses.entrySet()) {
         HostAndPort nodeKey = entry.getKey();
@@ -142,6 +144,7 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
             }
           } catch (RuntimeException jce) {
             log.error("Error with connection to " + nodeKey, jce);
+            syncException.compareAndSet(null, jce);
           } finally {
             IOUtils.closeQuietly(connection);
             if (multiNode) {
@@ -159,6 +162,10 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
         }
 
         releasePipelineExecutor(executorService);
+      }
+      
+      if (syncException.get() != null) {
+        throw syncException.get();
       }
     } finally {
       syncing = false;

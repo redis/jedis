@@ -90,7 +90,11 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
 
   @Override
   public void close() {
-    sync();
+    try {
+      sync();
+    } catch (RuntimeException e) {
+      log.error("Error during pipeline close", e);
+    }
   }
 
   @Override

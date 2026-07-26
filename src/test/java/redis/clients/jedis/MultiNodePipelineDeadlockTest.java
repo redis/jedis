@@ -38,7 +38,7 @@ public class MultiNodePipelineDeadlockTest {
 
       @Override
       public List<Object> getMany(int count) {
-        return java.util.Collections.singletonList((Object)mockResponse.getBytes());
+        return java.util.Collections.nCopies(count, (Object)mockResponse.getBytes());
       }
 
       @Override

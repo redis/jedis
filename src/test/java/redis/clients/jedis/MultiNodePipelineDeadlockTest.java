@@ -144,7 +144,5 @@ public class MultiNodePipelineDeadlockTest {
       f2.cancel(true);
       executor.shutdownNow();
     }
-
-    executor.shutdownNow();
   }
 }

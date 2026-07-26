@@ -90,14 +90,7 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
 
   @Override
   public void close() {
-    try {
-      sync();
-    } finally {
-      // Connections are now managed cleanly within sync() and returned to their pools.
-      // We clear the state to ensure pipeline reuse won't carry over stale buffers.
-      pipelinedResponses.clear();
-      pipelinedCommands.clear();
-    }
+    sync();
   }
 
   @Override
@@ -107,59 +100,72 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
     }
     syncing = true;
 
-    boolean multiNode = pipelinedResponses.size() > 1;
-    Executor executor;
-    ExecutorService executorService = null;
-    if (multiNode) {
-      executorService = getPipelineExecutor();
-      executor = executorService;
-    } else {
-      executor = Runnable::run;
-    }
-    CountDownLatch countDownLatch = multiNode
-        ? new CountDownLatch(pipelinedResponses.size())
-        : null;
+    try {
+      boolean multiNode = pipelinedResponses.size() > 1;
+      Executor executor;
+      ExecutorService executorService = null;
+      if (multiNode) {
+        executorService = getPipelineExecutor();
+        executor = executorService;
+      } else {
+        executor = Runnable::run;
+      }
+      CountDownLatch countDownLatch = multiNode
+          ? new CountDownLatch(pipelinedResponses.size())
+          : null;
 
-    for (Map.Entry<HostAndPort, Queue<Response<?>>> entry : pipelinedResponses.entrySet()) {
-      HostAndPort nodeKey = entry.getKey();
-      Queue<Response<?>> queue = entry.getValue();
-      Queue<CommandObject<?>> cmdQueue = pipelinedCommands.get(nodeKey);
-      executor.execute(() -> {
-        Connection connection = null;
-        try {
-          connection = getConnection(nodeKey);
-          
-          for (CommandObject<?> cmd : cmdQueue) {
-            connection.sendCommand(cmd.getArguments());
-          }
-          cmdQueue.clear();
-
-          List<Object> unformatted = connection.getMany(queue.size());
-          for (Object o : unformatted) {
-            queue.poll().set(o);
-          }
-        } catch (JedisConnectionException jce) {
-          log.error("Error with connection to " + nodeKey, jce);
-        } finally {
-          IOUtils.closeQuietly(connection);
+      for (Map.Entry<HostAndPort, Queue<Response<?>>> entry : pipelinedResponses.entrySet()) {
+        HostAndPort nodeKey = entry.getKey();
+        Queue<Response<?>> queue = entry.getValue();
+        Queue<CommandObject<?>> cmdQueue = pipelinedCommands.get(nodeKey);
+        
+        if (cmdQueue == null || cmdQueue.isEmpty()) {
           if (multiNode) {
             countDownLatch.countDown();
           }
+          continue; // Skip redundant pool borrows if queue is already empty
         }
-      });
-    }
 
-    if (multiNode) {
-      try {
-        countDownLatch.await();
-      } catch (InterruptedException e) {
-        log.error("Thread is interrupted during sync.", e);
+        executor.execute(() -> {
+          Connection connection = null;
+          try {
+            connection = getConnection(nodeKey);
+            
+            for (CommandObject<?> cmd : cmdQueue) {
+              connection.sendCommand(cmd.getArguments());
+            }
+            cmdQueue.clear();
+
+            List<Object> unformatted = connection.getMany(queue.size());
+            for (Object o : unformatted) {
+              queue.poll().set(o);
+            }
+          } catch (RuntimeException jce) {
+            log.error("Error with connection to " + nodeKey, jce);
+          } finally {
+            IOUtils.closeQuietly(connection);
+            if (multiNode) {
+              countDownLatch.countDown();
+            }
+          }
+        });
       }
 
-      releasePipelineExecutor(executorService);
-    }
+      if (multiNode) {
+        try {
+          countDownLatch.await();
+        } catch (InterruptedException e) {
+          log.error("Thread is interrupted during sync.", e);
+        }
 
-    syncing = false;
+        releasePipelineExecutor(executorService);
+      }
+    } finally {
+      syncing = false;
+      // Clear the state so subsequent sync() or close() calls don't process empty queues
+      pipelinedResponses.clear();
+      pipelinedCommands.clear();
+    }
   }
 
   /**

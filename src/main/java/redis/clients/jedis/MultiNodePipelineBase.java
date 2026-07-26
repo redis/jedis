@@ -31,6 +31,7 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
 
   private final Map<HostAndPort, Queue<Response<?>>> pipelinedResponses;
   private final Map<HostAndPort, Queue<CommandObject<?>>> pipelinedCommands;
+  private final Map<HostAndPort, Connection> heldConnections;
   private volatile boolean syncing = false;
   protected final CommandFlagsRegistry commandFlagsRegistry;
 
@@ -53,6 +54,7 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
     this.commandFlagsRegistry = commandFlagsRegistry;
     pipelinedResponses = new LinkedHashMap<>();
     pipelinedCommands = new LinkedHashMap<>();
+    heldConnections = new LinkedHashMap<>();
     this.sharedExecutorService = executorService;
   }
 
@@ -90,7 +92,15 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
 
   @Override
   public void close() {
-    sync();
+    try {
+      sync();
+    } finally {
+      // Close all held connections and clear state
+      heldConnections.values().forEach(IOUtils::closeQuietly);
+      heldConnections.clear();
+      pipelinedResponses.clear();
+      pipelinedCommands.clear();
+    }
   }
 
   @Override
@@ -131,7 +141,11 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
         executor.execute(() -> {
           Connection connection = null;
           try {
-            connection = getConnection(nodeKey);
+            connection = heldConnections.get(nodeKey);
+            if (connection == null) {
+              connection = getConnection(nodeKey);
+              heldConnections.put(nodeKey, connection);
+            }
             
             for (CommandObject<?> cmd : cmdQueue) {
               connection.sendCommand(cmd.getArguments());
@@ -145,8 +159,10 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
           } catch (RuntimeException jce) {
             log.error("Error with connection to " + nodeKey, jce);
             syncException.compareAndSet(null, jce);
+            // Discard failed batches before another sync
+            queue.clear();
+            cmdQueue.clear();
           } finally {
-            IOUtils.closeQuietly(connection);
             if (multiNode) {
               countDownLatch.countDown();
             }
@@ -169,9 +185,6 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
       }
     } finally {
       syncing = false;
-      // Clear the state so subsequent sync() or close() calls don't process empty queues
-      pipelinedResponses.clear();
-      pipelinedCommands.clear();
     }
   }
 

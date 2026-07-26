@@ -30,7 +30,7 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
   public static volatile int MULTI_NODE_PIPELINE_SYNC_WORKERS = 3;
 
   private final Map<HostAndPort, Queue<Response<?>>> pipelinedResponses;
-  private final Map<HostAndPort, Connection> connections;
+  private final Map<HostAndPort, Queue<CommandObject<?>>> pipelinedCommands;
   private volatile boolean syncing = false;
   protected final CommandFlagsRegistry commandFlagsRegistry;
 
@@ -52,7 +52,7 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
     super(commandObjects);
     this.commandFlagsRegistry = commandFlagsRegistry;
     pipelinedResponses = new LinkedHashMap<>();
-    connections = new LinkedHashMap<>();
+    pipelinedCommands = new LinkedHashMap<>();
     this.sharedExecutorService = executorService;
   }
 
@@ -68,27 +68,23 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
 
     HostAndPort nodeKey = getNodeKey(commandObject.getArguments());
 
-    Queue<Response<?>> queue;
-    Connection connection;
-    if (pipelinedResponses.containsKey(nodeKey)) {
-      queue = pipelinedResponses.get(nodeKey);
-      connection = connections.get(nodeKey);
-    } else {
-      Connection newOne = getConnection(nodeKey);
-      connections.putIfAbsent(nodeKey, newOne);
-      connection = connections.get(nodeKey);
-      if (connection != newOne) {
-        log.debug("Duplicate connection to {}, closing it.", nodeKey);
-        IOUtils.closeQuietly(newOne);
-      }
+    Queue<Response<?>> responseQueue;
+    Queue<CommandObject<?>> commandQueue;
 
-      pipelinedResponses.putIfAbsent(nodeKey, new LinkedList<>());
-      queue = pipelinedResponses.get(nodeKey);
+    if (pipelinedResponses.containsKey(nodeKey)) {
+      responseQueue = pipelinedResponses.get(nodeKey);
+      commandQueue = pipelinedCommands.get(nodeKey);
+    } else {
+      responseQueue = new LinkedList<>();
+      pipelinedResponses.put(nodeKey, responseQueue);
+
+      commandQueue = new LinkedList<>();
+      pipelinedCommands.put(nodeKey, commandQueue);
     }
 
-    connection.sendCommand(commandObject.getArguments());
+    commandQueue.add(commandObject);
     Response<T> response = new Response<>(commandObject.getBuilder());
-    queue.add(response);
+    responseQueue.add(response);
     return response;
   }
 
@@ -97,7 +93,10 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
     try {
       sync();
     } finally {
-      connections.values().forEach(IOUtils::closeQuietly);
+      // Connections are now managed cleanly within sync() and returned to their pools.
+      // We clear the state to ensure pipeline reuse won't carry over stale buffers.
+      pipelinedResponses.clear();
+      pipelinedCommands.clear();
     }
   }
 
@@ -121,27 +120,28 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
         ? new CountDownLatch(pipelinedResponses.size())
         : null;
 
-    Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator = pipelinedResponses.entrySet()
-        .iterator();
-    while (pipelinedResponsesIterator.hasNext()) {
-      Map.Entry<HostAndPort, Queue<Response<?>>> entry = pipelinedResponsesIterator.next();
+    for (Map.Entry<HostAndPort, Queue<Response<?>>> entry : pipelinedResponses.entrySet()) {
       HostAndPort nodeKey = entry.getKey();
       Queue<Response<?>> queue = entry.getValue();
-      Connection connection = connections.get(nodeKey);
+      Queue<CommandObject<?>> cmdQueue = pipelinedCommands.get(nodeKey);
       executor.execute(() -> {
+        Connection connection = null;
         try {
+          connection = getConnection(nodeKey);
+          
+          for (CommandObject<?> cmd : cmdQueue) {
+            connection.sendCommand(cmd.getArguments());
+          }
+          cmdQueue.clear();
+
           List<Object> unformatted = connection.getMany(queue.size());
           for (Object o : unformatted) {
             queue.poll().set(o);
           }
         } catch (JedisConnectionException jce) {
           log.error("Error with connection to " + nodeKey, jce);
-          // cleanup the connection
-          // TODO these operations not thread-safe and when executed here, the iter may moved
-          pipelinedResponsesIterator.remove();
-          connections.remove(nodeKey);
-          IOUtils.closeQuietly(connection);
         } finally {
+          IOUtils.closeQuietly(connection);
           if (multiNode) {
             countDownLatch.countDown();
           }

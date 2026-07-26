@@ -130,6 +130,41 @@ public class ProtocolTest {
   }
 
   @Test
+  public void bulkReplyLengthOutOfIntRange() {
+    // 2^32 truncates to 0, which used to be accepted as an empty bulk reply and left the
+    // rest of the payload in the buffer to be framed as the next reply.
+    InputStream is = new ByteArrayInputStream("$4294967296\r\n\r\n+OK\r\n".getBytes());
+    assertThrows(JedisConnectionException.class, () -> Protocol.read(new RedisInputStream(is)));
+  }
+
+  @Test
+  public void bulkReplyLengthWithNonDigit() {
+    // ':' is '0' + 10, so "0:" used to be read as the length 10 and ten bytes of
+    // whatever followed were returned as the value.
+    InputStream is = new ByteArrayInputStream("$0:\r\n0123456789\r\n".getBytes());
+    assertThrows(JedisConnectionException.class, () -> Protocol.read(new RedisInputStream(is)));
+  }
+
+  @Test
+  public void multiBulkReplyCountOutOfIntRange() {
+    InputStream is = new ByteArrayInputStream("*4294967297\r\n+OK\r\n".getBytes());
+    assertThrows(JedisConnectionException.class, () -> Protocol.read(new RedisInputStream(is)));
+  }
+
+  @Test
+  public void integerReplyAtLongBoundaries() {
+    InputStream max = new ByteArrayInputStream(":9223372036854775807\r\n".getBytes());
+    assertEquals(Long.MAX_VALUE, (long) (Long) Protocol.read(new RedisInputStream(max)));
+
+    InputStream min = new ByteArrayInputStream(":-9223372036854775808\r\n".getBytes());
+    assertEquals(Long.MIN_VALUE, (long) (Long) Protocol.read(new RedisInputStream(min)));
+
+    InputStream tooLarge = new ByteArrayInputStream(":9223372036854775808\r\n".getBytes());
+    assertThrows(JedisConnectionException.class,
+      () -> Protocol.read(new RedisInputStream(tooLarge)));
+  }
+
+  @Test
   public void busyReply() {
     final String busyMessage = "BUSY Redis is busy running a script.";
     final InputStream is = new ByteArrayInputStream(('-' + busyMessage + "\r\n").getBytes());

@@ -29,6 +29,8 @@ public class RedisInputStream extends FilterInputStream {
       System.getProperty("jedis.bufferSize.input",
           System.getProperty("jedis.bufferSize", "8192")));
 
+  private static final long MIN_VALUE_DIV_10 = Long.MIN_VALUE / 10;
+
   protected final byte[] buf;
 
   protected int count, limit;
@@ -194,7 +196,11 @@ public class RedisInputStream extends FilterInputStream {
   }
 
   public int readIntCrLf() {
-    return (int) readLongCrLf();
+    final long value = readLongCrLf();
+    if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
+      throw new JedisConnectionException("Number is out of int range: " + value);
+    }
+    return (int) value;
   }
 
   public long readLongCrLf() {
@@ -207,6 +213,8 @@ public class RedisInputStream extends FilterInputStream {
       ++count;
     }
 
+    // Accumulate negated so that Long.MIN_VALUE stays representable.
+    final long limit = isNeg ? Long.MIN_VALUE : -Long.MAX_VALUE;
     long value = 0;
     while (true) {
       ensureFill();
@@ -221,11 +229,22 @@ public class RedisInputStream extends FilterInputStream {
 
         break;
       } else {
-        value = value * 10 + b - '0';
+        final int digit = b - '0';
+        if (digit < 0 || digit > 9) {
+          throw new JedisConnectionException("Unexpected character!");
+        }
+        if (value < MIN_VALUE_DIV_10) {
+          throw new JedisConnectionException("Number is out of range.");
+        }
+        value *= 10;
+        if (value < limit + digit) {
+          throw new JedisConnectionException("Number is out of range.");
+        }
+        value -= digit;
       }
     }
 
-    return (isNeg ? -value : value);
+    return (isNeg ? value : -value);
   }
 
   public double readDoubleCrLf() {

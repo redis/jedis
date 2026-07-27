@@ -729,16 +729,18 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
 
   /**
    * Sets up a small sensor dashboard dataset used by the TS.QUERYLABELS examples. Keys are
-   * hash-tagged so they share a slot in cluster mode (the command itself is keyless).
+   * deliberately NOT hash-tagged, so in cluster mode they scatter across shards: TS.QUERYLABELS is
+   * keyless and routes to a single arbitrary node, and asserting a complete reply proves the server
+   * coordinates the cluster-wide fan-out itself (no client-side aggregation).
    */
   private void setupQueryLabelsSeries() {
-    jedis.tsCreate("{ql}temp:living", TSCreateParams.createParams()
+    jedis.tsCreate("ql:temp:living", TSCreateParams.createParams()
         .labels(mapOf("type", "sensor", "sensortype", "temperature", "location", "LivingRoom")));
-    jedis.tsCreate("{ql}temp:kitchen", TSCreateParams.createParams()
+    jedis.tsCreate("ql:temp:kitchen", TSCreateParams.createParams()
         .labels(mapOf("type", "sensor", "sensortype", "temperature", "location", "Kitchen")));
-    jedis.tsCreate("{ql}hum:bedroom", TSCreateParams.createParams()
+    jedis.tsCreate("ql:hum:bedroom", TSCreateParams.createParams()
         .labels(mapOf("type", "sensor", "sensortype", "humidity", "location", "BedRoom")));
-    jedis.tsCreate("{ql}cpu:server",
+    jedis.tsCreate("ql:cpu:server",
       TSCreateParams.createParams().labels(mapOf("type", "metric", "unit", "percent")));
   }
 

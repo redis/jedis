@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.unified.cluster;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -12,6 +13,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.hamcrest.Matchers;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
@@ -162,7 +164,9 @@ public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsT
     assertTrue(jedis.objectIdletime("{foo}1") >= 0);
 
     assertEquals(1, jedis.touch("{foo}1"));
-    assertEquals(0L, jedis.objectIdletime("{foo}1").longValue());
+    // OBJECT IDLETIME is derived from the LRU clock, whose resolution is one second, so a
+    // second boundary crossed between TOUCH and the read reports 1 rather than 0.
+    assertThat(jedis.objectIdletime("{foo}1"), Matchers.lessThanOrEqualTo(1L));
 
     assertEquals(1, jedis.touch("{foo}1", "{foo}2", "{foo}3"));
 

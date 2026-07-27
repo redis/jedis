@@ -415,7 +415,9 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertTrue(jedis.objectIdletime("foo1") >= 0);
 
     assertEquals(1, jedis.touch("foo1"));
-    assertEquals(0L, jedis.objectIdletime("foo1").longValue());
+    // OBJECT IDLETIME is derived from the LRU clock, whose resolution is one second, so a
+    // second boundary crossed between TOUCH and the read reports 1 rather than 0.
+    assertThat(jedis.objectIdletime("foo1"), Matchers.lessThanOrEqualTo(1L));
 
     assertEquals(1, jedis.touch("foo1", "foo2", "foo3"));
 
@@ -433,7 +435,7 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     assertTrue(jedis.objectIdletime(bfoo1) >= 0);
 
     assertEquals(1, jedis.touch(bfoo1));
-    assertEquals(0L, jedis.objectIdletime(bfoo1).longValue());
+    assertThat(jedis.objectIdletime(bfoo1), Matchers.lessThanOrEqualTo(1L));
 
     assertEquals(1, jedis.touch(bfoo1, bfoo2, bfoo3));
 

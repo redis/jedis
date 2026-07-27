@@ -5459,6 +5459,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<TSElement> tsRead(String key, long timestamp) {
+    return executeCommand(commandObjects.tsRead(key, timestamp));
+  }
+
+  @Override
+  public List<TSElement> tsRead(String key, TSReadParams readParams) {
+    return executeCommand(commandObjects.tsRead(key, readParams));
+  }
+
+  @Override
   public List<TSElement> tsNRange(String[] keys, long fromTimestamp, long toTimestamp) {
     return executeCommand(commandObjects.tsNRange(keys, fromTimestamp, toTimestamp));
   }

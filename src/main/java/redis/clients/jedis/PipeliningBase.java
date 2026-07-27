@@ -4678,6 +4678,16 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<TSElement>> tsRead(String key, long timestamp) {
+    return appendCommand(commandObjects.tsRead(key, timestamp));
+  }
+
+  @Override
+  public Response<List<TSElement>> tsRead(String key, TSReadParams readParams) {
+    return appendCommand(commandObjects.tsRead(key, readParams));
+  }
+
+  @Override
   public Response<List<TSElement>> tsNRange(String[] keys, long fromTimestamp, long toTimestamp) {
     return appendCommand(commandObjects.tsNRange(keys, fromTimestamp, toTimestamp));
   }

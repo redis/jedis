@@ -2,7 +2,6 @@ package redis.clients.jedis.timeseries;
 
 import java.util.List;
 import java.util.Map;
-import redis.clients.jedis.annots.Experimental;
 
 public interface RedisTimeSeriesCommands {
 
@@ -206,7 +205,6 @@ public interface RedisTimeSeriesCommands {
    * @return one pivot row per distinct timestamp, in increasing-timestamp order
    * @since 8.0
    */
-  @Experimental
   List<TSElement> tsNRange(String[] keys, long fromTimestamp, long toTimestamp);
 
   /**
@@ -230,7 +228,6 @@ public interface RedisTimeSeriesCommands {
    * @return one pivot row per distinct timestamp, in increasing-timestamp order
    * @since 8.0
    */
-  @Experimental
   List<TSElement> tsNRange(String[] keys, TSNRangeParams nrangeParams);
 
   /**
@@ -245,7 +242,6 @@ public interface RedisTimeSeriesCommands {
    * @return one pivot row per distinct timestamp, in decreasing-timestamp order
    * @since 8.0
    */
-  @Experimental
   List<TSElement> tsNRevRange(String[] keys, long fromTimestamp, long toTimestamp);
 
   /**
@@ -259,7 +255,6 @@ public interface RedisTimeSeriesCommands {
    * @return one pivot row per distinct timestamp, in decreasing-timestamp order
    * @since 8.0
    */
-  @Experimental
   List<TSElement> tsNRevRange(String[] keys, TSNRangeParams nrangeParams);
 
   /**

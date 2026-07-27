@@ -19,10 +19,13 @@ import java.util.stream.Collectors;
 
 import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.EnabledOnCommand;
+
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.RegisterExtension;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.timeseries.AggregationType;
 import redis.clients.jedis.timeseries.TSAlterParams;
@@ -61,6 +64,16 @@ public class CommandObjectsTimeSeriesCommandsTest extends CommandObjectsModulesT
   @BeforeEach
   public void setUpKeys(TestInfo testInfo) {
     keys = TestKeyRegistry.create(testInfo);
+  }
+
+  @AfterEach
+  public void cleanUpKeys() {
+    // This low-level test drives commands through the private executor and has no reusable
+    // KeyBinaryCommands client, so open a short-lived Jedis to delete the registered keys.
+    try (Jedis cleanupClient = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().protocol(protocol).build())) {
+      keys.cleanup(cleanupClient);
+    }
   }
 
   @Test

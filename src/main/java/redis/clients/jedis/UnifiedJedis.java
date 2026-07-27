@@ -5545,6 +5545,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<String> tsQueryLabels(String... filters) {
+    return executeCommand(commandObjects.tsQueryLabels(filters));
+  }
+
+  @Override
+  public List<String> tsQueryLabelValues(String label, String... filters) {
+    return executeCommand(commandObjects.tsQueryLabelValues(label, filters));
+  }
+
+  @Override
   public TSInfo tsInfo(String key) {
     return executeCommand(commandObjects.tsInfo(key));
   }

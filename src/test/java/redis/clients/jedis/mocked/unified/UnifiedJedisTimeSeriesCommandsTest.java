@@ -507,6 +507,39 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
   }
 
   @Test
+  public void testTsQueryLabels() {
+    String[] filters = { "type=sensor" };
+    List<String> expectedResponse = Arrays.asList("location", "sensortype", "type");
+
+    when(commandObjects.tsQueryLabels(filters)).thenReturn(listStringCommandObject);
+    when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
+
+    List<String> result = jedis.tsQueryLabels(filters);
+
+    assertThat(result, sameInstance(expectedResponse));
+
+    verify(commandExecutor).executeCommand(listStringCommandObject);
+    verify(commandObjects).tsQueryLabels(filters);
+  }
+
+  @Test
+  public void testTsQueryLabelValues() {
+    String label = "location";
+    String[] filters = { "type=sensor" };
+    List<String> expectedResponse = Arrays.asList("LivingRoom", "Kitchen", "BedRoom");
+
+    when(commandObjects.tsQueryLabelValues(label, filters)).thenReturn(listStringCommandObject);
+    when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
+
+    List<String> result = jedis.tsQueryLabelValues(label, filters);
+
+    assertThat(result, sameInstance(expectedResponse));
+
+    verify(commandExecutor).executeCommand(listStringCommandObject);
+    verify(commandObjects).tsQueryLabelValues(label, filters);
+  }
+
+  @Test
   public void testTsRange() {
     String key = "testKey";
     long fromTimestamp = 1582600000000L;

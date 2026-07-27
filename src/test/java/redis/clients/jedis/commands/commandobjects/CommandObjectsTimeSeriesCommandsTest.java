@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static io.redis.test.utils.RedisVersion.V8_10_0_RC2_STRING;
 
 import java.util.AbstractMap;
 import java.util.List;
@@ -19,13 +20,16 @@ import java.util.stream.Collectors;
 
 import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.EnabledOnCommand;
+import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.RegisterExtension;
+
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.timeseries.AggregationType;
 import redis.clients.jedis.timeseries.TSAlterParams;
@@ -719,6 +723,45 @@ public class CommandObjectsTimeSeriesCommandsTest extends CommandObjectsModulesT
     List<String> matchingKeys = exec(commandObjects.tsQueryIndex(filters));
 
     assertThat(matchingKeys, containsInAnyOrder(key1, key2));
+  }
+
+  @Test
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
+  public void testTsQueryLabelsAndValues(TestInfo testInfo) {
+    // Keys are obtained from (and tracked by) the registry so they can be cleared afterwards
+    // instead of relying on a wholesale flush. Label names/values drive the assertions, so the
+    // registry-namespaced key names do not affect the results.
+    TestKeyRegistry keys = TestKeyRegistry.create(testInfo);
+    try {
+      exec(commandObjects.tsCreate(keys.key("temp:living"),
+          new TSCreateParams().label("type", "sensor").label("sensortype", "temperature").label("location", "LivingRoom")));
+      exec(commandObjects.tsCreate(keys.key("temp:kitchen"),
+          new TSCreateParams().label("type", "sensor").label("sensortype", "temperature").label("location", "Kitchen")));
+      exec(commandObjects.tsCreate(keys.key("hum:bedroom"),
+          new TSCreateParams().label("type", "sensor").label("sensortype", "humidity").label("location", "BedRoom")));
+      exec(commandObjects.tsCreate(keys.key("cpu:server"),
+          new TSCreateParams().label("type", "metric").label("unit", "percent")));
+
+      // LABELS with a filter: distinct label names across the sensor group.
+      assertThat(exec(commandObjects.tsQueryLabels("type=sensor")),
+          containsInAnyOrder("type", "sensortype", "location"));
+
+      // LABELS without a filter: all indexed series, so "unit" appears too.
+      assertThat(exec(commandObjects.tsQueryLabels()),
+          containsInAnyOrder("type", "sensortype", "location", "unit"));
+
+      // VALUES of a chosen label within the sensor group.
+      assertThat(exec(commandObjects.tsQueryLabelValues("location", "type=sensor")),
+          containsInAnyOrder("LivingRoom", "Kitchen", "BedRoom"));
+
+      // A label carried by no matching series yields an empty reply, not an error.
+      assertThat(exec(commandObjects.tsQueryLabelValues("nonexistent", "type=sensor")), empty());
+    } finally {
+      try (RedisClient client = RedisClient.builder().hostAndPort(endpoint.getHostAndPort())
+          .clientConfig(endpoint.getClientConfigBuilder().protocol(protocol).build()).build()) {
+        keys.cleanup(client);
+      }
+    }
   }
 
   @Test

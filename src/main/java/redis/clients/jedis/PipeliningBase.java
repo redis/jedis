@@ -4763,6 +4763,16 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<String>> tsQueryLabels(String... filters) {
+    return appendCommand(commandObjects.tsQueryLabels(filters));
+  }
+
+  @Override
+  public Response<List<String>> tsQueryLabelValues(String label, String... filters) {
+    return appendCommand(commandObjects.tsQueryLabelValues(label, filters));
+  }
+
+  @Override
   public Response<TSInfo> tsInfo(String key) {
     return appendCommand(commandObjects.tsInfo(key));
   }

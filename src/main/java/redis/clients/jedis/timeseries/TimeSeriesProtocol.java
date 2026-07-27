@@ -69,6 +69,7 @@ public class TimeSeriesProtocol {
     DEBUG,
     LATEST,
     EMPTY,
+    EXCLUDEEMPTY,
     BUCKETTIMESTAMP,
     BLOCK,
     MAX_COUNT;

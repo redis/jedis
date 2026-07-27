@@ -10,7 +10,6 @@ import static redis.clients.jedis.util.SafeEncoder.encode;
 import java.util.Arrays;
 import java.util.Objects;
 import redis.clients.jedis.CommandArguments;
-import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.IParams;
 
 /**
@@ -23,7 +22,6 @@ import redis.clients.jedis.params.IParams;
  * the wire in the canonical order documented on {@link #addParams(CommandArguments)}.
  * @since 8.0
  */
-@Experimental
 public class TSNRangeParams implements IParams {
 
   private Long fromTimestamp;

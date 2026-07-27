@@ -12,10 +12,10 @@ import static redis.clients.jedis.CommandFlagsRegistry.ResponsePolicy;
  * <p>
  * Generated from Redis Server:
  * <ul>
- * <li>Version: 8.6.1</li>
+ * <li>Version: 8.8.1</li>
  * <li>Mode: standalone</li>
  * <li>Loaded Modules: timeseries, search, vectorset, bf, ReJSON</li>
- * <li>Generated at: 2026-03-20 13:22:33 EET</li>
+ * <li>Generated at: 2026-07-27 14:30:02 EEST</li>
  * </ul>
  */
 final class StaticCommandFlagsRegistryInitializer {
@@ -238,7 +238,7 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("CLUSTER", "BUMPEPOCH",
       EnumSet.of(CommandFlag.ADMIN, CommandFlag.NO_ASYNC_LOADING, CommandFlag.STALE));
     builder.register("CLUSTER", "COUNT-FAILURE-REPORTS",
-      EnumSet.of(CommandFlag.ADMIN, CommandFlag.STALE));
+      EnumSet.of(CommandFlag.ADMIN, CommandFlag.LOADING, CommandFlag.STALE));
     builder.register("CLUSTER", "COUNTKEYSINSLOT", EnumSet.of(CommandFlag.STALE));
     builder.register("CLUSTER", "DELSLOTS",
       EnumSet.of(CommandFlag.ADMIN, CommandFlag.NO_ASYNC_LOADING, CommandFlag.STALE));
@@ -251,17 +251,18 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("CLUSTER", "FORGET",
       EnumSet.of(CommandFlag.ADMIN, CommandFlag.NO_ASYNC_LOADING, CommandFlag.STALE));
     builder.register("CLUSTER", "GETKEYSINSLOT", EnumSet.of(CommandFlag.STALE));
-    builder.register("CLUSTER", "INFO", EnumSet.of(CommandFlag.STALE));
-    builder.register("CLUSTER", "KEYSLOT", EnumSet.of(CommandFlag.STALE));
-    builder.register("CLUSTER", "LINKS", EnumSet.of(CommandFlag.STALE));
+    builder.register("CLUSTER", "INFO", EnumSet.of(CommandFlag.LOADING, CommandFlag.STALE));
+    builder.register("CLUSTER", "KEYSLOT", EnumSet.of(CommandFlag.LOADING, CommandFlag.STALE));
+    builder.register("CLUSTER", "LINKS", EnumSet.of(CommandFlag.LOADING, CommandFlag.STALE));
     builder.register("CLUSTER", "MEET",
       EnumSet.of(CommandFlag.ADMIN, CommandFlag.NO_ASYNC_LOADING, CommandFlag.STALE));
     builder.register("CLUSTER", "MIGRATION",
       EnumSet.of(CommandFlag.ADMIN, CommandFlag.NO_ASYNC_LOADING, CommandFlag.STALE));
-    builder.register("CLUSTER", "MYID", EnumSet.of(CommandFlag.STALE));
-    builder.register("CLUSTER", "MYSHARDID", EnumSet.of(CommandFlag.STALE));
-    builder.register("CLUSTER", "NODES", EnumSet.of(CommandFlag.STALE));
-    builder.register("CLUSTER", "REPLICAS", EnumSet.of(CommandFlag.ADMIN, CommandFlag.STALE));
+    builder.register("CLUSTER", "MYID", EnumSet.of(CommandFlag.LOADING, CommandFlag.STALE));
+    builder.register("CLUSTER", "MYSHARDID", EnumSet.of(CommandFlag.LOADING, CommandFlag.STALE));
+    builder.register("CLUSTER", "NODES", EnumSet.of(CommandFlag.LOADING, CommandFlag.STALE));
+    builder.register("CLUSTER", "REPLICAS",
+      EnumSet.of(CommandFlag.ADMIN, CommandFlag.LOADING, CommandFlag.STALE));
     builder.register("CLUSTER", "REPLICATE",
       EnumSet.of(CommandFlag.ADMIN, CommandFlag.NO_ASYNC_LOADING, CommandFlag.STALE));
     builder.register("CLUSTER", "RESET",
@@ -273,7 +274,8 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("CLUSTER", "SETSLOT",
       EnumSet.of(CommandFlag.ADMIN, CommandFlag.NO_ASYNC_LOADING, CommandFlag.STALE));
     builder.register("CLUSTER", "SHARDS", EnumSet.of(CommandFlag.LOADING, CommandFlag.STALE));
-    builder.register("CLUSTER", "SLAVES", EnumSet.of(CommandFlag.ADMIN, CommandFlag.STALE));
+    builder.register("CLUSTER", "SLAVES",
+      EnumSet.of(CommandFlag.ADMIN, CommandFlag.LOADING, CommandFlag.STALE));
     builder.register("CLUSTER", "SLOT-STATS", EnumSet.of(CommandFlag.LOADING, CommandFlag.STALE),
       RequestPolicy.ALL_SHARDS, null);
     builder.register("CLUSTER", "SLOTS", EnumSet.of(CommandFlag.LOADING, CommandFlag.STALE));
@@ -319,7 +321,13 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("SCAN", EnumSet.of(CommandFlag.READONLY), RequestPolicy.SPECIAL,
       ResponsePolicy.SPECIAL);
 
-    // 38 command(s) with: readonly
+    // 44 command(s) with: readonly
+    builder.register("ARGETRANGE", EnumSet.of(CommandFlag.READONLY));
+    builder.register("ARGREP", EnumSet.of(CommandFlag.READONLY));
+    builder.register("ARINFO", EnumSet.of(CommandFlag.READONLY));
+    builder.register("ARLASTITEMS", EnumSet.of(CommandFlag.READONLY));
+    builder.register("AROP", EnumSet.of(CommandFlag.READONLY));
+    builder.register("ARSCAN", EnumSet.of(CommandFlag.READONLY));
     builder.register("BITCOUNT", EnumSet.of(CommandFlag.READONLY));
     builder.register("BITPOS", EnumSet.of(CommandFlag.READONLY));
     builder.register("DUMP", EnumSet.of(CommandFlag.READONLY));
@@ -369,7 +377,8 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("DEL", EnumSet.of(CommandFlag.WRITE), RequestPolicy.MULTI_SHARD,
       ResponsePolicy.AGG_SUM);
 
-    // 8 command(s) with: write
+    // 9 command(s) with: write
+    builder.register("ARDELRANGE", EnumSet.of(CommandFlag.WRITE));
     builder.register("LREM", EnumSet.of(CommandFlag.WRITE));
     builder.register("LTRIM", EnumSet.of(CommandFlag.WRITE));
     builder.register("RENAME", EnumSet.of(CommandFlag.WRITE));
@@ -387,7 +396,8 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("MSET", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE),
       RequestPolicy.MULTI_SHARD, ResponsePolicy.ALL_SUCCEEDED);
 
-    // 21 command(s) with: denyoom, write
+    // 22 command(s) with: denyoom, write
+    builder.register("ARRING", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
     builder.register("BITFIELD", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
     builder.register("BITOP", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
     builder.register("COPY", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
@@ -424,7 +434,12 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("MGET", EnumSet.of(CommandFlag.FAST, CommandFlag.READONLY),
       RequestPolicy.MULTI_SHARD, null);
 
-    // 32 command(s) with: fast, readonly
+    // 37 command(s) with: fast, readonly
+    builder.register("ARCOUNT", EnumSet.of(CommandFlag.FAST, CommandFlag.READONLY));
+    builder.register("ARGET", EnumSet.of(CommandFlag.FAST, CommandFlag.READONLY));
+    builder.register("ARLEN", EnumSet.of(CommandFlag.FAST, CommandFlag.READONLY));
+    builder.register("ARMGET", EnumSet.of(CommandFlag.FAST, CommandFlag.READONLY));
+    builder.register("ARNEXT", EnumSet.of(CommandFlag.FAST, CommandFlag.READONLY));
     builder.register("BITFIELD_RO", EnumSet.of(CommandFlag.FAST, CommandFlag.READONLY));
     builder.register("DIGEST", EnumSet.of(CommandFlag.FAST, CommandFlag.READONLY));
     builder.register("EXPIRETIME", EnumSet.of(CommandFlag.FAST, CommandFlag.READONLY));
@@ -462,7 +477,9 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("UNLINK", EnumSet.of(CommandFlag.FAST, CommandFlag.WRITE),
       RequestPolicy.MULTI_SHARD, ResponsePolicy.AGG_SUM);
 
-    // 34 command(s) with: fast, write
+    // 37 command(s) with: fast, write
+    builder.register("ARDEL", EnumSet.of(CommandFlag.FAST, CommandFlag.WRITE));
+    builder.register("ARSEEK", EnumSet.of(CommandFlag.FAST, CommandFlag.WRITE));
     builder.register("DELEX", EnumSet.of(CommandFlag.FAST, CommandFlag.WRITE));
     builder.register("EXPIRE", EnumSet.of(CommandFlag.FAST, CommandFlag.WRITE));
     builder.register("EXPIREAT", EnumSet.of(CommandFlag.FAST, CommandFlag.WRITE));
@@ -494,6 +511,7 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("XCLAIM", EnumSet.of(CommandFlag.FAST, CommandFlag.WRITE));
     builder.register("XDEL", EnumSet.of(CommandFlag.FAST, CommandFlag.WRITE));
     builder.register("XDELEX", EnumSet.of(CommandFlag.FAST, CommandFlag.WRITE));
+    builder.register("XNACK", EnumSet.of(CommandFlag.FAST, CommandFlag.WRITE));
     builder.register("ZPOPMAX", EnumSet.of(CommandFlag.FAST, CommandFlag.WRITE));
     builder.register("ZPOPMIN", EnumSet.of(CommandFlag.FAST, CommandFlag.WRITE));
     builder.register("ZREM", EnumSet.of(CommandFlag.FAST, CommandFlag.WRITE));
@@ -638,9 +656,14 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("XREADGROUP",
       EnumSet.of(CommandFlag.BLOCKING, CommandFlag.MOVABLEKEYS, CommandFlag.WRITE));
 
-    // 24 command(s) with: denyoom, fast, write
+    // 29 command(s) with: denyoom, fast, write
     builder.register("APPEND",
       EnumSet.of(CommandFlag.DENYOOM, CommandFlag.FAST, CommandFlag.WRITE));
+    builder.register("ARINSERT",
+      EnumSet.of(CommandFlag.DENYOOM, CommandFlag.FAST, CommandFlag.WRITE));
+    builder.register("ARMSET",
+      EnumSet.of(CommandFlag.DENYOOM, CommandFlag.FAST, CommandFlag.WRITE));
+    builder.register("ARSET", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.FAST, CommandFlag.WRITE));
     builder.register("DECR", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.FAST, CommandFlag.WRITE));
     builder.register("DECRBY",
       EnumSet.of(CommandFlag.DENYOOM, CommandFlag.FAST, CommandFlag.WRITE));
@@ -661,6 +684,8 @@ final class StaticCommandFlagsRegistryInitializer {
       EnumSet.of(CommandFlag.DENYOOM, CommandFlag.FAST, CommandFlag.WRITE));
     builder.register("INCRBYFLOAT",
       EnumSet.of(CommandFlag.DENYOOM, CommandFlag.FAST, CommandFlag.WRITE));
+    builder.register("INCREX",
+      EnumSet.of(CommandFlag.DENYOOM, CommandFlag.FAST, CommandFlag.WRITE));
     builder.register("LPUSH", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.FAST, CommandFlag.WRITE));
     builder.register("LPUSHX",
       EnumSet.of(CommandFlag.DENYOOM, CommandFlag.FAST, CommandFlag.WRITE));
@@ -671,6 +696,8 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("SADD", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.FAST, CommandFlag.WRITE));
     builder.register("SETNX", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.FAST, CommandFlag.WRITE));
     builder.register("XADD", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.FAST, CommandFlag.WRITE));
+    builder.register("XIDMPRECORD",
+      EnumSet.of(CommandFlag.DENYOOM, CommandFlag.FAST, CommandFlag.WRITE));
     builder.register("XSETID",
       EnumSet.of(CommandFlag.DENYOOM, CommandFlag.FAST, CommandFlag.WRITE));
     builder.register("ZADD", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.FAST, CommandFlag.WRITE));
@@ -900,14 +927,8 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("SEARCH.CLUSTERSET", EnumSet.of(CommandFlag.LOADING, CommandFlag.MODULE,
       CommandFlag.NOSCRIPT, CommandFlag.READONLY));
 
-    // 6 command(s) with: loading, noscript, pubsub, stale
-    builder.register("PSUBSCRIBE",
-      EnumSet.of(CommandFlag.LOADING, CommandFlag.NOSCRIPT, CommandFlag.PUBSUB, CommandFlag.STALE));
+    // 3 command(s) with: loading, noscript, pubsub, stale
     builder.register("PUNSUBSCRIBE",
-      EnumSet.of(CommandFlag.LOADING, CommandFlag.NOSCRIPT, CommandFlag.PUBSUB, CommandFlag.STALE));
-    builder.register("SSUBSCRIBE",
-      EnumSet.of(CommandFlag.LOADING, CommandFlag.NOSCRIPT, CommandFlag.PUBSUB, CommandFlag.STALE));
-    builder.register("SUBSCRIBE",
       EnumSet.of(CommandFlag.LOADING, CommandFlag.NOSCRIPT, CommandFlag.PUBSUB, CommandFlag.STALE));
     builder.register("SUNSUBSCRIBE",
       EnumSet.of(CommandFlag.LOADING, CommandFlag.NOSCRIPT, CommandFlag.PUBSUB, CommandFlag.STALE));
@@ -931,6 +952,14 @@ final class StaticCommandFlagsRegistryInitializer {
       CommandFlag.LOADING, CommandFlag.NOSCRIPT, CommandFlag.STALE));
     builder.register("WATCH", EnumSet.of(CommandFlag.ALLOW_BUSY, CommandFlag.FAST,
       CommandFlag.LOADING, CommandFlag.NOSCRIPT, CommandFlag.STALE));
+
+    // 3 command(s) with: denyoom, loading, noscript, pubsub, stale
+    builder.register("PSUBSCRIBE", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.LOADING,
+      CommandFlag.NOSCRIPT, CommandFlag.PUBSUB, CommandFlag.STALE));
+    builder.register("SSUBSCRIBE", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.LOADING,
+      CommandFlag.NOSCRIPT, CommandFlag.PUBSUB, CommandFlag.STALE));
+    builder.register("SUBSCRIBE", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.LOADING,
+      CommandFlag.NOSCRIPT, CommandFlag.PUBSUB, CommandFlag.STALE));
 
     // 3 command(s) with: movablekeys, noscript, no_mandatory_keys, skip_monitor, stale
     builder.register("EVAL", EnumSet.of(CommandFlag.MOVABLEKEYS, CommandFlag.NOSCRIPT,

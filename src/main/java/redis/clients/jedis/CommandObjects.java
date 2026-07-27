@@ -4671,6 +4671,19 @@ public class CommandObjects {
         .addParams(rangeParams), TimeSeriesBuilderFactory.TIMESERIES_ELEMENT_LIST);
   }
 
+  public final CommandObject<List<TSElement>> tsRead(String key, long timestamp) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.READ).key(key)
+        .add(timestamp), TimeSeriesBuilderFactory.TIMESERIES_ELEMENT_LIST);
+  }
+
+  public final CommandObject<List<TSElement>> tsRead(String key, TSReadParams readParams) {
+    CommandArguments args = commandArguments(TimeSeriesCommand.READ).key(key).addParams(readParams);
+    if (readParams.isBlocking()) {
+      args.blocking();
+    }
+    return new CommandObject<>(args, TimeSeriesBuilderFactory.TIMESERIES_ELEMENT_LIST);
+  }
+
   public final CommandObject<Map<String, TSMRangeElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MRANGE).add(fromTimestamp)
         .add(toTimestamp).add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters),

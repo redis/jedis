@@ -15,8 +15,11 @@ import java.util.*;
 import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.Tag;
 
 import redis.clients.jedis.Endpoints;
@@ -28,6 +31,7 @@ import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.TestEnvUtil;
+import redis.clients.jedis.util.TestKeyRegistry;
 
 /**
  * Base test class for Time Series commands using the UnifiedJedis pattern.
@@ -42,6 +46,18 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
 
   public TimeSeriesCommandsTestBase(RedisProtocol protocol) {
     super(protocol);
+  }
+
+  protected TestKeyRegistry keys;
+
+  @BeforeEach
+  public void setUpKeys(TestInfo testInfo) {
+    keys = TestKeyRegistry.create(testInfo);
+  }
+
+  @AfterEach
+  public void cleanUpKeys() {
+    keys.cleanup(jedis);
   }
 
   @Test
@@ -1731,15 +1747,17 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
   @Test
   @EnabledOnCommand("TS.NRANGE")
   public void nRange() {
-    jedis.tsCreate("{nr}:a");
-    jedis.tsCreate("{nr}:b");
-    jedis.tsAdd("{nr}:a", 1000L, 10.0);
-    jedis.tsAdd("{nr}:a", 2000L, 12.0);
-    jedis.tsAdd("{nr}:b", 1000L, 100.0);
-    jedis.tsAdd("{nr}:b", 3000L, 300.0);
+    String a = keys.key("{%test%}:a");
+    String b = keys.key("{%test%}:b");
+    jedis.tsCreate(a);
+    jedis.tsCreate(b);
+    jedis.tsAdd(a, 1000L, 10.0);
+    jedis.tsAdd(a, 2000L, 12.0);
+    jedis.tsAdd(b, 1000L, 100.0);
+    jedis.tsAdd(b, 3000L, 300.0);
 
-    String[] keys = { "{nr}:a", "{nr}:b" };
-    List<TSElement> rows = jedis.tsNRange(keys, 0L, 60000L);
+    String[] seriesKeys = { a, b };
+    List<TSElement> rows = jedis.tsNRange(seriesKeys, 0L, 60000L);
 
     List<Long> timestamps = new ArrayList<>();
     for (TSElement row : rows) {
@@ -1755,12 +1773,12 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
     assertTrue(Double.isNaN(rows.get(2).getValues().get(0)));
     assertEquals(300.0, rows.get(2).getValues().get(1), 0.001);
 
-    List<TSElement> limited = jedis.tsNRange(keys,
+    List<TSElement> limited = jedis.tsNRange(seriesKeys,
       TSNRangeParams.nrangeParams(0L, 60000L).count(1));
     assertEquals(1, limited.size());
     assertEquals(1000L, limited.get(0).getTimestamp());
 
-    List<TSElement> emptyRange = jedis.tsNRange(new String[] { "{nr}:a" }, 900000L, 900001L);
+    List<TSElement> emptyRange = jedis.tsNRange(new String[] { a }, 900000L, 900001L);
     assertTrue(emptyRange.isEmpty());
   }
 
@@ -1771,13 +1789,15 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
   @Test
   @EnabledOnCommand("TS.NREVRANGE")
   public void nRevRange() {
-    jedis.tsCreate("{nrr}:a");
-    jedis.tsCreate("{nrr}:b");
-    jedis.tsAdd("{nrr}:a", 1000L, 10.0);
-    jedis.tsAdd("{nrr}:b", 2000L, 200.0);
+    String a = keys.key("{%test%}:a");
+    String b = keys.key("{%test%}:b");
+    jedis.tsCreate(a);
+    jedis.tsCreate(b);
+    jedis.tsAdd(a, 1000L, 10.0);
+    jedis.tsAdd(b, 2000L, 200.0);
 
-    String[] keys = { "{nrr}:a", "{nrr}:b" };
-    List<TSElement> rows = jedis.tsNRevRange(keys, 0L, 60000L);
+    String[] seriesKeys = { a, b };
+    List<TSElement> rows = jedis.tsNRevRange(seriesKeys, 0L, 60000L);
 
     List<Long> timestamps = new ArrayList<>();
     for (TSElement row : rows) {
@@ -1793,21 +1813,23 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
   @Test
   @EnabledOnCommand("TS.NRANGE")
   public void nRangeAggregation() {
-    jedis.tsCreate("{nra}:a");
-    jedis.tsCreate("{nra}:b");
-    jedis.tsAdd("{nra}:a", 1000L, 10.0);
-    jedis.tsAdd("{nra}:a", 1500L, 20.0);
-    jedis.tsAdd("{nra}:b", 1000L, 100.0);
+    String a = keys.key("{%test%}:a");
+    String b = keys.key("{%test%}:b");
+    jedis.tsCreate(a);
+    jedis.tsCreate(b);
+    jedis.tsAdd(a, 1000L, 10.0);
+    jedis.tsAdd(a, 1500L, 20.0);
+    jedis.tsAdd(b, 1000L, 100.0);
 
-    String[] keys = { "{nra}:a", "{nra}:b" };
+    String[] seriesKeys = { a, b };
 
-    List<TSElement> single = jedis.tsNRange(keys, TSNRangeParams.nrangeParams(0L, 60000L)
+    List<TSElement> single = jedis.tsNRange(seriesKeys, TSNRangeParams.nrangeParams(0L, 60000L)
         .aggregation(new AggregationType[] { AggregationType.AVG, AggregationType.SUM }, 1000L));
     assertEquals(2, single.get(0).getValues().size());
     assertEquals(15.0, single.get(0).getValues().get(0), 0.001);
     assertEquals(100.0, single.get(0).getValues().get(1), 0.001);
 
-    List<TSElement> multi = jedis.tsNRange(keys,
+    List<TSElement> multi = jedis.tsNRange(seriesKeys,
       TSNRangeParams.nrangeParams(0L, 60000L).aggregation(new AggregationType[][] {
           { AggregationType.AVG, AggregationType.MAX }, { AggregationType.SUM } },
         1000L));
@@ -1824,14 +1846,16 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
   @Test
   @EnabledOnCommand("TS.NRANGE")
   public void nRangeAggregatorCountMismatchRejected() {
-    jedis.tsCreate("{nrm}:a");
-    jedis.tsCreate("{nrm}:b");
-    jedis.tsAdd("{nrm}:a", 1000L, 10.0);
-    jedis.tsAdd("{nrm}:b", 1000L, 20.0);
+    String a = keys.key("{%test%}:a");
+    String b = keys.key("{%test%}:b");
+    jedis.tsCreate(a);
+    jedis.tsCreate(b);
+    jedis.tsAdd(a, 1000L, 10.0);
+    jedis.tsAdd(b, 1000L, 20.0);
 
-    String[] keys = { "{nrm}:a", "{nrm}:b" };
+    String[] seriesKeys = { a, b };
     assertThrows(JedisDataException.class,
-      () -> jedis.tsNRange(keys, TSNRangeParams.nrangeParams(0L, 60000L)
+      () -> jedis.tsNRange(seriesKeys, TSNRangeParams.nrangeParams(0L, 60000L)
           .aggregation(new AggregationType[] { AggregationType.AVG }, 1000L)));
   }
 }

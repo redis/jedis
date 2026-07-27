@@ -19,7 +19,9 @@ import java.util.stream.Collectors;
 
 import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.EnabledOnCommand;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.timeseries.AggregationType;
@@ -37,6 +39,7 @@ import redis.clients.jedis.timeseries.TSRangeParams;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 import redis.clients.jedis.util.TestEnvUtil;
+import redis.clients.jedis.util.TestKeyRegistry;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=timeseries">Time series</a> commands.
@@ -51,6 +54,13 @@ public class CommandObjectsTimeSeriesCommandsTest extends CommandObjectsModulesT
 
   public CommandObjectsTimeSeriesCommandsTest(RedisProtocol protocol) {
     super(protocol);
+  }
+
+  private TestKeyRegistry keys;
+
+  @BeforeEach
+  public void setUpKeys(TestInfo testInfo) {
+    keys = TestKeyRegistry.create(testInfo);
   }
 
   @Test
@@ -306,8 +316,8 @@ public class CommandObjectsTimeSeriesCommandsTest extends CommandObjectsModulesT
   @Test
   @EnabledOnCommand("TS.NRANGE")
   public void testTsNRange() {
-    String key1 = "{ts}:nrangeA";
-    String key2 = "{ts}:nrangeB";
+    String key1 = keys.key("{%test%}:nrangeA");
+    String key2 = keys.key("{%test%}:nrangeB");
     assertThat(exec(commandObjects.tsCreate(key1)), equalTo("OK"));
     assertThat(exec(commandObjects.tsCreate(key2)), equalTo("OK"));
 
@@ -317,8 +327,8 @@ public class CommandObjectsTimeSeriesCommandsTest extends CommandObjectsModulesT
     exec(commandObjects.tsAdd(key2, 1000L, 100.0));
     exec(commandObjects.tsAdd(key2, 3000L, 300.0));
 
-    String[] keys = { key1, key2 };
-    List<TSElement> rows = exec(commandObjects.tsNRange(keys, 0L, 60000L));
+    String[] seriesKeys = { key1, key2 };
+    List<TSElement> rows = exec(commandObjects.tsNRange(seriesKeys, 0L, 60000L));
 
     // Forward order: 1000, 2000, 3000. Each row has one value per key; missing -> NaN.
     assertThat(rows, hasSize(3));
@@ -331,7 +341,7 @@ public class CommandObjectsTimeSeriesCommandsTest extends CommandObjectsModulesT
     assertThat(rows.get(2).getValues().get(1), closeTo(300.0, 0.001));
 
     // COUNT limits rows after the merge, keeping the lowest timestamps.
-    List<TSElement> limited = exec(commandObjects.tsNRange(keys,
+    List<TSElement> limited = exec(commandObjects.tsNRange(seriesKeys,
       TSNRangeParams.nrangeParams(0L, 60000L).count(1)));
     assertThat(limited, hasSize(1));
     assertThat(limited.get(0).getTimestamp(), equalTo(1000L));
@@ -340,18 +350,18 @@ public class CommandObjectsTimeSeriesCommandsTest extends CommandObjectsModulesT
   @Test
   @EnabledOnCommand("TS.NRANGE")
   public void testTsNRangeAggregation() {
-    String key1 = "{ts}:naggA";
-    String key2 = "{ts}:naggB";
+    String key1 = keys.key("{%test%}:naggA");
+    String key2 = keys.key("{%test%}:naggB");
     assertThat(exec(commandObjects.tsCreate(key1)), equalTo("OK"));
     assertThat(exec(commandObjects.tsCreate(key2)), equalTo("OK"));
     exec(commandObjects.tsAdd(key1, 1000L, 10.0));
     exec(commandObjects.tsAdd(key1, 1500L, 20.0));
     exec(commandObjects.tsAdd(key2, 1000L, 100.0));
 
-    String[] keys = { key1, key2 };
+    String[] seriesKeys = { key1, key2 };
 
     // One aggregator per key: key1 -> AVG, key2 -> SUM.
-    List<TSElement> single = exec(commandObjects.tsNRange(keys,
+    List<TSElement> single = exec(commandObjects.tsNRange(seriesKeys,
       TSNRangeParams.nrangeParams(0L, 60000L)
           .aggregation(new AggregationType[] { AggregationType.AVG, AggregationType.SUM }, 1000L)));
     assertThat(single.get(0).getValues(), hasSize(2));
@@ -359,7 +369,7 @@ public class CommandObjectsTimeSeriesCommandsTest extends CommandObjectsModulesT
     assertThat(single.get(0).getValues().get(1), closeTo(100.0, 0.001)); // sum(100)
 
     // Multiple aggregators for key1 (AVG,MAX), one for key2 (SUM): 3 flat value columns.
-    List<TSElement> multi = exec(commandObjects.tsNRange(keys,
+    List<TSElement> multi = exec(commandObjects.tsNRange(seriesKeys,
       TSNRangeParams.nrangeParams(0L, 60000L).aggregation(new AggregationType[][] {
           { AggregationType.AVG, AggregationType.MAX }, { AggregationType.SUM } }, 1000L)));
     assertThat(multi.get(0).getValues(), hasSize(3));
@@ -371,21 +381,21 @@ public class CommandObjectsTimeSeriesCommandsTest extends CommandObjectsModulesT
   @Test
   @EnabledOnCommand("TS.NREVRANGE")
   public void testTsNRevRange() {
-    String key1 = "{ts}:nrevA";
-    String key2 = "{ts}:nrevB";
+    String key1 = keys.key("{%test%}:nrevA");
+    String key2 = keys.key("{%test%}:nrevB");
     assertThat(exec(commandObjects.tsCreate(key1)), equalTo("OK"));
     assertThat(exec(commandObjects.tsCreate(key2)), equalTo("OK"));
     exec(commandObjects.tsAdd(key1, 1000L, 10.0));
     exec(commandObjects.tsAdd(key2, 2000L, 200.0));
 
-    String[] keys = { key1, key2 };
-    List<TSElement> rows = exec(commandObjects.tsNRevRange(keys, 0L, 60000L));
+    String[] seriesKeys = { key1, key2 };
+    List<TSElement> rows = exec(commandObjects.tsNRevRange(seriesKeys, 0L, 60000L));
 
     // Reverse order: 2000 then 1000; server order is preserved (not re-sorted by the client).
     assertThat(rows.stream().map(TSElement::getTimestamp).collect(Collectors.toList()),
       contains(2000L, 1000L));
 
-    List<TSElement> byParams = exec(commandObjects.tsNRevRange(keys,
+    List<TSElement> byParams = exec(commandObjects.tsNRevRange(seriesKeys,
       TSNRangeParams.nrangeParams(0L, 60000L)));
     assertThat(byParams.stream().map(TSElement::getTimestamp).collect(Collectors.toList()),
       contains(2000L, 1000L));
@@ -394,14 +404,14 @@ public class CommandObjectsTimeSeriesCommandsTest extends CommandObjectsModulesT
   @Test
   @EnabledOnCommand("TS.NRANGE")
   public void testTsNRangeDuplicateKeysPreserved() {
-    String key = "{ts}:ndup";
+    String key = keys.key("{%test%}:ndup");
     assertThat(exec(commandObjects.tsCreate(key)), equalTo("OK"));
     exec(commandObjects.tsAdd(key, 1000L, 5.0));
     exec(commandObjects.tsAdd(key, 1500L, 9.0));
 
     // Same key twice with different aggregators -> two value columns for one physical series.
-    String[] keys = { key, key };
-    List<TSElement> rows = exec(commandObjects.tsNRange(keys,
+    String[] seriesKeys = { key, key };
+    List<TSElement> rows = exec(commandObjects.tsNRange(seriesKeys,
       TSNRangeParams.nrangeParams(0L, 60000L)
           .aggregation(new AggregationType[] { AggregationType.MIN, AggregationType.MAX }, 1000L)));
     assertThat(rows.get(0).getValues(), hasSize(2));

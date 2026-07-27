@@ -10853,6 +10853,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public boolean vismember(String key, String element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vismember(key, element));
+  }
+
+  @Override
   public List<Double> vemb(String key, String element) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vemb(key, element));
@@ -11007,6 +11013,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long vcard(byte[] key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vcard(key));
+  }
+
+  @Override
+  public boolean vismember(byte[] key, byte[] element) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.vismember(key, element));
   }
 
   @Override

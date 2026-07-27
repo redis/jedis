@@ -5459,6 +5459,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<TSElement> tsRead(String key, long timestamp) {
+    return executeCommand(commandObjects.tsRead(key, timestamp));
+  }
+
+  @Override
+  public List<TSElement> tsRead(String key, TSReadParams readParams) {
+    return executeCommand(commandObjects.tsRead(key, readParams));
+  }
+
+  @Override
   public Map<String, TSMRangeElements> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return executeCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }
@@ -6060,6 +6070,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public boolean vismember(String key, String element) {
+    return executeCommand(commandObjects.vismember(key, element));
+  }
+
+  @Override
   public List<Double> vemb(String key, String element) {
     return executeCommand(commandObjects.vemb(key, element));
   }
@@ -6188,6 +6203,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long vcard(byte[] key) {
     return executeCommand(commandObjects.vcard(key));
+  }
+
+  @Override
+  public boolean vismember(byte[] key, byte[] element) {
+    return executeCommand(commandObjects.vismember(key, element));
   }
 
   @Override

@@ -580,4 +580,40 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
     verify(commandObjects).tsRevRange(key, rangeParams);
   }
 
+  @Test
+  public void testTsRead() {
+    String key = "testKey";
+    long timestamp = 0L;
+    List<TSElement> expectedResponse = Arrays.asList(
+        new TSElement(100L, 1.0),
+        new TSElement(200L, 2.0));
+
+    when(commandObjects.tsRead(key, timestamp)).thenReturn(listTsElementCommandObject);
+    when(commandExecutor.executeCommand(listTsElementCommandObject)).thenReturn(expectedResponse);
+
+    List<TSElement> result = jedis.tsRead(key, timestamp);
+
+    assertEquals(expectedResponse, result);
+
+    verify(commandExecutor).executeCommand(listTsElementCommandObject);
+    verify(commandObjects).tsRead(key, timestamp);
+  }
+
+  @Test
+  public void testTsReadWithParams() {
+    String key = "testKey";
+    TSReadParams readParams = TSReadParams.readParams().timestamp(101L).block(1000L, 1).maxCount(10);
+    List<TSElement> expectedResponse = Collections.singletonList(new TSElement(200L, 2.0));
+
+    when(commandObjects.tsRead(key, readParams)).thenReturn(listTsElementCommandObject);
+    when(commandExecutor.executeCommand(listTsElementCommandObject)).thenReturn(expectedResponse);
+
+    List<TSElement> result = jedis.tsRead(key, readParams);
+
+    assertEquals(expectedResponse, result);
+
+    verify(commandExecutor).executeCommand(listTsElementCommandObject);
+    verify(commandObjects).tsRead(key, readParams);
+  }
+
 }

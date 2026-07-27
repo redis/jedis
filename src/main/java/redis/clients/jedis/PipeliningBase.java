@@ -4678,6 +4678,16 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<TSElement>> tsRead(String key, long timestamp) {
+    return appendCommand(commandObjects.tsRead(key, timestamp));
+  }
+
+  @Override
+  public Response<List<TSElement>> tsRead(String key, TSReadParams readParams) {
+    return appendCommand(commandObjects.tsRead(key, readParams));
+  }
+
+  @Override
   public Response<Map<String, TSMRangeElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return appendCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }
@@ -5107,6 +5117,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Boolean> vismember(String key, String element) {
+    return appendCommand(commandObjects.vismember(key, element));
+  }
+
+  @Override
   public Response<List<Double>> vemb(String key, String element) {
     return appendCommand(commandObjects.vemb(key, element));
   }
@@ -5225,6 +5240,11 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> vcard(byte[] key) {
     return appendCommand(commandObjects.vcard(key));
+  }
+
+  @Override
+  public Response<Boolean> vismember(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vismember(key, element));
   }
 
   @Override

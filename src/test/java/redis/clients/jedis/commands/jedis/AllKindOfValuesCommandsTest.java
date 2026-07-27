@@ -881,14 +881,17 @@ public class AllKindOfValuesCommandsTest extends JedisCommandsTestBase {
     jedis.set("e", "e");
     jedis.zadd("f", 0d, "f");
     jedis.set("g", "g");
-
-    binaryResult = jedis.scan(SCAN_POINTER_START_BINARY, pagingParams, string);
-    assertFalse(binaryResult.isCompleteIteration());
-    int page1Count = binaryResult.getResult().size();
-    binaryResult = jedis.scan(binaryResult.getCursorAsBytes(), pagingParams, string);
-    assertTrue(binaryResult.isCompleteIteration());
-    int page2Count = binaryResult.getResult().size();
-    assertEquals(4, page1Count + page2Count);
+    
+    Set<byte[]> binaryStringKeys = new HashSet<>();
+    byte[] binaryCursor = SCAN_POINTER_START_BINARY;
+    do {
+      binaryResult = jedis.scan(binaryCursor, pagingParams, string);
+      binaryStringKeys.addAll(binaryResult.getResult());
+      binaryCursor = binaryResult.getCursorAsBytes();
+    } while (!binaryResult.isCompleteIteration());
+    Set<byte[]> expectedBinaryStringKeys = new HashSet<>(Arrays.asList(
+        "a".getBytes(), "c".getBytes(), "e".getBytes(), "g".getBytes()));
+    AssertUtil.assertByteArraySetEquals(expectedBinaryStringKeys, binaryStringKeys);
 
     binaryResult = jedis.scan(SCAN_POINTER_START_BINARY, noParams, hash);
     AssertUtil.assertByteArrayListEquals(Collections.singletonList(new byte[]{98}), binaryResult.getResult());

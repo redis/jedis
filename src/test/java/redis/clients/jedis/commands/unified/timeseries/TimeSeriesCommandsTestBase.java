@@ -1840,22 +1840,25 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
   }
 
   /**
-   * A mismatch between the number of aggregator tokens and numkeys is rejected by the server; the
-   * client does not pre-validate.
+   * The client validates one aggregation spec per key at build time (mirroring the server rule), so
+   * a spec-count/numkeys mismatch fails fast with {@link IllegalArgumentException} before any
+   * command is sent. Version-independent, hence no command gate.
    */
   @Test
-  @EnabledOnCommand("TS.NRANGE")
-  public void nRangeAggregatorCountMismatchRejected() {
-    String a = keys.key("{%test%}:a");
-    String b = keys.key("{%test%}:b");
-    jedis.tsCreate(a);
-    jedis.tsCreate(b);
-    jedis.tsAdd(a, 1000L, 10.0);
-    jedis.tsAdd(b, 1000L, 20.0);
-
-    String[] seriesKeys = { a, b };
-    assertThrows(JedisDataException.class,
+  public void nRangeAggregatorCountMismatchRejectedClientSide() {
+    String[] seriesKeys = { keys.key("{%test%}:a"), keys.key("{%test%}:b") };
+    // Two keys but one spec.
+    assertThrows(IllegalArgumentException.class,
       () -> jedis.tsNRange(seriesKeys, TSNRangeParams.nrangeParams(0L, 60000L)
           .aggregation(new AggregationType[] { AggregationType.AVG }, 1000L)));
+    // Two keys but three specs.
+    assertThrows(IllegalArgumentException.class,
+      () -> jedis
+          .tsNRevRange(seriesKeys,
+            TSNRangeParams.nrangeParams(0L, 60000L).aggregation(new AggregationType[][] {
+                { AggregationType.AVG }, { AggregationType.SUM }, { AggregationType.MIN } },
+              1000L)));
+    // Empty key list.
+    assertThrows(IllegalArgumentException.class, () -> jedis.tsNRange(new String[0], 0L, 60000L));
   }
 }

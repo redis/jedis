@@ -60,19 +60,31 @@ public class TSNRangeParamsTest {
       assertThrows(IllegalArgumentException.class, () -> TSNRangeParams.nrangeParams()
           .aggregation(new AggregationType[][] { { null } }, 1000L));
     }
+
+    @Test
+    public void validateAggregationForKeysThrowsOnSpecCountMismatch() {
+      TSNRangeParams params = TSNRangeParams.nrangeParams(0L, 100L)
+          .aggregation(new AggregationType[] { AggregationType.AVG, AggregationType.SUM }, 1000L);
+      // Two specs configured, but three keys requested.
+      assertThrows(IllegalArgumentException.class, () -> params.validateAggregationForKeys(3));
+    }
+
+    @Test
+    public void validateAggregationForKeysPassesWhenCountsMatch() {
+      TSNRangeParams params = TSNRangeParams.nrangeParams(0L, 100L)
+          .aggregation(new AggregationType[] { AggregationType.AVG, AggregationType.SUM }, 1000L);
+      params.validateAggregationForKeys(2); // must not throw
+    }
+
+    @Test
+    public void validateAggregationForKeysNoOpWhenAggregationUnset() {
+      TSNRangeParams params = TSNRangeParams.nrangeParams(0L, 100L);
+      params.validateAggregationForKeys(5); // no aggregation -> no constraint, must not throw
+    }
   }
 
   @Nested
   class AggregationOverloadEquivalenceTests {
-
-    @Test
-    public void singleAggregatorEqualsOneElementArray() {
-      TSNRangeParams single = TSNRangeParams.nrangeParams().aggregation(AggregationType.MIN, 1000L);
-      TSNRangeParams array = TSNRangeParams.nrangeParams()
-          .aggregation(new AggregationType[] { AggregationType.MIN }, 1000L);
-      assertEquals(single, array);
-      assertEquals(single.hashCode(), array.hashCode());
-    }
 
     @Test
     public void oneAggregatorPerKeyEqualsSingletonPerKey() {

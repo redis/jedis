@@ -117,23 +117,6 @@ public class TSNRangeParams implements IParams {
   }
 
   /**
-   * Applies a single aggregator to every key. This is a convenience for
-   * {@link #aggregation(AggregationType[], long)} with the same aggregator repeated; because
-   * {@code TS.NRANGE}/{@code TS.NREVRANGE} require exactly {@code numkeys} aggregator tokens, this
-   * form is only valid when there is a single key.
-   */
-  public TSNRangeParams aggregation(AggregationType aggregationType, long bucketDuration) {
-    if (aggregationType != null) {
-      this.aggregators = new AggregationType[][] { { aggregationType } };
-      this.bucketDuration = bucketDuration;
-    } else {
-      this.aggregators = null;
-      this.bucketDuration = 0;
-    }
-    return this;
-  }
-
-  /**
    * Applies exactly one aggregator per key, in key order. The number of aggregators must equal the
    * number of keys sent to the command (the server rejects a mismatch). On the wire each aggregator
    * is emitted as its own {@code AGGREGATION} token.
@@ -197,6 +180,23 @@ public class TSNRangeParams implements IParams {
     this.aggregators = aggregators;
     this.bucketDuration = bucketDuration;
     return this;
+  }
+
+  /**
+   * Validates this aggregation configuration against the actual number of command keys.
+   * {@code TS.NRANGE}/{@code TS.NREVRANGE} require exactly one aggregation spec per key, so when
+   * aggregation is set the number of specs must equal {@code numKeys}. This mirrors the server rule
+   * client-side so callers fail fast instead of relying on the {@code the number of AGGREGATION
+   * arguments must be equal to numkeys} error. No-op when aggregation is not set.
+   * @param numKeys number of keys passed to the command
+   * @throws IllegalArgumentException if aggregation is set and the spec count differs from
+   *           {@code numKeys}
+   */
+  public void validateAggregationForKeys(int numKeys) {
+    if (aggregators != null && aggregators.length != numKeys) {
+      throw new IllegalArgumentException("Aggregation requires exactly one spec per key: numkeys="
+          + numKeys + " but got " + aggregators.length + " aggregation spec(s)");
+    }
   }
 
   /**

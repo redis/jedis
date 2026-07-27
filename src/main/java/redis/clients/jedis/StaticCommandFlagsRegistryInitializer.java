@@ -12,10 +12,10 @@ import static redis.clients.jedis.CommandFlagsRegistry.ResponsePolicy;
  * <p>
  * Generated from Redis Server:
  * <ul>
- * <li>Version: 8.8.1</li>
+ * <li>Version: 8.9.241</li>
  * <li>Mode: standalone</li>
- * <li>Loaded Modules: timeseries, search, vectorset, bf, ReJSON</li>
- * <li>Generated at: 2026-07-27 14:30:02 EEST</li>
+ * <li>Loaded Modules: search, bf, timeseries, vectorset, ReJSON</li>
+ * <li>Generated at: 2026-07-27 14:52:41 EEST</li>
  * </ul>
  */
 final class StaticCommandFlagsRegistryInitializer {
@@ -129,6 +129,14 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("CONFIG", "SET",
       EnumSet.of(CommandFlag.ADMIN, CommandFlag.LOADING, CommandFlag.NOSCRIPT, CommandFlag.STALE),
       RequestPolicy.ALL_NODES, ResponsePolicy.ALL_SUCCEEDED);
+    builder.register("BACKUP", EMPTY_FLAGS);
+    // BACKUP subcommands
+    builder.register("BACKUP", "ABORT", EnumSet.of(CommandFlag.ADMIN, CommandFlag.NOSCRIPT));
+    builder.register("BACKUP", "CLEANUP", EnumSet.of(CommandFlag.ADMIN, CommandFlag.NOSCRIPT));
+    builder.register("BACKUP", "LIST", EnumSet.of(CommandFlag.ADMIN, CommandFlag.STALE));
+    builder.register("BACKUP", "SEAL", EnumSet.of(CommandFlag.ADMIN, CommandFlag.NOSCRIPT));
+    builder.register("BACKUP", "START", EnumSet.of(CommandFlag.ADMIN, CommandFlag.NOSCRIPT));
+    builder.register("BACKUP", "STATUS", EnumSet.of(CommandFlag.ADMIN, CommandFlag.STALE));
     builder.register("MODULE", EMPTY_FLAGS);
     // MODULE subcommands
     builder.register("MODULE", "LIST", EnumSet.of(CommandFlag.ADMIN, CommandFlag.NOSCRIPT));
@@ -200,6 +208,13 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("FT.CURSOR", "GC", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("FT.CURSOR", "READ", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY),
       RequestPolicy.SPECIAL, null);
+    builder.register("HIMPORT", EMPTY_FLAGS);
+    // HIMPORT subcommands
+    builder.register("HIMPORT", "DISCARD", EMPTY_FLAGS, RequestPolicy.ALL_SHARDS, null);
+    builder.register("HIMPORT", "DISCARDALL", EMPTY_FLAGS, RequestPolicy.ALL_SHARDS, null);
+    builder.register("HIMPORT", "PREPARE", EnumSet.of(CommandFlag.DENYOOM),
+      RequestPolicy.ALL_SHARDS, null);
+    builder.register("HIMPORT", "SET", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
     builder.register("COMMAND", EnumSet.of(CommandFlag.LOADING, CommandFlag.STALE));
     // COMMAND subcommands
     builder.register("COMMAND", "COUNT", EnumSet.of(CommandFlag.LOADING, CommandFlag.STALE));
@@ -396,7 +411,7 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("MSET", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE),
       RequestPolicy.MULTI_SHARD, ResponsePolicy.ALL_SUCCEEDED);
 
-    // 22 command(s) with: denyoom, write
+    // 23 command(s) with: denyoom, write
     builder.register("ARRING", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
     builder.register("BITFIELD", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
     builder.register("BITOP", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
@@ -405,6 +420,7 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("GEOSEARCHSTORE", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
     builder.register("LINSERT", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
     builder.register("LMOVE", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
+    builder.register("LMOVEM", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
     builder.register("LSET", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
     builder.register("MSETNX", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
     builder.register("PFMERGE", EnumSet.of(CommandFlag.DENYOOM, CommandFlag.WRITE));
@@ -520,10 +536,11 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("INFO", EnumSet.of(CommandFlag.LOADING, CommandFlag.STALE),
       RequestPolicy.DEFAULT, ResponsePolicy.SPECIAL);
 
-    // 56 command(s) with: module, readonly
+    // 58 command(s) with: module, readonly
     builder.register("CMS.INFO", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("CMS.QUERY", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("FT.AGGREGATE", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
+    builder.register("FT.ALIASLIST", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("FT.DICTDUMP", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("FT.EXPLAIN", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("FT.EXPLAINCLI", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
@@ -541,7 +558,6 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("FT._LIST", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("JSON.ARRINDEX", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("JSON.ARRLEN", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
-    builder.register("JSON.DEBUG", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("JSON.GET", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("JSON.MGET", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("JSON.OBJKEYS", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
@@ -569,7 +585,9 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("TS.MRANGE", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("TS.MREVRANGE", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("TS.QUERYINDEX", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
+    builder.register("TS.QUERYLABELS", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("TS.RANGE", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
+    builder.register("TS.READ", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("TS.REVRANGE", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("VISMEMBER", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
     builder.register("VRANDMEMBER", EnumSet.of(CommandFlag.MODULE, CommandFlag.READONLY));
@@ -601,9 +619,11 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("TS.DELETERULE", EnumSet.of(CommandFlag.MODULE, CommandFlag.WRITE));
     builder.register("VREM", EnumSet.of(CommandFlag.MODULE, CommandFlag.WRITE));
 
-    // 6 command(s) with: movablekeys, readonly
+    // 8 command(s) with: movablekeys, readonly
+    builder.register("SDIFFCARD", EnumSet.of(CommandFlag.MOVABLEKEYS, CommandFlag.READONLY));
     builder.register("SINTERCARD", EnumSet.of(CommandFlag.MOVABLEKEYS, CommandFlag.READONLY));
     builder.register("SORT_RO", EnumSet.of(CommandFlag.MOVABLEKEYS, CommandFlag.READONLY));
+    builder.register("SUNIONCARD", EnumSet.of(CommandFlag.MOVABLEKEYS, CommandFlag.READONLY));
     builder.register("ZDIFF", EnumSet.of(CommandFlag.MOVABLEKEYS, CommandFlag.READONLY));
     builder.register("ZINTER", EnumSet.of(CommandFlag.MOVABLEKEYS, CommandFlag.READONLY));
     builder.register("ZINTERCARD", EnumSet.of(CommandFlag.MOVABLEKEYS, CommandFlag.READONLY));
@@ -632,8 +652,10 @@ final class StaticCommandFlagsRegistryInitializer {
     builder.register("RESTORE-ASKING",
       EnumSet.of(CommandFlag.ASKING, CommandFlag.DENYOOM, CommandFlag.WRITE));
 
-    // 2 command(s) with: blocking, denyoom, write
+    // 3 command(s) with: blocking, denyoom, write
     builder.register("BLMOVE",
+      EnumSet.of(CommandFlag.BLOCKING, CommandFlag.DENYOOM, CommandFlag.WRITE));
+    builder.register("BLMOVEM",
       EnumSet.of(CommandFlag.BLOCKING, CommandFlag.DENYOOM, CommandFlag.WRITE));
     builder.register("BRPOPLPUSH",
       EnumSet.of(CommandFlag.BLOCKING, CommandFlag.DENYOOM, CommandFlag.WRITE));
@@ -878,6 +900,14 @@ final class StaticCommandFlagsRegistryInitializer {
       EnumSet.of(CommandFlag.FAST, CommandFlag.MODULE, CommandFlag.WRITE));
     builder.register("VSETATTR",
       EnumSet.of(CommandFlag.FAST, CommandFlag.MODULE, CommandFlag.WRITE));
+
+    // 3 command(s) with: module, movablekeys, readonly
+    builder.register("JSON.DEBUG",
+      EnumSet.of(CommandFlag.MODULE, CommandFlag.MOVABLEKEYS, CommandFlag.READONLY));
+    builder.register("TS.NRANGE",
+      EnumSet.of(CommandFlag.MODULE, CommandFlag.MOVABLEKEYS, CommandFlag.READONLY));
+    builder.register("TS.NREVRANGE",
+      EnumSet.of(CommandFlag.MODULE, CommandFlag.MOVABLEKEYS, CommandFlag.READONLY));
 
     // 3 command(s) with: module, noscript, readonly
     builder.register("SEARCH.CLUSTERREFRESH",

@@ -11,6 +11,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static io.redis.test.utils.RedisVersion.V8_10_0_RC2_STRING;
 
 import java.util.AbstractMap;
 import java.util.List;
@@ -586,7 +587,7 @@ public class CommandObjectsTimeSeriesCommandsTest extends CommandObjectsModulesT
   }
 
   @Test
-  @SinceRedisVersion("8.9.241")
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
   public void testTsQueryLabelsAndValues(TestInfo testInfo) {
     // Keys are obtained from (and tracked by) the registry so they can be cleared afterwards
     // instead of relying on a wholesale flush. Label names/values drive the assertions, so the

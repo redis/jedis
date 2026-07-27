@@ -732,21 +732,6 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
     assertEquals(Arrays.asList("seriesQueryIndex2"), jedis.tsQueryIndex("l2=v22"));
   }
 
-  /** Tracks the TS.QUERYLABELS test keys so they can be cleared without a cluster-wide flush. */
-  private TestKeyRegistry queryLabelsKeys;
-
-  @BeforeEach
-  void initQueryLabelsKeys(TestInfo testInfo) {
-    queryLabelsKeys = TestKeyRegistry.create(testInfo);
-  }
-
-  @AfterEach
-  void cleanupQueryLabelsKeys() {
-    if (queryLabelsKeys != null && jedis != null) {
-      queryLabelsKeys.cleanup(jedis);
-    }
-  }
-
   /**
    * Sets up a small sensor dashboard dataset used by the TS.QUERYLABELS examples. Keys are obtained
    * from {@link TestKeyRegistry} (registered for cleanup) and deliberately NOT hash-tagged, so in
@@ -755,13 +740,13 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
    * fan-out itself (no client-side aggregation).
    */
   private void setupQueryLabelsSeries() {
-    jedis.tsCreate(queryLabelsKeys.key("temp:living"), TSCreateParams.createParams()
+    jedis.tsCreate(keys.key("temp:living"), TSCreateParams.createParams()
         .labels(mapOf("type", "sensor", "sensortype", "temperature", "location", "LivingRoom")));
-    jedis.tsCreate(queryLabelsKeys.key("temp:kitchen"), TSCreateParams.createParams()
+    jedis.tsCreate(keys.key("temp:kitchen"), TSCreateParams.createParams()
         .labels(mapOf("type", "sensor", "sensortype", "temperature", "location", "Kitchen")));
-    jedis.tsCreate(queryLabelsKeys.key("hum:bedroom"), TSCreateParams.createParams()
+    jedis.tsCreate(keys.key("hum:bedroom"), TSCreateParams.createParams()
         .labels(mapOf("type", "sensor", "sensortype", "humidity", "location", "BedRoom")));
-    jedis.tsCreate(queryLabelsKeys.key("cpu:server"),
+    jedis.tsCreate(keys.key("cpu:server"),
       TSCreateParams.createParams().labels(mapOf("type", "metric", "unit", "percent")));
   }
 
@@ -774,7 +759,7 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
   }
 
   @Test
-  @SinceRedisVersion("8.9.241")
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
   public void testQueryLabels() {
     setupQueryLabelsSeries();
 
@@ -791,7 +776,7 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
   }
 
   @Test
-  @SinceRedisVersion("8.9.241")
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
   public void testQueryLabelValues() {
     setupQueryLabelsSeries();
 

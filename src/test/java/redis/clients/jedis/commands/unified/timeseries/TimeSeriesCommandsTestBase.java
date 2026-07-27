@@ -1580,26 +1580,33 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
     assertTrue(revRanges.isEmpty());
   }
 
+  private String s, t, u, sensorFilter;
+
   /**
    * Sets up the three series used by the EXCLUDEEMPTY examples in the design document. Series
    * {@code s} and {@code t} have samples inside {@code [-, 500]}; series {@code u} only has a
    * sample at {@code 2000}, so it is empty for a query bounded at {@code 500}.
    */
   private void setupExcludeEmptySeries() {
-    jedis.tsCreate("s",
-      TSCreateParams.createParams().labels(convertMap("sensor", "1", "type", "demo")));
-    jedis.tsCreate("t",
-      TSCreateParams.createParams().labels(convertMap("sensor", "1", "type", "demo")));
-    jedis.tsCreate("u",
-      TSCreateParams.createParams().labels(convertMap("sensor", "1", "type", "demo")));
+    s = keys.key("s");
+    t = keys.key("t");
+    u = keys.key("u");
+    // MRANGE matches by label, so the filter value must be test-unique as well
+    String sensor = keys.key("sensor");
+    sensorFilter = "sensor=" + sensor;
 
-    jedis.tsAdd("s", 100, 100);
-    jedis.tsAdd("t", 100, 100);
-    jedis.tsAdd("s", 200, 200);
-    jedis.tsAdd("t", 300, 300);
-    jedis.tsAdd("s", 400, 400);
-    jedis.tsAdd("t", 400, 400);
-    jedis.tsAdd("u", 2000, 2000);
+    Map<String, String> labels = convertMap("sensor", sensor, "type", "demo");
+    jedis.tsCreate(s, TSCreateParams.createParams().labels(labels));
+    jedis.tsCreate(t, TSCreateParams.createParams().labels(labels));
+    jedis.tsCreate(u, TSCreateParams.createParams().labels(labels));
+
+    jedis.tsAdd(s, 100, 100);
+    jedis.tsAdd(t, 100, 100);
+    jedis.tsAdd(s, 200, 200);
+    jedis.tsAdd(t, 300, 300);
+    jedis.tsAdd(s, 400, 400);
+    jedis.tsAdd(t, 400, 400);
+    jedis.tsAdd(u, 2000, 2000);
   }
 
   /**
@@ -1615,22 +1622,22 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
 
     // Default: matching series u is still reported, with an empty samples array.
     Map<String, TSMRangeElements> included = jedis.tsMRange(
-      TSMRangeParams.multiRangeParams().toTimestamp(500L).withLabels().filter("sensor=1"));
+      TSMRangeParams.multiRangeParams().toTimestamp(500L).withLabels().filter(sensorFilter));
     assertEquals(3, included.size());
-    assertTrue(included.containsKey("u"));
-    assertTrue(included.get("u").getValue().isEmpty());
+    assertTrue(included.containsKey(u));
+    assertTrue(included.get(u).getValue().isEmpty());
 
     // EXCLUDEEMPTY: series u is omitted from the reply; s and t are unchanged.
     Map<String, TSMRangeElements> excluded = jedis.tsMRange(TSMRangeParams.multiRangeParams()
-        .toTimestamp(500L).withLabels().excludeEmpty().filter("sensor=1"));
+        .toTimestamp(500L).withLabels().excludeEmpty().filter(sensorFilter));
     assertEquals(2, excluded.size());
-    assertFalse(excluded.containsKey("u"));
+    assertFalse(excluded.containsKey(u));
     assertEquals(
       Arrays.asList(new TSElement(100, 100), new TSElement(200, 200), new TSElement(400, 400)),
-      excluded.get("s").getValue());
+      excluded.get(s).getValue());
     assertEquals(
       Arrays.asList(new TSElement(100, 100), new TSElement(300, 300), new TSElement(400, 400)),
-      excluded.get("t").getValue());
+      excluded.get(t).getValue());
   }
 
   /**
@@ -1643,13 +1650,13 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
     setupExcludeEmptySeries();
 
     Map<String, TSMRangeElements> excluded = jedis.tsMRevRange(
-      TSMRangeParams.multiRangeParams().toTimestamp(500L).excludeEmpty().filter("sensor=1"));
+      TSMRangeParams.multiRangeParams().toTimestamp(500L).excludeEmpty().filter(sensorFilter));
     assertEquals(2, excluded.size());
-    assertFalse(excluded.containsKey("u"));
+    assertFalse(excluded.containsKey(u));
     // Samples inside each returned series are ordered in reverse timestamp order.
     assertEquals(
       Arrays.asList(new TSElement(400, 400), new TSElement(200, 200), new TSElement(100, 100)),
-      excluded.get("s").getValue());
+      excluded.get(s).getValue());
   }
 
   /**
@@ -1663,9 +1670,9 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
 
     Map<String, TSMRangeElements> excluded = jedis
         .tsMRange(TSMRangeParams.multiRangeParams().toTimestamp(500L).withLabels()
-            .aggregation(AggregationType.MIN, 100L).excludeEmpty().filter("sensor=1"));
+            .aggregation(AggregationType.MIN, 100L).excludeEmpty().filter(sensorFilter));
     assertEquals(2, excluded.size());
-    assertFalse(excluded.containsKey("u"));
+    assertFalse(excluded.containsKey(u));
   }
 
   /**
@@ -1678,7 +1685,7 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
 
     // No matching series has a sample in [1, 50].
     Map<String, TSMRangeElements> excluded = jedis
-        .tsMRange(TSMRangeParams.multiRangeParams(1L, 50L).excludeEmpty().filter("sensor=1"));
+        .tsMRange(TSMRangeParams.multiRangeParams(1L, 50L).excludeEmpty().filter(sensorFilter));
     assertNotNull(excluded);
     assertTrue(excluded.isEmpty());
   }
@@ -1704,7 +1711,7 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
 
     JedisDataException error = assertThrows(JedisDataException.class,
       () -> jedis.sendCommand(TimeSeriesProtocol.TimeSeriesCommand.MRANGE, "-", "500",
-        "EXCLUDEEMPTY", "FILTER", "sensor=1", "GROUPBY", "type", "REDUCE", "max"));
+        "EXCLUDEEMPTY", "FILTER", sensorFilter, "GROUPBY", "type", "REDUCE", "max"));
     assertTrue(error.getMessage().contains("EXCLUDEEMPTY"),
       "Server error must be propagated as-is, was: " + error.getMessage());
   }

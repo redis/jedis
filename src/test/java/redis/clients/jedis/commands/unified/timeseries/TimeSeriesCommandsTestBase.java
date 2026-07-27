@@ -1582,8 +1582,9 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
   }
 
   /**
-   * The three series from the EXCLUDEEMPTY design document examples, all matched by
-   * {@link #filter}.
+   * Sets up the three series used by the EXCLUDEEMPTY examples in the design document. Series
+   * {@code s} and {@code t} have samples inside {@code [-, 500]}; series {@code u} only has a
+   * sample at {@code 2000}, so it is empty for a query bounded at {@code 500}.
    */
   private static final class ExcludeEmptyFixture {
     final String seriesS; // samples at 100, 200, 400
@@ -1604,7 +1605,7 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
     String seriesT = keys.key("t");
     String seriesU = keys.key("u");
     // MRANGE matches by label, so the filter value must be test-unique as well
-    String sensor = keys.key("sensor");
+    String sensor = keys.name("sensor");
 
     Map<String, String> labels = convertMap("sensor", sensor, "type", "demo");
     jedis.tsCreate(seriesS, TSCreateParams.createParams().labels(labels));

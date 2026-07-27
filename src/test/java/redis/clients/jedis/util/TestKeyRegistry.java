@@ -74,6 +74,13 @@ public interface TestKeyRegistry {
    */
   byte[] bKey(String pattern);
 
+  /**
+   * Returns a test-unique name derived from the given pattern (same rules as {@link #key(String)})
+   * without registering it for cleanup. For resources that are not Redis keys — label values, group
+   * or consumer names — or keys whose cleanup is handled elsewhere.
+   */
+  String name(String pattern);
+
   /** Registers an externally-created key for cleanup and returns it. Duplicates are ignored. */
   String register(String key);
 
@@ -120,6 +127,11 @@ public interface TestKeyRegistry {
     @Override
     public byte[] bKey(String pattern) {
       return register(SafeEncoder.encode(expand(pattern)));
+    }
+
+    @Override
+    public String name(String pattern) {
+      return expand(pattern);
     }
 
     @Override

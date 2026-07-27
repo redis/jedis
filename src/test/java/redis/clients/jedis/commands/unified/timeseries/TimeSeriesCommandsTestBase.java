@@ -1581,33 +1581,45 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
     assertTrue(revRanges.isEmpty());
   }
 
-  private String s, t, u, sensorFilter;
-
   /**
-   * Sets up the three series used by the EXCLUDEEMPTY examples in the design document. Series
-   * {@code s} and {@code t} have samples inside {@code [-, 500]}; series {@code u} only has a
-   * sample at {@code 2000}, so it is empty for a query bounded at {@code 500}.
+   * The three series from the EXCLUDEEMPTY design document examples, all matched by
+   * {@link #filter}.
    */
-  private void setupExcludeEmptySeries() {
-    s = keys.key("s");
-    t = keys.key("t");
-    u = keys.key("u");
+  private static final class ExcludeEmptyFixture {
+    final String seriesS; // samples at 100, 200, 400
+    final String seriesT; // samples at 100, 300, 400
+    final String seriesU; // only sample at 2000 — empty for any range bounded at 500
+    final String filter; // label filter matching all three, unique per test
+
+    ExcludeEmptyFixture(String seriesS, String seriesT, String seriesU, String filter) {
+      this.seriesS = seriesS;
+      this.seriesT = seriesT;
+      this.seriesU = seriesU;
+      this.filter = filter;
+    }
+  }
+
+  private ExcludeEmptyFixture setupExcludeEmptyFixture() {
+    String seriesS = keys.key("s");
+    String seriesT = keys.key("t");
+    String seriesU = keys.key("u");
     // MRANGE matches by label, so the filter value must be test-unique as well
     String sensor = keys.key("sensor");
-    sensorFilter = "sensor=" + sensor;
 
     Map<String, String> labels = convertMap("sensor", sensor, "type", "demo");
-    jedis.tsCreate(s, TSCreateParams.createParams().labels(labels));
-    jedis.tsCreate(t, TSCreateParams.createParams().labels(labels));
-    jedis.tsCreate(u, TSCreateParams.createParams().labels(labels));
+    jedis.tsCreate(seriesS, TSCreateParams.createParams().labels(labels));
+    jedis.tsCreate(seriesT, TSCreateParams.createParams().labels(labels));
+    jedis.tsCreate(seriesU, TSCreateParams.createParams().labels(labels));
 
-    jedis.tsAdd(s, 100, 100);
-    jedis.tsAdd(t, 100, 100);
-    jedis.tsAdd(s, 200, 200);
-    jedis.tsAdd(t, 300, 300);
-    jedis.tsAdd(s, 400, 400);
-    jedis.tsAdd(t, 400, 400);
-    jedis.tsAdd(u, 2000, 2000);
+    jedis.tsAdd(seriesS, 100, 100);
+    jedis.tsAdd(seriesT, 100, 100);
+    jedis.tsAdd(seriesS, 200, 200);
+    jedis.tsAdd(seriesT, 300, 300);
+    jedis.tsAdd(seriesS, 400, 400);
+    jedis.tsAdd(seriesT, 400, 400);
+    jedis.tsAdd(seriesU, 2000, 2000);
+
+    return new ExcludeEmptyFixture(seriesS, seriesT, seriesU, "sensor=" + sensor);
   }
 
   /**
@@ -1619,26 +1631,26 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
   @Test
   @SinceRedisVersion(value = V8_10_0_RC2_STRING, message = "Requires RedisTimeSeries EXCLUDEEMPTY support for TS.MRANGE / TS.MREVRANGE.")
   public void mRangeExcludeEmpty() {
-    setupExcludeEmptySeries();
+    ExcludeEmptyFixture fixture = setupExcludeEmptyFixture();
 
     // Default: matching series u is still reported, with an empty samples array.
     Map<String, TSMRangeElements> included = jedis.tsMRange(
-      TSMRangeParams.multiRangeParams().toTimestamp(500L).withLabels().filter(sensorFilter));
+      TSMRangeParams.multiRangeParams().toTimestamp(500L).withLabels().filter(fixture.filter));
     assertEquals(3, included.size());
-    assertTrue(included.containsKey(u));
-    assertTrue(included.get(u).getValue().isEmpty());
+    assertTrue(included.containsKey(fixture.seriesU));
+    assertTrue(included.get(fixture.seriesU).getValue().isEmpty());
 
     // EXCLUDEEMPTY: series u is omitted from the reply; s and t are unchanged.
     Map<String, TSMRangeElements> excluded = jedis.tsMRange(TSMRangeParams.multiRangeParams()
-        .toTimestamp(500L).withLabels().excludeEmpty().filter(sensorFilter));
+        .toTimestamp(500L).withLabels().excludeEmpty().filter(fixture.filter));
     assertEquals(2, excluded.size());
-    assertFalse(excluded.containsKey(u));
+    assertFalse(excluded.containsKey(fixture.seriesU));
     assertEquals(
       Arrays.asList(new TSElement(100, 100), new TSElement(200, 200), new TSElement(400, 400)),
-      excluded.get(s).getValue());
+      excluded.get(fixture.seriesS).getValue());
     assertEquals(
       Arrays.asList(new TSElement(100, 100), new TSElement(300, 300), new TSElement(400, 400)),
-      excluded.get(t).getValue());
+      excluded.get(fixture.seriesT).getValue());
   }
 
   /**
@@ -1648,16 +1660,16 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
   @Test
   @SinceRedisVersion(value = V8_10_0_RC2_STRING, message = "Requires RedisTimeSeries EXCLUDEEMPTY support for TS.MRANGE / TS.MREVRANGE.")
   public void mRevRangeExcludeEmpty() {
-    setupExcludeEmptySeries();
+    ExcludeEmptyFixture fixture = setupExcludeEmptyFixture();
 
     Map<String, TSMRangeElements> excluded = jedis.tsMRevRange(
-      TSMRangeParams.multiRangeParams().toTimestamp(500L).excludeEmpty().filter(sensorFilter));
+      TSMRangeParams.multiRangeParams().toTimestamp(500L).excludeEmpty().filter(fixture.filter));
     assertEquals(2, excluded.size());
-    assertFalse(excluded.containsKey(u));
+    assertFalse(excluded.containsKey(fixture.seriesU));
     // Samples inside each returned series are ordered in reverse timestamp order.
     assertEquals(
       Arrays.asList(new TSElement(400, 400), new TSElement(200, 200), new TSElement(100, 100)),
-      excluded.get(s).getValue());
+      excluded.get(fixture.seriesS).getValue());
   }
 
   /**
@@ -1667,13 +1679,13 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
   @Test
   @SinceRedisVersion(value = V8_10_0_RC2_STRING, message = "Requires RedisTimeSeries EXCLUDEEMPTY support for TS.MRANGE / TS.MREVRANGE.")
   public void mRangeExcludeEmptyWithAggregation() {
-    setupExcludeEmptySeries();
+    ExcludeEmptyFixture fixture = setupExcludeEmptyFixture();
 
     Map<String, TSMRangeElements> excluded = jedis
         .tsMRange(TSMRangeParams.multiRangeParams().toTimestamp(500L).withLabels()
-            .aggregation(AggregationType.MIN, 100L).excludeEmpty().filter(sensorFilter));
+            .aggregation(AggregationType.MIN, 100L).excludeEmpty().filter(fixture.filter));
     assertEquals(2, excluded.size());
-    assertFalse(excluded.containsKey(u));
+    assertFalse(excluded.containsKey(fixture.seriesU));
   }
 
   /**
@@ -1682,11 +1694,11 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
   @Test
   @SinceRedisVersion(value = V8_10_0_RC2_STRING, message = "Requires RedisTimeSeries EXCLUDEEMPTY support for TS.MRANGE / TS.MREVRANGE.")
   public void mRangeExcludeEmptyAllEmpty() {
-    setupExcludeEmptySeries();
+    ExcludeEmptyFixture fixture = setupExcludeEmptyFixture();
 
     // No matching series has a sample in [1, 50].
     Map<String, TSMRangeElements> excluded = jedis
-        .tsMRange(TSMRangeParams.multiRangeParams(1L, 50L).excludeEmpty().filter(sensorFilter));
+        .tsMRange(TSMRangeParams.multiRangeParams(1L, 50L).excludeEmpty().filter(fixture.filter));
     assertNotNull(excluded);
     assertTrue(excluded.isEmpty());
   }
@@ -1708,11 +1720,11 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
   @Test
   @SinceRedisVersion(value = V8_10_0_RC2_STRING, message = "Requires RedisTimeSeries EXCLUDEEMPTY support for TS.MRANGE / TS.MREVRANGE.")
   public void rawMRangeExcludeEmptyWithGroupByPropagatesServerError() {
-    setupExcludeEmptySeries();
+    ExcludeEmptyFixture fixture = setupExcludeEmptyFixture();
 
     JedisDataException error = assertThrows(JedisDataException.class,
       () -> jedis.sendCommand(TimeSeriesProtocol.TimeSeriesCommand.MRANGE, "-", "500",
-        "EXCLUDEEMPTY", "FILTER", sensorFilter, "GROUPBY", "type", "REDUCE", "max"));
+        "EXCLUDEEMPTY", "FILTER", fixture.filter, "GROUPBY", "type", "REDUCE", "max"));
     assertTrue(error.getMessage().contains("EXCLUDEEMPTY"),
       "Server error must be propagated as-is, was: " + error.getMessage());
   }

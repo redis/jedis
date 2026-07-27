@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static io.redis.test.utils.RedisVersion.V8_10_0_RC2_STRING;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.util.AssertUtil.assertEqualsByProtocol;
 
@@ -19,7 +21,6 @@ import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
-
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
@@ -29,6 +30,7 @@ import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.TestEnvUtil;
+import redis.clients.jedis.util.TestKeyRegistry;
 
 /**
  * Base test class for Time Series commands using the UnifiedJedis pattern.
@@ -726,6 +728,68 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
     assertEquals(Arrays.asList("seriesQueryIndex1", "seriesQueryIndex2"),
       jedis.tsQueryIndex("l1=v1"));
     assertEquals(Arrays.asList("seriesQueryIndex2"), jedis.tsQueryIndex("l2=v22"));
+  }
+
+  /**
+   * Sets up a small sensor dashboard dataset used by the TS.QUERYLABELS examples. Keys are obtained
+   * from {@link TestKeyRegistry} (registered for cleanup) and deliberately NOT hash-tagged, so in
+   * cluster mode they scatter across shards: TS.QUERYLABELS is keyless and routes to a single
+   * arbitrary node, and asserting a complete reply proves the server coordinates the cluster-wide
+   * fan-out itself (no client-side aggregation).
+   */
+  private void setupQueryLabelsSeries() {
+    jedis.tsCreate(keys.key("temp:living"), TSCreateParams.createParams()
+        .labels(mapOf("type", "sensor", "sensortype", "temperature", "location", "LivingRoom")));
+    jedis.tsCreate(keys.key("temp:kitchen"), TSCreateParams.createParams()
+        .labels(mapOf("type", "sensor", "sensortype", "temperature", "location", "Kitchen")));
+    jedis.tsCreate(keys.key("hum:bedroom"), TSCreateParams.createParams()
+        .labels(mapOf("type", "sensor", "sensortype", "humidity", "location", "BedRoom")));
+    jedis.tsCreate(keys.key("cpu:server"),
+      TSCreateParams.createParams().labels(mapOf("type", "metric", "unit", "percent")));
+  }
+
+  private static Map<String, String> mapOf(String... kvs) {
+    Map<String, String> map = new HashMap<>();
+    for (int i = 0; i < kvs.length; i += 2) {
+      map.put(kvs[i], kvs[i + 1]);
+    }
+    return map;
+  }
+
+  @Test
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
+  public void testQueryLabels() {
+    setupQueryLabelsSeries();
+
+    // LABELS with a filter: distinct label names across the sensor group. The filter is a label
+    // value shared across the DB, not a namespaced key, so other tests may contribute series with
+    // "type=sensor"; assert our labels are present without requiring an exact match.
+    assertThat(jedis.tsQueryLabels("type=sensor"), hasItems("type", "sensortype", "location"));
+
+    // LABELS without a filter: metadata across all indexed series in the DB, so "unit" appears
+    // too. Other tests may add series concurrently, so assert our labels are present.
+    assertThat(jedis.tsQueryLabels(), hasItems("type", "sensortype", "location", "unit"));
+
+    // A filter matching nothing yields an empty reply, not an error.
+    assertEquals(Collections.emptyList(), jedis.tsQueryLabels("type=nonexistent"));
+  }
+
+  @Test
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
+  public void testQueryLabelValues() {
+    setupQueryLabelsSeries();
+
+    // VALUES of a chosen label within the sensor group. Same shared-filter caveat as above:
+    // other tests' "type=sensor" series may add location values, so assert ours are present.
+    assertThat(jedis.tsQueryLabelValues("location", "type=sensor"),
+      hasItems("LivingRoom", "Kitchen", "BedRoom"));
+
+    // VALUES without a filter: collected across all indexed series in the DB. Other tests may
+    // add "sensortype" values, so assert ours are present.
+    assertThat(jedis.tsQueryLabelValues("sensortype"), hasItems("temperature", "humidity"));
+
+    // A label carried by no matching series yields an empty reply, not an error.
+    assertEquals(Collections.emptyList(), jedis.tsQueryLabelValues("nonexistent", "type=sensor"));
   }
 
   @Test

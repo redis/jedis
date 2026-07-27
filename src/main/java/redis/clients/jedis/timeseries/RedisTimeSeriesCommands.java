@@ -328,6 +328,49 @@ public interface RedisTimeSeriesCommands {
    */
   List<String> tsQueryIndex(String... filters);
 
+  /**
+   * <b><a href="https://redis.io/commands/ts.querylabels/">TS.QUERYLABELS LABELS</a></b>
+   * <p>
+   * Returns the set of all label names, each present on at least one time series that matches the
+   * given filters. When no filters are supplied the label names of all indexed series are returned.
+   * The reply is a collection of unique strings with no ordering guarantee, and an empty reply is a
+   * normal successful result.
+   * <p>
+   * Filters use the same expression language as {@link #tsQueryIndex(String...)}; expressions are
+   * passed to the server verbatim. Passing no filters (or an empty array) queries all indexed series.
+   * <p>
+   * Time complexity: O(n) where n is the number of time series that match the filters (all indexed
+   * series when no filter is given).
+   *
+   * @param filters optional filter expressions (e.g. {@code type=sensor}); omit to query all series
+   * @return unique label names across the matching series (unordered)
+   * @since 8.0
+   */
+  List<String> tsQueryLabels(String... filters);
+
+  /**
+   * <b><a href="https://redis.io/commands/ts.querylabels/">TS.QUERYLABELS VALUES</a></b>
+   * <p>
+   * Returns the set of all values assigned to {@code label}, each assigned on at least one time
+   * series that matches the given filters. Matching series that do not carry {@code label}
+   * contribute nothing; a label that exists on no matching series yields an empty reply, not an
+   * error. When no filters are supplied the values are collected across all indexed series. The
+   * reply is a collection of unique strings with no ordering guarantee.
+   * <p>
+   * Filters use the same expression language as {@link #tsQueryIndex(String...)}; expressions are
+   * passed to the server verbatim. The {@code label} name is matched byte-exactly and is not
+   * normalized. Passing no filters (or an empty array) queries all indexed series.
+   * <p>
+   * Time complexity: O(n) where n is the number of time series that match the filters (all indexed
+   * series when no filter is given).
+   *
+   * @param label the label name whose values are collected (matched byte-exactly)
+   * @param filters optional filter expressions (e.g. {@code type=sensor}); omit to query all series
+   * @return unique values of {@code label} across the matching series (unordered)
+   * @since 8.0
+   */
+  List<String> tsQueryLabelValues(String label, String... filters);
+
   TSInfo tsInfo(String key);
 
   TSInfo tsInfoDebug(String key);

@@ -70,6 +70,7 @@ public class TimeSeriesProtocol {
     DEBUG,
     LATEST,
     EMPTY,
+    EXCLUDEEMPTY,
     BUCKETTIMESTAMP,
     VALUES,
     BLOCK,

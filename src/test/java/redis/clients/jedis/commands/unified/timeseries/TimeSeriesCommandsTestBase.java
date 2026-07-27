@@ -15,9 +15,12 @@ import java.util.*;
 import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.TestInfo;
 
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
@@ -28,6 +31,7 @@ import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.TestEnvUtil;
+import redis.clients.jedis.util.TestKeyRegistry;
 
 /**
  * Base test class for Time Series commands using the UnifiedJedis pattern.
@@ -727,20 +731,36 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
     assertEquals(Arrays.asList("seriesQueryIndex2"), jedis.tsQueryIndex("l2=v22"));
   }
 
+  /** Tracks the TS.QUERYLABELS test keys so they can be cleared without a cluster-wide flush. */
+  private TestKeyRegistry queryLabelsKeys;
+
+  @BeforeEach
+  void initQueryLabelsKeys(TestInfo testInfo) {
+    queryLabelsKeys = TestKeyRegistry.create(testInfo);
+  }
+
+  @AfterEach
+  void cleanupQueryLabelsKeys() {
+    if (queryLabelsKeys != null && jedis != null) {
+      queryLabelsKeys.cleanup(jedis);
+    }
+  }
+
   /**
-   * Sets up a small sensor dashboard dataset used by the TS.QUERYLABELS examples. Keys are
-   * deliberately NOT hash-tagged, so in cluster mode they scatter across shards: TS.QUERYLABELS is
-   * keyless and routes to a single arbitrary node, and asserting a complete reply proves the server
-   * coordinates the cluster-wide fan-out itself (no client-side aggregation).
+   * Sets up a small sensor dashboard dataset used by the TS.QUERYLABELS examples. Keys are obtained
+   * from {@link TestKeyRegistry} (registered for cleanup) and deliberately NOT hash-tagged, so in
+   * cluster mode they scatter across shards: TS.QUERYLABELS is keyless and routes to a single
+   * arbitrary node, and asserting a complete reply proves the server coordinates the cluster-wide
+   * fan-out itself (no client-side aggregation).
    */
   private void setupQueryLabelsSeries() {
-    jedis.tsCreate("ql:temp:living", TSCreateParams.createParams()
+    jedis.tsCreate(queryLabelsKeys.key("temp:living"), TSCreateParams.createParams()
         .labels(mapOf("type", "sensor", "sensortype", "temperature", "location", "LivingRoom")));
-    jedis.tsCreate("ql:temp:kitchen", TSCreateParams.createParams()
+    jedis.tsCreate(queryLabelsKeys.key("temp:kitchen"), TSCreateParams.createParams()
         .labels(mapOf("type", "sensor", "sensortype", "temperature", "location", "Kitchen")));
-    jedis.tsCreate("ql:hum:bedroom", TSCreateParams.createParams()
+    jedis.tsCreate(queryLabelsKeys.key("hum:bedroom"), TSCreateParams.createParams()
         .labels(mapOf("type", "sensor", "sensortype", "humidity", "location", "BedRoom")));
-    jedis.tsCreate("ql:cpu:server",
+    jedis.tsCreate(queryLabelsKeys.key("cpu:server"),
       TSCreateParams.createParams().labels(mapOf("type", "metric", "unit", "percent")));
   }
 

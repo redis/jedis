@@ -20,6 +20,8 @@ import java.util.stream.Collectors;
 import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.timeseries.AggregationType;
 import redis.clients.jedis.timeseries.TSAlterParams;
@@ -33,6 +35,7 @@ import redis.clients.jedis.timeseries.TSMRangeElements;
 import redis.clients.jedis.timeseries.TSMRangeParams;
 import redis.clients.jedis.timeseries.TSRangeParams;
 import redis.clients.jedis.util.TestEnvUtil;
+import redis.clients.jedis.util.TestKeyRegistry;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=timeseries">Time series</a> commands.
@@ -584,30 +587,41 @@ public class CommandObjectsTimeSeriesCommandsTest extends CommandObjectsModulesT
 
   @Test
   @SinceRedisVersion("8.9.241")
-  public void testTsQueryLabelsAndValues() {
-    exec(commandObjects.tsCreate("ql:temp:living",
-        new TSCreateParams().label("type", "sensor").label("sensortype", "temperature").label("location", "LivingRoom")));
-    exec(commandObjects.tsCreate("ql:temp:kitchen",
-        new TSCreateParams().label("type", "sensor").label("sensortype", "temperature").label("location", "Kitchen")));
-    exec(commandObjects.tsCreate("ql:hum:bedroom",
-        new TSCreateParams().label("type", "sensor").label("sensortype", "humidity").label("location", "BedRoom")));
-    exec(commandObjects.tsCreate("ql:cpu:server",
-        new TSCreateParams().label("type", "metric").label("unit", "percent")));
+  public void testTsQueryLabelsAndValues(TestInfo testInfo) {
+    // Keys are obtained from (and tracked by) the registry so they can be cleared afterwards
+    // instead of relying on a wholesale flush. Label names/values drive the assertions, so the
+    // registry-namespaced key names do not affect the results.
+    TestKeyRegistry keys = TestKeyRegistry.create(testInfo);
+    try {
+      exec(commandObjects.tsCreate(keys.key("temp:living"),
+          new TSCreateParams().label("type", "sensor").label("sensortype", "temperature").label("location", "LivingRoom")));
+      exec(commandObjects.tsCreate(keys.key("temp:kitchen"),
+          new TSCreateParams().label("type", "sensor").label("sensortype", "temperature").label("location", "Kitchen")));
+      exec(commandObjects.tsCreate(keys.key("hum:bedroom"),
+          new TSCreateParams().label("type", "sensor").label("sensortype", "humidity").label("location", "BedRoom")));
+      exec(commandObjects.tsCreate(keys.key("cpu:server"),
+          new TSCreateParams().label("type", "metric").label("unit", "percent")));
 
-    // LABELS with a filter: distinct label names across the sensor group.
-    assertThat(exec(commandObjects.tsQueryLabels("type=sensor")),
-        containsInAnyOrder("type", "sensortype", "location"));
+      // LABELS with a filter: distinct label names across the sensor group.
+      assertThat(exec(commandObjects.tsQueryLabels("type=sensor")),
+          containsInAnyOrder("type", "sensortype", "location"));
 
-    // LABELS without a filter: all indexed series, so "unit" appears too.
-    assertThat(exec(commandObjects.tsQueryLabels()),
-        containsInAnyOrder("type", "sensortype", "location", "unit"));
+      // LABELS without a filter: all indexed series, so "unit" appears too.
+      assertThat(exec(commandObjects.tsQueryLabels()),
+          containsInAnyOrder("type", "sensortype", "location", "unit"));
 
-    // VALUES of a chosen label within the sensor group.
-    assertThat(exec(commandObjects.tsQueryLabelValues("location", "type=sensor")),
-        containsInAnyOrder("LivingRoom", "Kitchen", "BedRoom"));
+      // VALUES of a chosen label within the sensor group.
+      assertThat(exec(commandObjects.tsQueryLabelValues("location", "type=sensor")),
+          containsInAnyOrder("LivingRoom", "Kitchen", "BedRoom"));
 
-    // A label carried by no matching series yields an empty reply, not an error.
-    assertThat(exec(commandObjects.tsQueryLabelValues("nonexistent", "type=sensor")), empty());
+      // A label carried by no matching series yields an empty reply, not an error.
+      assertThat(exec(commandObjects.tsQueryLabelValues("nonexistent", "type=sensor")), empty());
+    } finally {
+      try (RedisClient client = RedisClient.builder().hostAndPort(endpoint.getHostAndPort())
+          .clientConfig(endpoint.getClientConfigBuilder().protocol(protocol).build()).build()) {
+        keys.cleanup(client);
+      }
+    }
   }
 
   @Test

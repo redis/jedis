@@ -8,10 +8,12 @@ public class TimeSeriesProtocol {
 
   public static final byte[] PLUS = SafeEncoder.encode("+");
   public static final byte[] MINUS = SafeEncoder.encode("-");
+  public static final byte[] DOLLAR = SafeEncoder.encode("$");
 
   public enum TimeSeriesCommand implements ProtocolCommand {
 
     CREATE("TS.CREATE"),
+    READ("TS.READ"),
     RANGE("TS.RANGE"),
     REVRANGE("TS.REVRANGE"),
     MRANGE("TS.MRANGE"),
@@ -68,7 +70,9 @@ public class TimeSeriesProtocol {
     LATEST,
     EMPTY,
     EXCLUDEEMPTY,
-    BUCKETTIMESTAMP;
+    BUCKETTIMESTAMP,
+    BLOCK,
+    MAX_COUNT;
 
     private final byte[] raw;
 

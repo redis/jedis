@@ -3,7 +3,6 @@ package redis.clients.jedis.timeseries;
 import java.util.List;
 import java.util.Map;
 import redis.clients.jedis.Response;
-import redis.clients.jedis.annots.Experimental;
 
 public interface RedisTimeSeriesPipelineCommands {
 

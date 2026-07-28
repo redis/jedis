@@ -225,16 +225,53 @@ public class ClusterSetCommandsTest extends SetCommandsTestBase {
     jedis.sadd("bar{.}", "c", "d");
 
     assertEquals(4, jedis.sunioncard("foo{.}", "bar{.}"));
-    assertEquals(4, jedis.sunioncard(Arrays.asList("foo{.}", "bar{.}")));
-    assertEquals(3, jedis.sunioncard("foo{.}", "bar{.}", new SUnionCardParams().limit(3)));
-    assertEquals(4, jedis.sunioncard(Arrays.asList("foo{.}", "bar{.}"), new SUnionCardParams().approx()));
 
     // Binary
     jedis.sadd(bfoo, ba, bb);
     jedis.sadd(bfoo_same_hashslot, bb, bc);
 
     assertEquals(3, jedis.sunioncard(bfoo, bfoo_same_hashslot));
+  }
+
+  @Test
+  @Override
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
+  public void sunioncardKeysList() {
+    jedis.sadd("foo{.}", "a", "b", "c");
+    jedis.sadd("bar{.}", "c", "d");
+
+    assertEquals(4, jedis.sunioncard(Arrays.asList("foo{.}", "bar{.}")));
+  }
+
+  @Test
+  @Override
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
+  public void sunioncardWithParams() {
+    jedis.sadd("foo{.}", "a", "b", "c");
+    jedis.sadd("bar{.}", "c", "d");
+
+    assertEquals(3, jedis.sunioncard("foo{.}", "bar{.}", new SUnionCardParams().limit(3)));
+
+    // Binary
+    jedis.sadd(bfoo, ba, bb);
+    jedis.sadd(bfoo_same_hashslot, bb, bc);
+
     assertEquals(2, jedis.sunioncard(bfoo, bfoo_same_hashslot, new SUnionCardParams().limit(2)));
+  }
+
+  @Test
+  @Override
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
+  public void sunioncardKeysListWithParams() {
+    jedis.sadd("foo{.}", "a", "b", "c");
+    jedis.sadd("bar{.}", "c", "d");
+
+    assertEquals(4, jedis.sunioncard(Arrays.asList("foo{.}", "bar{.}"), new SUnionCardParams().approx()));
+
+    // Binary
+    jedis.sadd(bfoo, ba, bb);
+    jedis.sadd(bfoo_same_hashslot, bb, bc);
+
     assertEquals(3, jedis.sunioncard(new byte[][] { bfoo, bfoo_same_hashslot }, new SUnionCardParams().limit(0)));
   }
 
@@ -256,8 +293,6 @@ public class ClusterSetCommandsTest extends SetCommandsTestBase {
     jedis.sadd("car{.}", "a", "d");
 
     assertEquals(2, jedis.sdiffcard("foo{.}", "bar{.}", "car{.}"));
-    assertEquals(1,
-      jedis.sdiffcard(Arrays.asList("foo{.}", "bar{.}", "car{.}"), new SDiffCardParams().limit(1)));
     assertEquals(0, jedis.sdiffcard("nosuchset{.}", "foo{.}"));
 
     // Binary
@@ -265,6 +300,44 @@ public class ClusterSetCommandsTest extends SetCommandsTestBase {
     jedis.sadd(bfoo_same_hashslot, bb);
 
     assertEquals(1, jedis.sdiffcard(bfoo, bfoo_same_hashslot));
+  }
+
+  @Test
+  @Override
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
+  public void sdiffcardKeysList() {
+    jedis.sadd("foo{.}", "x", "a", "b", "c");
+    jedis.sadd("bar{.}", "c");
+    jedis.sadd("car{.}", "a", "d");
+
+    assertEquals(2, jedis.sdiffcard(Arrays.asList("foo{.}", "bar{.}", "car{.}")));
+  }
+
+  @Test
+  @Override
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
+  public void sdiffcardWithParams() {
+    jedis.sadd("foo{.}", "x", "a", "b", "c");
+    jedis.sadd("bar{.}", "c");
+
+    assertEquals(1, jedis.sdiffcard("foo{.}", "bar{.}", new SDiffCardParams().limit(1)));
+  }
+
+  @Test
+  @Override
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
+  public void sdiffcardKeysListWithParams() {
+    jedis.sadd("foo{.}", "x", "a", "b", "c");
+    jedis.sadd("bar{.}", "c");
+    jedis.sadd("car{.}", "a", "d");
+
+    assertEquals(1,
+      jedis.sdiffcard(Arrays.asList("foo{.}", "bar{.}", "car{.}"), new SDiffCardParams().limit(1)));
+
+    // Binary
+    jedis.sadd(bfoo, ba, bb);
+    jedis.sadd(bfoo_same_hashslot, bb);
+
     assertEquals(1,
       jedis.sdiffcard(new byte[][] { bfoo, bfoo_same_hashslot }, new SDiffCardParams().limit(0)));
   }

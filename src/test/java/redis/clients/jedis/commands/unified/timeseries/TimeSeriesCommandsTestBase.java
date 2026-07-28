@@ -18,8 +18,11 @@ import java.util.*;
 import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
@@ -45,6 +48,18 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
 
   public TimeSeriesCommandsTestBase(RedisProtocol protocol) {
     super(protocol);
+  }
+
+  protected TestKeyRegistry keys;
+
+  @BeforeEach
+  public void setUpKeys(TestInfo testInfo) {
+    keys = TestKeyRegistry.create(testInfo);
+  }
+
+  @AfterEach
+  public void cleanUpKeys() {
+    keys.cleanup(jedis);
   }
 
   @Test
@@ -1936,5 +1951,127 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
     // Reading a key that holds a non-timeseries value is a WRONGTYPE error.
     jedis.set("read-str", "not a series");
     assertThrows(JedisDataException.class, () -> jedis.tsRead("read-str", 0L));
+  }
+
+  /**
+   * TS.NRANGE pivots an explicit key list by timestamp: forward order, one value column per key,
+   * NaN where a key has no sample. COUNT limits rows after the merge.
+   */
+  @Test
+  @EnabledOnCommand("TS.NRANGE")
+  public void nRange() {
+    String a = keys.key("{%test%}:a");
+    String b = keys.key("{%test%}:b");
+    jedis.tsCreate(a);
+    jedis.tsCreate(b);
+    jedis.tsAdd(a, 1000L, 10.0);
+    jedis.tsAdd(a, 2000L, 12.0);
+    jedis.tsAdd(b, 1000L, 100.0);
+    jedis.tsAdd(b, 3000L, 300.0);
+
+    String[] seriesKeys = { a, b };
+    List<TSElement> rows = jedis.tsNRange(seriesKeys, 0L, 60000L);
+
+    List<Long> timestamps = new ArrayList<>();
+    for (TSElement row : rows) {
+      timestamps.add(row.getTimestamp());
+    }
+    assertEquals(Arrays.asList(1000L, 2000L, 3000L), timestamps);
+
+    assertEquals(2, rows.get(0).getValues().size());
+    assertEquals(10.0, rows.get(0).getValues().get(0), 0.001);
+    assertEquals(100.0, rows.get(0).getValues().get(1), 0.001);
+    assertEquals(12.0, rows.get(1).getValues().get(0), 0.001);
+    assertTrue(Double.isNaN(rows.get(1).getValues().get(1)));
+    assertTrue(Double.isNaN(rows.get(2).getValues().get(0)));
+    assertEquals(300.0, rows.get(2).getValues().get(1), 0.001);
+
+    List<TSElement> limited = jedis.tsNRange(seriesKeys,
+      TSNRangeParams.nrangeParams(0L, 60000L).count(1));
+    assertEquals(1, limited.size());
+    assertEquals(1000L, limited.get(0).getTimestamp());
+
+    List<TSElement> emptyRange = jedis.tsNRange(new String[] { a }, 900000L, 900001L);
+    assertTrue(emptyRange.isEmpty());
+  }
+
+  /**
+   * TS.NREVRANGE returns the same pivot rows in decreasing-timestamp order; the client preserves
+   * the server order.
+   */
+  @Test
+  @EnabledOnCommand("TS.NREVRANGE")
+  public void nRevRange() {
+    String a = keys.key("{%test%}:a");
+    String b = keys.key("{%test%}:b");
+    jedis.tsCreate(a);
+    jedis.tsCreate(b);
+    jedis.tsAdd(a, 1000L, 10.0);
+    jedis.tsAdd(b, 2000L, 200.0);
+
+    String[] seriesKeys = { a, b };
+    List<TSElement> rows = jedis.tsNRevRange(seriesKeys, 0L, 60000L);
+
+    List<Long> timestamps = new ArrayList<>();
+    for (TSElement row : rows) {
+      timestamps.add(row.getTimestamp());
+    }
+    assertEquals(Arrays.asList(2000L, 1000L), timestamps);
+  }
+
+  /**
+   * Aggregation mode: one aggregator token per key (count must equal numkeys), each token possibly
+   * a comma-separated list, producing a flat value vector per row.
+   */
+  @Test
+  @EnabledOnCommand("TS.NRANGE")
+  public void nRangeAggregation() {
+    String a = keys.key("{%test%}:a");
+    String b = keys.key("{%test%}:b");
+    jedis.tsCreate(a);
+    jedis.tsCreate(b);
+    jedis.tsAdd(a, 1000L, 10.0);
+    jedis.tsAdd(a, 1500L, 20.0);
+    jedis.tsAdd(b, 1000L, 100.0);
+
+    String[] seriesKeys = { a, b };
+
+    List<TSElement> single = jedis.tsNRange(seriesKeys, TSNRangeParams.nrangeParams(0L, 60000L)
+        .aggregation(new AggregationType[] { AggregationType.AVG, AggregationType.SUM }, 1000L));
+    assertEquals(2, single.get(0).getValues().size());
+    assertEquals(15.0, single.get(0).getValues().get(0), 0.001);
+    assertEquals(100.0, single.get(0).getValues().get(1), 0.001);
+
+    List<TSElement> multi = jedis.tsNRange(seriesKeys,
+      TSNRangeParams.nrangeParams(0L, 60000L).aggregation(new AggregationType[][] {
+          { AggregationType.AVG, AggregationType.MAX }, { AggregationType.SUM } },
+        1000L));
+    assertEquals(3, multi.get(0).getValues().size());
+    assertEquals(15.0, multi.get(0).getValues().get(0), 0.001);
+    assertEquals(20.0, multi.get(0).getValues().get(1), 0.001);
+    assertEquals(100.0, multi.get(0).getValues().get(2), 0.001);
+  }
+
+  /**
+   * The client validates one aggregation spec per key at build time (mirroring the server rule), so
+   * a spec-count/numkeys mismatch fails fast with {@link IllegalArgumentException} before any
+   * command is sent. Version-independent, hence no command gate.
+   */
+  @Test
+  public void nRangeAggregatorCountMismatchRejectedClientSide() {
+    String[] seriesKeys = { keys.key("{%test%}:a"), keys.key("{%test%}:b") };
+    // Two keys but one spec.
+    assertThrows(IllegalArgumentException.class,
+      () -> jedis.tsNRange(seriesKeys, TSNRangeParams.nrangeParams(0L, 60000L)
+          .aggregation(new AggregationType[] { AggregationType.AVG }, 1000L)));
+    // Two keys but three specs.
+    assertThrows(IllegalArgumentException.class,
+      () -> jedis
+          .tsNRevRange(seriesKeys,
+            TSNRangeParams.nrangeParams(0L, 60000L).aggregation(new AggregationType[][] {
+                { AggregationType.AVG }, { AggregationType.SUM }, { AggregationType.MIN } },
+              1000L)));
+    // Empty key list.
+    assertThrows(IllegalArgumentException.class, () -> jedis.tsNRange(new String[0], 0L, 60000L));
   }
 }

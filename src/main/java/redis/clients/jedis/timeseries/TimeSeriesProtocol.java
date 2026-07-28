@@ -16,6 +16,8 @@ public class TimeSeriesProtocol {
     READ("TS.READ"),
     RANGE("TS.RANGE"),
     REVRANGE("TS.REVRANGE"),
+    NRANGE("TS.NRANGE"),
+    NREVRANGE("TS.NREVRANGE"),
     MRANGE("TS.MRANGE"),
     MREVRANGE("TS.MREVRANGE"),
     CREATERULE("TS.CREATERULE"),

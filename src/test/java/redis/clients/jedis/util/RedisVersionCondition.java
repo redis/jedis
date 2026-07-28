@@ -48,23 +48,25 @@ public class RedisVersionCondition implements ExecutionCondition {
 
   @Override
   public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
+    RedisVersion minRequiredVersion = getMaxRequiredVersion(context);
+    if (minRequiredVersion == null) {
+      return ConditionEvaluationResult.enabled("No version constraint present");
+    }
+
+    if (forcedVersion != null) {
+      logger.info("Using forced Redis server version from environment variable: " + forcedVersion);
+      if (forcedVersion.isLessThan(minRequiredVersion)) {
+        return ConditionEvaluationResult.disabled("Test requires Redis version " + minRequiredVersion + " or later, but found " + forcedVersion);
+      }
+      return ConditionEvaluationResult.enabled("Redis version is sufficient");
+    }
+
     ensureInitialized();
     try (Jedis jedisClient = new Jedis(hostPort, config)) {
-      RedisVersion minRequiredVersion = getMaxRequiredVersion(context);
-      if (minRequiredVersion != null) {
-        RedisVersion currentVersion;
-
-        if (forcedVersion != null) {
-          logger.info("Using forced Redis server version from environment variable: " + forcedVersion);
-          currentVersion = forcedVersion;
-        } else {
-          RedisInfo info = RedisInfo.parseInfoServer(jedisClient.info("server"));
-          currentVersion = RedisVersion.of(info.getRedisVersion());
-        }
-
-        if (currentVersion.isLessThan(minRequiredVersion)) {
-          return ConditionEvaluationResult.disabled("Test requires Redis version " + minRequiredVersion + " or later, but found " + currentVersion);
-        }
+      RedisInfo info = RedisInfo.parseInfoServer(jedisClient.info("server"));
+      RedisVersion currentVersion = RedisVersion.of(info.getRedisVersion());
+      if (currentVersion.isLessThan(minRequiredVersion)) {
+        return ConditionEvaluationResult.disabled("Test requires Redis version " + minRequiredVersion + " or later, but found " + currentVersion);
       }
     } catch (Exception e) {
       return ConditionEvaluationResult.disabled("Failed to check Redis version: " + e.getMessage());

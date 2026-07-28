@@ -269,6 +269,19 @@ public class ClusterListCommandsTest extends ListCommandsTestBase {
   @Override
   @EnabledOnCommand("LMOVEM")
   public void lmovem() {
+    jedis.rpush("{|}foo", "1", "2");
+    assertEquals(Collections.singletonList("2"),
+        jedis.lmovem("{|}foo", "{|}bar", ListDirection.RIGHT, ListDirection.LEFT));
+    assertEquals(Collections.singletonList("2"), jedis.lrange("{|}bar", 0, -1));
+
+    // Missing source returns null.
+    assertNull(jedis.lmovem("{|}nope1", "{|}nope2", ListDirection.LEFT, ListDirection.LEFT));
+  }
+
+  @Test
+  @Override
+  @EnabledOnCommand("LMOVEM")
+  public void lmovemWithParams() {
     jedis.rpush("{|}l1", "1", "2", "3", "4");
     jedis.rpush("{|}l2", "5", "6", "7");
     assertEquals(Arrays.asList("2", "1"),
@@ -287,6 +300,20 @@ public class ClusterListCommandsTest extends ListCommandsTestBase {
   @Override
   @EnabledOnCommand("BLMOVEM")
   public void blmovem() {
+    // Source already populated: returns immediately with a single element.
+    jedis.rpush("{|}foo", "1", "2");
+    assertEquals(Collections.singletonList("1"),
+        jedis.blmovem("{|}foo", "{|}bar", ListDirection.LEFT, ListDirection.RIGHT, 1));
+    assertEquals(Collections.singletonList("1"), jedis.lrange("{|}bar", 0, -1));
+
+    // Empty source times out and returns null.
+    assertNull(jedis.blmovem("{|}empty", "{|}dst", ListDirection.LEFT, ListDirection.RIGHT, 0.5));
+  }
+
+  @Test
+  @Override
+  @EnabledOnCommand("BLMOVEM")
+  public void blmovemWithParams() {
     jedis.rpush("{|}foo", "1", "2", "3");
     assertEquals(Arrays.asList("1", "2"),
         jedis.blmovem("{|}foo", "{|}bar", ListDirection.LEFT, ListDirection.RIGHT, 1,

@@ -875,7 +875,23 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
     assertEquals(Collections.singletonList("4"),
         jedis.lmovem("foo", "bar", ListDirection.RIGHT, ListDirection.LEFT));
     assertEquals(Collections.singletonList("4"), jedis.lrange("bar", 0, -1));
+    assertEquals(Arrays.asList("1", "2", "3"), jedis.lrange("foo", 0, -1));
 
+    // Missing source returns null.
+    assertNull(jedis.lmovem("nope1", "nope2", ListDirection.LEFT, ListDirection.LEFT));
+
+    // Binary
+    jedis.rpush(bfoo, b1, b2);
+    assertByteArrayListEquals(Collections.singletonList(b1),
+        jedis.lmovem(bfoo, bbar, ListDirection.LEFT, ListDirection.LEFT));
+    assertByteArrayListEquals(Collections.singletonList(b1), jedis.lrange(bbar, 0, -1));
+    assertNull(jedis.lmovem(bcar, bbar, ListDirection.LEFT, ListDirection.LEFT));
+  }
+
+  @Test
+  @EnabledOnCommand("LMOVEM")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void lmovemWithParams() {
     // COUNT with OBO ordering: pop from the left one by one and push to the left -> reversed.
     jedis.rpush("l1", "1", "2", "3", "4");
     jedis.rpush("l2", "5", "6", "7");
@@ -904,6 +920,12 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
         LMoveMParams.lMoveMParams().exactly(3, ListMoveOrder.BULK)));
     assertEquals(Arrays.asList("1", "2"), jedis.lrange("e1", 0, -1));
 
+    // EXACTLY that can be satisfied moves exactly that many elements.
+    assertEquals(Arrays.asList("1", "2"),
+        jedis.lmovem("e1", "e2", ListDirection.LEFT, ListDirection.RIGHT,
+            LMoveMParams.lMoveMParams().exactly(2, ListMoveOrder.BULK)));
+    assertEquals(Collections.emptyList(), jedis.lrange("e1", 0, -1));
+
     // Missing source returns null.
     assertNull(jedis.lmovem("nope1", "nope2", ListDirection.LEFT, ListDirection.LEFT,
         LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO)));
@@ -923,6 +945,37 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
   @EnabledOnCommand("BLMOVEM")
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void blmovem() {
+    // Source already populated: returns immediately with a single element, like BLMOVE.
+    jedis.rpush("foo", "1", "2", "3");
+    assertEquals(Collections.singletonList("1"),
+        jedis.blmovem("foo", "bar", ListDirection.LEFT, ListDirection.RIGHT, 1));
+    assertEquals(Collections.singletonList("1"), jedis.lrange("bar", 0, -1));
+
+    // Blocks until the source is pushed to.
+    new Thread(() -> {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        logger.error("", e);
+      }
+      jedis.rpush("src", "a", "b");
+    }).start();
+    assertEquals(Collections.singletonList("a"),
+        jedis.blmovem("src", "dst", ListDirection.LEFT, ListDirection.RIGHT, 0));
+
+    // Empty source times out and returns null.
+    assertNull(jedis.blmovem("empty", "dst", ListDirection.LEFT, ListDirection.RIGHT, 0.5));
+
+    // Binary, immediate.
+    jedis.rpush(bfoo, b1, b2);
+    assertByteArrayListEquals(Collections.singletonList(b1),
+        jedis.blmovem(bfoo, bbar, ListDirection.LEFT, ListDirection.RIGHT, 1));
+  }
+
+  @Test
+  @EnabledOnCommand("BLMOVEM")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void blmovemWithParams() {
     // Source already populated: returns immediately.
     jedis.rpush("foo", "1", "2", "3");
     assertEquals(Arrays.asList("1", "2"),

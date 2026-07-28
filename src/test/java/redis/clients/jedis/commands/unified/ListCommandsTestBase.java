@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.ListMoveOrder;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LMoveMParams;
 import redis.clients.jedis.params.LPosParams;
@@ -880,7 +881,7 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
     jedis.rpush("l2", "5", "6", "7");
     assertEquals(Arrays.asList("2", "1"),
         jedis.lmovem("l1", "l2", ListDirection.LEFT, ListDirection.LEFT,
-            LMoveMParams.lMoveMParams().count(2).obo()));
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO)));
     assertEquals(Arrays.asList("2", "1", "5", "6", "7"), jedis.lrange("l2", 0, -1));
     assertEquals(Arrays.asList("3", "4"), jedis.lrange("l1", 0, -1));
 
@@ -889,33 +890,33 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
     jedis.rpush("m2", "5", "6", "7");
     assertEquals(Arrays.asList("1", "2"),
         jedis.lmovem("m1", "m2", ListDirection.LEFT, ListDirection.LEFT,
-            LMoveMParams.lMoveMParams().count(2).bulk()));
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
     assertEquals(Arrays.asList("1", "2", "5", "6", "7"), jedis.lrange("m2", 0, -1));
 
     // COUNT larger than the source moves only what is available.
     assertEquals(Arrays.asList("3", "4"),
         jedis.lmovem("m1", "m2", ListDirection.LEFT, ListDirection.RIGHT,
-            LMoveMParams.lMoveMParams().count(10).bulk()));
+            LMoveMParams.lMoveMParams().count(10, ListMoveOrder.BULK)));
 
     // EXACTLY that cannot be satisfied returns null and leaves the source untouched.
     jedis.rpush("e1", "1", "2");
     assertNull(jedis.lmovem("e1", "e2", ListDirection.LEFT, ListDirection.LEFT,
-        LMoveMParams.lMoveMParams().exactly(3).bulk()));
+        LMoveMParams.lMoveMParams().exactly(3, ListMoveOrder.BULK)));
     assertEquals(Arrays.asList("1", "2"), jedis.lrange("e1", 0, -1));
 
     // Missing source returns null.
     assertNull(jedis.lmovem("nope1", "nope2", ListDirection.LEFT, ListDirection.LEFT,
-        LMoveMParams.lMoveMParams().count(2).obo()));
+        LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO)));
 
     // Binary
     jedis.rpush(bfoo, b1, b2, b3, bA);
     jedis.rpush(bbar, bB);
     assertByteArrayListEquals(Arrays.asList(b2, b1),
         jedis.lmovem(bfoo, bbar, ListDirection.LEFT, ListDirection.LEFT,
-            LMoveMParams.lMoveMParams().count(2).obo()));
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO)));
     assertByteArrayListEquals(Arrays.asList(b2, b1, bB), jedis.lrange(bbar, 0, -1));
     assertNull(jedis.lmovem(bcar, bbar, ListDirection.LEFT, ListDirection.LEFT,
-        LMoveMParams.lMoveMParams().exactly(3).bulk()));
+        LMoveMParams.lMoveMParams().exactly(3, ListMoveOrder.BULK)));
   }
 
   @Test
@@ -926,7 +927,7 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
     jedis.rpush("foo", "1", "2", "3");
     assertEquals(Arrays.asList("1", "2"),
         jedis.blmovem("foo", "bar", ListDirection.LEFT, ListDirection.RIGHT, 1,
-            LMoveMParams.lMoveMParams().count(2).bulk()));
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
     assertEquals(Arrays.asList("1", "2"), jedis.lrange("bar", 0, -1));
 
     // Blocks until the source is pushed to.
@@ -940,17 +941,17 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
     }).start();
     assertEquals(Arrays.asList("a", "b"),
         jedis.blmovem("src", "dst", ListDirection.LEFT, ListDirection.RIGHT, 0,
-            LMoveMParams.lMoveMParams().count(2).bulk()));
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
 
     // Empty source times out and returns null.
     assertNull(jedis.blmovem("empty", "dst", ListDirection.LEFT, ListDirection.RIGHT, 0.5,
-        LMoveMParams.lMoveMParams().count(2).obo()));
+        LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO)));
 
     // Binary, immediate.
     jedis.rpush(bfoo, b1, b2, b3);
     assertByteArrayListEquals(Arrays.asList(b1, b2),
         jedis.blmovem(bfoo, bbar, ListDirection.LEFT, ListDirection.RIGHT, 1,
-            LMoveMParams.lMoveMParams().count(2).bulk()));
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
   }
 
   @Test

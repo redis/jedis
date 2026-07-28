@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.ListMoveOrder;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.params.LMoveMParams;
 import redis.clients.jedis.params.LPosParams;
@@ -61,7 +62,7 @@ public class UnifiedJedisListCommandsTest extends UnifiedJedisMockedTestBase {
     String dstKey = "destinationList";
     ListDirection from = ListDirection.LEFT;
     ListDirection to = ListDirection.LEFT;
-    LMoveMParams params = LMoveMParams.lMoveMParams().count(2).obo();
+    LMoveMParams params = LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO);
     List<String> expected = Arrays.asList("b", "a");
 
     when(commandObjects.lmovem(srcKey, dstKey, from, to, params)).thenReturn(listStringCommandObject);
@@ -81,7 +82,7 @@ public class UnifiedJedisListCommandsTest extends UnifiedJedisMockedTestBase {
     byte[] dstKey = "destinationList".getBytes();
     ListDirection from = ListDirection.LEFT;
     ListDirection to = ListDirection.LEFT;
-    LMoveMParams params = LMoveMParams.lMoveMParams().exactly(2).bulk();
+    LMoveMParams params = LMoveMParams.lMoveMParams().exactly(2, ListMoveOrder.BULK);
     List<byte[]> expected = Arrays.asList("a".getBytes(), "b".getBytes());
 
     when(commandObjects.lmovem(srcKey, dstKey, from, to, params)).thenReturn(listBytesCommandObject);
@@ -122,7 +123,7 @@ public class UnifiedJedisListCommandsTest extends UnifiedJedisMockedTestBase {
     ListDirection from = ListDirection.LEFT;
     ListDirection to = ListDirection.RIGHT;
     double timeout = 10.5;
-    LMoveMParams params = LMoveMParams.lMoveMParams().count(3).bulk();
+    LMoveMParams params = LMoveMParams.lMoveMParams().count(3, ListMoveOrder.BULK);
     List<String> expected = Arrays.asList("a", "b", "c");
 
     when(commandObjects.blmovem(srcKey, dstKey, from, to, timeout, params)).thenReturn(listStringCommandObject);
@@ -163,7 +164,7 @@ public class UnifiedJedisListCommandsTest extends UnifiedJedisMockedTestBase {
     ListDirection from = ListDirection.LEFT;
     ListDirection to = ListDirection.RIGHT;
     double timeout = 10.5;
-    LMoveMParams params = LMoveMParams.lMoveMParams().exactly(2).obo();
+    LMoveMParams params = LMoveMParams.lMoveMParams().exactly(2, ListMoveOrder.OBO);
     List<byte[]> expected = Arrays.asList("b".getBytes(), "a".getBytes());
 
     when(commandObjects.blmovem(srcKey, dstKey, from, to, timeout, params)).thenReturn(listBytesCommandObject);

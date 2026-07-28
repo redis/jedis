@@ -18,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.ListMoveOrder;
 import redis.clients.jedis.commands.unified.ListCommandsTestBase;
 import redis.clients.jedis.params.LMoveMParams;
 import redis.clients.jedis.util.KeyValue;
@@ -272,13 +273,13 @@ public class ClusterListCommandsTest extends ListCommandsTestBase {
     jedis.rpush("{|}l2", "5", "6", "7");
     assertEquals(Arrays.asList("2", "1"),
         jedis.lmovem("{|}l1", "{|}l2", ListDirection.LEFT, ListDirection.LEFT,
-            LMoveMParams.lMoveMParams().count(2).obo()));
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO)));
     assertEquals(Arrays.asList("2", "1", "5", "6", "7"), jedis.lrange("{|}l2", 0, -1));
 
     // EXACTLY that cannot be satisfied returns null and leaves the source untouched.
     jedis.rpush("{|}e1", "1", "2");
     assertNull(jedis.lmovem("{|}e1", "{|}e2", ListDirection.LEFT, ListDirection.LEFT,
-        LMoveMParams.lMoveMParams().exactly(3).bulk()));
+        LMoveMParams.lMoveMParams().exactly(3, ListMoveOrder.BULK)));
     assertEquals(Arrays.asList("1", "2"), jedis.lrange("{|}e1", 0, -1));
   }
 
@@ -289,12 +290,12 @@ public class ClusterListCommandsTest extends ListCommandsTestBase {
     jedis.rpush("{|}foo", "1", "2", "3");
     assertEquals(Arrays.asList("1", "2"),
         jedis.blmovem("{|}foo", "{|}bar", ListDirection.LEFT, ListDirection.RIGHT, 1,
-            LMoveMParams.lMoveMParams().count(2).bulk()));
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
     assertEquals(Arrays.asList("1", "2"), jedis.lrange("{|}bar", 0, -1));
 
     // Empty source times out and returns null.
     assertNull(jedis.blmovem("{|}empty", "{|}dst", ListDirection.LEFT, ListDirection.RIGHT, 0.5,
-        LMoveMParams.lMoveMParams().count(2).obo()));
+        LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO)));
   }
 
   @Test

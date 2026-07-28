@@ -10,6 +10,7 @@ import java.util.List;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.ListMoveOrder;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.params.LMoveMParams;
 import redis.clients.jedis.params.LPosParams;
@@ -49,7 +50,7 @@ public class PipeliningBaseListCommandsTest extends PipeliningBaseMockedTestBase
   public void testLmovemWithParams() {
     ListDirection from = ListDirection.LEFT;
     ListDirection to = ListDirection.LEFT;
-    LMoveMParams params = LMoveMParams.lMoveMParams().count(2).obo();
+    LMoveMParams params = LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO);
 
     when(commandObjects.lmovem("srcKey", "dstKey", from, to, params)).thenReturn(listStringCommandObject);
 
@@ -65,7 +66,7 @@ public class PipeliningBaseListCommandsTest extends PipeliningBaseMockedTestBase
     byte[] dstKey = "dstKey".getBytes();
     ListDirection from = ListDirection.LEFT;
     ListDirection to = ListDirection.LEFT;
-    LMoveMParams params = LMoveMParams.lMoveMParams().exactly(2).bulk();
+    LMoveMParams params = LMoveMParams.lMoveMParams().exactly(2, ListMoveOrder.BULK);
 
     when(commandObjects.lmovem(srcKey, dstKey, from, to, params)).thenReturn(listBytesCommandObject);
 
@@ -94,7 +95,7 @@ public class PipeliningBaseListCommandsTest extends PipeliningBaseMockedTestBase
     ListDirection from = ListDirection.LEFT;
     ListDirection to = ListDirection.RIGHT;
     double timeout = 1.0;
-    LMoveMParams params = LMoveMParams.lMoveMParams().count(2).bulk();
+    LMoveMParams params = LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK);
 
     when(commandObjects.blmovem("srcKey", "dstKey", from, to, timeout, params)).thenReturn(listStringCommandObject);
 
@@ -127,7 +128,7 @@ public class PipeliningBaseListCommandsTest extends PipeliningBaseMockedTestBase
     ListDirection from = ListDirection.LEFT;
     ListDirection to = ListDirection.RIGHT;
     double timeout = 10.5;
-    LMoveMParams params = LMoveMParams.lMoveMParams().exactly(2).obo();
+    LMoveMParams params = LMoveMParams.lMoveMParams().exactly(2, ListMoveOrder.OBO);
 
     when(commandObjects.blmovem(srcKey, dstKey, from, to, timeout, params)).thenReturn(listBytesCommandObject);
 

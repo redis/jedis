@@ -16,6 +16,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.ListMoveOrder;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.params.LMoveMParams;
 import redis.clients.jedis.params.LPosParams;
@@ -632,7 +633,7 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
     exec(commandObjects.rpush(srcKey, "1", "2", "3", "4"));
 
     List<String> result = exec(commandObjects.lmovem(srcKey, dstKey,
-        ListDirection.LEFT, ListDirection.LEFT, LMoveMParams.lMoveMParams().count(2).bulk()));
+        ListDirection.LEFT, ListDirection.LEFT, LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
     assertThat(result, contains("1", "2"));
     assertThat(exec(commandObjects.lrange(dstKey, 0, -1)), contains("1", "2"));
 
@@ -643,12 +644,12 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
 
     // EXACTLY that cannot be satisfied: null.
     List<String> none = exec(commandObjects.lmovem(srcKey, dstKey,
-        ListDirection.LEFT, ListDirection.LEFT, LMoveMParams.lMoveMParams().exactly(5).obo()));
+        ListDirection.LEFT, ListDirection.LEFT, LMoveMParams.lMoveMParams().exactly(5, ListMoveOrder.OBO)));
     assertThat(none, nullValue());
 
     // Blocking variant returns immediately when the source has data.
     List<String> bResult = exec(commandObjects.blmovem(srcKey, dstKey,
-        ListDirection.LEFT, ListDirection.RIGHT, 1.0, LMoveMParams.lMoveMParams().count(1).bulk()));
+        ListDirection.LEFT, ListDirection.RIGHT, 1.0, LMoveMParams.lMoveMParams().count(1, ListMoveOrder.BULK)));
     assertThat(bResult, contains("4"));
   }
 
@@ -664,11 +665,11 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
     exec(commandObjects.rpush(srcKey, value1, value2));
 
     List<byte[]> result = exec(commandObjects.lmovem(srcKey, dstKey,
-        ListDirection.LEFT, ListDirection.LEFT, LMoveMParams.lMoveMParams().count(2).bulk()));
+        ListDirection.LEFT, ListDirection.LEFT, LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
     assertThat(result, contains(equalTo(value1), equalTo(value2)));
 
     List<byte[]> none = exec(commandObjects.lmovem(srcKey, dstKey,
-        ListDirection.LEFT, ListDirection.LEFT, LMoveMParams.lMoveMParams().exactly(2).obo()));
+        ListDirection.LEFT, ListDirection.LEFT, LMoveMParams.lMoveMParams().exactly(2, ListMoveOrder.OBO)));
     assertThat(none, nullValue());
   }
 

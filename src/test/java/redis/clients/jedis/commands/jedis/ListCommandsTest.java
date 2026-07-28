@@ -27,6 +27,7 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.ListMoveOrder;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LMoveMParams;
 import redis.clients.jedis.params.LPosParams;
@@ -890,18 +891,18 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     jedis.rpush("lmsrc", "1", "2", "3", "4");
     assertEquals(Arrays.asList("1", "2"),
         jedis.lmovem("lmsrc", "lmdst", ListDirection.LEFT, ListDirection.LEFT,
-            LMoveMParams.lMoveMParams().count(2).bulk()));
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
     assertEquals(Arrays.asList("1", "2"), jedis.lrange("lmdst", 0, -1));
 
     // EXACTLY unsatisfied returns null.
     assertNull(jedis.lmovem("lmsrc", "lmdst", ListDirection.LEFT, ListDirection.LEFT,
-        LMoveMParams.lMoveMParams().exactly(5).obo()));
+        LMoveMParams.lMoveMParams().exactly(5, ListMoveOrder.OBO)));
 
     // Binary
     jedis.rpush(bfoo, b1, b2, b3);
     assertByteArrayListEquals(Arrays.asList(b1, b2),
         jedis.lmovem(bfoo, bbar, ListDirection.LEFT, ListDirection.LEFT,
-            LMoveMParams.lMoveMParams().count(2).bulk()));
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
   }
 
   @Test
@@ -914,7 +915,7 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     jedis.rpush("blmsrc", "1", "2", "3");
     assertEquals(Arrays.asList("1", "2"),
         jedis.blmovem("blmsrc", "blmdst", ListDirection.LEFT, ListDirection.RIGHT, 1,
-            LMoveMParams.lMoveMParams().count(2).bulk()));
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
     assertEquals(Arrays.asList("1", "2"), jedis.lrange("blmdst", 0, -1));
   }
 

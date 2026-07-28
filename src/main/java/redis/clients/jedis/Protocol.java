@@ -417,7 +417,7 @@ public final class Protocol {
     // INCREX keywords
     BYFLOAT, BYINT, ENX, LBOUND, SATURATE, UBOUND,
     // LMOVEM keywords
-    BULK, EXACTLY, OBO;
+    EXACTLY;
 
     private final byte[] raw;
 

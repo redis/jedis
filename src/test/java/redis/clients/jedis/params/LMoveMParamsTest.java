@@ -15,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.args.ListMoveOrder;
 import redis.clients.jedis.args.RawableFactory;
 
 public class LMoveMParamsTest {
@@ -23,11 +24,11 @@ public class LMoveMParamsTest {
   class ValidationTests {
 
     @Test
-    public void orderingWithoutSelectorThrows() {
-      // Ordering set but no COUNT/EXACTLY: the count value has no default.
-      LMoveMParams params = LMoveMParams.lMoveMParams().obo();
+    public void nullOrderingThrows() {
       assertThrows(IllegalArgumentException.class,
-        () -> params.addParams(new CommandArguments(Protocol.Command.LMOVEM)));
+        () -> LMoveMParams.lMoveMParams().count(2, null));
+      assertThrows(IllegalArgumentException.class,
+        () -> LMoveMParams.lMoveMParams().exactly(3, null));
     }
 
     @Test
@@ -43,55 +44,35 @@ public class LMoveMParamsTest {
 
     @Test
     public void countObo() {
-      LMoveMParams params = LMoveMParams.lMoveMParams().count(2).obo();
+      LMoveMParams params = LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO);
       CommandArguments args = new CommandArguments(Protocol.Command.LMOVEM);
       params.addParams(args);
 
       assertThat(args, hasArgumentCount(4));
-      assertThat(args,
-        hasArguments(Protocol.Command.LMOVEM, Keyword.COUNT, RawableFactory.from(2), Keyword.OBO));
+      assertThat(args, hasArguments(Protocol.Command.LMOVEM, Keyword.COUNT, RawableFactory.from(2),
+        ListMoveOrder.OBO));
     }
 
     @Test
     public void exactlyBulk() {
-      LMoveMParams params = LMoveMParams.lMoveMParams().exactly(3).bulk();
+      LMoveMParams params = LMoveMParams.lMoveMParams().exactly(3, ListMoveOrder.BULK);
       CommandArguments args = new CommandArguments(Protocol.Command.LMOVEM);
       params.addParams(args);
 
       assertThat(args, hasArgumentCount(4));
       assertThat(args, hasArguments(Protocol.Command.LMOVEM, Keyword.EXACTLY,
-        RawableFactory.from(3), Keyword.BULK));
-    }
-
-    @Test
-    public void orderingDefaultsToBulk() {
-      LMoveMParams params = LMoveMParams.lMoveMParams().count(2);
-      CommandArguments args = new CommandArguments(Protocol.Command.LMOVEM);
-      params.addParams(args);
-
-      assertThat(args, hasArgumentCount(4));
-      assertThat(args,
-        hasArguments(Protocol.Command.LMOVEM, Keyword.COUNT, RawableFactory.from(2), Keyword.BULK));
+        RawableFactory.from(3), ListMoveOrder.BULK));
     }
 
     @Test
     public void selectorIsLastWins() {
-      LMoveMParams params = LMoveMParams.lMoveMParams().count(2).exactly(5).bulk();
+      LMoveMParams params = LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO).exactly(5,
+        ListMoveOrder.BULK);
       CommandArguments args = new CommandArguments(Protocol.Command.LMOVEM);
       params.addParams(args);
 
       assertThat(args, hasArguments(Protocol.Command.LMOVEM, Keyword.EXACTLY,
-        RawableFactory.from(5), Keyword.BULK));
-    }
-
-    @Test
-    public void orderingIsLastWins() {
-      LMoveMParams params = LMoveMParams.lMoveMParams().count(2).obo().bulk();
-      CommandArguments args = new CommandArguments(Protocol.Command.LMOVEM);
-      params.addParams(args);
-
-      assertThat(args,
-        hasArguments(Protocol.Command.LMOVEM, Keyword.COUNT, RawableFactory.from(2), Keyword.BULK));
+        RawableFactory.from(5), ListMoveOrder.BULK));
     }
   }
 
@@ -100,37 +81,37 @@ public class LMoveMParamsTest {
 
     @Test
     public void equalWhenSameConfiguration() {
-      LMoveMParams a = LMoveMParams.lMoveMParams().count(2).obo();
-      LMoveMParams b = LMoveMParams.lMoveMParams().count(2).obo();
+      LMoveMParams a = LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO);
+      LMoveMParams b = LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO);
       assertTrue(a.equals(b));
       assertEquals(a.hashCode(), b.hashCode());
     }
 
     @Test
     public void notEqualWhenSelectorDiffers() {
-      LMoveMParams a = LMoveMParams.lMoveMParams().count(2).obo();
-      LMoveMParams b = LMoveMParams.lMoveMParams().exactly(2).obo();
+      LMoveMParams a = LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO);
+      LMoveMParams b = LMoveMParams.lMoveMParams().exactly(2, ListMoveOrder.OBO);
       assertFalse(a.equals(b));
     }
 
     @Test
     public void notEqualWhenCountDiffers() {
-      LMoveMParams a = LMoveMParams.lMoveMParams().count(2).bulk();
-      LMoveMParams b = LMoveMParams.lMoveMParams().count(3).bulk();
+      LMoveMParams a = LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK);
+      LMoveMParams b = LMoveMParams.lMoveMParams().count(3, ListMoveOrder.BULK);
       assertFalse(a.equals(b));
       assertNotEquals(a.hashCode(), b.hashCode());
     }
 
     @Test
     public void notEqualWhenOrderingDiffers() {
-      LMoveMParams a = LMoveMParams.lMoveMParams().count(2).obo();
-      LMoveMParams b = LMoveMParams.lMoveMParams().count(2).bulk();
+      LMoveMParams a = LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO);
+      LMoveMParams b = LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK);
       assertFalse(a.equals(b));
     }
 
     @Test
     public void notEqualToNull() {
-      LMoveMParams a = LMoveMParams.lMoveMParams().count(2).obo();
+      LMoveMParams a = LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO);
       assertFalse(a.equals(null));
     }
   }

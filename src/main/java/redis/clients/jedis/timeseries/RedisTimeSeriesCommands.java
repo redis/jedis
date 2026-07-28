@@ -214,6 +214,79 @@ public interface RedisTimeSeriesCommands {
   List<TSElement> tsRead(String key, TSReadParams readParams);
 
   /**
+   * <b><a href="https://redis.io/commands/ts.nrange">TS.NRANGE Command</a></b>
+   * <p>
+   * Queries an explicit list of time series over a timestamp range and returns a timestamp-major
+   * response in forward (increasing timestamp) order. Each returned {@link TSElement} carries one
+   * value per key, in the order the keys were passed; a key with no sample at a row timestamp is
+   * surfaced as {@code NaN} (indistinguishable from a stored or aggregated {@code NaN}). Key order
+   * and duplicate keys are significant and are preserved.
+   * <p>
+   * All keys must map to the same hash slot in a cluster; this is treated as a single-shard,
+   * key-routed command and is not split across shards.
+   * <p>
+   * Time complexity: O(numkeys*(n/m+k)) where n = number of samples, m = chunk size, k = number of
+   * samples in the requested range.
+   *
+   * @param keys explicit time series keys, in output column order (duplicates allowed)
+   * @param fromTimestamp inclusive range start
+   * @param toTimestamp inclusive range end
+   * @return one pivot row per distinct timestamp, in increasing-timestamp order
+   * @since 8.0
+   */
+  List<TSElement> tsNRange(String[] keys, long fromTimestamp, long toTimestamp);
+
+  /**
+   * <b><a href="https://redis.io/commands/ts.nrange">TS.NRANGE Command</a></b>
+   * <p>
+   * {@code TS.NRANGE numkeys key [key ...] fromTimestamp toTimestamp
+   * [LATEST]
+   * [FILTER_BY_TS ts...]
+   * [FILTER_BY_VALUE min max]
+   * [COUNT count]
+   * [[ALIGN align] AGGREGATION aggregator [aggregator ...] bucketDuration [BUCKETTIMESTAMP bt] [EMPTY]]}
+   * <p>
+   * In aggregation mode exactly one aggregator token is emitted per key (see
+   * {@link TSNRangeParams#aggregation(AggregationType[], long)} and
+   * {@link TSNRangeParams#aggregation(AggregationType[][], long)}); the server rejects a mismatch
+   * between the number of aggregator tokens and {@code numkeys}. Missing raw samples and missing
+   * aggregation buckets are surfaced as {@code NaN}.
+   *
+   * @param keys explicit time series keys, in output column order (duplicates allowed)
+   * @param nrangeParams optional range arguments (including {@code fromTimestamp}/{@code toTimestamp})
+   * @return one pivot row per distinct timestamp, in increasing-timestamp order
+   * @since 8.0
+   */
+  List<TSElement> tsNRange(String[] keys, TSNRangeParams nrangeParams);
+
+  /**
+   * <b><a href="https://redis.io/commands/ts.nrevrange">TS.NREVRANGE Command</a></b>
+   * <p>
+   * Reverse variant of {@link #tsNRange(String[], long, long)}: identical semantics but rows are
+   * returned in decreasing-timestamp order. Server-returned order is preserved as-is.
+   *
+   * @param keys explicit time series keys, in output column order (duplicates allowed)
+   * @param fromTimestamp inclusive range start
+   * @param toTimestamp inclusive range end
+   * @return one pivot row per distinct timestamp, in decreasing-timestamp order
+   * @since 8.0
+   */
+  List<TSElement> tsNRevRange(String[] keys, long fromTimestamp, long toTimestamp);
+
+  /**
+   * <b><a href="https://redis.io/commands/ts.nrevrange">TS.NREVRANGE Command</a></b>
+   * <p>
+   * Reverse variant of {@link #tsNRange(String[], TSNRangeParams)}: identical semantics and options
+   * but rows are returned in decreasing-timestamp order. Server-returned order is preserved as-is.
+   *
+   * @param keys explicit time series keys, in output column order (duplicates allowed)
+   * @param nrangeParams optional range arguments (including {@code fromTimestamp}/{@code toTimestamp})
+   * @return one pivot row per distinct timestamp, in decreasing-timestamp order
+   * @since 8.0
+   */
+  List<TSElement> tsNRevRange(String[] keys, TSNRangeParams nrangeParams);
+
+  /**
    * {@code TS.MRANGE fromTimestamp toTimestamp FILTER filter...}
    *
    * @param fromTimestamp

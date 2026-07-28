@@ -422,4 +422,54 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
     assertThat(response, is(predefinedResponse));
   }
 
+  @Test
+  public void testTsNRange() {
+    String[] keys = { "k1", "k2" };
+
+    when(commandObjects.tsNRange(keys, 1000L, 2000L)).thenReturn(listTsElementCommandObject);
+
+    Response<List<TSElement>> response = pipeliningBase.tsNRange(keys, 1000L, 2000L);
+
+    assertThat(commands, contains(listTsElementCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testTsNRangeWithParams() {
+    String[] keys = { "k1", "k2" };
+    TSNRangeParams params = TSNRangeParams.nrangeParams();
+
+    when(commandObjects.tsNRange(keys, params)).thenReturn(listTsElementCommandObject);
+
+    Response<List<TSElement>> response = pipeliningBase.tsNRange(keys, params);
+
+    assertThat(commands, contains(listTsElementCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testTsNRevRange() {
+    String[] keys = { "k1", "k2" };
+
+    when(commandObjects.tsNRevRange(keys, 1000L, 2000L)).thenReturn(listTsElementCommandObject);
+
+    Response<List<TSElement>> response = pipeliningBase.tsNRevRange(keys, 1000L, 2000L);
+
+    assertThat(commands, contains(listTsElementCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testTsNRevRangeWithParams() {
+    String[] keys = { "k1", "k2" };
+    TSNRangeParams params = TSNRangeParams.nrangeParams();
+
+    when(commandObjects.tsNRevRange(keys, params)).thenReturn(listTsElementCommandObject);
+
+    Response<List<TSElement>> response = pipeliningBase.tsNRevRange(keys, params);
+
+    assertThat(commands, contains(listTsElementCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
 }

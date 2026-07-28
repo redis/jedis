@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.List;
 
 import io.redis.test.annotations.ConditionalOnEnv;
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
@@ -23,7 +24,9 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.ListMoveOrder;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.params.LMoveMParams;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.TestEnvUtil;
@@ -861,6 +864,172 @@ public abstract class ListCommandsTestBase extends UnifiedJedisCommandsTestBase 
     assertArrayEquals(b3, jedis.blmove(bfoo, bbar, ListDirection.RIGHT, ListDirection.LEFT, 0));
     assertByteArrayListEquals(Collections.singletonList(b3), jedis.lrange(bbar, 0, -1));
     assertByteArrayListEquals(Arrays.asList(b1, b2), jedis.lrange(bfoo, 0, -1));
+  }
+
+  @Test
+  @EnabledOnCommand("LMOVEM")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void lmovem() {
+    String src = keys.key("src");
+    String dst = keys.key("dst");
+
+    // Without a count block, LMOVEM behaves like LMOVE but returns a single-element list.
+    jedis.rpush(src, "1", "2", "3", "4");
+    assertEquals(Collections.singletonList("4"),
+        jedis.lmovem(src, dst, ListDirection.RIGHT, ListDirection.LEFT));
+    assertEquals(Collections.singletonList("4"), jedis.lrange(dst, 0, -1));
+    assertEquals(Arrays.asList("1", "2", "3"), jedis.lrange(src, 0, -1));
+
+    // Missing source returns null.
+    assertNull(
+        jedis.lmovem(keys.key("nope1"), keys.key("nope2"), ListDirection.LEFT, ListDirection.LEFT));
+
+    // Binary
+    byte[] bsrc = keys.bKey("bsrc");
+    byte[] bdst = keys.bKey("bdst");
+    jedis.rpush(bsrc, b1, b2);
+    assertByteArrayListEquals(Collections.singletonList(b1),
+        jedis.lmovem(bsrc, bdst, ListDirection.LEFT, ListDirection.LEFT));
+    assertByteArrayListEquals(Collections.singletonList(b1), jedis.lrange(bdst, 0, -1));
+    assertNull(jedis.lmovem(keys.bKey("bmissing"), bdst, ListDirection.LEFT, ListDirection.LEFT));
+  }
+
+  @Test
+  @EnabledOnCommand("LMOVEM")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void lmovemWithParams() {
+    String l1 = keys.key("l1");
+    String l2 = keys.key("l2");
+
+    // COUNT with OBO ordering: pop from the left one by one and push to the left -> reversed.
+    jedis.rpush(l1, "1", "2", "3", "4");
+    jedis.rpush(l2, "5", "6", "7");
+    assertEquals(Arrays.asList("2", "1"),
+        jedis.lmovem(l1, l2, ListDirection.LEFT, ListDirection.LEFT,
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO)));
+    assertEquals(Arrays.asList("2", "1", "5", "6", "7"), jedis.lrange(l2, 0, -1));
+    assertEquals(Arrays.asList("3", "4"), jedis.lrange(l1, 0, -1));
+
+    // COUNT with BULK ordering preserves the source sub-list order.
+    String m1 = keys.key("m1");
+    String m2 = keys.key("m2");
+    jedis.rpush(m1, "1", "2", "3", "4");
+    jedis.rpush(m2, "5", "6", "7");
+    assertEquals(Arrays.asList("1", "2"),
+        jedis.lmovem(m1, m2, ListDirection.LEFT, ListDirection.LEFT,
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
+    assertEquals(Arrays.asList("1", "2", "5", "6", "7"), jedis.lrange(m2, 0, -1));
+
+    // COUNT larger than the source moves only what is available.
+    assertEquals(Arrays.asList("3", "4"),
+        jedis.lmovem(m1, m2, ListDirection.LEFT, ListDirection.RIGHT,
+            LMoveMParams.lMoveMParams().count(10, ListMoveOrder.BULK)));
+
+    // EXACTLY that cannot be satisfied returns null and leaves the source untouched.
+    String e1 = keys.key("e1");
+    String e2 = keys.key("e2");
+    jedis.rpush(e1, "1", "2");
+    assertNull(jedis.lmovem(e1, e2, ListDirection.LEFT, ListDirection.LEFT,
+        LMoveMParams.lMoveMParams().exactly(3, ListMoveOrder.BULK)));
+    assertEquals(Arrays.asList("1", "2"), jedis.lrange(e1, 0, -1));
+
+    // EXACTLY that can be satisfied moves exactly that many elements.
+    assertEquals(Arrays.asList("1", "2"),
+        jedis.lmovem(e1, e2, ListDirection.LEFT, ListDirection.RIGHT,
+            LMoveMParams.lMoveMParams().exactly(2, ListMoveOrder.BULK)));
+    assertEquals(Collections.emptyList(), jedis.lrange(e1, 0, -1));
+
+    // Missing source returns null.
+    assertNull(jedis.lmovem(keys.key("nope1"), keys.key("nope2"), ListDirection.LEFT,
+        ListDirection.LEFT, LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO)));
+
+    // Binary
+    byte[] bsrc = keys.bKey("bsrc");
+    byte[] bdst = keys.bKey("bdst");
+    jedis.rpush(bsrc, b1, b2, b3, bA);
+    jedis.rpush(bdst, bB);
+    assertByteArrayListEquals(Arrays.asList(b2, b1),
+        jedis.lmovem(bsrc, bdst, ListDirection.LEFT, ListDirection.LEFT,
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO)));
+    assertByteArrayListEquals(Arrays.asList(b2, b1, bB), jedis.lrange(bdst, 0, -1));
+    assertNull(jedis.lmovem(keys.bKey("bmissing"), bdst, ListDirection.LEFT, ListDirection.LEFT,
+        LMoveMParams.lMoveMParams().exactly(3, ListMoveOrder.BULK)));
+  }
+
+  @Test
+  @EnabledOnCommand("BLMOVEM")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void blmovem() {
+    String src = keys.key("src");
+    String dst = keys.key("dst");
+
+    // Source already populated: returns immediately with a single element, like BLMOVE.
+    jedis.rpush(src, "1", "2", "3");
+    assertEquals(Collections.singletonList("1"),
+        jedis.blmovem(src, dst, ListDirection.LEFT, ListDirection.RIGHT, 1));
+    assertEquals(Collections.singletonList("1"), jedis.lrange(dst, 0, -1));
+
+    // Blocks until the source is pushed to.
+    String blockSrc = keys.key("blockSrc");
+    new Thread(() -> {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        logger.error("", e);
+      }
+      jedis.rpush(blockSrc, "a", "b");
+    }).start();
+    assertEquals(Collections.singletonList("a"),
+        jedis.blmovem(blockSrc, dst, ListDirection.LEFT, ListDirection.RIGHT, 0));
+
+    // Empty source times out and returns null.
+    assertNull(jedis.blmovem(keys.key("empty"), dst, ListDirection.LEFT, ListDirection.RIGHT, 0.5));
+
+    // Binary, immediate.
+    byte[] bsrc = keys.bKey("bsrc");
+    jedis.rpush(bsrc, b1, b2);
+    assertByteArrayListEquals(Collections.singletonList(b1),
+        jedis.blmovem(bsrc, keys.bKey("bdst"), ListDirection.LEFT, ListDirection.RIGHT, 1));
+  }
+
+  @Test
+  @EnabledOnCommand("BLMOVEM")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void blmovemWithParams() {
+    String src = keys.key("src");
+    String dst = keys.key("dst");
+
+    // Source already populated: returns immediately.
+    jedis.rpush(src, "1", "2", "3");
+    assertEquals(Arrays.asList("1", "2"),
+        jedis.blmovem(src, dst, ListDirection.LEFT, ListDirection.RIGHT, 1,
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
+    assertEquals(Arrays.asList("1", "2"), jedis.lrange(dst, 0, -1));
+
+    // Blocks until the source is pushed to.
+    String blockSrc = keys.key("blockSrc");
+    new Thread(() -> {
+      try {
+        Thread.sleep(100);
+      } catch (InterruptedException e) {
+        logger.error("", e);
+      }
+      jedis.rpush(blockSrc, "a", "b", "c");
+    }).start();
+    assertEquals(Arrays.asList("a", "b"),
+        jedis.blmovem(blockSrc, dst, ListDirection.LEFT, ListDirection.RIGHT, 0,
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
+
+    // Empty source times out and returns null.
+    assertNull(jedis.blmovem(keys.key("empty"), dst, ListDirection.LEFT, ListDirection.RIGHT, 0.5,
+        LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO)));
+
+    // Binary, immediate.
+    byte[] bsrc = keys.bKey("bsrc");
+    jedis.rpush(bsrc, b1, b2, b3);
+    assertByteArrayListEquals(Arrays.asList(b1, b2),
+        jedis.blmovem(bsrc, keys.bKey("bdst"), ListDirection.LEFT, ListDirection.RIGHT, 1,
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
   }
 
   @Test

@@ -1050,6 +1050,46 @@ public class CommandObjects {
         .key(dstKey).add(from).add(to).add(timeout), BuilderFactory.BINARY);
   }
 
+  public final CommandObject<List<String>> lmovem(String srcKey, String dstKey, ListDirection from, ListDirection to) {
+    return new CommandObject<>(commandArguments(LMOVEM).key(srcKey).key(dstKey)
+        .add(from).add(to), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> lmovem(String srcKey, String dstKey, ListDirection from, ListDirection to, LMoveMParams params) {
+    return new CommandObject<>(commandArguments(LMOVEM).key(srcKey).key(dstKey)
+        .add(from).add(to).addParams(params), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> blmovem(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout) {
+    return new CommandObject<>(commandArguments(BLMOVEM).blocking().key(srcKey)
+        .key(dstKey).add(from).add(to).add(timeout), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> blmovem(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout, LMoveMParams params) {
+    return new CommandObject<>(commandArguments(BLMOVEM).blocking().key(srcKey)
+        .key(dstKey).add(from).add(to).add(timeout).addParams(params), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> lmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
+    return new CommandObject<>(commandArguments(LMOVEM).key(srcKey).key(dstKey)
+        .add(from).add(to), BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> lmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, LMoveMParams params) {
+    return new CommandObject<>(commandArguments(LMOVEM).key(srcKey).key(dstKey)
+        .add(from).add(to).addParams(params), BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> blmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
+    return new CommandObject<>(commandArguments(BLMOVEM).blocking().key(srcKey)
+        .key(dstKey).add(from).add(to).add(timeout), BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> blmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout, LMoveMParams params) {
+    return new CommandObject<>(commandArguments(BLMOVEM).blocking().key(srcKey)
+        .key(dstKey).add(from).add(to).add(timeout).addParams(params), BuilderFactory.BINARY_LIST);
+  }
+
   public final CommandObject<KeyValue<String, List<String>>> lmpop(ListDirection direction, String... keys) {
     return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys)
         .add(direction), BuilderFactory.KEYED_STRING_LIST);
@@ -1532,6 +1572,34 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(SDIFFSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
   }
 
+  public final CommandObject<Long> sdiffcard(String... keys) {
+    return new CommandObject<>(commandArguments(SDIFFCARD).add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sdiffcard(List<String> keys) {
+    return new CommandObject<>(commandArguments(SDIFFCARD).add(keys.size()).keys(keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sdiffcard(String key1, String key2, SDiffCardParams params) {
+    return new CommandObject<>(commandArguments(SDIFFCARD).add(2).key(key1).key(key2).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sdiffcard(List<String> keys, SDiffCardParams params) {
+    return new CommandObject<>(commandArguments(SDIFFCARD).add(keys.size()).keys(keys).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sdiffcard(byte[]... keys) {
+    return new CommandObject<>(commandArguments(SDIFFCARD).add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sdiffcard(byte[] key1, byte[] key2, SDiffCardParams params) {
+    return new CommandObject<>(commandArguments(SDIFFCARD).add(2).key(key1).key(key2).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sdiffcard(byte[][] keys, SDiffCardParams params) {
+    return new CommandObject<>(commandArguments(SDIFFCARD).add(keys.length).keys((Object[]) keys).addParams(params), BuilderFactory.LONG);
+  }
+
   public final CommandObject<Set<String>> sinter(String... keys) {
     return new CommandObject<>(commandArguments(SINTER).keys((Object[]) keys), BuilderFactory.STRING_SET);
   }
@@ -1578,6 +1646,34 @@ public class CommandObjects {
 
   public final CommandObject<Long> sunionstore(byte[] dstkey, byte[]... keys) {
     return new CommandObject<>(commandArguments(SUNIONSTORE).key(dstkey).keys((Object[]) keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sunioncard(String... keys) {
+    return new CommandObject<>(commandArguments(SUNIONCARD).add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sunioncard(List<String> keys) {
+    return new CommandObject<>(commandArguments(SUNIONCARD).add(keys.size()).keys(keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sunioncard(String key1, String key2, SUnionCardParams params) {
+    return new CommandObject<>(commandArguments(SUNIONCARD).add(2).key(key1).key(key2).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sunioncard(List<String> keys, SUnionCardParams params) {
+    return new CommandObject<>(commandArguments(SUNIONCARD).add(keys.size()).keys(keys).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sunioncard(byte[]... keys) {
+    return new CommandObject<>(commandArguments(SUNIONCARD).add(keys.length).keys((Object[]) keys), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sunioncard(byte[] key1, byte[] key2, SUnionCardParams params) {
+    return new CommandObject<>(commandArguments(SUNIONCARD).add(2).key(key1).key(key2).addParams(params), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> sunioncard(byte[][] keys, SUnionCardParams params) {
+    return new CommandObject<>(commandArguments(SUNIONCARD).add(keys.length).keys((Object[]) keys).addParams(params), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> smove(String srckey, String dstkey, String member) {

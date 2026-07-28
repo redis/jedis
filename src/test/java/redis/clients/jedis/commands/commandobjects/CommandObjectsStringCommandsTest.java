@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.nullValue;
 
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import io.redis.test.annotations.ConditionalOnEnv;
@@ -615,20 +616,26 @@ public class CommandObjectsStringCommandsTest extends CommandObjectsStandaloneTe
 
   // MSETEX NX + expiration matrix
   static Stream<Arguments> msetexNxArgsProvider() {
-    return Stream.of(Arguments.of("EX", new MSetExParams().nx().ex(5)),
-      Arguments.of("PX", new MSetExParams().nx().px(5000)),
-      Arguments.of("EXAT", new MSetExParams().nx().exAt(System.currentTimeMillis() / 1000 + 5)),
-      Arguments.of("PXAT", new MSetExParams().nx().pxAt(System.currentTimeMillis() + 5000)),
-      Arguments.of("KEEPTTL", new MSetExParams().nx().keepTtl()));
+    return Stream.of(
+      Arguments.of("EX", (Supplier<MSetExParams>) () -> new MSetExParams().nx().ex(5)),
+      Arguments.of("PX", (Supplier<MSetExParams>) () -> new MSetExParams().nx().px(5000)),
+      Arguments.of("EXAT",
+        (Supplier<MSetExParams>) () -> new MSetExParams().nx()
+            .exAt(System.currentTimeMillis() / 1000 + 5)),
+      Arguments.of("PXAT",
+        (Supplier<MSetExParams>) () -> new MSetExParams().nx()
+            .pxAt(System.currentTimeMillis() + 5000)),
+      Arguments.of("KEEPTTL", (Supplier<MSetExParams>) () -> new MSetExParams().nx().keepTtl()));
   }
 
   @ParameterizedTest(name = "MSETEX NX + {0}")
   @MethodSource("msetexNxArgsProvider")
   @EnabledOnCommand(value = "MSETEX")
-  public void testMsetexNx_parametrized(String optionLabel, MSetExParams params) {
+  public void testMsetexNx_parametrized(String optionLabel, Supplier<MSetExParams> paramsSupplier) {
     String k1 = "{t}msetex:k1";
     String k2 = "{t}msetex:k2";
 
+    MSetExParams params = paramsSupplier.get();
     Boolean result = exec(commandObjects.msetex(params, k1, "v1", k2, "v2"));
     assertThat(result, equalTo(true));
 

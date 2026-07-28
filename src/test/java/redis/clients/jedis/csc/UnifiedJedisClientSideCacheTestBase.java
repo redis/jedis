@@ -276,7 +276,14 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
     while (iteration++ < totalIteration) {
 
       List<String> receivedMessages = new ArrayList<>();
-      try (UnifiedJedis subscriber = createCachedJedis(CacheConfig.builder().build())) {
+      // Use a dedicated connection for the blocking pub/sub subscription. Client-side
+      // caching drives RESP3 invalidation pushes on the command connection; putting that
+      // same connection into subscribe mode interleaves pub/sub push frames with the
+      // invalidation pushes and command replies, so a leftover push frame is read in reply
+      // position for the next command (ArrayList -> byte[] ClassCastException in
+      // BuilderFactory). Keep the cached connection for commands and subscribe on its own.
+      try (UnifiedJedis subscriber = createCachedJedis(CacheConfig.builder().build());
+          UnifiedJedis pubSubConnection = createCachedJedis(CacheConfig.builder().build())) {
 
         subscriber.set(test_key, test_value);
         assertEquals(test_value, subscriber.get(test_key));
@@ -291,7 +298,7 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
             }
           }
         };
-        subscriber.subscribe(jedisPubSub, test_channel);
+        pubSubConnection.subscribe(jedisPubSub, test_channel);
         subscriber.set(test_key, test_value);
         assertEquals(test_value, subscriber.get(test_key));
       }

@@ -117,8 +117,10 @@ public class HealthCheckIntegrationTest {
     AtomicInteger attemptCount = new AtomicInteger(0);
 
     StrategySupplier strategySupplier = (hostAndPort, jedisClientConfig) -> {
-      // Fast interval, short timeout, 3 probes, short delay
-      return new TestHealthCheckStrategy(100, 50, 3, BuiltIn.ANY_SUCCESS, 20, (endpoint) -> {
+      // Fast interval, 3 probes, short delay. The probe timeout must accommodate a real PING
+      // round-trip to a remote Redis Enterprise endpoint (connection setup + cloud RTT), so
+      // 50ms is unrealistic and makes the successful 3rd probe time out; use 1000ms.
+      return new TestHealthCheckStrategy(100, 1000, 3, BuiltIn.ANY_SUCCESS, 20, (endpoint) -> {
         int attempt = attemptCount.incrementAndGet();
         if (attempt <= 2) {
           // First 2 attempts fail
@@ -151,7 +153,7 @@ public class HealthCheckIntegrationTest {
 
     try {
       // Wait for health check to eventually succeed after probes
-      assertTrue(healthyLatch.await(5, TimeUnit.SECONDS),
+      assertTrue(healthyLatch.await(10, TimeUnit.SECONDS),
         "Health check should succeed after probes");
 
       assertEquals(HealthStatus.HEALTHY, healthCheck.getStatus());

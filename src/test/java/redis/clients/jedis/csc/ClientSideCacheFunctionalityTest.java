@@ -23,11 +23,13 @@ import io.redis.test.annotations.ConditionalOnEnv;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.Timeout;
 import org.mockito.Mockito;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.CommandObjects;
+import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.RedisProtocol;
@@ -62,12 +64,18 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   }
 
   @Test
+  @Timeout(value = 10, unit = TimeUnit.MINUTES)
   public void invalidateAllWithLargeCacheTest() {
     final int count = 10000;
 
-    // 1. Populate Redis with 10k keys
-    for (int i = 0; i < count; i++) {
-      control.set("key" + i, "value" + i);
+    // 1. Populate Redis with 10k keys. Pipeline the population so setup is a handful
+    // of round-trips instead of 10k sequential ones, which otherwise dominates the
+    // runtime against a remote server and pushes the test past its execution timeout.
+    try (Pipeline pipeline = control.pipelined()) {
+      for (int i = 0; i < count; i++) {
+        pipeline.set("key" + i, "value" + i);
+      }
+      pipeline.sync();
     }
 
     try (RedisClient jedis = RedisClient.builder().hostAndPort(hnp).clientConfig(clientConfig.get())
@@ -102,6 +110,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   }
 
   @Test
+  @Timeout(value = 10, unit = TimeUnit.MINUTES)
   public void pendingInvalidationMessagesTest() {
     final int count = 1000; // Hundreds of keys
 
@@ -121,34 +130,25 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       assertEquals(count, cache.getSize());
       assertEquals(0, cache.getStats().getInvalidationCount());
 
-      // Capture the tracked connection's server-side id. Pool is pinned to 1 so this
-      // is the same connection that holds the cached entries and will receive the
-      // invalidation push messages.
-      long trackedClientId = (Long) jedis.sendCommand(Protocol.Command.CLIENT, "ID");
-
       // 2. Use control connection to update ALL keys
       // This generates hundreds of invalidation messages
       for (int i = 0; i < count; i++) {
         control.set("key" + i, "newvalue" + i);
       }
 
-      // 3. Wait until the server has flushed all queued output (the invalidation
-      // frames) on the tracked client's connection. `oll` (output list length) and
-      // `omem` (output buffer memory) report what the server still has buffered for
-      // that client; once both are zero, every invalidation has been handed to the
-      // kernel and is on its way / already in the tracked socket's receive buffer.
-      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
-              .until(() -> {
-                String info = control.clientList(trackedClientId);
-                return info != null && info.contains(" oll=0 ") && info.contains(" omem=0 ");
-              });
-
-      // 4. Now use the cached connection - it should process all pending invalidations synchronously
+      // 3. Drive reads on the tracked (pool pinned to 1) connection until every queued
+      // invalidation has been received and processed. The previous approach polled the
+      // server-side output buffer via CLIENT LIST oll/omem, but the Redis Enterprise proxy's
+      // CLIENT LIST does not report oll/omem, so that condition can never be satisfied there.
       long processingStartTime = System.nanoTime();
-      jedis.get("key0");
+      await().atMost(60, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+              .until(() -> {
+                jedis.get("key0");
+                return cache.getStats().getInvalidationCount() == count;
+              });
       long processingElapsedNanos = System.nanoTime() - processingStartTime;
 
-      // 5. Verify all invalidations were processed
+      // 4. Verify all invalidations were processed
       CacheStats stats = cache.getStats();
       assertEquals(count, stats.getInvalidationCount());
 

@@ -2,7 +2,10 @@ package redis.clients.jedis.csc;
 
 import io.redis.test.annotations.SinceRedisVersion;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+
+import java.time.Duration;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
@@ -68,9 +71,15 @@ public class RedisMultiDbClientSideCacheTest extends UnifiedJedisClientSideCache
         killer.clientKill(ClientKillParams.clientKillParams().type(ClientType.NORMAL)
             .skipMe(ClientKillParams.SkipMe.YES));
       }
-      jedis.get("foo");
-
-      assertEquals(1, cache.getSize());
+      // Killing the only database endpoint briefly trips the MultiDb circuit breaker,
+      // so the first post-kill command can surface a transient
+      // JedisTemporarilyNotAvailable before the endpoint recovers (more likely against
+      // a remote server than a local one). Retry the triggering read until the endpoint
+      // is back, then assert the cache was cleared down to just this key.
+      await().atMost(Duration.ofSeconds(120)).ignoreExceptions().until(() -> {
+        jedis.get("foo");
+        return cache.getSize() == 1;
+      });
     }
   }
 }

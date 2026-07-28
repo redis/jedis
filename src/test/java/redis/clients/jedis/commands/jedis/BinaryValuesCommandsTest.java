@@ -14,6 +14,7 @@ import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import io.redis.test.annotations.EnabledOnCommand;
@@ -407,20 +408,27 @@ public class BinaryValuesCommandsTest extends JedisCommandsTestBase {
 
   // MSETEX NX + expiration matrix (binary)
   static Stream<Arguments> msetexNxArgsProvider() {
-    return java.util.stream.Stream.of(Arguments.of("EX", new MSetExParams().nx().ex(5)),
-      Arguments.of("PX", new MSetExParams().nx().px(5000)),
-      Arguments.of("EXAT", new MSetExParams().nx().exAt(System.currentTimeMillis() / 1000 + 5)),
-      Arguments.of("PXAT", new MSetExParams().nx().pxAt(System.currentTimeMillis() + 5000)),
-      Arguments.of("KEEPTTL", new MSetExParams().nx().keepTtl()));
+    return java.util.stream.Stream.of(
+      Arguments.of("EX", (Supplier<MSetExParams>) () -> new MSetExParams().nx().ex(5)),
+      Arguments.of("PX", (Supplier<MSetExParams>) () -> new MSetExParams().nx().px(5000)),
+      Arguments.of("EXAT",
+        (Supplier<MSetExParams>) () -> new MSetExParams().nx()
+            .exAt(System.currentTimeMillis() / 1000 + 5)),
+      Arguments.of("PXAT",
+        (Supplier<MSetExParams>) () -> new MSetExParams().nx()
+            .pxAt(System.currentTimeMillis() + 5000)),
+      Arguments.of("KEEPTTL", (Supplier<MSetExParams>) () -> new MSetExParams().nx().keepTtl()));
   }
 
   @ParameterizedTest(name = "MSETEX NX + {0} (binary)")
   @MethodSource("msetexNxArgsProvider")
   @EnabledOnCommand("MSETEX")
-  public void msetexNx_binary_parametrized(String optionLabel, MSetExParams params) {
+  public void msetexNx_binary_parametrized(String optionLabel,
+      Supplier<MSetExParams> paramsSupplier) {
     byte[] k1 = "{t}msetex:jb:k1".getBytes();
     byte[] k2 = "{t}msetex:jb:k2".getBytes();
 
+    MSetExParams params = paramsSupplier.get();
     boolean result = jedis.msetex(params, k1, "v1".getBytes(), k2, "v2".getBytes());
     assertTrue(result);
 

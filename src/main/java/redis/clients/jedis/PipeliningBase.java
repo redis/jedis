@@ -4688,6 +4688,26 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<TSElement>> tsNRange(String[] keys, long fromTimestamp, long toTimestamp) {
+    return appendCommand(commandObjects.tsNRange(keys, fromTimestamp, toTimestamp));
+  }
+
+  @Override
+  public Response<List<TSElement>> tsNRange(String[] keys, TSNRangeParams nrangeParams) {
+    return appendCommand(commandObjects.tsNRange(keys, nrangeParams));
+  }
+
+  @Override
+  public Response<List<TSElement>> tsNRevRange(String[] keys, long fromTimestamp, long toTimestamp) {
+    return appendCommand(commandObjects.tsNRevRange(keys, fromTimestamp, toTimestamp));
+  }
+
+  @Override
+  public Response<List<TSElement>> tsNRevRange(String[] keys, TSNRangeParams nrangeParams) {
+    return appendCommand(commandObjects.tsNRevRange(keys, nrangeParams));
+  }
+
+  @Override
   public Response<Map<String, TSMRangeElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return appendCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }

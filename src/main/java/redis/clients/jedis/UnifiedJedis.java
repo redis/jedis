@@ -5469,6 +5469,26 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<TSElement> tsNRange(String[] keys, long fromTimestamp, long toTimestamp) {
+    return executeCommand(commandObjects.tsNRange(keys, fromTimestamp, toTimestamp));
+  }
+
+  @Override
+  public List<TSElement> tsNRange(String[] keys, TSNRangeParams nrangeParams) {
+    return executeCommand(commandObjects.tsNRange(keys, nrangeParams));
+  }
+
+  @Override
+  public List<TSElement> tsNRevRange(String[] keys, long fromTimestamp, long toTimestamp) {
+    return executeCommand(commandObjects.tsNRevRange(keys, fromTimestamp, toTimestamp));
+  }
+
+  @Override
+  public List<TSElement> tsNRevRange(String[] keys, TSNRangeParams nrangeParams) {
+    return executeCommand(commandObjects.tsNRevRange(keys, nrangeParams));
+  }
+
+  @Override
   public Map<String, TSMRangeElements> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return executeCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }

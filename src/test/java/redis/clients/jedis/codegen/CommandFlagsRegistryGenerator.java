@@ -107,9 +107,10 @@ public class CommandFlagsRegistryGenerator {
    * If a new Redis command with subcommands is added, add the parent command name to this set. The
    * generator will fail with a helpful error message if an unknown parent command is encountered.
    */
-  private static final Set<String> KNOWN_PARENT_COMMANDS = new HashSet<>(Arrays.asList("ACL",
-    "CLIENT", "CLUSTER", "COMMAND", "CONFIG", "FUNCTION", "HOTKEYS", "LATENCY", "MEMORY", "MODULE",
-    "OBJECT", "PUBSUB", "SCRIPT", "SLOWLOG", "XGROUP", "XINFO", "FT.CONFIG", "FT.CURSOR"));
+  private static final Set<String> KNOWN_PARENT_COMMANDS = new HashSet<>(
+      Arrays.asList("ACL", "BACKUP", "CLIENT", "CLUSTER", "COMMAND", "CONFIG", "FUNCTION",
+        "HIMPORT", "HOTKEYS", "LATENCY", "MEMORY", "MODULE", "OBJECT", "PUBSUB", "SCRIPT",
+        "SLOWLOG", "XGROUP", "XINFO", "FT.CONFIG", "FT.CURSOR"));
 
   public CommandFlagsRegistryGenerator(String host, int port) {
     this.redisHost = host;

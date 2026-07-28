@@ -5499,6 +5499,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<TSElement> tsRead(String key, long timestamp) {
+    return executeCommand(commandObjects.tsRead(key, timestamp));
+  }
+
+  @Override
+  public List<TSElement> tsRead(String key, TSReadParams readParams) {
+    return executeCommand(commandObjects.tsRead(key, readParams));
+  }
+
+  @Override
   public Map<String, TSMRangeElements> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return executeCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }
@@ -5552,6 +5562,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public List<String> tsQueryIndex(String... filters) {
     return executeCommand(commandObjects.tsQueryIndex(filters));
+  }
+
+  @Override
+  public List<String> tsQueryLabels(String... filters) {
+    return executeCommand(commandObjects.tsQueryLabels(filters));
+  }
+
+  @Override
+  public List<String> tsQueryLabelValues(String label, String... filters) {
+    return executeCommand(commandObjects.tsQueryLabelValues(label, filters));
   }
 
   @Override

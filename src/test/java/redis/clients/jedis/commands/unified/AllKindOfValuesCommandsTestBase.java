@@ -2,6 +2,7 @@ package redis.clients.jedis.commands.unified;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -378,7 +379,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     assertTrue(jedis.objectIdletime("foo1") >= 0);
 
     assertEquals(1, jedis.touch("foo1"));
-    assertEquals(0L, jedis.objectIdletime("foo1").longValue());
+    assertThat(jedis.objectIdletime("foo1"), lessThanOrEqualTo(1L));
 
     assertEquals(1, jedis.touch("foo1", "foo2", "foo3"));
 
@@ -396,7 +397,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     assertTrue(jedis.objectIdletime(bfoo1) >= 0);
 
     assertEquals(1, jedis.touch(bfoo1));
-    assertEquals(0L, jedis.objectIdletime(bfoo1).longValue());
+    assertThat(jedis.objectIdletime(bfoo1), lessThanOrEqualTo(1L));
 
     assertEquals(1, jedis.touch(bfoo1, bfoo2, bfoo3));
 

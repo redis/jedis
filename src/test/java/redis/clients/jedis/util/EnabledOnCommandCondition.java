@@ -40,11 +40,14 @@ public class EnabledOnCommandCondition implements ExecutionCondition {
 
   @Override
   public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
+    String[] command = getCommandFromAnnotations(context);
+    if (command == null) {
+      return ConditionEvaluationResult.enabled("No command constraint present");
+    }
+
     ensureInitialized();
     try (Jedis jedisClient = new Jedis(hostPort, config)) {
-      String[] command = getCommandFromAnnotations(context);
-
-      if (command != null && !isCommandAvailable(jedisClient, command[0], command[1])) {
+      if (!isCommandAvailable(jedisClient, command[0], command[1])) {
         return ConditionEvaluationResult.disabled(
             "Test requires Redis command '" + command[0] + " " + command[1]
                 + "' to be available on " + hostPort + ", but it was not found.");

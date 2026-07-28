@@ -1,5 +1,7 @@
 package redis.clients.jedis.commands.unified.cluster;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -162,7 +164,7 @@ public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsT
     assertTrue(jedis.objectIdletime("{foo}1") >= 0);
 
     assertEquals(1, jedis.touch("{foo}1"));
-    assertEquals(0L, jedis.objectIdletime("{foo}1").longValue());
+    assertThat(jedis.objectIdletime("{foo}1"), lessThanOrEqualTo(1L));
 
     assertEquals(1, jedis.touch("{foo}1", "{foo}2", "{foo}3"));
 

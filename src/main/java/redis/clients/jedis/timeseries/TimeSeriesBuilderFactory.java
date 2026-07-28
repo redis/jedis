@@ -37,6 +37,29 @@ public final class TimeSeriesBuilderFactory {
     }
   };
 
+  /**
+   * Parses the pivoted reply of {@code TS.NRANGE} / {@code TS.NREVRANGE}, whose rows have the shape
+   * {@code [timestamp, [value_0, value_1, ...]]} where the value array holds one cell per key (or
+   * per aggregator when multiple aggregators are requested). Missing cells arrive as {@code NaN}.
+   * The same builder serves RESP2 and RESP3; server-returned row order is preserved.
+   */
+  public static final Builder<List<TSElement>> TIMESERIES_PIVOT_ELEMENT_LIST = new Builder<List<TSElement>>() {
+    @Override
+    public List<TSElement> build(Object data) {
+      return ((List<Object>) data).stream().map((rowObject) -> (List<Object>) rowObject)
+          .map((row) -> {
+            long timestamp = BuilderFactory.LONG.build(row.get(0));
+            List<Object> rawValues = (List<Object>) row.get(1);
+            if (rawValues.size() == 1) {
+              return new TSElement(timestamp, BuilderFactory.DOUBLE.build(rawValues.get(0)));
+            }
+            List<Double> values = rawValues.stream().map(BuilderFactory.DOUBLE::build)
+                .collect(Collectors.toList());
+            return new TSElement.MultiValueTSElement(timestamp, values);
+          }).collect(Collectors.toList());
+    }
+  };
+
   public static final Builder<Map<String, TSMRangeElements>> TIMESERIES_MRANGE_RESPONSE
       = new Builder<Map<String, TSMRangeElements>>() {
     @Override

@@ -4675,6 +4675,55 @@ public class CommandObjects {
         .addParams(rangeParams), TimeSeriesBuilderFactory.TIMESERIES_ELEMENT_LIST);
   }
 
+  public final CommandObject<List<TSElement>> tsRead(String key, long timestamp) {
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.READ).key(key)
+        .add(timestamp), TimeSeriesBuilderFactory.TIMESERIES_ELEMENT_LIST);
+  }
+
+  public final CommandObject<List<TSElement>> tsRead(String key, TSReadParams readParams) {
+    CommandArguments args = commandArguments(TimeSeriesCommand.READ).key(key).addParams(readParams);
+    if (readParams.isBlocking()) {
+      args.blocking();
+    }
+    return new CommandObject<>(args, TimeSeriesBuilderFactory.TIMESERIES_ELEMENT_LIST);
+  }
+
+  public final CommandObject<List<TSElement>> tsNRange(String[] keys, long fromTimestamp, long toTimestamp) {
+    checkNRangeKeys(keys);
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.NRANGE).add(keys.length)
+        .keys((Object[]) keys).add(fromTimestamp).add(toTimestamp),
+        TimeSeriesBuilderFactory.TIMESERIES_PIVOT_ELEMENT_LIST);
+  }
+
+  public final CommandObject<List<TSElement>> tsNRange(String[] keys, TSNRangeParams nrangeParams) {
+    checkNRangeKeys(keys);
+    nrangeParams.validateAggregationForKeys(keys.length);
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.NRANGE).add(keys.length)
+        .keys((Object[]) keys).addParams(nrangeParams),
+        TimeSeriesBuilderFactory.TIMESERIES_PIVOT_ELEMENT_LIST);
+  }
+
+  public final CommandObject<List<TSElement>> tsNRevRange(String[] keys, long fromTimestamp, long toTimestamp) {
+    checkNRangeKeys(keys);
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.NREVRANGE).add(keys.length)
+        .keys((Object[]) keys).add(fromTimestamp).add(toTimestamp),
+        TimeSeriesBuilderFactory.TIMESERIES_PIVOT_ELEMENT_LIST);
+  }
+
+  public final CommandObject<List<TSElement>> tsNRevRange(String[] keys, TSNRangeParams nrangeParams) {
+    checkNRangeKeys(keys);
+    nrangeParams.validateAggregationForKeys(keys.length);
+    return new CommandObject<>(commandArguments(TimeSeriesCommand.NREVRANGE).add(keys.length)
+        .keys((Object[]) keys).addParams(nrangeParams),
+        TimeSeriesBuilderFactory.TIMESERIES_PIVOT_ELEMENT_LIST);
+  }
+
+  private static void checkNRangeKeys(String[] keys) {
+    if (keys == null || keys.length == 0) {
+      throw new IllegalArgumentException("TS.NRANGE/TS.NREVRANGE require at least one key");
+    }
+  }
+
   public final CommandObject<Map<String, TSMRangeElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.MRANGE).add(fromTimestamp)
         .add(toTimestamp).add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters),
@@ -4731,6 +4780,22 @@ public class CommandObjects {
   public final CommandObject<List<String>> tsQueryIndex(String... filters) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.QUERYINDEX)
         .addObjects((Object[]) filters), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> tsQueryLabels(String... filters) {
+    CommandArguments args = commandArguments(TimeSeriesCommand.QUERYLABELS).add(TimeSeriesKeyword.LABELS);
+    if (filters != null && filters.length > 0) {
+      args.add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters);
+    }
+    return new CommandObject<>(args, BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> tsQueryLabelValues(String label, String... filters) {
+    CommandArguments args = commandArguments(TimeSeriesCommand.QUERYLABELS).add(TimeSeriesKeyword.VALUES).add(label);
+    if (filters != null && filters.length > 0) {
+      args.add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters);
+    }
+    return new CommandObject<>(args, BuilderFactory.STRING_LIST);
   }
 
   public final CommandObject<TSInfo> tsInfo(String key) {

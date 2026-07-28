@@ -45,6 +45,10 @@ public interface RedisTimeSeriesPipelineCommands {
 
   Response<List<TSElement>> tsRevRange(String key, TSRangeParams rangeParams);
 
+  Response<List<TSElement>> tsRead(String key, long timestamp);
+
+  Response<List<TSElement>> tsRead(String key, TSReadParams readParams);
+
   Response<Map<String, TSMRangeElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters);
 
   Response<Map<String, TSMRangeElements>> tsMRange(TSMRangeParams multiRangeParams);
@@ -66,6 +70,20 @@ public interface RedisTimeSeriesPipelineCommands {
   Response<String> tsDeleteRule(String sourceKey, String destKey);
 
   Response<List<String>> tsQueryIndex(String... filters);
+
+  /**
+   * Pipeline variant of {@link RedisTimeSeriesCommands#tsQueryLabels(String...)}.
+   *
+   * @since 8.0
+   */
+  Response<List<String>> tsQueryLabels(String... filters);
+
+  /**
+   * Pipeline variant of {@link RedisTimeSeriesCommands#tsQueryLabelValues(String, String...)}.
+   *
+   * @since 8.0
+   */
+  Response<List<String>> tsQueryLabelValues(String label, String... filters);
 
   Response<TSInfo> tsInfo(String key);
 

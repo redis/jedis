@@ -528,6 +528,9 @@
 						<!-- Specific files -->
 						<include>src/main/java/redis/clients/jedis/annots/*.java</include>
 						<include>src/main/java/redis/clients/jedis/params/XCfgSetParams.java</include>
+						<include>src/main/java/redis/clients/jedis/params/LMoveMParams.java</include>
+						<include>src/main/java/redis/clients/jedis/args/ListMoveOrder.java</include>
+						<include>src/test/java/redis/clients/jedis/params/LMoveMParamsTest.java</include>
 						<include>src/main/java/redis/clients/jedis/timeseries/TSNRangeParams.java</include>
 						<include>src/main/java/redis/clients/jedis/params/SUnionCardParams.java</include>
 						<include>src/main/java/redis/clients/jedis/params/SDiffCardParams.java</include>

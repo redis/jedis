@@ -4742,6 +4742,22 @@ public class CommandObjects {
         .addObjects((Object[]) filters), BuilderFactory.STRING_LIST);
   }
 
+  public final CommandObject<List<String>> tsQueryLabels(String... filters) {
+    CommandArguments args = commandArguments(TimeSeriesCommand.QUERYLABELS).add(TimeSeriesKeyword.LABELS);
+    if (filters != null && filters.length > 0) {
+      args.add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters);
+    }
+    return new CommandObject<>(args, BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> tsQueryLabelValues(String label, String... filters) {
+    CommandArguments args = commandArguments(TimeSeriesCommand.QUERYLABELS).add(TimeSeriesKeyword.VALUES).add(label);
+    if (filters != null && filters.length > 0) {
+      args.add(TimeSeriesKeyword.FILTER).addObjects((Object[]) filters);
+    }
+    return new CommandObject<>(args, BuilderFactory.STRING_LIST);
+  }
+
   public final CommandObject<TSInfo> tsInfo(String key) {
     return new CommandObject<>(commandArguments(TimeSeriesCommand.INFO).key(key), getTimeseriesInfoBuilder());
   }

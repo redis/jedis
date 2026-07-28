@@ -332,6 +332,31 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
   }
 
   @Test
+  public void testTsQueryLabels() {
+    String[] filters = { "type=sensor" };
+
+    when(commandObjects.tsQueryLabels(filters)).thenReturn(listStringCommandObject);
+
+    Response<List<String>> response = pipeliningBase.tsQueryLabels(filters);
+
+    assertThat(commands, contains(listStringCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testTsQueryLabelValues() {
+    String label = "location";
+    String[] filters = { "type=sensor" };
+
+    when(commandObjects.tsQueryLabelValues(label, filters)).thenReturn(listStringCommandObject);
+
+    Response<List<String>> response = pipeliningBase.tsQueryLabelValues(label, filters);
+
+    assertThat(commands, contains(listStringCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
   public void testTsRange() {
     when(commandObjects.tsRange("myTimeSeries", 1000L, 2000L)).thenReturn(listTsElementCommandObject);
 

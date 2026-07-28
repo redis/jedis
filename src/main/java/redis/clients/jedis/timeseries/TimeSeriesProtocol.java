@@ -29,7 +29,8 @@ public class TimeSeriesProtocol {
     GET("TS.GET"),
     MGET("TS.MGET"),
     ALTER("TS.ALTER"),
-    QUERYINDEX("TS.QUERYINDEX");
+    QUERYINDEX("TS.QUERYINDEX"),
+    QUERYLABELS("TS.QUERYLABELS");
 
     private final byte[] raw;
 
@@ -71,6 +72,7 @@ public class TimeSeriesProtocol {
     EMPTY,
     EXCLUDEEMPTY,
     BUCKETTIMESTAMP,
+    VALUES,
     BLOCK,
     MAX_COUNT;
 

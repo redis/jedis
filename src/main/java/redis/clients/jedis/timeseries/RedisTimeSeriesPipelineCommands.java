@@ -71,6 +71,20 @@ public interface RedisTimeSeriesPipelineCommands {
 
   Response<List<String>> tsQueryIndex(String... filters);
 
+  /**
+   * Pipeline variant of {@link RedisTimeSeriesCommands#tsQueryLabels(String...)}.
+   *
+   * @since 8.0
+   */
+  Response<List<String>> tsQueryLabels(String... filters);
+
+  /**
+   * Pipeline variant of {@link RedisTimeSeriesCommands#tsQueryLabelValues(String, String...)}.
+   *
+   * @since 8.0
+   */
+  Response<List<String>> tsQueryLabelValues(String label, String... filters);
+
   Response<TSInfo> tsInfo(String key);
 
   Response<TSInfo> tsInfoDebug(String key);

@@ -4,6 +4,7 @@ package redis.clients.jedis.commands.unified;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.BeforeAll;
 import redis.clients.jedis.EndpointConfig;
@@ -14,6 +15,7 @@ import redis.clients.jedis.commands.CommandsTestsParameters;
 import redis.clients.jedis.util.EnabledOnCommandCondition;
 import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
+import redis.clients.jedis.util.TestKeyRegistry;
 
 @Tag("integration")
 public abstract class UnifiedJedisCommandsTestBase {
@@ -27,6 +29,13 @@ public abstract class UnifiedJedisCommandsTestBase {
   protected final RedisProtocol protocol;
 
   protected UnifiedJedis jedis;
+
+  /**
+   * Per-test registry for unique key names on the shared test endpoints. Keys created via
+   * {@code keys.key(...)} are namespaced by test and deleted automatically after each test;
+   * tests that don't use it are unaffected.
+   */
+  protected TestKeyRegistry keys;
 
   protected static EndpointConfig endpoint;
 
@@ -69,7 +78,8 @@ public abstract class UnifiedJedisCommandsTestBase {
   }
 
   @BeforeEach
-  void setUpBase() {
+  void setUpBase(TestInfo testInfo) {
+    keys = TestKeyRegistry.create(testInfo);
     jedis = createTestClient();
     clearData();
   }
@@ -77,6 +87,7 @@ public abstract class UnifiedJedisCommandsTestBase {
   @AfterEach
   void tearDownBase() {
     if (jedis != null) {
+      keys.cleanup(jedis);
       jedis.close();
     }
   }

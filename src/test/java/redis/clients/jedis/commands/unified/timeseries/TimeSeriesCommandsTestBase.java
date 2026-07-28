@@ -1,30 +1,39 @@
 package redis.clients.jedis.commands.unified.timeseries;
 
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static io.redis.test.utils.RedisVersion.V8_10_0_RC2_STRING;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.util.AssertUtil.assertEqualsByProtocol;
 
 import java.util.*;
 
 import io.redis.test.annotations.ConditionalOnEnv;
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.Tag;
-
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.TestEnvUtil;
+import redis.clients.jedis.util.TestKeyRegistry;
 
 /**
  * Base test class for Time Series commands using the UnifiedJedis pattern.
@@ -39,6 +48,18 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
 
   public TimeSeriesCommandsTestBase(RedisProtocol protocol) {
     super(protocol);
+  }
+
+  protected TestKeyRegistry keys;
+
+  @BeforeEach
+  public void setUpKeys(TestInfo testInfo) {
+    keys = TestKeyRegistry.create(testInfo);
+  }
+
+  @AfterEach
+  public void cleanUpKeys() {
+    keys.cleanup(jedis);
   }
 
   @Test
@@ -722,6 +743,68 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
     assertEquals(Arrays.asList("seriesQueryIndex1", "seriesQueryIndex2"),
       jedis.tsQueryIndex("l1=v1"));
     assertEquals(Arrays.asList("seriesQueryIndex2"), jedis.tsQueryIndex("l2=v22"));
+  }
+
+  /**
+   * Sets up a small sensor dashboard dataset used by the TS.QUERYLABELS examples. Keys are obtained
+   * from {@link TestKeyRegistry} (registered for cleanup) and deliberately NOT hash-tagged, so in
+   * cluster mode they scatter across shards: TS.QUERYLABELS is keyless and routes to a single
+   * arbitrary node, and asserting a complete reply proves the server coordinates the cluster-wide
+   * fan-out itself (no client-side aggregation).
+   */
+  private void setupQueryLabelsSeries() {
+    jedis.tsCreate(keys.key("temp:living"), TSCreateParams.createParams()
+        .labels(mapOf("type", "sensor", "sensortype", "temperature", "location", "LivingRoom")));
+    jedis.tsCreate(keys.key("temp:kitchen"), TSCreateParams.createParams()
+        .labels(mapOf("type", "sensor", "sensortype", "temperature", "location", "Kitchen")));
+    jedis.tsCreate(keys.key("hum:bedroom"), TSCreateParams.createParams()
+        .labels(mapOf("type", "sensor", "sensortype", "humidity", "location", "BedRoom")));
+    jedis.tsCreate(keys.key("cpu:server"),
+      TSCreateParams.createParams().labels(mapOf("type", "metric", "unit", "percent")));
+  }
+
+  private static Map<String, String> mapOf(String... kvs) {
+    Map<String, String> map = new HashMap<>();
+    for (int i = 0; i < kvs.length; i += 2) {
+      map.put(kvs[i], kvs[i + 1]);
+    }
+    return map;
+  }
+
+  @Test
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
+  public void testQueryLabels() {
+    setupQueryLabelsSeries();
+
+    // LABELS with a filter: distinct label names across the sensor group. The filter is a label
+    // value shared across the DB, not a namespaced key, so other tests may contribute series with
+    // "type=sensor"; assert our labels are present without requiring an exact match.
+    assertThat(jedis.tsQueryLabels("type=sensor"), hasItems("type", "sensortype", "location"));
+
+    // LABELS without a filter: metadata across all indexed series in the DB, so "unit" appears
+    // too. Other tests may add series concurrently, so assert our labels are present.
+    assertThat(jedis.tsQueryLabels(), hasItems("type", "sensortype", "location", "unit"));
+
+    // A filter matching nothing yields an empty reply, not an error.
+    assertEquals(Collections.emptyList(), jedis.tsQueryLabels("type=nonexistent"));
+  }
+
+  @Test
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
+  public void testQueryLabelValues() {
+    setupQueryLabelsSeries();
+
+    // VALUES of a chosen label within the sensor group. Same shared-filter caveat as above:
+    // other tests' "type=sensor" series may add location values, so assert ours are present.
+    assertThat(jedis.tsQueryLabelValues("location", "type=sensor"),
+      hasItems("LivingRoom", "Kitchen", "BedRoom"));
+
+    // VALUES without a filter: collected across all indexed series in the DB. Other tests may
+    // add "sensortype" values, so assert ours are present.
+    assertThat(jedis.tsQueryLabelValues("sensortype"), hasItems("temperature", "humidity"));
+
+    // A label carried by no matching series yields an empty reply, not an error.
+    assertEquals(Collections.emptyList(), jedis.tsQueryLabelValues("nonexistent", "type=sensor"));
   }
 
   @Test
@@ -1575,5 +1658,420 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
         .filter("kind=mrevrange-multi-no-match"));
     assertNotNull(revRanges);
     assertTrue(revRanges.isEmpty());
+  }
+
+  /**
+   * Sets up the three series used by the EXCLUDEEMPTY examples in the design document. Series
+   * {@code s} and {@code t} have samples inside {@code [-, 500]}; series {@code u} only has a
+   * sample at {@code 2000}, so it is empty for a query bounded at {@code 500}.
+   */
+  private static final class ExcludeEmptyFixture {
+    final String seriesS; // samples at 100, 200, 400
+    final String seriesT; // samples at 100, 300, 400
+    final String seriesU; // only sample at 2000 — empty for any range bounded at 500
+    final String filter; // label filter matching all three, unique per test
+
+    ExcludeEmptyFixture(String seriesS, String seriesT, String seriesU, String filter) {
+      this.seriesS = seriesS;
+      this.seriesT = seriesT;
+      this.seriesU = seriesU;
+      this.filter = filter;
+    }
+  }
+
+  private ExcludeEmptyFixture setupExcludeEmptyFixture() {
+    String seriesS = keys.key("s");
+    String seriesT = keys.key("t");
+    String seriesU = keys.key("u");
+    // MRANGE matches by label, so the filter value must be test-unique as well
+    String sensor = keys.name("sensor");
+
+    Map<String, String> labels = convertMap("sensor", sensor, "type", "demo");
+    jedis.tsCreate(seriesS, TSCreateParams.createParams().labels(labels));
+    jedis.tsCreate(seriesT, TSCreateParams.createParams().labels(labels));
+    jedis.tsCreate(seriesU, TSCreateParams.createParams().labels(labels));
+
+    jedis.tsAdd(seriesS, 100, 100);
+    jedis.tsAdd(seriesT, 100, 100);
+    jedis.tsAdd(seriesS, 200, 200);
+    jedis.tsAdd(seriesT, 300, 300);
+    jedis.tsAdd(seriesS, 400, 400);
+    jedis.tsAdd(seriesT, 400, 400);
+    jedis.tsAdd(seriesU, 2000, 2000);
+
+    return new ExcludeEmptyFixture(seriesS, seriesT, seriesU, "sensor=" + sensor);
+  }
+
+  /**
+   * TS.MRANGE with EXCLUDEEMPTY omits matching series that have no samples in the requested range.
+   * Mirrors the design document success example: series {@code u} is dropped, {@code s} and
+   * {@code t} remain unchanged. The default (include-empty) behavior is asserted first to show the
+   * option is what makes the difference (R.1, NF.3).
+   */
+  @Test
+  @SinceRedisVersion(value = V8_10_0_RC2_STRING, message = "Requires RedisTimeSeries EXCLUDEEMPTY support for TS.MRANGE / TS.MREVRANGE.")
+  public void mRangeExcludeEmpty() {
+    ExcludeEmptyFixture fixture = setupExcludeEmptyFixture();
+
+    // Default: matching series u is still reported, with an empty samples array.
+    Map<String, TSMRangeElements> included = jedis.tsMRange(
+      TSMRangeParams.multiRangeParams().toTimestamp(500L).withLabels().filter(fixture.filter));
+    assertEquals(3, included.size());
+    assertTrue(included.containsKey(fixture.seriesU));
+    assertTrue(included.get(fixture.seriesU).getValue().isEmpty());
+
+    // EXCLUDEEMPTY: series u is omitted from the reply; s and t are unchanged.
+    Map<String, TSMRangeElements> excluded = jedis.tsMRange(TSMRangeParams.multiRangeParams()
+        .toTimestamp(500L).withLabels().excludeEmpty().filter(fixture.filter));
+    assertEquals(2, excluded.size());
+    assertFalse(excluded.containsKey(fixture.seriesU));
+    assertEquals(
+      Arrays.asList(new TSElement(100, 100), new TSElement(200, 200), new TSElement(400, 400)),
+      excluded.get(fixture.seriesS).getValue());
+    assertEquals(
+      Arrays.asList(new TSElement(100, 100), new TSElement(300, 300), new TSElement(400, 400)),
+      excluded.get(fixture.seriesT).getValue());
+  }
+
+  /**
+   * TS.MREVRANGE with EXCLUDEEMPTY omits empty matching series and keeps the reverse sample order
+   * for the series that remain (R.1, R.3).
+   */
+  @Test
+  @SinceRedisVersion(value = V8_10_0_RC2_STRING, message = "Requires RedisTimeSeries EXCLUDEEMPTY support for TS.MRANGE / TS.MREVRANGE.")
+  public void mRevRangeExcludeEmpty() {
+    ExcludeEmptyFixture fixture = setupExcludeEmptyFixture();
+
+    Map<String, TSMRangeElements> excluded = jedis.tsMRevRange(
+      TSMRangeParams.multiRangeParams().toTimestamp(500L).excludeEmpty().filter(fixture.filter));
+    assertEquals(2, excluded.size());
+    assertFalse(excluded.containsKey(fixture.seriesU));
+    // Samples inside each returned series are ordered in reverse timestamp order.
+    assertEquals(
+      Arrays.asList(new TSElement(400, 400), new TSElement(200, 200), new TSElement(100, 100)),
+      excluded.get(fixture.seriesS).getValue());
+  }
+
+  /**
+   * EXCLUDEEMPTY composes with AGGREGATION: a matching series with no reported buckets for the
+   * requested range and aggregation is omitted (R.5, NF.2).
+   */
+  @Test
+  @SinceRedisVersion(value = V8_10_0_RC2_STRING, message = "Requires RedisTimeSeries EXCLUDEEMPTY support for TS.MRANGE / TS.MREVRANGE.")
+  public void mRangeExcludeEmptyWithAggregation() {
+    ExcludeEmptyFixture fixture = setupExcludeEmptyFixture();
+
+    Map<String, TSMRangeElements> excluded = jedis
+        .tsMRange(TSMRangeParams.multiRangeParams().toTimestamp(500L).withLabels()
+            .aggregation(AggregationType.MIN, 100L).excludeEmpty().filter(fixture.filter));
+    assertEquals(2, excluded.size());
+    assertFalse(excluded.containsKey(fixture.seriesU));
+  }
+
+  /**
+   * When every matching series is empty, EXCLUDEEMPTY yields an empty top-level reply (R.3).
+   */
+  @Test
+  @SinceRedisVersion(value = V8_10_0_RC2_STRING, message = "Requires RedisTimeSeries EXCLUDEEMPTY support for TS.MRANGE / TS.MREVRANGE.")
+  public void mRangeExcludeEmptyAllEmpty() {
+    ExcludeEmptyFixture fixture = setupExcludeEmptyFixture();
+
+    // No matching series has a sample in [1, 50].
+    Map<String, TSMRangeElements> excluded = jedis
+        .tsMRange(TSMRangeParams.multiRangeParams(1L, 50L).excludeEmpty().filter(fixture.filter));
+    assertNotNull(excluded);
+    assertTrue(excluded.isEmpty());
+  }
+
+  /**
+   * The typed helper API rejects EXCLUDEEMPTY combined with GROUPBY locally, before a command is
+   * sent (R.4).
+   */
+  @Test
+  public void mRangeExcludeEmptyWithGroupByRejectedLocally() {
+    assertThrows(IllegalArgumentException.class, () -> jedis.tsMRange(TSMRangeParams
+        .multiRangeParams(0L, 100L).excludeEmpty().filter("sensor=1").groupBy("type", "max")));
+  }
+
+  /**
+   * A raw TS.MRANGE that combines EXCLUDEEMPTY with GROUPBY must be sent unchanged and the server
+   * error propagated as-is (R.4, R.6).
+   */
+  @Test
+  @SinceRedisVersion(value = V8_10_0_RC2_STRING, message = "Requires RedisTimeSeries EXCLUDEEMPTY support for TS.MRANGE / TS.MREVRANGE.")
+  public void rawMRangeExcludeEmptyWithGroupByPropagatesServerError() {
+    ExcludeEmptyFixture fixture = setupExcludeEmptyFixture();
+
+    JedisDataException error = assertThrows(JedisDataException.class,
+      () -> jedis.sendCommand(TimeSeriesProtocol.TimeSeriesCommand.MRANGE, "-", "500",
+        "EXCLUDEEMPTY", "FILTER", fixture.filter, "GROUPBY", "type", "REDUCE", "max"));
+    assertTrue(error.getMessage().contains("EXCLUDEEMPTY"),
+      "Server error must be propagated as-is, was: " + error.getMessage());
+  }
+
+  /**
+   * Non-blocking TS.READ returns samples with timestamp {@code >=} the cursor, ascending; a cursor
+   * past the newest sample and a missing key both return an empty list, not an error.
+   */
+  @Test
+  @EnabledOnCommand("TS.READ")
+  public void read() {
+    jedis.tsCreate("read-series");
+    assertEquals(100L, jedis.tsAdd("read-series", 100L, 1.0));
+    assertEquals(200L, jedis.tsAdd("read-series", 200L, 2.0));
+    assertEquals(300L, jedis.tsAdd("read-series", 300L, 3.0));
+
+    List<TSElement> all = jedis.tsRead("read-series", 0L);
+    assertEquals(
+      Arrays.asList(new TSElement(100L, 1.0), new TSElement(200L, 2.0), new TSElement(300L, 3.0)),
+      all);
+
+    // A cursor after the newest sample yields an empty list.
+    assertTrue(jedis.tsRead("read-series", 301L).isEmpty());
+
+    // Missing key is not an error; it returns an empty list.
+    assertTrue(jedis.tsRead("read-missing", 0L).isEmpty());
+  }
+
+  /**
+   * MAX_COUNT caps the reply to the oldest N samples, enabling cursor-based paging with
+   * {@code lastTimestamp + 1}.
+   */
+  @Test
+  @EnabledOnCommand("TS.READ")
+  public void readPagingWithMaxCount() {
+    jedis.tsCreate("read-page");
+    jedis.tsAdd("read-page", 100L, 1.0);
+    jedis.tsAdd("read-page", 200L, 2.0);
+    jedis.tsAdd("read-page", 300L, 3.0);
+
+    List<TSElement> page1 = jedis.tsRead("read-page",
+      TSReadParams.readParams().earliest().maxCount(2));
+    assertEquals(Arrays.asList(new TSElement(100L, 1.0), new TSElement(200L, 2.0)), page1);
+
+    long next = page1.get(page1.size() - 1).getTimestamp() + 1;
+    List<TSElement> page2 = jedis.tsRead("read-page",
+      TSReadParams.readParams().timestamp(next).maxCount(2));
+    assertEquals(Collections.singletonList(new TSElement(300L, 3.0)), page2);
+  }
+
+  /**
+   * The {@code +} sentinel resolves to the latest existing sample, inclusive, so it is returned
+   * even without BLOCK; the {@code $} sentinel excludes all existing samples, so without BLOCK it
+   * yields an empty list.
+   */
+  @Test
+  @EnabledOnCommand("TS.READ")
+  public void readSentinels() {
+    jedis.tsCreate("read-sentinel");
+    jedis.tsAdd("read-sentinel", 100L, 1.0);
+    jedis.tsAdd("read-sentinel", 300L, 3.0);
+
+    assertEquals(Collections.singletonList(new TSElement(300L, 3.0)),
+      jedis.tsRead("read-sentinel", TSReadParams.readParams().latest()));
+
+    assertTrue(jedis.tsRead("read-sentinel", TSReadParams.readParams().newSamples()).isEmpty());
+  }
+
+  /**
+   * A blocking call whose {@code min_count} threshold cannot be reached returns the samples that
+   * are available once the timeout elapses (a successful, possibly-partial reply).
+   */
+  @Test
+  @EnabledOnCommand("TS.READ")
+  public void readBlockingTimeoutFlush() {
+    jedis.tsCreate("read-block");
+    jedis.tsAdd("read-block", 100L, 1.0);
+    jedis.tsAdd("read-block", 200L, 2.0);
+    jedis.tsAdd("read-block", 300L, 3.0);
+
+    // min_count 10 can never be met; after 10ms the two qualifying samples flush out.
+    List<TSElement> samples = jedis.tsRead("read-block",
+      TSReadParams.readParams().timestamp(101L).block(10L, 10));
+    assertEquals(Arrays.asList(new TSElement(200L, 2.0), new TSElement(300L, 3.0)), samples);
+  }
+
+  /**
+   * A blocking call returns immediately, without waiting, when {@code min_count} qualifying samples
+   * already exist at execution time.
+   */
+  @Test
+  @EnabledOnCommand("TS.READ")
+  public void readBlockingReturnsImmediatelyWhenThresholdMet() {
+    jedis.tsCreate("read-block-now");
+    jedis.tsAdd("read-block-now", 100L, 1.0);
+    jedis.tsAdd("read-block-now", 200L, 2.0);
+
+    List<TSElement> samples = jedis.tsRead("read-block-now",
+      TSReadParams.readParams().earliest().block(0L, 2));
+    assertEquals(Arrays.asList(new TSElement(100L, 1.0), new TSElement(200L, 2.0)), samples);
+  }
+
+  /**
+   * A client blocked on {@code $} wakes and returns a sample appended by another connection while
+   * it waits.
+   */
+  @Test
+  @EnabledOnCommand("TS.READ")
+  public void readBlockingWakesOnAppend() throws InterruptedException {
+    jedis.tsCreate("read-tail");
+    jedis.tsAdd("read-tail", 100L, 1.0);
+
+    Thread producer = new Thread(() -> {
+      try (UnifiedJedis other = createTestClient()) {
+        Thread.sleep(300L);
+        other.tsAdd("read-tail", 200L, 2.0);
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+      }
+    });
+    producer.start();
+
+    // Blocks on $ (only samples added after the call) until the producer appends 200.
+    List<TSElement> samples = jedis.tsRead("read-tail",
+      TSReadParams.readParams().newSamples().block(5000L, 1));
+    producer.join();
+
+    assertEquals(Collections.singletonList(new TSElement(200L, 2.0)), samples);
+  }
+
+  /**
+   * Server-side errors (invalid cursor, wrong key type) must be propagated as-is.
+   */
+  @Test
+  @EnabledOnCommand("TS.READ")
+  public void readErrorsPropagate() {
+    jedis.tsCreate("read-err");
+    jedis.tsAdd("read-err", 100L, 1.0);
+
+    // Negative literal cursor is rejected by the server.
+    assertThrows(JedisDataException.class,
+      () -> jedis.tsRead("read-err", TSReadParams.readParams().timestamp(-1L)));
+
+    // Reading a key that holds a non-timeseries value is a WRONGTYPE error.
+    jedis.set("read-str", "not a series");
+    assertThrows(JedisDataException.class, () -> jedis.tsRead("read-str", 0L));
+  }
+
+  /**
+   * TS.NRANGE pivots an explicit key list by timestamp: forward order, one value column per key,
+   * NaN where a key has no sample. COUNT limits rows after the merge.
+   */
+  @Test
+  @EnabledOnCommand("TS.NRANGE")
+  public void nRange() {
+    String a = keys.key("{%test%}:a");
+    String b = keys.key("{%test%}:b");
+    jedis.tsCreate(a);
+    jedis.tsCreate(b);
+    jedis.tsAdd(a, 1000L, 10.0);
+    jedis.tsAdd(a, 2000L, 12.0);
+    jedis.tsAdd(b, 1000L, 100.0);
+    jedis.tsAdd(b, 3000L, 300.0);
+
+    String[] seriesKeys = { a, b };
+    List<TSElement> rows = jedis.tsNRange(seriesKeys, 0L, 60000L);
+
+    List<Long> timestamps = new ArrayList<>();
+    for (TSElement row : rows) {
+      timestamps.add(row.getTimestamp());
+    }
+    assertEquals(Arrays.asList(1000L, 2000L, 3000L), timestamps);
+
+    assertEquals(2, rows.get(0).getValues().size());
+    assertEquals(10.0, rows.get(0).getValues().get(0), 0.001);
+    assertEquals(100.0, rows.get(0).getValues().get(1), 0.001);
+    assertEquals(12.0, rows.get(1).getValues().get(0), 0.001);
+    assertTrue(Double.isNaN(rows.get(1).getValues().get(1)));
+    assertTrue(Double.isNaN(rows.get(2).getValues().get(0)));
+    assertEquals(300.0, rows.get(2).getValues().get(1), 0.001);
+
+    List<TSElement> limited = jedis.tsNRange(seriesKeys,
+      TSNRangeParams.nrangeParams(0L, 60000L).count(1));
+    assertEquals(1, limited.size());
+    assertEquals(1000L, limited.get(0).getTimestamp());
+
+    List<TSElement> emptyRange = jedis.tsNRange(new String[] { a }, 900000L, 900001L);
+    assertTrue(emptyRange.isEmpty());
+  }
+
+  /**
+   * TS.NREVRANGE returns the same pivot rows in decreasing-timestamp order; the client preserves
+   * the server order.
+   */
+  @Test
+  @EnabledOnCommand("TS.NREVRANGE")
+  public void nRevRange() {
+    String a = keys.key("{%test%}:a");
+    String b = keys.key("{%test%}:b");
+    jedis.tsCreate(a);
+    jedis.tsCreate(b);
+    jedis.tsAdd(a, 1000L, 10.0);
+    jedis.tsAdd(b, 2000L, 200.0);
+
+    String[] seriesKeys = { a, b };
+    List<TSElement> rows = jedis.tsNRevRange(seriesKeys, 0L, 60000L);
+
+    List<Long> timestamps = new ArrayList<>();
+    for (TSElement row : rows) {
+      timestamps.add(row.getTimestamp());
+    }
+    assertEquals(Arrays.asList(2000L, 1000L), timestamps);
+  }
+
+  /**
+   * Aggregation mode: one aggregator token per key (count must equal numkeys), each token possibly
+   * a comma-separated list, producing a flat value vector per row.
+   */
+  @Test
+  @EnabledOnCommand("TS.NRANGE")
+  public void nRangeAggregation() {
+    String a = keys.key("{%test%}:a");
+    String b = keys.key("{%test%}:b");
+    jedis.tsCreate(a);
+    jedis.tsCreate(b);
+    jedis.tsAdd(a, 1000L, 10.0);
+    jedis.tsAdd(a, 1500L, 20.0);
+    jedis.tsAdd(b, 1000L, 100.0);
+
+    String[] seriesKeys = { a, b };
+
+    List<TSElement> single = jedis.tsNRange(seriesKeys, TSNRangeParams.nrangeParams(0L, 60000L)
+        .aggregation(new AggregationType[] { AggregationType.AVG, AggregationType.SUM }, 1000L));
+    assertEquals(2, single.get(0).getValues().size());
+    assertEquals(15.0, single.get(0).getValues().get(0), 0.001);
+    assertEquals(100.0, single.get(0).getValues().get(1), 0.001);
+
+    List<TSElement> multi = jedis.tsNRange(seriesKeys,
+      TSNRangeParams.nrangeParams(0L, 60000L).aggregation(new AggregationType[][] {
+          { AggregationType.AVG, AggregationType.MAX }, { AggregationType.SUM } },
+        1000L));
+    assertEquals(3, multi.get(0).getValues().size());
+    assertEquals(15.0, multi.get(0).getValues().get(0), 0.001);
+    assertEquals(20.0, multi.get(0).getValues().get(1), 0.001);
+    assertEquals(100.0, multi.get(0).getValues().get(2), 0.001);
+  }
+
+  /**
+   * The client validates one aggregation spec per key at build time (mirroring the server rule), so
+   * a spec-count/numkeys mismatch fails fast with {@link IllegalArgumentException} before any
+   * command is sent. Version-independent, hence no command gate.
+   */
+  @Test
+  public void nRangeAggregatorCountMismatchRejectedClientSide() {
+    String[] seriesKeys = { keys.key("{%test%}:a"), keys.key("{%test%}:b") };
+    // Two keys but one spec.
+    assertThrows(IllegalArgumentException.class,
+      () -> jedis.tsNRange(seriesKeys, TSNRangeParams.nrangeParams(0L, 60000L)
+          .aggregation(new AggregationType[] { AggregationType.AVG }, 1000L)));
+    // Two keys but three specs.
+    assertThrows(IllegalArgumentException.class,
+      () -> jedis
+          .tsNRevRange(seriesKeys,
+            TSNRangeParams.nrangeParams(0L, 60000L).aggregation(new AggregationType[][] {
+                { AggregationType.AVG }, { AggregationType.SUM }, { AggregationType.MIN } },
+              1000L)));
+    // Empty key list.
+    assertThrows(IllegalArgumentException.class, () -> jedis.tsNRange(new String[0], 0L, 60000L));
   }
 }

@@ -1050,6 +1050,46 @@ public class CommandObjects {
         .key(dstKey).add(from).add(to).add(timeout), BuilderFactory.BINARY);
   }
 
+  public final CommandObject<List<String>> lmovem(String srcKey, String dstKey, ListDirection from, ListDirection to) {
+    return new CommandObject<>(commandArguments(LMOVEM).key(srcKey).key(dstKey)
+        .add(from).add(to), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> lmovem(String srcKey, String dstKey, ListDirection from, ListDirection to, LMoveMParams params) {
+    return new CommandObject<>(commandArguments(LMOVEM).key(srcKey).key(dstKey)
+        .add(from).add(to).addParams(params), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> blmovem(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout) {
+    return new CommandObject<>(commandArguments(BLMOVEM).blocking().key(srcKey)
+        .key(dstKey).add(from).add(to).add(timeout), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> blmovem(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout, LMoveMParams params) {
+    return new CommandObject<>(commandArguments(BLMOVEM).blocking().key(srcKey)
+        .key(dstKey).add(from).add(to).add(timeout).addParams(params), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> lmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
+    return new CommandObject<>(commandArguments(LMOVEM).key(srcKey).key(dstKey)
+        .add(from).add(to), BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> lmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, LMoveMParams params) {
+    return new CommandObject<>(commandArguments(LMOVEM).key(srcKey).key(dstKey)
+        .add(from).add(to).addParams(params), BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> blmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
+    return new CommandObject<>(commandArguments(BLMOVEM).blocking().key(srcKey)
+        .key(dstKey).add(from).add(to).add(timeout), BuilderFactory.BINARY_LIST);
+  }
+
+  public final CommandObject<List<byte[]>> blmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout, LMoveMParams params) {
+    return new CommandObject<>(commandArguments(BLMOVEM).blocking().key(srcKey)
+        .key(dstKey).add(from).add(to).add(timeout).addParams(params), BuilderFactory.BINARY_LIST);
+  }
+
   public final CommandObject<KeyValue<String, List<String>>> lmpop(ListDirection direction, String... keys) {
     return new CommandObject<>(commandArguments(LMPOP).add(keys.length).keys((Object[]) keys)
         .add(direction), BuilderFactory.KEYED_STRING_LIST);

@@ -2654,6 +2654,30 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
   }
 
+  @Override
+  public List<byte[]> lmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.lmovem(srcKey, dstKey, from, to));
+  }
+
+  @Override
+  public List<byte[]> lmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, LMoveMParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.lmovem(srcKey, dstKey, from, to, params));
+  }
+
+  @Override
+  public List<byte[]> blmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public List<byte[]> blmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout, LMoveMParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout, params));
+  }
+
   /**
    * BLPOP (and BRPOP) is a blocking list pop primitive. You can see this commands as blocking
    * versions of LPOP and RPOP able to block if the specified keys don't exist or contain empty
@@ -7484,6 +7508,34 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       final ListDirection to, final double timeout) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public List<String> lmovem(final String srcKey, final String dstKey, final ListDirection from,
+      final ListDirection to) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.lmovem(srcKey, dstKey, from, to));
+  }
+
+  @Override
+  public List<String> lmovem(final String srcKey, final String dstKey, final ListDirection from,
+      final ListDirection to, final LMoveMParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.lmovem(srcKey, dstKey, from, to, params));
+  }
+
+  @Override
+  public List<String> blmovem(final String srcKey, final String dstKey, final ListDirection from,
+      final ListDirection to, final double timeout) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public List<String> blmovem(final String srcKey, final String dstKey, final ListDirection from,
+      final ListDirection to, final double timeout, final LMoveMParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout, params));
   }
 
   /**

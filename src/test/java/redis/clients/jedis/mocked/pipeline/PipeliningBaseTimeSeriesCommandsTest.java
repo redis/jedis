@@ -332,6 +332,31 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
   }
 
   @Test
+  public void testTsQueryLabels() {
+    String[] filters = { "type=sensor" };
+
+    when(commandObjects.tsQueryLabels(filters)).thenReturn(listStringCommandObject);
+
+    Response<List<String>> response = pipeliningBase.tsQueryLabels(filters);
+
+    assertThat(commands, contains(listStringCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testTsQueryLabelValues() {
+    String label = "location";
+    String[] filters = { "type=sensor" };
+
+    when(commandObjects.tsQueryLabelValues(label, filters)).thenReturn(listStringCommandObject);
+
+    Response<List<String>> response = pipeliningBase.tsQueryLabelValues(label, filters);
+
+    assertThat(commands, contains(listStringCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
   public void testTsRange() {
     when(commandObjects.tsRange("myTimeSeries", 1000L, 2000L)).thenReturn(listTsElementCommandObject);
 
@@ -370,6 +395,28 @@ public class PipeliningBaseTimeSeriesCommandsTest extends PipeliningBaseMockedTe
     when(commandObjects.tsRevRange("myTimeSeries", rangeParams)).thenReturn(listTsElementCommandObject);
 
     Response<List<TSElement>> response = pipeliningBase.tsRevRange("myTimeSeries", rangeParams);
+
+    assertThat(commands, contains(listTsElementCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testTsRead() {
+    when(commandObjects.tsRead("myTimeSeries", 0L)).thenReturn(listTsElementCommandObject);
+
+    Response<List<TSElement>> response = pipeliningBase.tsRead("myTimeSeries", 0L);
+
+    assertThat(commands, contains(listTsElementCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testTsReadWithParams() {
+    TSReadParams readParams = TSReadParams.readParams().timestamp(101L).block(1000L, 1);
+
+    when(commandObjects.tsRead("myTimeSeries", readParams)).thenReturn(listTsElementCommandObject);
+
+    Response<List<TSElement>> response = pipeliningBase.tsRead("myTimeSeries", readParams);
 
     assertThat(commands, contains(listTsElementCommandObject));
     assertThat(response, is(predefinedResponse));

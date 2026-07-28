@@ -4748,6 +4748,16 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<TSElement>> tsRead(String key, long timestamp) {
+    return appendCommand(commandObjects.tsRead(key, timestamp));
+  }
+
+  @Override
+  public Response<List<TSElement>> tsRead(String key, TSReadParams readParams) {
+    return appendCommand(commandObjects.tsRead(key, readParams));
+  }
+
+  @Override
   public Response<Map<String, TSMRangeElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return appendCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }
@@ -4800,6 +4810,16 @@ public abstract class PipeliningBase
   @Override
   public Response<List<String>> tsQueryIndex(String... filters) {
     return appendCommand(commandObjects.tsQueryIndex(filters));
+  }
+
+  @Override
+  public Response<List<String>> tsQueryLabels(String... filters) {
+    return appendCommand(commandObjects.tsQueryLabels(filters));
+  }
+
+  @Override
+  public Response<List<String>> tsQueryLabelValues(String label, String... filters) {
+    return appendCommand(commandObjects.tsQueryLabelValues(label, filters));
   }
 
   @Override

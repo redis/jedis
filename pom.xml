@@ -558,6 +558,7 @@
 						<include>src/main/java/redis/clients/jedis/mcf/*.java</include>
 						<include>src/test/java/redis/clients/jedis/failover/*.java</include>
 						<include>src/test/java/redis/clients/jedis/mcf/*.java</include>
+						<include>src/test/java/redis/clients/jedis/util/TestKeyRegistry.java</include>
 						<include>**/Health*.java</include>
 						<include>**/*IT.java</include>
 						<include>**/scenario/RestEndpointUtil.java</include>
@@ -600,6 +601,7 @@
                         <include>src/test/java/redis/clients/jedis/commands/unified/**bloom/*.java</include>
                         <include>src/test/java/redis/clients/jedis/commands/unified/**json/*.java</include>
                         <include>src/test/java/redis/clients/jedis/commands/unified/**timeseries/*.java</include>
+                        <include>src/main/java/redis/clients/jedis/timeseries/TSReadParams.java</include>
                         <include>src/test/java/redis/clients/jedis/**/search/*.java</include>
 
 						<include>**/RespProtocol.java</include>
@@ -644,7 +646,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-jar-plugin</artifactId>
-				<version>3.5.0</version>
+				<version>3.5.1</version>
 				<configuration>
 					<archive>
 						<manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>

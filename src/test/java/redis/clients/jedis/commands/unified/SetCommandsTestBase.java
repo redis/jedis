@@ -478,75 +478,92 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
   @SinceRedisVersion(V8_10_0_RC2_STRING)
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sunioncard() {
-    jedis.sadd("foo", "a", "b", "c");
-    jedis.sadd("bar", "c", "d");
+    String foo = keys.key("foo");
+    String bar = keys.key("bar");
+    jedis.sadd(foo, "a", "b", "c");
+    jedis.sadd(bar, "c", "d");
 
-    assertEquals(4, jedis.sunioncard("foo", "bar"));
+    assertEquals(4, jedis.sunioncard(foo, bar));
     // non-existing keys are treated as empty sets
-    assertEquals(3, jedis.sunioncard("foo", "nosuchset"));
+    assertEquals(3, jedis.sunioncard(foo, keys.key("nosuchset")));
 
     // Binary
-    jedis.sadd(bfoo, ba, bb, bc);
-    jedis.sadd(bbar, bc, bd);
+    byte[] bfooKey = keys.bKey("bfoo");
+    byte[] bbarKey = keys.bKey("bbar");
+    jedis.sadd(bfooKey, ba, bb, bc);
+    jedis.sadd(bbarKey, bc, bd);
 
-    assertEquals(4, jedis.sunioncard(bfoo, bbar));
+    assertEquals(4, jedis.sunioncard(bfooKey, bbarKey));
   }
 
   @Test
   @SinceRedisVersion(V8_10_0_RC2_STRING)
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sunioncardKeysList() {
-    jedis.sadd("foo", "a", "b", "c");
-    jedis.sadd("bar", "c", "d");
+    String foo = keys.key("foo");
+    String bar = keys.key("bar");
+    jedis.sadd(foo, "a", "b", "c");
+    jedis.sadd(bar, "c", "d");
 
-    assertEquals(4, jedis.sunioncard(Arrays.asList("foo", "bar")));
+    assertEquals(4, jedis.sunioncard(Arrays.asList(foo, bar)));
     // non-existing keys are treated as empty sets
-    assertEquals(3, jedis.sunioncard(Arrays.asList("foo", "nosuchset")));
+    assertEquals(3, jedis.sunioncard(Arrays.asList(foo, keys.key("nosuchset"))));
   }
 
   @Test
   @SinceRedisVersion(V8_10_0_RC2_STRING)
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sunioncardWithParams() {
-    jedis.sadd("foo", "a", "b", "c");
-    jedis.sadd("bar", "c", "d");
+    String foo = keys.key("foo");
+    String bar = keys.key("bar");
+    jedis.sadd(foo, "a", "b", "c");
+    jedis.sadd(bar, "c", "d");
 
     // APPROX is exact for small sets; LIMIT caps the result
-    assertEquals(4, jedis.sunioncard("foo", "bar", new SUnionCardParams().approx()));
-    assertEquals(3, jedis.sunioncard("foo", "bar", new SUnionCardParams().approx().limit(3)));
+    assertEquals(4, jedis.sunioncard(foo, bar, new SUnionCardParams().approx()));
+    assertEquals(3, jedis.sunioncard(foo, bar, new SUnionCardParams().approx().limit(3)));
 
     // Binary
-    jedis.sadd(bfoo, ba, bb, bc);
-    jedis.sadd(bbar, bc, bd);
+    byte[] bfooKey = keys.bKey("bfoo");
+    byte[] bbarKey = keys.bKey("bbar");
+    jedis.sadd(bfooKey, ba, bb, bc);
+    jedis.sadd(bbarKey, bc, bd);
 
-    assertEquals(3, jedis.sunioncard(bfoo, bbar, new SUnionCardParams().limit(3)));
+    assertEquals(3, jedis.sunioncard(bfooKey, bbarKey, new SUnionCardParams().limit(3)));
   }
 
   @Test
   @SinceRedisVersion(V8_10_0_RC2_STRING)
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sunioncardKeysListWithParams() {
-    jedis.sadd("foo", "a", "b", "c");
-    jedis.sadd("bar", "c", "d");
+    String foo = keys.key("foo");
+    String bar = keys.key("bar");
+    jedis.sadd(foo, "a", "b", "c");
+    jedis.sadd(bar, "c", "d");
 
     // LIMIT caps the result; LIMIT 0 means no limit
-    assertEquals(3, jedis.sunioncard(Arrays.asList("foo", "bar"), new SUnionCardParams().limit(3)));
-    assertEquals(4, jedis.sunioncard(Arrays.asList("foo", "bar"), new SUnionCardParams().limit(0)));
+    assertEquals(3, jedis.sunioncard(Arrays.asList(foo, bar), new SUnionCardParams().limit(3)));
+    assertEquals(4, jedis.sunioncard(Arrays.asList(foo, bar), new SUnionCardParams().limit(0)));
 
     // Binary
-    jedis.sadd(bfoo, ba, bb, bc);
-    jedis.sadd(bbar, bc, bd);
+    byte[] bfooKey = keys.bKey("bfoo");
+    byte[] bbarKey = keys.bKey("bbar");
+    jedis.sadd(bfooKey, ba, bb, bc);
+    jedis.sadd(bbarKey, bc, bd);
 
-    assertEquals(4, jedis.sunioncard(new byte[][] { bfoo, bbar }, new SUnionCardParams().approx()));
+    assertEquals(4,
+      jedis.sunioncard(new byte[][] { bfooKey, bbarKey }, new SUnionCardParams().approx()));
   }
 
   @Test
   @SinceRedisVersion(V8_10_0_RC2_STRING)
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sunioncardWrongTypeKey() {
-    jedis.sadd("foo", "a");
-    jedis.set("strkey", "value");
-    assertThrows(JedisDataException.class, () -> jedis.sunioncard("foo", "strkey"));
+    String foo = keys.key("foo");
+    String strkey = keys.key("strkey");
+    jedis.sadd(foo, "a");
+    jedis.set(strkey, "value");
+    assertThrows(JedisDataException.class, () -> jedis.sunioncard(foo, strkey));
   }
 
   @Test
@@ -635,74 +652,94 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
   @SinceRedisVersion(V8_10_0_RC2_STRING)
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sdiffcard() {
-    jedis.sadd("foo", "x", "a", "b", "c");
-    jedis.sadd("bar", "c");
-    jedis.sadd("car", "a", "d");
+    String foo = keys.key("foo");
+    String bar = keys.key("bar");
+    String car = keys.key("car");
+    jedis.sadd(foo, "x", "a", "b", "c");
+    jedis.sadd(bar, "c");
+    jedis.sadd(car, "a", "d");
 
     // foo \ (bar U car) = {x, b}
-    assertEquals(2, jedis.sdiffcard("foo", "bar", "car"));
+    assertEquals(2, jedis.sdiffcard(foo, bar, car));
 
     // a missing subtrahend key has no effect; a missing first key yields 0
-    assertEquals(4, jedis.sdiffcard("foo", "nosuchset"));
-    assertEquals(0, jedis.sdiffcard("nosuchset", "foo"));
+    assertEquals(4, jedis.sdiffcard(foo, keys.key("nosuchset")));
+    assertEquals(0, jedis.sdiffcard(keys.key("nosuchset"), foo));
 
     // Binary
-    jedis.sadd(bfoo, bx, ba, bb, bc);
-    jedis.sadd(bbar, bc);
-    jedis.sadd(bcar, ba, bd);
+    byte[] bfooKey = keys.bKey("bfoo");
+    byte[] bbarKey = keys.bKey("bbar");
+    byte[] bcarKey = keys.bKey("bcar");
+    jedis.sadd(bfooKey, bx, ba, bb, bc);
+    jedis.sadd(bbarKey, bc);
+    jedis.sadd(bcarKey, ba, bd);
 
-    assertEquals(2, jedis.sdiffcard(bfoo, bbar, bcar));
+    assertEquals(2, jedis.sdiffcard(bfooKey, bbarKey, bcarKey));
   }
 
   @Test
   @SinceRedisVersion(V8_10_0_RC2_STRING)
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sdiffcardKeysList() {
-    jedis.sadd("foo", "x", "a", "b", "c");
-    jedis.sadd("bar", "c");
-    jedis.sadd("car", "a", "d");
+    String foo = keys.key("foo");
+    String bar = keys.key("bar");
+    String car = keys.key("car");
+    jedis.sadd(foo, "x", "a", "b", "c");
+    jedis.sadd(bar, "c");
+    jedis.sadd(car, "a", "d");
 
     // foo \ (bar U car) = {x, b}
-    assertEquals(2, jedis.sdiffcard(Arrays.asList("foo", "bar", "car")));
+    assertEquals(2, jedis.sdiffcard(Arrays.asList(foo, bar, car)));
     // a missing first key yields 0
-    assertEquals(0, jedis.sdiffcard(Arrays.asList("nosuchset", "foo")));
+    assertEquals(0, jedis.sdiffcard(Arrays.asList(keys.key("nosuchset"), foo)));
   }
 
   @Test
   @SinceRedisVersion(V8_10_0_RC2_STRING)
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sdiffcardWithParams() {
-    jedis.sadd("foo", "x", "a", "b", "c");
-    jedis.sadd("bar", "c");
+    String foo = keys.key("foo");
+    String bar = keys.key("bar");
+    jedis.sadd(foo, "x", "a", "b", "c");
+    jedis.sadd(bar, "c");
 
     // foo \ bar = {x, a, b}; LIMIT caps the result
-    assertEquals(1, jedis.sdiffcard("foo", "bar", new SDiffCardParams().limit(1)));
+    assertEquals(1, jedis.sdiffcard(foo, bar, new SDiffCardParams().limit(1)));
 
     // Binary
-    jedis.sadd(bfoo, bx, ba, bb, bc);
-    jedis.sadd(bbar, bc);
+    byte[] bfooKey = keys.bKey("bfoo");
+    byte[] bbarKey = keys.bKey("bbar");
+    jedis.sadd(bfooKey, bx, ba, bb, bc);
+    jedis.sadd(bbarKey, bc);
 
-    assertEquals(1, jedis.sdiffcard(bfoo, bbar, new SDiffCardParams().limit(1)));
+    assertEquals(1, jedis.sdiffcard(bfooKey, bbarKey, new SDiffCardParams().limit(1)));
   }
 
   @Test
   @SinceRedisVersion(V8_10_0_RC2_STRING)
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sdiffcardKeysListWithParams() {
-    jedis.sadd("foo", "x", "a", "b", "c");
-    jedis.sadd("bar", "c");
-    jedis.sadd("car", "a", "d");
+    String foo = keys.key("foo");
+    String bar = keys.key("bar");
+    String car = keys.key("car");
+    jedis.sadd(foo, "x", "a", "b", "c");
+    jedis.sadd(bar, "c");
+    jedis.sadd(car, "a", "d");
 
     // LIMIT caps the result; LIMIT 0 means no limit
-    assertEquals(1, jedis.sdiffcard(Arrays.asList("foo", "bar", "car"), new SDiffCardParams().limit(1)));
-    assertEquals(2, jedis.sdiffcard(Arrays.asList("foo", "bar", "car"), new SDiffCardParams().limit(0)));
+    assertEquals(1, jedis.sdiffcard(Arrays.asList(foo, bar, car), new SDiffCardParams().limit(1)));
+    assertEquals(2, jedis.sdiffcard(Arrays.asList(foo, bar, car), new SDiffCardParams().limit(0)));
 
     // Binary
-    jedis.sadd(bfoo, bx, ba, bb, bc);
-    jedis.sadd(bbar, bc);
-    jedis.sadd(bcar, ba, bd);
+    byte[] bfooKey = keys.bKey("bfoo");
+    byte[] bbarKey = keys.bKey("bbar");
+    byte[] bcarKey = keys.bKey("bcar");
+    jedis.sadd(bfooKey, bx, ba, bb, bc);
+    jedis.sadd(bbarKey, bc);
+    jedis.sadd(bcarKey, ba, bd);
 
-    assertEquals(2, jedis.sdiffcard(new byte[][] { bfoo, bbar, bcar }, new SDiffCardParams().limit(0)));
+    assertEquals(2,
+      jedis.sdiffcard(new byte[][] { bfooKey, bbarKey, bcarKey }, new SDiffCardParams().limit(0)));
   }
 
   @Test

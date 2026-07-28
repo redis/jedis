@@ -269,60 +269,79 @@ public class ClusterListCommandsTest extends ListCommandsTestBase {
   @Override
   @EnabledOnCommand("LMOVEM")
   public void lmovem() {
-    jedis.rpush("{|}foo", "1", "2");
+    // Hash-tag the per-test prefix so the source and destination share a cluster slot.
+    String src = keys.key("{%test%}:src");
+    String dst = keys.key("{%test%}:dst");
+
+    jedis.rpush(src, "1", "2");
     assertEquals(Collections.singletonList("2"),
-        jedis.lmovem("{|}foo", "{|}bar", ListDirection.RIGHT, ListDirection.LEFT));
-    assertEquals(Collections.singletonList("2"), jedis.lrange("{|}bar", 0, -1));
+        jedis.lmovem(src, dst, ListDirection.RIGHT, ListDirection.LEFT));
+    assertEquals(Collections.singletonList("2"), jedis.lrange(dst, 0, -1));
 
     // Missing source returns null.
-    assertNull(jedis.lmovem("{|}nope1", "{|}nope2", ListDirection.LEFT, ListDirection.LEFT));
+    assertNull(jedis.lmovem(keys.key("{%test%}:nope1"), keys.key("{%test%}:nope2"),
+        ListDirection.LEFT, ListDirection.LEFT));
   }
 
   @Test
   @Override
   @EnabledOnCommand("LMOVEM")
   public void lmovemWithParams() {
-    jedis.rpush("{|}l1", "1", "2", "3", "4");
-    jedis.rpush("{|}l2", "5", "6", "7");
+    // Hash-tag the per-test prefix so the source and destination share a cluster slot.
+    String l1 = keys.key("{%test%}:l1");
+    String l2 = keys.key("{%test%}:l2");
+
+    jedis.rpush(l1, "1", "2", "3", "4");
+    jedis.rpush(l2, "5", "6", "7");
     assertEquals(Arrays.asList("2", "1"),
-        jedis.lmovem("{|}l1", "{|}l2", ListDirection.LEFT, ListDirection.LEFT,
+        jedis.lmovem(l1, l2, ListDirection.LEFT, ListDirection.LEFT,
             LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO)));
-    assertEquals(Arrays.asList("2", "1", "5", "6", "7"), jedis.lrange("{|}l2", 0, -1));
+    assertEquals(Arrays.asList("2", "1", "5", "6", "7"), jedis.lrange(l2, 0, -1));
 
     // EXACTLY that cannot be satisfied returns null and leaves the source untouched.
-    jedis.rpush("{|}e1", "1", "2");
-    assertNull(jedis.lmovem("{|}e1", "{|}e2", ListDirection.LEFT, ListDirection.LEFT,
+    String e1 = keys.key("{%test%}:e1");
+    jedis.rpush(e1, "1", "2");
+    assertNull(jedis.lmovem(e1, keys.key("{%test%}:e2"), ListDirection.LEFT, ListDirection.LEFT,
         LMoveMParams.lMoveMParams().exactly(3, ListMoveOrder.BULK)));
-    assertEquals(Arrays.asList("1", "2"), jedis.lrange("{|}e1", 0, -1));
+    assertEquals(Arrays.asList("1", "2"), jedis.lrange(e1, 0, -1));
   }
 
   @Test
   @Override
   @EnabledOnCommand("BLMOVEM")
   public void blmovem() {
+    // Hash-tag the per-test prefix so the source and destination share a cluster slot.
+    String src = keys.key("{%test%}:src");
+    String dst = keys.key("{%test%}:dst");
+
     // Source already populated: returns immediately with a single element.
-    jedis.rpush("{|}foo", "1", "2");
+    jedis.rpush(src, "1", "2");
     assertEquals(Collections.singletonList("1"),
-        jedis.blmovem("{|}foo", "{|}bar", ListDirection.LEFT, ListDirection.RIGHT, 1));
-    assertEquals(Collections.singletonList("1"), jedis.lrange("{|}bar", 0, -1));
+        jedis.blmovem(src, dst, ListDirection.LEFT, ListDirection.RIGHT, 1));
+    assertEquals(Collections.singletonList("1"), jedis.lrange(dst, 0, -1));
 
     // Empty source times out and returns null.
-    assertNull(jedis.blmovem("{|}empty", "{|}dst", ListDirection.LEFT, ListDirection.RIGHT, 0.5));
+    assertNull(jedis.blmovem(keys.key("{%test%}:empty"), dst, ListDirection.LEFT,
+        ListDirection.RIGHT, 0.5));
   }
 
   @Test
   @Override
   @EnabledOnCommand("BLMOVEM")
   public void blmovemWithParams() {
-    jedis.rpush("{|}foo", "1", "2", "3");
+    // Hash-tag the per-test prefix so the source and destination share a cluster slot.
+    String src = keys.key("{%test%}:src");
+    String dst = keys.key("{%test%}:dst");
+
+    jedis.rpush(src, "1", "2", "3");
     assertEquals(Arrays.asList("1", "2"),
-        jedis.blmovem("{|}foo", "{|}bar", ListDirection.LEFT, ListDirection.RIGHT, 1,
+        jedis.blmovem(src, dst, ListDirection.LEFT, ListDirection.RIGHT, 1,
             LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
-    assertEquals(Arrays.asList("1", "2"), jedis.lrange("{|}bar", 0, -1));
+    assertEquals(Arrays.asList("1", "2"), jedis.lrange(dst, 0, -1));
 
     // Empty source times out and returns null.
-    assertNull(jedis.blmovem("{|}empty", "{|}dst", ListDirection.LEFT, ListDirection.RIGHT, 0.5,
-        LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO)));
+    assertNull(jedis.blmovem(keys.key("{%test%}:empty"), dst, ListDirection.LEFT,
+        ListDirection.RIGHT, 0.1, LMoveMParams.lMoveMParams().count(2, ListMoveOrder.OBO)));
   }
 
   @Test

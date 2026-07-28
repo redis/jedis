@@ -18,6 +18,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.SDiffCardParams;
 import redis.clients.jedis.params.SUnionCardParams;
 
+import static io.redis.test.utils.RedisVersion.V8_10_0_RC2_STRING;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
@@ -218,7 +219,7 @@ public class ClusterSetCommandsTest extends SetCommandsTestBase {
 
   @Test
   @Override
-  @SinceRedisVersion("8.9.241")
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
   public void sunioncard() {
     jedis.sadd("foo{.}", "a", "b", "c");
     jedis.sadd("bar{.}", "c", "d");
@@ -239,7 +240,7 @@ public class ClusterSetCommandsTest extends SetCommandsTestBase {
 
   @Test
   @Override
-  @SinceRedisVersion("8.9.241")
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
   public void sunioncardWrongTypeKey() {
     jedis.sadd("foo{.}", "a");
     jedis.set("strkey{.}", "value");
@@ -248,7 +249,7 @@ public class ClusterSetCommandsTest extends SetCommandsTestBase {
 
   @Test
   @Override
-  @SinceRedisVersion("8.9.241")
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
   public void sdiffcard() {
     jedis.sadd("foo{.}", "x", "a", "b", "c");
     jedis.sadd("bar{.}", "c");

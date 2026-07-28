@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.unified;
 
+import static io.redis.test.utils.RedisVersion.V8_10_0_RC2_STRING;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -474,7 +475,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
-  @SinceRedisVersion("8.9.241")
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sunioncard() {
     jedis.sadd("foo", "a", "b", "c");
@@ -503,7 +504,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
-  @SinceRedisVersion("8.9.241")
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sunioncardWrongTypeKey() {
     jedis.sadd("foo", "a");
@@ -594,7 +595,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
-  @SinceRedisVersion("8.9.241")
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void sdiffcard() {
     jedis.sadd("foo", "x", "a", "b", "c");

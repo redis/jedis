@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.commandobjects;
 
+import static io.redis.test.utils.RedisVersion.V8_10_0_RC2_STRING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.contains;
@@ -268,7 +269,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
-  @SinceRedisVersion("8.9.241")
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSunioncard() {
     String key1 = "testSetUnionCard1";
@@ -304,7 +305,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
-  @SinceRedisVersion("8.9.241")
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSdiffcard() {
     String key1 = "testSetDiffCard1";

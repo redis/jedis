@@ -61,7 +61,7 @@ public class SentineledConnectionProviderTest {
 
       try (SentineledConnectionProvider provider = new SentineledConnectionProvider(MASTER_NAME,
           DefaultJedisClientConfig.builder().timeoutMillis(1000).password("foobared").database(2).build(),
-          sentinels, DefaultJedisClientConfig.builder().build())) {
+          sentinels, DefaultJedisClientConfig.builder().serverDefaultProtocol().build())) {
 
         provider.getConnection().close();
       }
@@ -80,7 +80,7 @@ public class SentineledConnectionProviderTest {
 
     try (SentineledConnectionProvider sut = new SentineledConnectionProvider(MASTER_NAME,
             primary.getClientConfigBuilder().build(), config, sentinels,
-            DefaultJedisClientConfig.builder().build())) {
+            DefaultJedisClientConfig.builder().serverDefaultProtocol().build())) {
 
       HostAndPort resolvedPrimary = sut.getCurrentMaster();
       ConnectionPool pool = ReflectionTestUtil.getField(sut,"pool");
@@ -110,7 +110,7 @@ public class SentineledConnectionProviderTest {
 
     try (SentineledConnectionProvider sut = new SentineledConnectionProvider(MASTER_NAME,
             primary.getClientConfigBuilder().build(), config, sentinels,
-            DefaultJedisClientConfig.builder().build())) {
+            DefaultJedisClientConfig.builder().serverDefaultProtocol().build())) {
 
       HostAndPort resolvedPrimary = sut.getCurrentMaster();
       ConnectionPool pool = ReflectionTestUtil.getField(sut,"pool");
@@ -137,7 +137,8 @@ public class SentineledConnectionProviderTest {
     wrongSentinels.add(new HostAndPort("localhost", 65431));
     assertThrows(JedisConnectionException.class, () -> {
       try (SentineledConnectionProvider provider = new SentineledConnectionProvider(MASTER_NAME,
-          DefaultJedisClientConfig.builder().build(), wrongSentinels, DefaultJedisClientConfig.builder().build())) {
+          DefaultJedisClientConfig.builder().build(), wrongSentinels,
+          DefaultJedisClientConfig.builder().serverDefaultProtocol().build())) {
       }
     });
   }
@@ -147,7 +148,8 @@ public class SentineledConnectionProviderTest {
     final String wrongMasterName = "wrongMasterName";
     assertThrows(JedisException.class, () -> {
       try (SentineledConnectionProvider provider = new SentineledConnectionProvider(wrongMasterName,
-          DefaultJedisClientConfig.builder().build(), sentinels, DefaultJedisClientConfig.builder().build())) {
+          DefaultJedisClientConfig.builder().build(), sentinels,
+          DefaultJedisClientConfig.builder().serverDefaultProtocol().build())) {
       }
     });
   }

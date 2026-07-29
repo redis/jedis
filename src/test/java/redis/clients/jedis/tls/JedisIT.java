@@ -21,7 +21,8 @@ public class JedisIT extends JedisTlsTestBase {
 
   @Test
   public void connectWithSsl() {
-    try (Jedis jedis = new Jedis(endpoint.getHost(), endpoint.getPort(), true)) {
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
+        DefaultJedisClientConfig.builder().serverDefaultProtocol().ssl(true).build())) {
       jedis.auth(endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }
@@ -42,6 +43,11 @@ public class JedisIT extends JedisTlsTestBase {
       @Override
       public boolean isSsl() {
         return true;
+      }
+
+      @Override
+      public boolean isAutoNegotiateProtocol() {
+        return false;
       }
     })) {
       jedis.auth(endpoint.getPassword());
@@ -79,8 +85,8 @@ public class JedisIT extends JedisTlsTestBase {
   @Test
   public void connectWrongHost() {
     // Connection with hostname mismatch should fail
-    assertThrows(JedisConnectionException.class,
-      () -> new Jedis(wrongHostEndpoint.getHost(), wrongHostEndpoint.getPort(), true));
+    assertThrows(JedisConnectionException.class, () -> new Jedis(wrongHostEndpoint.getHostAndPort(),
+        DefaultJedisClientConfig.builder().serverDefaultProtocol().ssl(true).build()));
 
     // Same test using URI
     assertThrows(JedisConnectionException.class, () -> new Jedis(wrongHostEndpoint.getURI()));
@@ -94,7 +100,7 @@ public class JedisIT extends JedisTlsTestBase {
   public void connectWrongHostWithSslParameters() {
     // Custom SSLParameters without endpoint identification allows connection despite hostname
     // mismatch
-    JedisClientConfig config = DefaultJedisClientConfig.builder().ssl(true)
+    JedisClientConfig config = DefaultJedisClientConfig.builder().serverDefaultProtocol().ssl(true)
         .sslParameters(new SSLParameters()).user(wrongHostEndpoint.getUsername())
         .password(wrongHostEndpoint.getPassword()).build();
     try (

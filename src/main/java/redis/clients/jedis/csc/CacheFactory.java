@@ -3,6 +3,7 @@ package redis.clients.jedis.csc;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
+import java.util.List;
 
 import redis.clients.jedis.exceptions.JedisCacheException;
 
@@ -13,7 +14,8 @@ public final class CacheFactory {
             if (config.getCacheable() == null) {
                 throw new JedisCacheException("Cacheable is required to create the default cache!");
             }
-            return new DefaultCache(config.getMaxSize(), config.getCacheable(), getEvictionPolicy(config));
+            return new DefaultCache(config.getMaxSize(), config.getCacheable(), getEvictionPolicy(config),
+                    config.isBroadcastMode(), config.getPrefixes(), config.noloop());
         }
         return instantiateCustomCache(config);
     }
@@ -21,6 +23,16 @@ public final class CacheFactory {
     private static Cache instantiateCustomCache(CacheConfig config) {
         try {
             if (config.getCacheable() != null) {
+                Constructor ctorWithTrackingNoLoop = findConstructorWithTrackingNoLoop(config.getCacheClass());
+                if (ctorWithTrackingNoLoop != null) {
+                    return (Cache) ctorWithTrackingNoLoop.newInstance(config.getMaxSize(), getEvictionPolicy(config),
+                            config.getCacheable(), config.isBroadcastMode(), config.getPrefixes(), config.noloop());
+                }
+                Constructor ctorWithTracking = findConstructorWithTracking(config.getCacheClass());
+                if (ctorWithTracking != null) {
+                    return (Cache) ctorWithTracking.newInstance(config.getMaxSize(), getEvictionPolicy(config),
+                            config.getCacheable(), config.isBroadcastMode(), config.getPrefixes());
+                }
                 Constructor ctorWithCacheable = findConstructorWithCacheable(config.getCacheClass());
                 if (ctorWithCacheable != null) {
                     return (Cache) ctorWithCacheable.newInstance(config.getMaxSize(), getEvictionPolicy(config), config.getCacheable());
@@ -37,6 +49,20 @@ public final class CacheFactory {
     private static Constructor findConstructorWithCacheable(Class customCacheType) {
         return Arrays.stream(customCacheType.getConstructors())
                 .filter(ctor -> Arrays.equals(ctor.getParameterTypes(), new Class[] { int.class, EvictionPolicy.class, Cacheable.class }))
+                .findFirst().orElse(null);
+    }
+
+    private static Constructor findConstructorWithTracking(Class customCacheType) {
+        return Arrays.stream(customCacheType.getConstructors())
+                .filter(ctor -> Arrays.equals(ctor.getParameterTypes(),
+                        new Class[] { int.class, EvictionPolicy.class, Cacheable.class, boolean.class, List.class }))
+                .findFirst().orElse(null);
+    }
+
+    private static Constructor findConstructorWithTrackingNoLoop(Class customCacheType) {
+        return Arrays.stream(customCacheType.getConstructors())
+                .filter(ctor -> Arrays.equals(ctor.getParameterTypes(),
+                        new Class[] { int.class, EvictionPolicy.class, Cacheable.class, boolean.class, List.class, boolean.class }))
                 .findFirst().orElse(null);
     }
 

@@ -1,6 +1,7 @@
 package redis.clients.jedis.csc;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -110,4 +111,32 @@ public interface Cache {
      * @return The compatibility of cache against different Redis versions
      */
     boolean compatibilityMode();
+
+    /**
+     * @return Whether the connection that uses this cache should enable BCAST tracking mode.
+     * When {@code true}, the server broadcasts invalidations for any key matching one of the
+     * {@link #getPrefixes() configured prefixes} (or for all keys if no prefixes are set),
+     * instead of tracking the individual keys this connection has read.
+     */
+    default boolean isBroadcastMode() {
+        return false;
+    }
+
+    /**
+     * @return The list of key prefixes to subscribe to when {@link #isBroadcastMode()} is enabled.
+     * Never {@code null}. An empty list means BCAST is enabled without any PREFIX filter.
+     */
+    default List<String> getPrefixes() {
+        return Collections.emptyList();
+    }
+
+    /**
+     * @return Whether the {@code NOLOOP} flag should be sent with {@code CLIENT TRACKING}.
+     * When {@code true}, the server suppresses invalidation messages back to this connection
+     * for keys that this same connection itself modifies. Applicable in both default and
+     * {@link #isBroadcastMode() BCAST} modes.
+     */
+    default boolean isNoLoop() {
+        return false;
+    }
 }

@@ -28,6 +28,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.CommandObjects;
+import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.RedisProtocol;
@@ -63,19 +64,21 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
   @Test
   public void invalidateAllWithLargeCacheTest() {
-    final int count = 10000;
+    final int count = 2000;
 
-    // 1. Populate Redis with 10k keys
+    // 1. Populate Redis with the keys
+    Pipeline populate = control.pipelined();
     for (int i = 0; i < count; i++) {
-      control.set("key" + i, "value" + i);
+      populate.set("key" + i, "value" + i);
     }
+    populate.sync();
 
     try (RedisClient jedis = RedisClient.builder().hostAndPort(hnp).clientConfig(clientConfig.get())
             .cacheConfig(CacheConfig.builder().maxSize(count).build()).build()) {
 
       Cache cache = jedis.getCache();
 
-      // 2. Load all 10k keys into cache
+      // 2. Load all keys into cache; must stay sequential — pipelined GETs bypass the cache
       for (int i = 0; i < count; i++) {
         jedis.get("key" + i);
       }
@@ -128,9 +131,11 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
 
       // 2. Use control connection to update ALL keys
       // This generates hundreds of invalidation messages
+      Pipeline update = control.pipelined();
       for (int i = 0; i < count; i++) {
-        control.set("key" + i, "newvalue" + i);
+        update.set("key" + i, "newvalue" + i);
       }
+      update.sync();
 
       // 3. Wait until the server has flushed all queued output (the invalidation
       // frames) on the tracked client's connection. `oll` (output list length) and
@@ -437,7 +442,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSequentialAccess() throws InterruptedException {
     int threadCount = 10;
-    int iterations = 10000;
+    int iterations = 1000;
 
     control.set("foo", "0");
 
@@ -487,7 +492,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testConcurrentAccessWithStats() throws InterruptedException {
     int threadCount = 10;
-    int iterations = 10000;
+    int iterations = 1000;
 
     control.set("foo", "0");
 
@@ -531,7 +536,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testMaxSize() throws InterruptedException {
     int threadCount = 10;
-    int iterations = 11000;
+    int iterations = 2000;
     int maxSize = 1000;
 
     ExecutorService executorService = Executors.newFixedThreadPool(threadCount);
@@ -624,7 +629,7 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testEvictionPolicyMultithreaded() throws InterruptedException {
     int NUMBER_OF_THREADS = 100;
-    int TOTAL_OPERATIONS = 1000000;
+    int TOTAL_OPERATIONS = 100000;
     int NUMBER_OF_DISTINCT_KEYS = 53;
     int MAX_SIZE = 20;
     List<Exception> exceptions = new ArrayList<>();

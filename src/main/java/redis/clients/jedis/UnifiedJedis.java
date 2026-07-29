@@ -1470,6 +1470,46 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<String> lmovem(String srcKey, String dstKey, ListDirection from, ListDirection to) {
+    return executeCommand(commandObjects.lmovem(srcKey, dstKey, from, to));
+  }
+
+  @Override
+  public List<String> lmovem(String srcKey, String dstKey, ListDirection from, ListDirection to, LMoveMParams params) {
+    return executeCommand(commandObjects.lmovem(srcKey, dstKey, from, to, params));
+  }
+
+  @Override
+  public List<String> blmovem(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout) {
+    return executeCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public List<String> blmovem(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout, LMoveMParams params) {
+    return executeCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout, params));
+  }
+
+  @Override
+  public List<byte[]> lmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
+    return executeCommand(commandObjects.lmovem(srcKey, dstKey, from, to));
+  }
+
+  @Override
+  public List<byte[]> lmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, LMoveMParams params) {
+    return executeCommand(commandObjects.lmovem(srcKey, dstKey, from, to, params));
+  }
+
+  @Override
+  public List<byte[]> blmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
+    return executeCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public List<byte[]> blmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout, LMoveMParams params) {
+    return executeCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout, params));
+  }
+
+  @Override
   public KeyValue<String, List<String>> lmpop(ListDirection direction, String... keys) {
     return executeCommand(commandObjects.lmpop(direction, keys));
   }
@@ -2014,6 +2054,26 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long sdiffcard(String... keys) {
+    return executeCommand(commandObjects.sdiffcard(keys));
+  }
+
+  @Override
+  public long sdiffcard(List<String> keys) {
+    return executeCommand(commandObjects.sdiffcard(keys));
+  }
+
+  @Override
+  public long sdiffcard(String key1, String key2, SDiffCardParams params) {
+    return executeCommand(commandObjects.sdiffcard(key1, key2, params));
+  }
+
+  @Override
+  public long sdiffcard(List<String> keys, SDiffCardParams params) {
+    return executeCommand(commandObjects.sdiffcard(keys, params));
+  }
+
+  @Override
   public Set<String> sinter(String... keys) {
     return executeCommand(commandObjects.sinter(keys));
   }
@@ -2044,6 +2104,26 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long sunioncard(String... keys) {
+    return executeCommand(commandObjects.sunioncard(keys));
+  }
+
+  @Override
+  public long sunioncard(List<String> keys) {
+    return executeCommand(commandObjects.sunioncard(keys));
+  }
+
+  @Override
+  public long sunioncard(String key1, String key2, SUnionCardParams params) {
+    return executeCommand(commandObjects.sunioncard(key1, key2, params));
+  }
+
+  @Override
+  public long sunioncard(List<String> keys, SUnionCardParams params) {
+    return executeCommand(commandObjects.sunioncard(keys, params));
+  }
+
+  @Override
   public long smove(String srckey, String dstkey, String member) {
     return executeCommand(commandObjects.smove(srckey, dstkey, member));
   }
@@ -2056,6 +2136,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long sdiffstore(byte[] dstkey, byte[]... keys) {
     return executeCommand(commandObjects.sdiffstore(dstkey, keys));
+  }
+
+  @Override
+  public long sdiffcard(byte[]... keys) {
+    return executeCommand(commandObjects.sdiffcard(keys));
+  }
+
+  @Override
+  public long sdiffcard(byte[] key1, byte[] key2, SDiffCardParams params) {
+    return executeCommand(commandObjects.sdiffcard(key1, key2, params));
+  }
+
+  @Override
+  public long sdiffcard(byte[][] keys, SDiffCardParams params) {
+    return executeCommand(commandObjects.sdiffcard(keys, params));
   }
 
   @Override
@@ -2086,6 +2181,21 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long sunionstore(byte[] dstkey, byte[]... keys) {
     return executeCommand(commandObjects.sunionstore(dstkey, keys));
+  }
+
+  @Override
+  public long sunioncard(byte[]... keys) {
+    return executeCommand(commandObjects.sunioncard(keys));
+  }
+
+  @Override
+  public long sunioncard(byte[] key1, byte[] key2, SUnionCardParams params) {
+    return executeCommand(commandObjects.sunioncard(key1, key2, params));
+  }
+
+  @Override
+  public long sunioncard(byte[][] keys, SUnionCardParams params) {
+    return executeCommand(commandObjects.sunioncard(keys, params));
   }
 
   @Override
@@ -5459,6 +5569,36 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<TSElement> tsRead(String key, long timestamp) {
+    return executeCommand(commandObjects.tsRead(key, timestamp));
+  }
+
+  @Override
+  public List<TSElement> tsRead(String key, TSReadParams readParams) {
+    return executeCommand(commandObjects.tsRead(key, readParams));
+  }
+
+  @Override
+  public List<TSElement> tsNRange(String[] keys, long fromTimestamp, long toTimestamp) {
+    return executeCommand(commandObjects.tsNRange(keys, fromTimestamp, toTimestamp));
+  }
+
+  @Override
+  public List<TSElement> tsNRange(String[] keys, TSNRangeParams nrangeParams) {
+    return executeCommand(commandObjects.tsNRange(keys, nrangeParams));
+  }
+
+  @Override
+  public List<TSElement> tsNRevRange(String[] keys, long fromTimestamp, long toTimestamp) {
+    return executeCommand(commandObjects.tsNRevRange(keys, fromTimestamp, toTimestamp));
+  }
+
+  @Override
+  public List<TSElement> tsNRevRange(String[] keys, TSNRangeParams nrangeParams) {
+    return executeCommand(commandObjects.tsNRevRange(keys, nrangeParams));
+  }
+
+  @Override
   public Map<String, TSMRangeElements> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return executeCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }
@@ -5512,6 +5652,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public List<String> tsQueryIndex(String... filters) {
     return executeCommand(commandObjects.tsQueryIndex(filters));
+  }
+
+  @Override
+  public List<String> tsQueryLabels(String... filters) {
+    return executeCommand(commandObjects.tsQueryLabels(filters));
+  }
+
+  @Override
+  public List<String> tsQueryLabelValues(String label, String... filters) {
+    return executeCommand(commandObjects.tsQueryLabelValues(label, filters));
   }
 
   @Override

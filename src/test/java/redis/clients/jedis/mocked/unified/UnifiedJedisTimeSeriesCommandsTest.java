@@ -507,6 +507,39 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
   }
 
   @Test
+  public void testTsQueryLabels() {
+    String[] filters = { "type=sensor" };
+    List<String> expectedResponse = Arrays.asList("location", "sensortype", "type");
+
+    when(commandObjects.tsQueryLabels(filters)).thenReturn(listStringCommandObject);
+    when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
+
+    List<String> result = jedis.tsQueryLabels(filters);
+
+    assertThat(result, sameInstance(expectedResponse));
+
+    verify(commandExecutor).executeCommand(listStringCommandObject);
+    verify(commandObjects).tsQueryLabels(filters);
+  }
+
+  @Test
+  public void testTsQueryLabelValues() {
+    String label = "location";
+    String[] filters = { "type=sensor" };
+    List<String> expectedResponse = Arrays.asList("LivingRoom", "Kitchen", "BedRoom");
+
+    when(commandObjects.tsQueryLabelValues(label, filters)).thenReturn(listStringCommandObject);
+    when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
+
+    List<String> result = jedis.tsQueryLabelValues(label, filters);
+
+    assertThat(result, sameInstance(expectedResponse));
+
+    verify(commandExecutor).executeCommand(listStringCommandObject);
+    verify(commandObjects).tsQueryLabelValues(label, filters);
+  }
+
+  @Test
   public void testTsRange() {
     String key = "testKey";
     long fromTimestamp = 1582600000000L;
@@ -578,6 +611,112 @@ public class UnifiedJedisTimeSeriesCommandsTest extends UnifiedJedisMockedTestBa
 
     verify(commandExecutor).executeCommand(listTsElementCommandObject);
     verify(commandObjects).tsRevRange(key, rangeParams);
+  }
+
+  @Test
+  public void testTsRead() {
+    String key = "testKey";
+    long timestamp = 0L;
+    List<TSElement> expectedResponse = Arrays.asList(
+        new TSElement(100L, 1.0),
+        new TSElement(200L, 2.0));
+
+    when(commandObjects.tsRead(key, timestamp)).thenReturn(listTsElementCommandObject);
+    when(commandExecutor.executeCommand(listTsElementCommandObject)).thenReturn(expectedResponse);
+
+    List<TSElement> result = jedis.tsRead(key, timestamp);
+
+    assertEquals(expectedResponse, result);
+
+    verify(commandExecutor).executeCommand(listTsElementCommandObject);
+    verify(commandObjects).tsRead(key, timestamp);
+  }
+
+  @Test
+  public void testTsReadWithParams() {
+    String key = "testKey";
+    TSReadParams readParams = TSReadParams.readParams().timestamp(101L).block(1000L, 1).maxCount(10);
+    List<TSElement> expectedResponse = Collections.singletonList(new TSElement(200L, 2.0));
+
+    when(commandObjects.tsRead(key, readParams)).thenReturn(listTsElementCommandObject);
+    when(commandExecutor.executeCommand(listTsElementCommandObject)).thenReturn(expectedResponse);
+
+    List<TSElement> result = jedis.tsRead(key, readParams);
+
+    assertEquals(expectedResponse, result);
+
+    verify(commandExecutor).executeCommand(listTsElementCommandObject);
+    verify(commandObjects).tsRead(key, readParams);
+  }
+
+  @Test
+  public void testTsNRange() {
+    String[] keys = { "k1", "k2" };
+    long fromTimestamp = 1582600000000L;
+    long toTimestamp = 1582605077000L;
+    List<TSElement> expectedResponse = Collections.singletonList(new TSElement(fromTimestamp, 1.0));
+
+    when(commandObjects.tsNRange(keys, fromTimestamp, toTimestamp)).thenReturn(listTsElementCommandObject);
+    when(commandExecutor.executeCommand(listTsElementCommandObject)).thenReturn(expectedResponse);
+
+    List<TSElement> result = jedis.tsNRange(keys, fromTimestamp, toTimestamp);
+
+    assertEquals(expectedResponse, result);
+
+    verify(commandExecutor).executeCommand(listTsElementCommandObject);
+    verify(commandObjects).tsNRange(keys, fromTimestamp, toTimestamp);
+  }
+
+  @Test
+  public void testTsNRangeWithParams() {
+    String[] keys = { "k1", "k2" };
+    TSNRangeParams params = TSNRangeParams.nrangeParams(1582600000000L, 1582605077000L);
+    List<TSElement> expectedResponse = Collections.singletonList(new TSElement(1582600000000L, 1.0));
+
+    when(commandObjects.tsNRange(keys, params)).thenReturn(listTsElementCommandObject);
+    when(commandExecutor.executeCommand(listTsElementCommandObject)).thenReturn(expectedResponse);
+
+    List<TSElement> result = jedis.tsNRange(keys, params);
+
+    assertEquals(expectedResponse, result);
+
+    verify(commandExecutor).executeCommand(listTsElementCommandObject);
+    verify(commandObjects).tsNRange(keys, params);
+  }
+
+  @Test
+  public void testTsNRevRange() {
+    String[] keys = { "k1", "k2" };
+    long fromTimestamp = 1582600000000L;
+    long toTimestamp = 1582605077000L;
+    List<TSElement> expectedResponse = Collections.singletonList(new TSElement(toTimestamp, 3.0));
+
+    when(commandObjects.tsNRevRange(keys, fromTimestamp, toTimestamp)).thenReturn(listTsElementCommandObject);
+    when(commandExecutor.executeCommand(listTsElementCommandObject)).thenReturn(expectedResponse);
+
+    List<TSElement> result = jedis.tsNRevRange(keys, fromTimestamp, toTimestamp);
+
+    assertEquals(expectedResponse, result);
+
+    verify(commandExecutor).executeCommand(listTsElementCommandObject);
+    verify(commandObjects).tsNRevRange(keys, fromTimestamp, toTimestamp);
+  }
+
+  @Test
+  public void testTsNRevRangeWithParams() {
+    String[] keys = { "k1", "k2" };
+    TSNRangeParams params = TSNRangeParams.nrangeParams(1582600000000L, 1582605077000L);
+    List<TSElement> expectedResponse = Collections.singletonList(new TSElement(1582605077000L, 3.0));
+
+    when(commandObjects.tsNRevRange(keys, params)).thenReturn(listTsElementCommandObject);
+    when(commandExecutor.executeCommand(listTsElementCommandObject)).thenReturn(expectedResponse);
+
+    List<TSElement> result = jedis.tsNRevRange(keys, params);
+
+    assertEquals(expectedResponse, result);
+
+    verify(commandExecutor).executeCommand(listTsElementCommandObject);
+    verify(commandObjects).tsNRevRange(keys, params);
   }
 
 }

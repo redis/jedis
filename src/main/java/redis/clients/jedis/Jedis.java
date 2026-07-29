@@ -2118,6 +2118,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.sunionstore(dstkey, keys));
   }
 
+  @Override
+  public long sunioncard(final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sunioncard(keys));
+  }
+
+  @Override
+  public long sunioncard(final byte[] key1, final byte[] key2, final SUnionCardParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sunioncard(key1, key2, params));
+  }
+
+  @Override
+  public long sunioncard(final byte[][] keys, final SUnionCardParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sunioncard(keys, params));
+  }
+
   /**
    * Return the difference between the Set stored at key1 and all the Sets key2, ..., keyN
    * <p>
@@ -2155,6 +2173,24 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long sdiffstore(final byte[] dstkey, final byte[]... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.sdiffstore(dstkey, keys));
+  }
+
+  @Override
+  public long sdiffcard(final byte[]... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sdiffcard(keys));
+  }
+
+  @Override
+  public long sdiffcard(final byte[] key1, final byte[] key2, final SDiffCardParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sdiffcard(key1, key2, params));
+  }
+
+  @Override
+  public long sdiffcard(final byte[][] keys, final SDiffCardParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sdiffcard(keys, params));
   }
 
   /**
@@ -2652,6 +2688,30 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public byte[] blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public List<byte[]> lmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.lmovem(srcKey, dstKey, from, to));
+  }
+
+  @Override
+  public List<byte[]> lmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, LMoveMParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.lmovem(srcKey, dstKey, from, to, params));
+  }
+
+  @Override
+  public List<byte[]> blmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public List<byte[]> blmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout, LMoveMParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout, params));
   }
 
   /**
@@ -6924,6 +6984,30 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.sunionstore(dstkey, keys));
   }
 
+  @Override
+  public long sunioncard(final String... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sunioncard(keys));
+  }
+
+  @Override
+  public long sunioncard(final List<String> keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sunioncard(keys));
+  }
+
+  @Override
+  public long sunioncard(final String key1, final String key2, final SUnionCardParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sunioncard(key1, key2, params));
+  }
+
+  @Override
+  public long sunioncard(final List<String> keys, final SUnionCardParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sunioncard(keys, params));
+  }
+
   /**
    * Return the difference between the Set stored at key1 and all the Sets key2, ..., keyN
    * <p>
@@ -6961,6 +7045,30 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long sdiffstore(final String dstkey, final String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.sdiffstore(dstkey, keys));
+  }
+
+  @Override
+  public long sdiffcard(final String... keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sdiffcard(keys));
+  }
+
+  @Override
+  public long sdiffcard(final List<String> keys) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sdiffcard(keys));
+  }
+
+  @Override
+  public long sdiffcard(final String key1, final String key2, final SDiffCardParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sdiffcard(key1, key2, params));
+  }
+
+  @Override
+  public long sdiffcard(final List<String> keys, final SDiffCardParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sdiffcard(keys, params));
   }
 
   /**
@@ -7484,6 +7592,34 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       final ListDirection to, final double timeout) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public List<String> lmovem(final String srcKey, final String dstKey, final ListDirection from,
+      final ListDirection to) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.lmovem(srcKey, dstKey, from, to));
+  }
+
+  @Override
+  public List<String> lmovem(final String srcKey, final String dstKey, final ListDirection from,
+      final ListDirection to, final LMoveMParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.lmovem(srcKey, dstKey, from, to, params));
+  }
+
+  @Override
+  public List<String> blmovem(final String srcKey, final String dstKey, final ListDirection from,
+      final ListDirection to, final double timeout) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public List<String> blmovem(final String srcKey, final String dstKey, final ListDirection from,
+      final ListDirection to, final double timeout, final LMoveMParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout, params));
   }
 
   /**

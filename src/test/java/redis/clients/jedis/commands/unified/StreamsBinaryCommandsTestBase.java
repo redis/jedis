@@ -18,6 +18,7 @@ import redis.clients.jedis.params.XReadParams;
 import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.resps.StreamEntryBinary;
 import redis.clients.jedis.resps.StreamEntryDeletionResult;
+import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,10 +44,12 @@ import static redis.clients.jedis.util.StreamEntryBinaryListMatcher.equalsStream
 @Tag("integration")
 public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
-  protected static final byte[] STREAM_KEY_1 = "{binary-stream}-1".getBytes();
-  protected static final byte[] STREAM_KEY_2 = "{binary-stream}-2".getBytes();
-  protected static final byte[] GROUP_NAME = "group-1".getBytes();
-  protected static final byte[] CONSUMER_NAME = "consumer-1".getBytes();
+  // Registry-namespaced per test in setUpTestStream(); the hash-tagged prefix keeps both
+  // streams in one cluster slot. Names are kept constant-style to leave call sites untouched.
+  protected byte[] STREAM_KEY_1;
+  protected byte[] STREAM_KEY_2;
+  protected byte[] GROUP_NAME;
+  protected byte[] CONSUMER_NAME;
 
   protected static final byte[] FIELD_KEY_1 = "binary-field-1".getBytes();
   // Test with invalid UTF-8 characters
@@ -103,6 +106,10 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
 
   @BeforeEach
   public void setUpTestStream() {
+    STREAM_KEY_1 = keys.bKey("{%test%}:binary-stream-1");
+    STREAM_KEY_2 = keys.bKey("{%test%}:binary-stream-2");
+    GROUP_NAME = SafeEncoder.encode(keys.name("group-1"));
+    CONSUMER_NAME = SafeEncoder.encode(keys.name("consumer-1"));
     setUpTestStream(StreamEntryID.XGROUP_LAST_ENTRY.toString().getBytes());
   }
 

@@ -38,10 +38,10 @@ import static org.junit.jupiter.api.Assertions.fail;
 @Tag("integration")
 public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
-  protected static final String STREAM_KEY_1 = "{stream}-1";
-  protected static final String STREAM_KEY_2 = "{stream}-2";
-  protected static final String GROUP_NAME = "group-1";
-  protected static final String CONSUMER_NAME = "consumer-1";
+  protected String STREAM_KEY_1;
+  protected String STREAM_KEY_2;
+  protected String GROUP_NAME;
+  protected String CONSUMER_NAME;
 
   protected static final String FIELD_KEY_1 = "field-1";
   protected static final String VALUE_1 = "value-1";
@@ -70,6 +70,10 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
   @BeforeEach
   public void setUp() {
+    STREAM_KEY_1 = keys.key("{%test%}:stream-1");
+    STREAM_KEY_2 = keys.key("{%test%}:stream-2");
+    GROUP_NAME = keys.name("group-1");
+    CONSUMER_NAME = keys.name("consumer-1");
     setUpTestStream();
   }
 

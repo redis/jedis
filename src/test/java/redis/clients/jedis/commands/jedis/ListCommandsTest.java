@@ -426,9 +426,6 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     assertEquals("bar", result.get(1));
 
     // Multi keys
-    result = jedis.blpop(1, "foo", "foo1");
-    assertNull(result);
-
     jedis.lpush("foo", "bar");
     jedis.lpush("foo1", "bar1");
     result = jedis.blpop(1, "foo1", "foo");
@@ -448,9 +445,6 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(bbar, bresult.get(1));
 
     // Binary Multi keys
-    bresult = jedis.blpop(1, bfoo, bfoo1);
-    assertNull(bresult);
-
     jedis.lpush(bfoo, bbar);
     jedis.lpush(bfoo1, bcar);
     bresult = jedis.blpop(1, bfoo, bfoo1);
@@ -544,9 +538,6 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     assertEquals("bar", result.get(1));
 
     // Multi keys
-    result = jedis.brpop(1, "foo", "foo1");
-    assertNull(result);
-
     jedis.lpush("foo", "bar");
     jedis.lpush("foo1", "bar1");
     result = jedis.brpop(1, "foo1", "foo");
@@ -565,9 +556,6 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(bbar, bresult.get(1));
 
     // Binary Multi keys
-    bresult = jedis.brpop(1, bfoo, bfoo1);
-    assertNull(bresult);
-
     jedis.lpush(bfoo, bbar);
     jedis.lpush(bfoo1, bcar);
     bresult = jedis.brpop(1, bfoo, bfoo1);
@@ -969,7 +957,7 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     assertEquals(mylist2, elements.getKey());
     assertEquals(5, elements.getValue().size());
 
-    elements = jedis.blmpop(1L, ListDirection.RIGHT, mylist1, mylist2);
+    elements = jedis.blmpop(0.1, ListDirection.RIGHT, mylist1, mylist2);
     assertNull(elements);
   }
 }

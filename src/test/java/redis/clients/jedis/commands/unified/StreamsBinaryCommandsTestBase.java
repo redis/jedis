@@ -2,6 +2,7 @@ package redis.clients.jedis.commands.unified;
 
 import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.utils.RedisVersion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
@@ -161,7 +162,7 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   }
 
   @Test
-  @SinceRedisVersion("8.10.0")
+  @SinceRedisVersion(RedisVersion.V8_10_0_RC2_STRING)
   public void xreadBinaryMaxCountAndMaxSize() {
 
     stream1Entries.forEach(
@@ -246,7 +247,7 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   }
 
   @Test
-  @SinceRedisVersion("8.10.0")
+  @SinceRedisVersion(RedisVersion.V8_10_0_RC2_STRING)
   public void xreadGroupBinaryMaxCountAndMaxSize() {
 
     stream1Entries.forEach(

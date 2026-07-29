@@ -21,6 +21,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
+import static io.redis.test.utils.RedisVersion.V8_10_0_RC2_STRING;
 import static io.redis.test.utils.RedisVersion.V8_4_0_STRING;
 import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -1141,7 +1142,7 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   }
 
   @Test
-  @SinceRedisVersion("8.10.0")
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
   public void xreadMaxCountCapsCumulativeReplyWhileCountIsPerStream() {
     populateTestStreamWithValues(STREAM_KEY_1, 4, HASH_1);
     populateTestStreamWithValues(STREAM_KEY_2, 4, HASH_2);
@@ -1162,7 +1163,7 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   }
 
   @Test
-  @SinceRedisVersion("8.10.0")
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
   public void xreadMaxCountAloneFillsStreamsInCallerOrder() {
     populateTestStreamWithValues(STREAM_KEY_1, 4, HASH_1);
     populateTestStreamWithValues(STREAM_KEY_2, 4, HASH_2);
@@ -1180,7 +1181,7 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   }
 
   @Test
-  @SinceRedisVersion("8.10.0")
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
   public void xreadMaxSizeStillReturnsOversizedFirstEntry() {
     char[] chars = new char[5000];
     Arrays.fill(chars, 'x');
@@ -1200,7 +1201,7 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   }
 
   @Test
-  @SinceRedisVersion("8.10.0")
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
   public void xreadTighterOfMaxCountAndMaxSizeWins() {
     populateTestStreamWithValues(STREAM_KEY_1, 4, HASH_1);
 
@@ -1212,7 +1213,7 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   }
 
   @Test
-  @SinceRedisVersion("8.10.0")
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
   public void xreadMaxCountAndMaxSizeServerErrorsPropagate() {
     populateTestStreamWithValues(STREAM_KEY_1, 1, HASH_1);
     Map<String, StreamEntryID> streams = singletonMap(STREAM_KEY_1, new StreamEntryID("0-0"));
@@ -1232,7 +1233,7 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   }
 
   @Test
-  @SinceRedisVersion("8.10.0")
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
   public void xreadGroupMaxCountCapsReplyWithoutConsumingSkippedEntries() {
     // groups were created at last-entry in setUp; these are all new (undelivered) entries
     populateTestStreamWithValues(STREAM_KEY_1, 3, HASH_1);

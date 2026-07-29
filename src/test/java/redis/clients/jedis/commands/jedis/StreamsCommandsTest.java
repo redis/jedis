@@ -634,7 +634,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
-  @SinceRedisVersion("8.10.0")
+  @SinceRedisVersion(RedisVersion.V8_10_0_RC2_STRING)
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void xreadWithMaxCountAndMaxSize() {
 

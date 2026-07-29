@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.unified.search;
 
+import static io.redis.test.utils.RedisVersion.V8_10_0_RC2_STRING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;
@@ -415,7 +416,7 @@ public abstract class SearchCommandsTestBase extends UnifiedJedisCommandsTestBas
   }
 
   @Test
-  @SinceRedisVersion("8.10.0")
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
   public void aliasList() {
     Schema sc = new Schema().addTextField("field1", 1.0);
     assertEquals("OK", jedis.ftCreate(INDEX, IndexOptions.defaultOptions(), sc));

@@ -279,25 +279,25 @@ public interface StreamCommands {
   List<StreamConsumerInfo> xinfoConsumers2(String key, String group);
 
   /**
-   * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
+   * XREAD [COUNT count] [MAXCOUNT maxcount] [MAXSIZE maxsize] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
    */
   List<Map.Entry<String, List<StreamEntry>>> xread(XReadParams xReadParams,
       Map<String, StreamEntryID> streams);
 
   /**
-   * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
+   * XREAD [COUNT count] [MAXCOUNT maxcount] [MAXSIZE maxsize] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
    */
   Map<String, List<StreamEntry>> xreadAsMap(XReadParams xReadParams,
       Map<String, StreamEntryID> streams);
 
   /**
-   * XREADGROUP GROUP group consumer [COUNT count] [BLOCK milliseconds] [NOACK] STREAMS key [key ...] id [id ...]
+   * XREADGROUP GROUP group consumer [COUNT count] [MAXCOUNT maxcount] [MAXSIZE maxsize] [BLOCK milliseconds] [NOACK] STREAMS key [key ...] id [id ...]
    */
   List<Map.Entry<String, List<StreamEntry>>> xreadGroup(String groupName, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);
 
   /**
-   * XREADGROUP GROUP group consumer [COUNT count] [BLOCK milliseconds] [NOACK] STREAMS key [key ...] id [id ...]
+   * XREADGROUP GROUP group consumer [COUNT count] [MAXCOUNT maxcount] [MAXSIZE maxsize] [BLOCK milliseconds] [NOACK] STREAMS key [key ...] id [id ...]
    */
   Map<String, List<StreamEntry>> xreadGroupAsMap(String groupName, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);

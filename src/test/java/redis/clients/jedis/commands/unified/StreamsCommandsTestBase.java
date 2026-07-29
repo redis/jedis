@@ -37,7 +37,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 @Tag("integration")
 public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBase {
-
   protected String STREAM_KEY_1;
   protected String STREAM_KEY_2;
   protected String GROUP_NAME;
@@ -104,8 +103,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
   @Test
   public void xaddBasic() {
-    setUpTestStream();
-
     // Test basic XADD with auto-generated ID
     StreamEntryID id1 = jedis.xadd(STREAM_KEY_1, StreamEntryID.NEW_ENTRY, HASH_1);
     assertNotNull(id1);
@@ -125,8 +122,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
   @Test
   public void xaddWithSpecificId() {
-    setUpTestStream();
-
     // Test XADD with specific ID
     StreamEntryID specificId = new StreamEntryID("1000-0");
     StreamEntryID resultId = jedis.xadd(STREAM_KEY_1, specificId, HASH_1);
@@ -142,8 +137,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
   @Test
   public void xaddWithParams() {
-    setUpTestStream();
-
     // Test XADD with maxLen parameter
     populateTestStreamWithValues(STREAM_KEY_1, 5, HASH_1);
 
@@ -156,8 +149,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
   @Test
   public void xaddErrorCases() {
-    setUpTestStream();
-
     // Test XADD with empty hash should fail
     try {
       Map<String, String> emptyHash = new HashMap<>();
@@ -177,7 +168,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @CsvSource({ "KEEP_REFERENCES,3", "DELETE_REFERENCES,0" })
   @SinceRedisVersion("8.1.240")
   public void xaddWithTrimmingMode(StreamDeletionPolicy trimMode, int expected) {
-    setUpTestStream();
     Map<String, String> map = singletonMap("field", "value");
 
     // Add initial entries to the stream
@@ -210,7 +200,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.1.240")
   public void xaddWithTrimmingModeAcknowledged() {
-    setUpTestStream();
     Map<String, String> map = singletonMap("field", "value");
 
     // Add initial entries to the stream
@@ -252,8 +241,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
   @Test
   public void xtrimBasic() {
-    setUpTestStream();
-
     // Add test entries
     populateTestStreamWithValues(STREAM_KEY_1, 5, HASH_1);
 
@@ -265,8 +252,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
   @Test
   public void xtrimWithParams() {
-    setUpTestStream();
-
     // Add test entries with specific IDs
     populateTestStreamWithValues(STREAM_KEY_1, 5, HASH_1);
 
@@ -284,8 +269,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
   @Test
   public void xtrimApproximate() {
-    setUpTestStream();
-
     // Add many entries
     populateTestStreamWithValues(STREAM_KEY_1, 10, HASH_1);
 
@@ -299,7 +282,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @CsvSource({ "KEEP_REFERENCES,3", "DELETE_REFERENCES,1" })
   @SinceRedisVersion("8.1.240")
   public void xaddWithMinIdTrimmingMode(StreamDeletionPolicy trimMode, int expected) {
-    setUpTestStream();
     Map<String, String> map = singletonMap("field", "value");
 
     // Add initial entries with specific IDs
@@ -335,7 +317,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.1.240")
   public void xaddWithApproximateTrimmingAndTrimmingMode() {
-    setUpTestStream();
     Map<String, String> map = singletonMap("field", "value");
 
     // Add initial entries
@@ -367,7 +348,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.1.240")
   public void xaddWithExactTrimmingAndTrimmingMode() {
-    setUpTestStream();
     Map<String, String> map = singletonMap("field", "value");
 
     // Add initial entries
@@ -399,7 +379,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.1.240")
   public void xaddWithLimitAndTrimmingMode() {
-    setUpTestStream();
     Map<String, String> map = singletonMap("field", "value");
 
     // Add initial entries
@@ -436,8 +415,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
   @Test
   public void xackBasic() {
-    setUpTestStream();
-
     // Add a message to the stream
     StreamEntryID messageId = jedis.xadd(STREAM_KEY_1, StreamEntryID.NEW_ENTRY, HASH_1);
     assertNotNull(messageId);
@@ -459,8 +436,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
   @Test
   public void xackMultipleMessages() {
-    setUpTestStream();
-
     // Add multiple messages
     StreamEntryID id1 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
     StreamEntryID id2 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("2-0"), HASH_2);
@@ -483,8 +458,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
   @Test
   public void xackNonExistentMessage() {
-    setUpTestStream();
-
     // Consumer group already created in setUpTestStream()
     // Test XACK with non-existent message ID
     StreamEntryID nonExistentId = new StreamEntryID("999-0");
@@ -496,8 +469,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
   @Test
   public void xdelBasic() {
-    setUpTestStream();
-
     // Add test entries
     StreamEntryID id1 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
     StreamEntryID id2 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("2-0"), HASH_2);
@@ -511,8 +482,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
   @Test
   public void xdelMultipleEntries() {
-    setUpTestStream();
-
     // Add test entries
     StreamEntryID id1 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
     StreamEntryID id2 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("2-0"), HASH_2);
@@ -527,8 +496,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
   @Test
   public void xdelNonExistentEntries() {
-    setUpTestStream();
-
     // Add one entry
     StreamEntryID id1 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
     assertEquals(1L, jedis.xlen(STREAM_KEY_1));
@@ -542,8 +509,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
 
   @Test
   public void xdelEmptyStream() {
-    setUpTestStream();
-
     // Test XDEL on empty stream
     StreamEntryID nonExistentId = new StreamEntryID("1-0");
     long deleted = jedis.xdel(STREAM_KEY_1, nonExistentId);
@@ -555,8 +520,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.1.240")
   public void xackdelBasic() {
-    setUpTestStream();
-
     // Add a message to the stream
     StreamEntryID messageId = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
     assertNotNull(messageId);
@@ -584,8 +547,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.1.240")
   public void xackdelWithTrimMode() {
-    setUpTestStream();
-
     // Add multiple messages
     StreamEntryID id1 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
     StreamEntryID id2 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("2-0"), HASH_2);
@@ -613,8 +574,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.1.240")
   public void xackdelUnreadMessages() {
-    setUpTestStream();
-
     // Add test entries but don't read them
     StreamEntryID id1 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
 
@@ -632,8 +591,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.1.240")
   public void xackdelMultipleMessages() {
-    setUpTestStream();
-
     // Add multiple messages
     StreamEntryID id1 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
     StreamEntryID id2 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("2-0"), HASH_2);
@@ -666,8 +623,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.7.225")
   public void xnackBasicSilent() {
-    setUpTestStream();
-
     // Add and read a message
     StreamEntryID messageId = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
     Map<String, StreamEntryID> streams = singletonMap(STREAM_KEY_1,
@@ -683,8 +638,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.7.225")
   public void xnackBasicFail() {
-    setUpTestStream();
-
     StreamEntryID messageId = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
     Map<String, StreamEntryID> streams = singletonMap(STREAM_KEY_1,
       StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
@@ -698,8 +651,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.7.225")
   public void xnackBasicFatal() {
-    setUpTestStream();
-
     StreamEntryID messageId = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
     Map<String, StreamEntryID> streams = singletonMap(STREAM_KEY_1,
       StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
@@ -713,8 +664,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.7.225")
   public void xnackMultipleMessages() {
-    setUpTestStream();
-
     StreamEntryID id1 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
     StreamEntryID id2 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("2-0"), HASH_2);
     Map<String, StreamEntryID> streams = singletonMap(STREAM_KEY_1,
@@ -729,8 +678,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.7.225")
   public void xnackNonExistentMessage() {
-    setUpTestStream();
-
     StreamEntryID nonExistentId = new StreamEntryID("999-0");
     long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.SILENT, nonExistentId);
     assertEquals(0L, nacked);
@@ -741,8 +688,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.1.240")
   public void xdelexBasic() {
-    setUpTestStream();
-
     // Add test entries
     StreamEntryID id1 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
     StreamEntryID id2 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("2-0"), HASH_2);
@@ -760,8 +705,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.1.240")
   public void xdelexWithTrimMode() {
-    setUpTestStream();
-
     // Add test entries
     StreamEntryID id1 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
     StreamEntryID id2 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("2-0"), HASH_2);
@@ -779,8 +722,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.1.240")
   public void xdelexMultipleEntries() {
-    setUpTestStream();
-
     // Add test entries
     StreamEntryID id1 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
     StreamEntryID id2 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("2-0"), HASH_2);
@@ -800,8 +741,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.1.240")
   public void xdelexNonExistentEntries() {
-    setUpTestStream();
-
     // Add one entry
     StreamEntryID id1 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
     assertEquals(1L, jedis.xlen(STREAM_KEY_1));
@@ -820,8 +759,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.1.240")
   public void xdelexWithConsumerGroups() {
-    setUpTestStream();
-
     // Add test entries
     StreamEntryID id1 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("1-0"), HASH_1);
     StreamEntryID id2 = jedis.xadd(STREAM_KEY_1, new StreamEntryID("2-0"), HASH_2);
@@ -856,8 +793,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.1.240")
   public void xdelexEmptyStream() {
-    setUpTestStream();
-
     // Test XDELEX on empty stream
     StreamEntryID nonExistentId = new StreamEntryID("1-0");
     List<StreamEntryDeletionResult> results = jedis.xdelex(STREAM_KEY_1, nonExistentId);
@@ -868,8 +803,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @SinceRedisVersion("8.1.240")
   public void xdelexNotAcknowledged() {
-    setUpTestStream();
-
     String groupName = "test_group";
 
     // Add initial entries and create consumer group
@@ -1263,7 +1196,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @EnabledOnCommand("XCFGSET")
   public void testXaddIdmpAuto() {
-
     // Add entry with IDMPAUTO
     Map<String, String> message = new HashMap<>();
     message.put("order", "12345");
@@ -1300,7 +1232,6 @@ public abstract class StreamsCommandsTestBase extends UnifiedJedisCommandsTestBa
   @Test
   @EnabledOnCommand("XCFGSET")
   public void testXaddIdmp() {
-
     // Add entry with explicit idempotent ID
     StreamEntryID id1 = jedis.xadd(STREAM_KEY_1,
         XAddParams.xAddParams().idmp("producer-1", "iid-001"), HASH_1);

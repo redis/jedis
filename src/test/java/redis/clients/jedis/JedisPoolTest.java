@@ -77,7 +77,8 @@ public class JedisPoolTest {
   public void checkResourceWithConfig() {
     EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone7-with-lfu-policy");
     try (JedisPool pool = new JedisPool(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().socketTimeoutMillis(5000).build())) {
+        endpoint.getClientConfigBuilder().serverDefaultProtocol().socketTimeoutMillis(5000)
+            .build())) {
 
       try (Jedis jedis = pool.getResource()) {
         assertEquals("PONG", jedis.ping());
@@ -448,7 +449,8 @@ public class JedisPoolTest {
     DefaultRedisCredentialsProvider credentialsProvider
         = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, endpointStandalone0.getPassword()));
     JedisFactory factory = new JedisFactory(endpointStandalone0.getHostAndPort(), DefaultJedisClientConfig.builder()
-        .credentialsProvider(credentialsProvider).clientName("my_shiny_client_name").build());
+        .serverDefaultProtocol().credentialsProvider(credentialsProvider)
+        .clientName("my_shiny_client_name").build());
 
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), factory)) {
       Jedis obj1_ref;
@@ -479,7 +481,8 @@ public class JedisPoolTest {
     DefaultRedisCredentialsProvider credentialsProvider
         = new DefaultRedisCredentialsProvider(new DefaultRedisCredentials(null, "bad password"));
     JedisFactory factory = new JedisFactory(endpointStandalone0.getHostAndPort(), DefaultJedisClientConfig.builder()
-        .credentialsProvider(credentialsProvider).clientName("my_shiny_client_name").build());
+        .serverDefaultProtocol().credentialsProvider(credentialsProvider)
+        .clientName("my_shiny_client_name").build());
 
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), factory)) {
       try (Jedis obj1 = pool.getResource()) {
@@ -500,7 +503,7 @@ public class JedisPoolTest {
   @Test
   public void testWithResource() {
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), endpointStandalone0.getHostAndPort(),
-        endpointStandalone0.getClientConfigBuilder().build())) {
+        endpointStandalone0.getClientConfigBuilder().serverDefaultProtocol().build())) {
 
       pool.withResource(jedis -> {
         jedis.set(testKey, testValue);
@@ -515,7 +518,7 @@ public class JedisPoolTest {
   @Test
   public void testWithResourceReturnsConnectionToPool() {
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), endpointStandalone0.getHostAndPort(),
-        endpointStandalone0.getClientConfigBuilder().build())) {
+        endpointStandalone0.getClientConfigBuilder().serverDefaultProtocol().build())) {
 
       pool.withResource(jedis -> {
         assertThat(pool.getNumActive(), equalTo(1));
@@ -529,7 +532,7 @@ public class JedisPoolTest {
   @Test
   public void testWithResourceGet() {
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), endpointStandalone0.getHostAndPort(),
-        endpointStandalone0.getClientConfigBuilder().build())) {
+        endpointStandalone0.getClientConfigBuilder().serverDefaultProtocol().build())) {
 
       String result = pool.withResourceGet(jedis -> {
         jedis.set(testKey, testValue);
@@ -543,7 +546,7 @@ public class JedisPoolTest {
   @Test
   public void testWithResourceGetReturnsConnectionToPool() {
     try (JedisPool pool = new JedisPool(new JedisPoolConfig(), endpointStandalone0.getHostAndPort(),
-        endpointStandalone0.getClientConfigBuilder().build())) {
+        endpointStandalone0.getClientConfigBuilder().serverDefaultProtocol().build())) {
 
       String result = pool.withResourceGet(jedis -> {
         assertThat(pool.getNumActive(), equalTo(1));

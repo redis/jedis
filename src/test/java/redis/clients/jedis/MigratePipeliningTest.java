@@ -70,7 +70,8 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
   public void setUp() throws Exception {
     super.setUp();
 
-    dest = new Jedis(host, port, 500);
+    dest = new Jedis(new HostAndPort(host, port),
+        DefaultJedisClientConfig.builder().serverDefaultProtocol().timeoutMillis(500).build());
     dest.flushAll();
     dest.select(db);
 

@@ -42,7 +42,8 @@ public class JedisSentinelPoolIT extends RedisSentinelTlsTestBase {
   @Test
   public void sentinelWithoutSslConnectsToRedisWithSsl() {
     DefaultJedisClientConfig masterConfig = aclTlsEndpoint.getClientConfigBuilder()
-        .clientName("master-client").hostAndPortMapper(PRIMARY_SSL_PORT_MAPPER).build();
+        .serverDefaultProtocol().clientName("master-client")
+        .hostAndPortMapper(PRIMARY_SSL_PORT_MAPPER).build();
 
     DefaultJedisClientConfig sentinelConfig = createSentinelConfigWithoutSsl();
 
@@ -63,10 +64,11 @@ public class JedisSentinelPoolIT extends RedisSentinelTlsTestBase {
   @Test
   public void sentinelWithSslConnectsToRedisWithoutSsl() {
     DefaultJedisClientConfig masterConfig = aclEndpoint.getClientConfigBuilder()
-        .clientName("master-client").build();
+        .serverDefaultProtocol().clientName("master-client").build();
 
     DefaultJedisClientConfig sentinelConfig = sentinelTlsEndpoint.getClientConfigBuilder()
-        .clientName("sentinel-client").hostAndPortMapper(SENTINEL_SSL_PORT_MAPPER).build();
+        .serverDefaultProtocol().clientName("sentinel-client")
+        .hostAndPortMapper(SENTINEL_SSL_PORT_MAPPER).build();
 
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, masterConfig,
         sentinelConfig)) {
@@ -85,10 +87,12 @@ public class JedisSentinelPoolIT extends RedisSentinelTlsTestBase {
   @Test
   public void sentinelWithSslConnectsToRedisWithSsl() {
     DefaultJedisClientConfig masterConfig = aclTlsEndpoint.getClientConfigBuilder()
-        .clientName("master-client").hostAndPortMapper(PRIMARY_SSL_PORT_MAPPER).build();
+        .serverDefaultProtocol().clientName("master-client")
+        .hostAndPortMapper(PRIMARY_SSL_PORT_MAPPER).build();
 
     DefaultJedisClientConfig sentinelConfig = sentinelTlsEndpoint.getClientConfigBuilder()
-        .clientName("sentinel-client").hostAndPortMapper(SENTINEL_SSL_PORT_MAPPER).build();
+        .serverDefaultProtocol().clientName("sentinel-client")
+        .hostAndPortMapper(SENTINEL_SSL_PORT_MAPPER).build();
 
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, masterConfig,
         sentinelConfig)) {

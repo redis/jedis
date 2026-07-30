@@ -2,6 +2,7 @@ package redis.clients.jedis.commands.unified;
 
 import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.utils.RedisVersion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
@@ -17,6 +18,7 @@ import redis.clients.jedis.params.XReadParams;
 import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.resps.StreamEntryBinary;
 import redis.clients.jedis.resps.StreamEntryDeletionResult;
+import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -41,11 +43,10 @@ import static redis.clients.jedis.util.StreamEntryBinaryListMatcher.equalsStream
 
 @Tag("integration")
 public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommandsTestBase {
-
-  protected static final byte[] STREAM_KEY_1 = "{binary-stream}-1".getBytes();
-  protected static final byte[] STREAM_KEY_2 = "{binary-stream}-2".getBytes();
-  protected static final byte[] GROUP_NAME = "group-1".getBytes();
-  protected static final byte[] CONSUMER_NAME = "consumer-1".getBytes();
+  protected byte[] STREAM_KEY_1;
+  protected byte[] STREAM_KEY_2;
+  protected byte[] GROUP_NAME;
+  protected byte[] CONSUMER_NAME;
 
   protected static final byte[] FIELD_KEY_1 = "binary-field-1".getBytes();
   // Test with invalid UTF-8 characters
@@ -101,7 +102,11 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   }
 
   @BeforeEach
-  public void setUpTestStream() {
+  public void setUp() {
+    STREAM_KEY_1 = keys.bKey("{%test%}:binary-stream-1");
+    STREAM_KEY_2 = keys.bKey("{%test%}:binary-stream-2");
+    GROUP_NAME = SafeEncoder.encode(keys.name("group-1"));
+    CONSUMER_NAME = SafeEncoder.encode(keys.name("consumer-1"));
     setUpTestStream(StreamEntryID.XGROUP_LAST_ENTRY.toString().getBytes());
   }
 
@@ -134,7 +139,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
 
   @Test
   public void xreadBinary() {
-
     stream1Entries.forEach(
         entry -> jedis.xadd(STREAM_KEY_1, new XAddParams().id(entry.getID()), entry.getFields()));
 
@@ -148,12 +152,25 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
 
   @Test
   public void xreadBinaryCount() {
-
     stream1Entries.forEach(
         entry -> jedis.xadd(STREAM_KEY_1, new XAddParams().id(entry.getID()), entry.getFields()));
 
     List<Map.Entry<byte[], List<StreamEntryBinary>>> actualEntries = jedis.xreadBinary(
         XReadParams.xReadParams().count(1), offsets(STREAM_KEY_1, "0-0"));
+
+    assertThat(actualEntries, hasSize(1));
+    assertArrayEquals(STREAM_KEY_1, actualEntries.get(0).getKey());
+    assertThat(actualEntries.get(0).getValue(), equalsStreamEntries(stream1Entries.subList(0, 1)));
+  }
+
+  @Test
+  @SinceRedisVersion(RedisVersion.V8_10_0_RC2_STRING)
+  public void xreadBinaryMaxCountAndMaxSize() {
+    stream1Entries.forEach(
+        entry -> jedis.xadd(STREAM_KEY_1, new XAddParams().id(entry.getID()), entry.getFields()));
+
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> actualEntries = jedis.xreadBinary(
+        XReadParams.xReadParams().maxCount(1).maxSize(65536), offsets(STREAM_KEY_1, "0-0"));
 
     assertThat(actualEntries, hasSize(1));
     assertArrayEquals(STREAM_KEY_1, actualEntries.get(0).getKey());
@@ -170,7 +187,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
 
   @Test
   public void xreadBinaryAsMap() {
-
     stream1Entries.forEach(
         entry -> jedis.xadd(STREAM_KEY_1, new XAddParams().id(entry.getID()), entry.getFields()));
 
@@ -183,7 +199,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
 
   @Test
   public void xreadBinaryAsMapCount() {
-
     stream1Entries.forEach(
         entry -> jedis.xadd(STREAM_KEY_1, new XAddParams().id(entry.getID()), entry.getFields()));
 
@@ -196,7 +211,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
 
   @Test
   public void xreadBinaryAsMapWithMultipleStreams() {
-
     // Add entries to the streams
     stream1Entries.forEach(
         entry -> jedis.xadd(STREAM_KEY_1, new XAddParams().id(entry.getID()), entry.getFields()));
@@ -228,6 +242,21 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     assertArrayEquals(STREAM_KEY_1, actualEntries.get(0).getKey());
 
     assertThat(actualEntries.get(0).getValue(), equalsStreamEntries(stream1Entries));
+  }
+
+  @Test
+  @SinceRedisVersion(RedisVersion.V8_10_0_RC2_STRING)
+  public void xreadGroupBinaryMaxCountAndMaxSize() {
+    stream1Entries.forEach(
+        entry -> jedis.xadd(STREAM_KEY_1, new XAddParams().id(entry.getID()), entry.getFields()));
+
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> actualEntries = jedis.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().maxCount(1).maxSize(65536),
+        offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY));
+
+    assertThat(actualEntries, hasSize(1));
+    assertArrayEquals(STREAM_KEY_1, actualEntries.get(0).getKey());
+    assertThat(actualEntries.get(0).getValue(), equalsStreamEntries(stream1Entries.subList(0, 1)));
   }
 
   @Test
@@ -268,8 +297,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXackdel() {
-    setUpTestStream();
-
     // Add a message to the stream
     byte[] messageId = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     assertNotNull(messageId);
@@ -296,8 +323,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXackdelWithTrimMode() {
-    setUpTestStream();
-
     // Add multiple messages
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
@@ -324,8 +349,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXackdelUnreadMessages() {
-    setUpTestStream();
-
     // Add test entries but don't read them
     byte[] id1 = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
 
@@ -343,8 +366,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXackdelMultipleMessages() {
-    setUpTestStream();
-
     // Add multiple messages
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
@@ -376,8 +397,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.7.225")
   public void xnackBasicSilent() {
-    setUpTestStream();
-
     // Add and read a message
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     Map<byte[], StreamEntryID> streams = offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY);
@@ -394,8 +413,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.7.225")
   public void xnackBasicFail() {
-    setUpTestStream();
-
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     Map<byte[], StreamEntryID> streams = offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY);
     List<Map.Entry<byte[], List<StreamEntryBinary>>> messages = jedis.xreadGroupBinary(
@@ -410,8 +427,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.7.225")
   public void xnackBasicFatal() {
-    setUpTestStream();
-
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     Map<byte[], StreamEntryID> streams = offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY);
     List<Map.Entry<byte[], List<StreamEntryBinary>>> messages = jedis.xreadGroupBinary(
@@ -426,8 +441,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.7.225")
   public void xnackMultipleMessages() {
-    setUpTestStream();
-
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
     Map<byte[], StreamEntryID> streams = offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY);
@@ -444,8 +457,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.7.225")
   public void xnackNonExistentMessage() {
-    setUpTestStream();
-
     byte[] nonExistentId = "999-0".getBytes();
     long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.SILENT, nonExistentId);
     assertEquals(0L, nacked);
@@ -456,8 +467,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXdelex() {
-    setUpTestStream();
-
     // Add test entries
     byte[] id1 = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
@@ -475,8 +484,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXdelexWithTrimMode() {
-    setUpTestStream();
-
     // Add test entries
     byte[] id1 = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
@@ -493,8 +500,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXdelexMultipleEntries() {
-    setUpTestStream();
-
     // Add test entries
     byte[] id1 = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
@@ -514,8 +519,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXdelexNonExistentEntries() {
-    setUpTestStream();
-
     // Add one entry
     byte[] id1 = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     assertEquals(1L, jedis.xlen(STREAM_KEY_1));
@@ -534,8 +537,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXdelexWithConsumerGroups() {
-    setUpTestStream();
-
     // Add test entries
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
@@ -567,8 +568,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXdelexEmptyStream() {
-    setUpTestStream();
-
     // Test XDELEX on empty stream
     byte[] nonExistentId = "1-0".getBytes();
     List<StreamEntryDeletionResult> results = jedis.xdelex(STREAM_KEY_1, nonExistentId);
@@ -581,8 +580,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXtrimWithKeepReferences() {
-    setUpTestStream();
-
     // Add test entries
     for (int i = 1; i <= 5; i++) {
       jedis.xadd(STREAM_KEY_1, new XAddParams().id(i + "-0"), HASH_1);
@@ -603,8 +600,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXtrimWithAcknowledged() {
-    setUpTestStream();
-
     // Add test entries
     for (int i = 1; i <= 5; i++) {
       jedis.xadd(STREAM_KEY_1, new XAddParams().id(i + "-0"), HASH_1);

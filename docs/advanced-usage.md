@@ -64,6 +64,29 @@ Set<String> setBack = sose.get();
 ```
 For more explanations see code comments in the transaction section.
 
+### Avoiding pool waits with cluster pipelines
+
+A cluster pipeline keeps one connection borrowed from every node it targets until `sync()` or `close()`. Concurrent pipelines that target nodes in different orders can exhaust small per-node pools and wait on one another indefinitely when the pool uses its default unbounded wait.
+
+For workloads with concurrent multi-node pipelines, use a dedicated cluster client. Size each node pool for the expected number of concurrent pipelines and configure a finite `maxWait` so pool exhaustion fails within a known interval instead of waiting indefinitely:
+
+```java
+ConnectionPoolConfig pipelinePoolConfig = new ConnectionPoolConfig();
+pipelinePoolConfig.setMaxTotal(expectedConcurrentPipelines);
+pipelinePoolConfig.setMaxWait(Duration.ofSeconds(1));
+
+try (RedisClusterClient pipelineClient = RedisClusterClient.builder()
+        .nodes(nodes)
+        .clientConfig(clientConfig)
+        .poolConfig(pipelinePoolConfig)
+        .build();
+    ClusterPipeline pipeline = pipelineClient.pipelined()) {
+    // Append commands, then call sync() before reading responses.
+}
+```
+
+Keep each pipeline single-shard when possible. This avoids borrowing multiple node connections at the same time.
+
 
 ## Publish/Subscribe
 

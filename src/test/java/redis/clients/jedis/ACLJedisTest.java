@@ -66,6 +66,10 @@ public class ACLJedisTest extends JedisCommandsTestBase {
   @Test
   public void connectWithConfigInterface() {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), new JedisClientConfig() {
+      @Override
+      public boolean isAutoNegotiateProtocol() {
+        return false;
+      }
     })) {
       jedis.auth(endpoint.getUsername(), endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
@@ -79,6 +83,11 @@ public class ACLJedisTest extends JedisCommandsTestBase {
       @Override
       public String getPassword() {
         return endpoint.getPassword();
+      }
+
+      @Override
+      public boolean isAutoNegotiateProtocol() {
+        return false;
       }
     })) {
       assertEquals("PONG", jedis.ping());

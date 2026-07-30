@@ -206,7 +206,7 @@ TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
 
 | Command                  | Effect                                                                                                                                |
 |--------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| `make start version=8.6` | `docker compose … up -d --wait` with `.env` + `.env.v8.6`. Supported: 6.2, 7.2, 7.4, 8.0, 8.2, 8.4, 8.6, 8.8, 8.10 (default **8.8**). |
+| `make start version=8.6` | `docker compose … up -d --wait` with `.env` + `.env.v8.6`. Supported: 6.2, 7.2, 7.4, 8.0, 8.2, 8.4, 8.6, 8.8, 8.10 (default **8.10**). |
 | `make stop`              | `docker compose … down`.                                                                                                              |
 | `make test [version=…]`  | `start` → `mvn clean verify` → `stop`.                                                                                                |
 | `mvn clean verify`       | Run tests against an already-started env (use this from the IDE between `make start`/`make stop`).                                    |

@@ -30,6 +30,7 @@ import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.HashImport;
+import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.HGetExParams;
@@ -727,11 +728,11 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
   @Test
   @EnabledOnCommand("HIMPORT")
   public void himportBinary() {
-    byte[] fName = "name".getBytes();
-    byte[] fAge = "age".getBytes();
-    byte[] key = "buser:1".getBytes();
-    byte[] vName = "carol".getBytes();
-    byte[] vAge = "41".getBytes();
+    byte[] fName = SafeEncoder.encode("name");
+    byte[] fAge = SafeEncoder.encode("age");
+    byte[] key = SafeEncoder.encode("buser:1");
+    byte[] vName = SafeEncoder.encode("carol");
+    byte[] vAge = SafeEncoder.encode("41");
     HashImport<byte[]> fs = HashImport.of(fName, fAge);
 
     assertThat(exec(commandObjects.himportPrepare(fs)), equalTo("OK"));

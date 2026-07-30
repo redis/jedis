@@ -105,4 +105,29 @@ public interface HashPipelineBinaryCommands {
    */
   @Experimental
   Response<String> himportSet(byte[] key, HashImport<byte[]> fieldset, byte[]... values);
+
+  /**
+   * Prepare a fieldset (Hinted Hash Templates, Redis 8.10). Exposed here too so binary callers can
+   * prepare a template before {@link #himportSet(byte[], HashImport, byte[]...)}.
+   * @see HashPipelineCommands#himportPrepare(HashImport)
+   * @since 8.0
+   */
+  @Experimental
+  Response<String> himportPrepare(HashImport<?> fieldset);
+
+  /**
+   * Discard a fieldset (Hinted Hash Templates, Redis 8.10).
+   * @see HashPipelineCommands#himportDiscard(HashImport)
+   * @since 8.0
+   */
+  @Experimental
+  Response<Long> himportDiscard(HashImport<?> fieldset);
+
+  /**
+   * Discard all session-local fieldsets (Hinted Hash Templates, Redis 8.10).
+   * @see HashPipelineCommands#himportDiscardAll()
+   * @since 8.0
+   */
+  @Experimental
+  Response<Long> himportDiscardAll();
 }

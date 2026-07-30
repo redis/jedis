@@ -179,8 +179,9 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   }
 
   /**
-   * Registers the connection for maintenance-event tracking.
-   * Must run before socket init.
+   * Registers the connection for maintenance-event tracking. Must run before socket init: a
+   * connect racing a MOVING is then either visible to the marking pass (registered first) or
+   * redirected by the applied rebind via the address mapper.
    */
   private void registerForMaintenanceEvents(Connection conn) {
     if (maintenanceController != null) {
@@ -241,13 +242,13 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       if (!jedis.isConnected()) {
         return false;
       }
-      if (jedis.isMarkedForReconnect()) {
+      if (jedis.isRetired()) {
         return false; // marked by a maintenance marking pass -> recycle
       }
       reAuthenticate(jedis);
       // Re-check after the ping: its read may consume a buffered MOVING push whose inline
       // marking pass marks this connection.
-      return jedis.ping() && !jedis.isMarkedForReconnect();
+      return jedis.ping() && !jedis.isRetired();
     } catch (final Exception e) {
       logger.warn("Error while validating pooled Connection object.", e);
       return false;

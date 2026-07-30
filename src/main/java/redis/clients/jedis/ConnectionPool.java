@@ -87,11 +87,10 @@ public class ConnectionPool extends Pool<Connection> {
     attachAuthenticationListener(factoryBuilder.getClientConfig().getAuthXManager());
     if (controller != null) {
       setEvictionPolicy(new RebindAwareEvictionPolicy(getEvictionPolicy()));
-      controller.addHandoffHook(this::evictQuietly); // handoff processed: evict the marked idles
-      // Marked connections are routed to returnBrokenResource by Connection.close(); the hook
-      // covers direct returnResource callers.
-      returnHook = c -> {
-        if (c.isMarkedForReconnect()) {
+      // handoff processed: evict the retired idles
+      controller.setHandoffHook(this::evictQuietly);
+       returnHook = c -> {
+        if (c.isRetired()) {
           super.returnBrokenResource(c);
         } else {
           super.returnResource(c);
@@ -103,7 +102,7 @@ public class ConnectionPool extends Pool<Connection> {
   }
 
   /**
-   * Handoff-hook reaction: evict marked idles. Runs on the maintenance scheduler thread or inline
+   * Handoff-hook reaction: evict retired idles. Runs on the maintenance scheduler thread or inline
    * on a notifying thread; must never propagate (a failed pass degrades to lazy recycling on
    * return).
    */
@@ -114,7 +113,7 @@ public class ConnectionPool extends Pool<Connection> {
     try {
       evict();
     } catch (Exception e) {
-      log.warn("Maintenance eviction pass failed; marked connections recycle on return", e);
+      log.warn("Maintenance eviction pass failed; retired connections recycle on return", e);
     }
   }
 

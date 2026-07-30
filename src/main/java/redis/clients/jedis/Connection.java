@@ -171,19 +171,15 @@ public class Connection implements Closeable {
   private boolean isBlocking = false;
   private Set<InitVisitor> initVisitors = new HashSet<>();
 
-  /**
-   * Maintenance mark, written by the controller's marking passes: this connection
-   * must be recycled instead of re-pooled. Advisory — enforced on return and by validation; never
-   * interrupts in-flight work.
-   */
-  private volatile boolean markedForReconnect;
+  /** One-way advisory flag: this connection must leave pool service. See {@link #retire()}. */
+  private volatile boolean retired;
 
   /** Listeners notified synchronously of this connection's maintenance events (pool-injected). */
-  private final Set<MaintenanceEventListener> maintenanceEventListeners =  ConcurrentHashMap.newKeySet();
+  private final Set<MaintenanceEventListener> maintenanceEventListeners = ConcurrentHashMap
+      .newKeySet();
 
   private final DefaultTimeoutSource defaultTimeoutSource = new DefaultTimeoutSource(
       new TimeoutInfo(0, 0));
-  private ExpiringTimeoutSource relaxedTimeoutSource;
 
   private JedisClientConfig clientConfig;
   private final ProtocolHandshake handshake = new ProtocolHandshake(this);
@@ -352,7 +348,7 @@ public class Connection implements Closeable {
     return isBlocking ? defaultTimeoutSource.get().blockingTimeout : defaultTimeoutSource.get().timeout;
   }
 
-  private void applyCurrentTimeout() {
+  void applyCurrentTimeout() {
     int timeout = currentTimeout();
      if (timeout == appliedSoTimeout || socket == null) {
       return;
@@ -544,10 +540,10 @@ public class Connection implements Closeable {
     if (this.memberOf != null) {
       ConnectionPool pool = this.memberOf;
       this.memberOf = null;
-      if (isBroken() || markedForReconnect) {
+      if (isBroken()) {
         pool.returnBrokenResource(this);
       } else {
-        pool.returnResource(this);
+        pool.returnResource(this); // the pool's return hook routes retired connections to disposal
       }
     } else {
       disconnect();
@@ -790,6 +786,12 @@ public class Connection implements Closeable {
 
   protected void initializeFromClientConfig(final JedisClientConfig config) {
     try {
+      // Pre-handshake hook: lets visitors install state that must already be in effect while the
+      // AUTH/HELLO handshake talks to the server (e.g. the maintenance rebind timeout overlay).
+      for (InitVisitor visitor : initVisitors) {
+        visitor.visitBeforeHandshake(this);
+      }
+
       defaultTimeoutSource.setDefaults(config.getSocketTimeoutMillis(),
         config.getBlockingSocketTimeoutMillis());
 
@@ -859,7 +861,7 @@ public class Connection implements Closeable {
       getMany(fireAndForgetMsg.size());
 
       for (InitVisitor visitor : initVisitors) {
-        visitor.visit(this);
+        visitor.visitAfterHandshake(this);
       }
 
       int dbIndex = config.getDatabase();
@@ -1067,60 +1069,21 @@ public class Connection implements Closeable {
     this.pushConsumers.remove(consumer);
   }
 
-  void markForReconnect() {
-    this.markedForReconnect = true;
-  }
-
-  boolean isMarkedForReconnect() {
-    return markedForReconnect;
-  }
-
-  void enableTimeoutRelaxing(ExpiringTimeoutSource relaxedTimeout) {
-    if (this.relaxedTimeoutSource != null) {
-      throw new IllegalStateException("Relaxed timeouts already activated");
-    }
-    this.relaxedTimeoutSource = relaxedTimeout;
-    this.defaultTimeoutSource.addOverride(relaxedTimeout);
-  }
-
-  void disableTimeoutRelaxing() {
-    if (this.relaxedTimeoutSource == null) {
-      throw new IllegalStateException("Relaxed timeouts not activated");
-    }
-    this.defaultTimeoutSource.removeOverride(relaxedTimeoutSource);
-    this.relaxedTimeoutSource = null;
-  }
-
   /**
-   * Switches this connection to relaxed timeouts for at most {@code period}. While the window is
-   * open, commands use the looser of the configured value and {@link MaintenanceNotificationsConfig#getRelaxedTimeout()}
-   * (respectively {@link MaintenanceNotificationsConfig#getRelaxedBlockingTimeout()}), {@code 0}
-   * (infinite) being the loosest, giving in-flight commands extra headroom across a server-side
-   * maintenance event (MIGRATING / FAILING_OVER / MOVING-receiver) without ever tightening the
-   * configured deadline. The original timeouts return
-   * into effect once the window closes or {@link #resetRelaxedTimeouts()} is called. Calling this
-   * with a later deadline extends the window; an earlier one is ignored.
-   * @param period maximum duration of the relaxation window
+   * Retires this connection from pool service. Advisory and one-way: no I/O happens here; the pool
+   * destroys a retired connection on return, validation, or eviction instead of reusing it.
    */
-  @Experimental
-  void relaxTimeouts(long expiration) {
-    if (this.relaxedTimeoutSource == null) {
-      throw new IllegalStateException("Relaxed timeouts not activated");
-    }
-    relaxedTimeoutSource.setExpirationTime(expiration);
-    applyCurrentTimeout();
+  void retire() {
+    this.retired = true;
   }
 
-  /**
-   * Clears the per-receiver relaxation deadline and eagerly realigns the socket (cache-checked).
-   */
-  @Experimental
-  void resetRelaxedTimeouts() {
-    if (this.relaxedTimeoutSource == null) {
-      throw new IllegalStateException("Relaxed timeouts not activated");
-    }
-    relaxedTimeoutSource.setExpirationTime(0);
-    applyCurrentTimeout();
+  /** Whether this connection was {@link #retire() retired} and must not be reused. */
+  boolean isRetired() {
+    return retired;
+  }
+
+  ChainedTimeoutSource getTimeoutSource() {
+    return defaultTimeoutSource;
   }
 
   /** The connected peer's address, or {@code null} if the socket is not (yet) open. */

@@ -534,14 +534,16 @@ public class PipeliningTest extends JedisCommandsTestBase {
   @Test
   public void testSyncWithNoCommandQueued() {
     // we need to test with fresh instance of Jedis
-    Jedis jedis2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500);
+    Jedis jedis2 = new Jedis(endpoint.getHostAndPort(),
+        DefaultJedisClientConfig.builder().serverDefaultProtocol().timeoutMillis(500).build());
 
     Pipeline pipeline = jedis2.pipelined();
     pipeline.sync();
 
     jedis2.close();
 
-    jedis2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500);
+    jedis2 = new Jedis(endpoint.getHostAndPort(),
+        DefaultJedisClientConfig.builder().serverDefaultProtocol().timeoutMillis(500).build());
 
     pipeline = jedis2.pipelined();
     List<Object> resp = pipeline.syncAndReturnAll();
@@ -553,7 +555,8 @@ public class PipeliningTest extends JedisCommandsTestBase {
   @Test
   public void testCloseable() throws IOException {
     // we need to test with fresh instance of Jedis
-    Jedis jedis2 = new Jedis(endpoint.getHost(), endpoint.getPort(), 500);
+    Jedis jedis2 = new Jedis(endpoint.getHostAndPort(),
+        DefaultJedisClientConfig.builder().serverDefaultProtocol().timeoutMillis(500).build());
     jedis2.auth(endpoint.getPassword());
 
     Pipeline pipeline = jedis2.pipelined();

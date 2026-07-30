@@ -2,8 +2,6 @@ package redis.clients.jedis;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.List;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -21,7 +19,9 @@ import redis.clients.jedis.TimeoutSource.TimeoutInfo;
  * Maintenance coordinator: reacts to maintenance events. MOVING deliveries are deduplicated into
  * pool-wide operations by {@link MovingOperations}; the controller reacts to each applied operation
  * — marking passes over the {@link ConnectionRegistry} that flag affected connections for
- * recycling, the relax-window policy, and the post-DNS remap of affected peers.
+ * recycling, the relax-window policy, and the post-DNS remap of affected peers. A controller has
+ * exactly one owner, which creates it, registers its reaction, and must {@link #close()} it. Never
+ * shared.
  */
 final class MaintenanceEventController
     implements MaintenanceEventListener, SocketAddressMapper, AutoCloseable {
@@ -31,8 +31,9 @@ final class MaintenanceEventController
   private final MaintenanceNotificationsConfig config;
   private final long maxRelaxedDurationNanos; // MIGRATING/FAILING_OVER backstop window
   private final MovingOperations movingOperations = new MovingOperations();
-  /** Hooks fired once per completed marking pass; see {@link #addHandoffHook}. */
-  private final List<Runnable> handoffHooks = new CopyOnWriteArrayList<>();
+  /** The owner's reaction to a completed marking pass; see {@link #setHandoffHook}. */
+  private volatile Runnable handoffHook = () -> {
+  };
   private final Supplier<TimeoutInfo> timeoutSupplier;
 
   private final ConnectionRegistry registry = new ConnectionRegistry();
@@ -111,18 +112,21 @@ final class MaintenanceEventController
   }
 
   /**
-   * Registers a hook fired once a MOVING handoff has been processed — its tracked (affected)
-   * connections marked for reconnect. Runs on the marking thread and must not block; exceptions
-   * propagate. Hooks live as long as the controller.
+   * Sets the owner's hook, fired once a MOVING handoff has been processed — its affected
+   * connections retired. Runs on the marking thread and must not block.
    */
-  void addHandoffHook(Runnable hook) {
-    handoffHooks.add(hook);
+  void setHandoffHook(Runnable hook) {
+    this.handoffHook = hook;
+  }
+
+  Runnable getHandoffHook() {
+    return handoffHook;
   }
 
   /**
    * Post-DNS address mapper: remaps the resolved peer to its active operation's endpoint when the
    * peer is an affected source of an unexpired MOVING operation; else returns null (no remap). The
-   * endpoint is resolved here, at connect time, so a DNS repoint mid-window is honored..
+   * endpoint is resolved here, at connect time, so a DNS repoint mid-window is honored.
    */
   @Override
   public SocketAddress getSocketAddress(SocketAddress resolved) {
@@ -131,11 +135,6 @@ final class MaintenanceEventController
       return null; // no active operation for this peer, or 'none': reconnect to configured endpoint
     }
     return new InetSocketAddress(op.endpoint.getHost(), op.endpoint.getPort());
-  }
-
-  public boolean isAffected(Connection c) {
-    SocketAddress peer = c.getRemoteSocketAddress();
-    return movingOperations.findActive(o -> o.affected.contains(peer)) != null;
   }
 
   /** True iff there is an active MOVING rebind window in the pool right now. */
@@ -161,38 +160,38 @@ final class MaintenanceEventController
   }
 
   /**
-   * Marks the snapshot's affected connections. Marked connections are recycled on return to the
-   * pool, and the handoff hooks evict marked idle connections. When the endpoint is {@code null}
-   * ({@link MaintenanceNotificationsConfig.EndpointType#NONE}), marking is deferred to the
-   * reconnect instant — half of the MOVING ttl.
+   * Reaction to an applied MOVING operation: retire the snapshot's affected connections —
+   * immediately for a real endpoint, at the reconnect instant for a null-endpoint ('none') MOVING.
+   * A pending pass is never cancelled; a stale fire is a no-op once its operation expires.
    */
   private void handleRebind(MovingOperation snapshot) {
     if (snapshot.endpoint != null) {
-      markAffected(snapshot); // real target: reconnect immediately
+      retireAffected(snapshot); // real target: reconnect immediately
       return;
     }
     long delayNanos = snapshot.reconnectAtNanos - NanoClock.INSTANCE.getAsLong();
     try {
-      scheduler().schedule(() -> markAffected(snapshot), delayNanos, TimeUnit.NANOSECONDS);
+      scheduler().schedule(() -> retireAffected(snapshot), delayNanos, TimeUnit.NANOSECONDS);
     } catch (RejectedExecutionException alreadyClosed) {
       // Controller closed concurrently;
     }
   }
 
   /**
-   * The marking pass: mark every registered connection whose peer is one of the snapshot's sources,
-   * then run the handoff hooks (the pool evicts marked idles).
+   * Retires every registered connection whose peer is one of the snapshot's affected sources, then
+   * runs the handoff hook. No I/O happens here — the pool destroys retired connections; retiring is
+   * idempotent, so overlapping passes are harmless.
    */
-  private void markAffected(MovingOperation snapshot) {
+  private void retireAffected(MovingOperation snapshot) {
     if (!snapshot.isValid()) {
-      return;
+      return; // operation expired; the address may be legitimately live again
     }
     registry.forEachLive(conn -> {
       if (snapshot.affected.contains(conn.getRemoteSocketAddress())) {
-        conn.markForReconnect();
+        conn.retire();
       }
     });
-    handoffHooks.forEach(Runnable::run);
+    handoffHook.run();
   }
 
   ConnectionRegistry registry() {
@@ -216,27 +215,32 @@ final class MaintenanceEventController
   @Override
   public void onMigrating(MigratingEvent e, Connection c) {
     logger.debug("Migrating shards {} (seq={}, ttl={}s)", e.shardIds, e.seq, e.ttlSeconds);
-    c.relaxTimeouts(maxRelaxedDurationNanos + NanoClock.INSTANCE.getAsLong()); // time_s = "starts
-                                                                               // within";
-    // backstop
+    relaxConnectionTimeoutsFor(c, maxRelaxedDurationNanos + NanoClock.INSTANCE.getAsLong());
   }
 
   @Override
   public void onFailingOver(FailingOverEvent e, Connection c) {
     logger.debug("Failing over shards {} (seq={}, ttl={}s)", e.shardIds, e.seq, e.ttlSeconds);
-    c.relaxTimeouts(maxRelaxedDurationNanos + NanoClock.INSTANCE.getAsLong()); // time_s = "starts
-                                                                               // within"; backstop
+    relaxConnectionTimeoutsFor(c, maxRelaxedDurationNanos + NanoClock.INSTANCE.getAsLong());
   }
 
   @Override
   public void onMigrated(MigratedEvent e, Connection c) {
     logger.debug("Migrated shards {} (seq={})", e.shardIds, e.seq);
-    c.resetRelaxedTimeouts();
+    relaxConnectionTimeoutsFor(c, 0);
   }
 
   @Override
   public void onFailedOver(FailedOverEvent e, Connection c) {
     logger.debug("Failed over shards {} (seq={})", e.shardIds, e.seq);
-    c.resetRelaxedTimeouts();
+    relaxConnectionTimeoutsFor(c, 0);
+  }
+
+  private void relaxConnectionTimeoutsFor(Connection c, long expirationTime) {
+    ChainedTimeoutSource source = c.getTimeoutSource().seekBy(ExpiringTimeoutSource.class);
+    if (source != null) {
+      ((ExpiringTimeoutSource) source).setExpirationTime(expirationTime);
+    }
+    c.applyCurrentTimeout();
   }
 }

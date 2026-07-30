@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.InetSocketAddress;
@@ -23,14 +24,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 /**
  * Unit tests for {@link MaintenanceEventController}: the (seq, endpoint)-deduplicated, time-bounded
- * MOVING events (overlapping events coexist until each expires); the {@link SocketAddressMapper}
- * contract (affected-only redirect); the relax-on-borrow scope; and the handoff hook fan-out. The
- * receiver connections are given real (TcpMockServer-backed) sockets so
- * {@code getRemoteSocketAddress()} returns real, distinct peers.
+ * MOVING events (overlapping events coexist until each expires), affected-only remap,
+ * relax-on-borrow, and the handoff hook. The receiver connections are given real
+ * (TcpMockServer-backed) sockets so {@code getRemoteSocketAddress()} returns real, distinct peers.
  */
 @Tag("sch")
 public class MaintenanceEventControllerTest {
@@ -113,15 +115,6 @@ public class MaintenanceEventControllerTest {
     assertNull(controller.getSocketAddress(receiverPeer));
   }
 
-  @Test
-  public void isAffected_matchesActiveAffectedWithinWindow() {
-    assertFalse(controller.isAffected(receiver), "no rebind yet");
-    moving(1L, TARGET_B, 10);
-    assertTrue(controller.isAffected(receiver));
-    advanceSeconds(11);
-    assertFalse(controller.isAffected(receiver), "after deadline");
-  }
-
   // --- Event identity: (seq, endpoint); overlapping events coexist ---
 
   @Test
@@ -147,7 +140,7 @@ public class MaintenanceEventControllerTest {
   @Test
   public void sameSeqSameTarget_mergesAffectedSources() throws Exception {
     AtomicInteger fires = new AtomicInteger();
-    controller.addHandoffHook(fires::incrementAndGet);
+    controller.setHandoffHook(fires::incrementAndGet);
 
     // First MOVING from `receiver` (connected to 127.0.0.1 in setUp()).
     moving(1L, TARGET_B, 100);
@@ -234,7 +227,6 @@ public class MaintenanceEventControllerTest {
     assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer));
     assertNull(controller.getSocketAddress(receiver2Peer),
       "'none' never remaps: reconnect to the configured endpoint");
-    assertTrue(controller.isAffected(receiver2), "'none' peer is still affected");
     assertTrue(controller.isRebindActive());
   }
 
@@ -267,7 +259,7 @@ public class MaintenanceEventControllerTest {
   @Test
   public void handoffHook_firesOncePerAppliedHandoff() {
     AtomicInteger fires = new AtomicInteger();
-    controller.addHandoffHook(fires::incrementAndGet);
+    controller.setHandoffHook(fires::incrementAndGet);
 
     moving(5L, TARGET_B, 100); // new event: fire
     moving(5L, TARGET_C, 100); // distinct key (same seq, other endpoint): fire
@@ -275,19 +267,6 @@ public class MaintenanceEventControllerTest {
     moving(6L, TARGET_C, 100); // known key, known peer: no fire
 
     assertEquals(3, fires.get());
-  }
-
-  @Test
-  public void handoffHook_multipleHooksAllFire() {
-    AtomicInteger first = new AtomicInteger();
-    AtomicInteger second = new AtomicInteger();
-    controller.addHandoffHook(first::incrementAndGet);
-    controller.addHandoffHook(second::incrementAndGet);
-
-    moving(1L, TARGET_B, 100);
-
-    assertEquals(1, first.get());
-    assertEquals(1, second.get());
   }
 
   // --- Relax-on-borrow ---
@@ -324,6 +303,70 @@ public class MaintenanceEventControllerTest {
     }
   }
 
+  /**
+   * A connection opened while a pool-wide rebind window is open must relax its read timeouts from
+   * before the AUTH/HELLO handshake, not only afterwards. The server delays its HELLO reply beyond
+   * the tight configured socket timeout but within the looser relaxed timeout: the handshake only
+   * survives if the rebind overlay is already in effect when the handshake runs.
+   */
+  @Test
+  public void handshakeReadsRelaxed_whenConnectionOpensDuringRebindWindow() throws Exception {
+    int soTimeoutMs = 250;
+    int relaxedTimeoutMs = 4000;
+    long helloDelayMs = 900;
+
+    mockServer.setCommandHandler((args, clientId) -> {
+      String cmd = SafeEncoder.encode(args.getCommand().getRaw()).toUpperCase();
+      if ("HELLO".equals(cmd)) {
+        sleepUninterruptibly(helloDelayMs);
+      }
+      return null; // fall through to the built-in handler
+    });
+
+    MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
+        .relaxedTimeout(relaxedTimeoutMs).build();
+    DefaultJedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
+        .socketTimeoutMillis(soTimeoutMs).protocol(RedisProtocol.RESP3).build();
+    HostAndPort mock = new HostAndPort("127.0.0.1", mockServer.getPort());
+
+    MaintenanceEventController poolCtl = MaintenanceEventController.from(maintConfig);
+    ConnectionFactory factory = ConnectionFactory.builder().hostAndPort(mock)
+        .clientConfig(clientConfig).maintenanceController(poolCtl).build();
+
+    // No rebind window: the tight configured timeout applies to the slow HELLO, so the handshake
+    // times out.
+    assertThrows(JedisConnectionException.class, factory::makeObject,
+      "without a rebind window the slow HELLO exceeds the configured socket timeout");
+
+    // Open a pool-wide rebind window, then open a fresh connection: its handshake reads are relaxed
+    // from before the HELLO, so the slow HELLO now completes within the relaxed timeout.
+    poolCtl.onMoving(new MovingEvent(1L, 100, mock), receiver);
+    PooledObject<Connection> pooled = factory.makeObject();
+    try {
+      Connection borrowed = pooled.getObject();
+      assertTrue(borrowed.isConnected());
+      assertEquals(RedisProtocol.RESP3, borrowed.getRedisProtocol());
+    } finally {
+      pooled.getObject().close();
+    }
+  }
+
+  private static void sleepUninterruptibly(long millis) {
+    long deadline = System.currentTimeMillis() + millis;
+    long remaining;
+    boolean interrupted = false;
+    while ((remaining = deadline - System.currentTimeMillis()) > 0) {
+      try {
+        Thread.sleep(remaining);
+      } catch (InterruptedException e) {
+        interrupted = true;
+      }
+    }
+    if (interrupted) {
+      Thread.currentThread().interrupt();
+    }
+  }
+
   @Test
   public void onMoving_relaxWindowUsesServerTtl() {
     // MOVING's time_s is the server's completion bound, so the window runs the full
@@ -344,5 +387,4 @@ public class MaintenanceEventControllerTest {
     advanceSeconds(90); // 101s total, past the server-supplied 100s
     assertNull(backstopped.getSocketAddress(receiverPeer), "window ends at the server ttl");
   }
-
 }

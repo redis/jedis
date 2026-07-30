@@ -84,7 +84,7 @@ public class MaintenanceMarkingTest {
   @Test
   public void noneSchedulesMarkingAtHalfGrace() {
     AtomicInteger notified = new AtomicInteger();
-    controller.addHandoffHook(notified::incrementAndGet);
+    controller.setHandoffHook(notified::incrementAndGet);
 
     movingNone(1L, 10);
 
@@ -92,24 +92,24 @@ public class MaintenanceMarkingTest {
     assertTrue(scheduler.lastDelayNanos > TimeUnit.SECONDS.toNanos(4)
         && scheduler.lastDelayNanos <= TimeUnit.SECONDS.toNanos(5),
       "at half the raw grace");
-    assertFalse(receiver.isMarkedForReconnect(), "nothing is marked before the pass runs");
+    assertFalse(receiver.isRetired(), "nothing is marked before the pass runs");
     assertEquals(0, notified.get());
 
     scheduler.runPending();
 
-    assertTrue(receiver.isMarkedForReconnect(), "the pass marks the affected source's connection");
+    assertTrue(receiver.isRetired(), "the pass marks the affected source's connection");
     assertEquals(1, notified.get(), "the pass runs the handoff hooks");
   }
 
   @Test
   public void targetMarksInline() {
     AtomicInteger notified = new AtomicInteger();
-    controller.addHandoffHook(notified::incrementAndGet);
+    controller.setHandoffHook(notified::incrementAndGet);
 
     moving(1L, TARGET_B, 30);
 
     assertEquals(0, scheduler.scheduleCount, "a real target never schedules");
-    assertTrue(receiver.isMarkedForReconnect(), "marked synchronously on the notifying thread");
+    assertTrue(receiver.isRetired(), "marked synchronously on the notifying thread");
     assertEquals(1, notified.get());
   }
 
@@ -120,8 +120,8 @@ public class MaintenanceMarkingTest {
       movingNone(1L, 10);
       scheduler.runPending();
 
-      assertTrue(receiver.isMarkedForReconnect());
-      assertFalse(unrelated.isMarkedForReconnect(), "different peer is out of scope");
+      assertTrue(receiver.isRetired());
+      assertFalse(unrelated.isRetired(), "different peer is out of scope");
     } finally {
       unrelated.close();
     }
@@ -140,7 +140,7 @@ public class MaintenanceMarkingTest {
     Connection reconnect = connect(mockServer);
     try {
       controller.onMoving(new MovingEvent(1L, 10, null), reconnect);
-      assertFalse(reconnect.isMarkedForReconnect(), "post-marking connection is immune");
+      assertFalse(reconnect.isRetired(), "post-marking connection is immune");
       assertTrue(scheduler.pending.isEmpty(), "no second marking pass scheduled");
     } finally {
       reconnect.close();
@@ -151,9 +151,9 @@ public class MaintenanceMarkingTest {
 
   @Test
   public void factoryRegistersBeforeSocketInit() throws Exception {
-    // Registration precedes socket init, so a connect racing a MOVING commit is either visible to
-    // the marking pass or sees the committed rebind via the address mapper — no unmarked
-    // connection can land on the old node.
+    // Registration precedes socket init, so a connect racing a MOVING is either visible to the
+    // marking pass or sees the applied rebind via the address mapper — no unretired connection
+    // can land on the old node.
     AtomicBoolean registeredAtInit = new AtomicBoolean();
     ConnectionFactory factory = new ConnectionFactory.Builder() {
       @Override
@@ -199,13 +199,13 @@ public class MaintenanceMarkingTest {
     Connection otherSource = connect(otherServer);
     try {
       controller.onMoving(new MovingEvent(1L, 10, null), otherSource);
-      assertFalse(receiver.isMarkedForReconnect(), "no early marking on merge");
-      assertFalse(otherSource.isMarkedForReconnect(), "no early marking on merge");
+      assertFalse(receiver.isRetired(), "no early marking on merge");
+      assertFalse(otherSource.isRetired(), "no early marking on merge");
 
       scheduler.runPending();
 
-      assertTrue(receiver.isMarkedForReconnect());
-      assertTrue(otherSource.isMarkedForReconnect(), "merged source covered by its scheduled pass");
+      assertTrue(receiver.isRetired());
+      assertTrue(otherSource.isRetired(), "merged source covered by its scheduled pass");
     } finally {
       otherSource.close();
     }
@@ -220,7 +220,7 @@ public class MaintenanceMarkingTest {
     Connection otherSource = connect(otherServer);
     try {
       controller.onMoving(new MovingEvent(1L, 30, TARGET_B), otherSource);
-      assertTrue(otherSource.isMarkedForReconnect(), "late-joining source marked immediately");
+      assertTrue(otherSource.isRetired(), "late-joining source marked immediately");
     } finally {
       otherSource.close();
     }
@@ -231,7 +231,7 @@ public class MaintenanceMarkingTest {
   @Test
   public void pendingNonePassSurvivesNewerEvent() throws Exception {
     AtomicInteger notified = new AtomicInteger();
-    controller.addHandoffHook(notified::incrementAndGet);
+    controller.setHandoffHook(notified::incrementAndGet);
 
     movingNone(1L, 10); // pass pending at +5s
     Runnable pendingPass = scheduler.pending.poll();
@@ -241,14 +241,14 @@ public class MaintenanceMarkingTest {
     Connection otherSource = connect(otherServer);
     try {
       controller.onMoving(new MovingEvent(2L, 30, TARGET_B), otherSource);
-      assertTrue(otherSource.isMarkedForReconnect(), "newer event marked inline");
+      assertTrue(otherSource.isRetired(), "newer event marked inline");
       assertEquals(1, notified.get());
-      assertFalse(receiver.isMarkedForReconnect(), "earlier 'none' event never marks early");
+      assertFalse(receiver.isRetired(), "earlier 'none' event never marks early");
 
       pendingPass.run();
-      assertTrue(receiver.isMarkedForReconnect(),
+      assertTrue(receiver.isRetired(),
         "the pending pass of a still-active event runs despite the newer event");
-      assertEquals(2, notified.get(), "the pending pass fires the hooks");
+      assertEquals(2, notified.get(), "the pending pass fires the hook");
     } finally {
       otherSource.close();
     }
@@ -260,7 +260,7 @@ public class MaintenanceMarkingTest {
     NanoClock.INSTANCE = now::get;
     try {
       AtomicInteger notified = new AtomicInteger();
-      controller.addHandoffHook(notified::incrementAndGet);
+      controller.setHandoffHook(notified::incrementAndGet);
 
       movingNone(1L, 10); // pass pending at +5s
       Runnable stalePass = scheduler.pending.poll();
@@ -272,7 +272,7 @@ public class MaintenanceMarkingTest {
       Connection fresh = connect(mockServer);
       try {
         stalePass.run();
-        assertFalse(fresh.isMarkedForReconnect(), "expired operation's pass marks nothing");
+        assertFalse(fresh.isRetired(), "expired operation's pass marks nothing");
         assertEquals(0, notified.get(), "expired operation's pass notifies nothing");
       } finally {
         fresh.close();

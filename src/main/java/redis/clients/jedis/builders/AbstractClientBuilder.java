@@ -183,6 +183,14 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
       this.connectionProvider = createDefaultConnectionProvider();
     }
 
+    // Sync cache from the provider when the builder was not explicitly given one.
+    // A custom ConnectionProvider may carry a Cache internally (e.g. a pre-built
+    // PooledConnectionProvider or MultiDbConnectionProvider); without this, the
+    // provider uses caching while UnifiedJedis.getCache() returns null.
+    if (this.cache == null) {
+      this.cache = this.connectionProvider.getCache();
+    }
+
     // Create default command executor if not set
     if (this.commandExecutor == null) {
       this.commandExecutor = createDefaultCommandExecutor();

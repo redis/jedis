@@ -762,6 +762,11 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   }
 
   @Override
+  public Cache getCache() {
+    return cache;
+  }
+
+  @Override
   public Connection getConnection() {
     return activeDatabase.getConnection();
   }

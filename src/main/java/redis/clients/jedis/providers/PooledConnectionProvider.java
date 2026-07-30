@@ -51,14 +51,18 @@ public class PooledConnectionProvider implements ConnectionProvider {
   }
 
   public PooledConnectionProvider(PooledObjectFactory<Connection> factory) {
-    this(new ConnectionPool(factory));
+    this(new ConnectionPool(factory), getCacheOrNull(factory));
     this.connectionMapKey = factory;
   }
 
   public PooledConnectionProvider(PooledObjectFactory<Connection> factory,
       GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new ConnectionPool(factory, poolConfig));
+    this(new ConnectionPool(factory, poolConfig), getCacheOrNull(factory));
     this.connectionMapKey = factory;
+  }
+
+  private static Cache getCacheOrNull(PooledObjectFactory<Connection> factory) {
+    return factory instanceof ConnectionFactory ? ((ConnectionFactory) factory).getCache() : null;
   }
 
   private PooledConnectionProvider(Pool<Connection> pool) {

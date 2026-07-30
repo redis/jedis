@@ -12,6 +12,13 @@ public interface ConnectionProvider extends AutoCloseable {
 
   Connection getConnection(CommandArguments args);
 
+  /**
+   * Returns the client-side {@link Cache} used by this provider, or {@code null} if caching is not
+   * enabled.
+   *
+   * @return the cache instance, or {@code null}
+   * @since 8.0
+   */
   default Cache getCache() {
     return null;
   }

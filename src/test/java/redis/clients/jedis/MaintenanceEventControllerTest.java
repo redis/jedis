@@ -29,9 +29,8 @@ import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 /**
- * Unit tests for {@link MaintenanceEventController}: the sequence-guarded, time-bounded MOVING
- * rebind overlay; the {@link SocketAddressMapper} contract (affected-only redirect); the
- * relax-on-borrow scope; and the handoff hook fan-out. The receiver connection is given a real
+ * Unit tests for {@link MaintenanceEventController}: the seq-guarded MOVING rebind overlay,
+ * affected-only remap, relax-on-borrow, and the handoff hook. The receiver uses a real
  * (TcpMockServer-backed) socket so {@code getRemoteSocketAddress()} returns a real peer.
  */
 @Tag("sch")
@@ -120,7 +119,7 @@ public class MaintenanceEventControllerTest {
   @Test
   public void sameSeqSameTarget_mergesAffectedSources() throws Exception {
     AtomicInteger fires = new AtomicInteger();
-    controller.addHandoffHook(fires::incrementAndGet);
+    controller.setHandoffHook(fires::incrementAndGet);
 
     // First MOVING from `receiver` (connected to 127.0.0.1 in setUp()).
     moving(1L, TARGET_B, 100);
@@ -188,26 +187,13 @@ public class MaintenanceEventControllerTest {
   @Test
   public void handoffHook_firesOncePerAppliedHandoff() {
     AtomicInteger fires = new AtomicInteger();
-    controller.addHandoffHook(fires::incrementAndGet);
+    controller.setHandoffHook(fires::incrementAndGet);
 
     moving(5L, TARGET_B, 100);
     moving(5L, TARGET_C, 100); // stale: no fire
     moving(6L, TARGET_C, 100); // newer: fire
 
     assertEquals(2, fires.get());
-  }
-
-  @Test
-  public void handoffHook_multipleHooksAllFire() {
-    AtomicInteger first = new AtomicInteger();
-    AtomicInteger second = new AtomicInteger();
-    controller.addHandoffHook(first::incrementAndGet);
-    controller.addHandoffHook(second::incrementAndGet);
-
-    moving(1L, TARGET_B, 100);
-
-    assertEquals(1, first.get());
-    assertEquals(1, second.get());
   }
 
   // --- Relax-on-borrow ---

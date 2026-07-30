@@ -98,12 +98,16 @@ public class ConnectionTestHelper {
   }
 
   /**
-   * Registers a handoff hook on the pool's maintenance controller (fires once a MOVING handoff has
-   * been processed — affected connections marked and the pool's evict pass run). Lets tests in
-   * other packages await the marking pass deterministically instead of polling.
+   * Chains a test hook after the pool's own handoff reaction, so tests can await the marking pass
+   * instead of polling.
    */
   public static void addHandoffHook(ConnectionPool pool, Runnable hook) {
-    pool.getMaintenanceController().addHandoffHook(hook);
+    MaintenanceEventController controller = pool.getMaintenanceController();
+    Runnable poolReaction = controller.getHandoffHook();
+    controller.setHandoffHook(() -> {
+      poolReaction.run(); // evict first: the pass is fully processed before the test observes it
+      hook.run();
+    });
   }
 
   public static void setClockNanos(LongSupplier clock) {

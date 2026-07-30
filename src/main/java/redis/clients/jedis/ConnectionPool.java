@@ -87,7 +87,8 @@ public class ConnectionPool extends Pool<Connection> {
     attachAuthenticationListener(factoryBuilder.getClientConfig().getAuthXManager());
     if (controller != null) {
       setEvictionPolicy(new RebindAwareEvictionPolicy(getEvictionPolicy()));
-      controller.addHandoffHook(this::evictQuietly); // handoff processed: evict the retired idles
+      // handoff processed: evict the retired idles
+      controller.setHandoffHook(this::evictQuietly);
        returnHook = c -> {
         if (c.isRetired()) {
           super.returnBrokenResource(c);

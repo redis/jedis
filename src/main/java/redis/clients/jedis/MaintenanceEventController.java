@@ -4,10 +4,8 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.Executors;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledExecutorService;
@@ -22,7 +20,9 @@ import redis.clients.jedis.TimeoutSource.TimeoutInfo;
 
 /**
  * Maintenance handler: owns the shared rebind overlay, the relax-window policy, the registry of
- * pool-managed connections, and the marking passes that flag affected connections for recycling.
+ * pool-managed connections, and the marking passes that flag affected connections for recycling. A
+ * controller has exactly one owner, which creates it, registers its reaction, and must
+ * {@link #close()} it. Never shared.
  */
 final class MaintenanceEventController
     implements MaintenanceEventListener, SocketAddressMapper, AutoCloseable {
@@ -34,8 +34,9 @@ final class MaintenanceEventController
   private static final AtomicReferenceFieldUpdater<MaintenanceEventController, RebindState> REBIND = AtomicReferenceFieldUpdater
       .newUpdater(MaintenanceEventController.class, RebindState.class, "rebind");
   private volatile RebindState rebind = RebindState.EXPIRED_STATE;
-  /** Hooks fired once per completed marking pass; see {@link #addHandoffHook}. */
-  private final List<Runnable> handoffHooks = new CopyOnWriteArrayList<>();
+  /** The owner's reaction to a completed marking pass; see {@link #setHandoffHook}. */
+  private volatile Runnable handoffHook = () -> {
+  };
   private final Supplier<TimeoutInfo> timeoutSupplier;
 
   private final ConnectionRegistry registry = new ConnectionRegistry();
@@ -114,18 +115,21 @@ final class MaintenanceEventController
   }
 
   /**
-   * Registers a hook fired once a MOVING handoff has been processed — its tracked (affected)
-   * connections retired. Runs on the marking thread and must not block; exceptions propagate. Hooks
-   * live as long as the controller.
+   * Sets the owner's hook, fired once a MOVING handoff has been processed — its affected
+   * connections retired. Runs on the marking thread and must not block.
    */
-  void addHandoffHook(Runnable hook) {
-    handoffHooks.add(hook);
+  void setHandoffHook(Runnable hook) {
+    this.handoffHook = hook;
+  }
+
+  Runnable getHandoffHook() {
+    return handoffHook;
   }
 
   /**
    * Post-DNS address mapper: remaps the resolved peer to the rebind target when the resolved peer
    * is one of the active rebind's affected sources and the window is still open; else returns null
-   * (no remap). Lock-free read; {@link HashSet#contains} is O(1).
+   * (no remap).
    */
   @Override
   public SocketAddress getSocketAddress(SocketAddress resolved) {
@@ -227,7 +231,7 @@ final class MaintenanceEventController
         conn.retire();
       }
     });
-    handoffHooks.forEach(Runnable::run);
+    handoffHook.run();
   }
 
   /** Registry the owning pool's factory registers every created connection into. */

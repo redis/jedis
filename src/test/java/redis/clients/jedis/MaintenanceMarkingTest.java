@@ -83,7 +83,7 @@ public class MaintenanceMarkingTest {
   @Test
   public void noneSchedulesMarkingAtHalfGrace() {
     AtomicInteger notified = new AtomicInteger();
-    controller.addHandoffHook(notified::incrementAndGet);
+    controller.setHandoffHook(notified::incrementAndGet);
 
     movingNone(1L, 10);
 
@@ -103,7 +103,7 @@ public class MaintenanceMarkingTest {
   @Test
   public void targetMarksInline() {
     AtomicInteger notified = new AtomicInteger();
-    controller.addHandoffHook(notified::incrementAndGet);
+    controller.setHandoffHook(notified::incrementAndGet);
 
     moving(1L, TARGET_B, 30);
 
@@ -230,7 +230,7 @@ public class MaintenanceMarkingTest {
   @Test
   public void supersededPendingMarkingFiresAsNoop() throws Exception {
     AtomicInteger notified = new AtomicInteger();
-    controller.addHandoffHook(notified::incrementAndGet);
+    controller.setHandoffHook(notified::incrementAndGet);
 
     movingNone(1L, 10);
     Runnable staleMarking = scheduler.pending.peek();

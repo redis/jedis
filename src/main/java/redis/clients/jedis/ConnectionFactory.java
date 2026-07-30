@@ -179,8 +179,9 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   }
 
   /**
-   * Registers the connection for maintenance-event tracking.
-   * Must run before socket init.
+   * Registers the connection for maintenance-event tracking. Must run before socket init: a
+   * connect racing a MOVING is then either visible to the marking pass (registered first) or
+   * redirected by the applied rebind via the address mapper.
    */
   private void registerForMaintenanceEvents(Connection conn) {
     if (maintenanceController != null) {

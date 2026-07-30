@@ -150,9 +150,9 @@ public class MaintenanceMarkingTest {
 
   @Test
   public void factoryRegistersBeforeSocketInit() throws Exception {
-    // Registration precedes socket init, so a connect racing a MOVING commit is either visible to
-    // the marking pass or sees the committed rebind via the address mapper — no unmarked
-    // connection can land on the old node.
+    // Registration precedes socket init, so a connect racing a MOVING is either visible to the
+    // marking pass or sees the applied rebind via the address mapper — no unretired connection
+    // can land on the old node.
     AtomicBoolean registeredAtInit = new AtomicBoolean();
     ConnectionFactory factory = new ConnectionFactory.Builder() {
       @Override

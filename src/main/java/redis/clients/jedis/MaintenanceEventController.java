@@ -300,7 +300,7 @@ final class MaintenanceEventController
     final Set<SocketAddress> affected;
     final SocketAddress target;
     final long deadlineNanos; // relax-window end; gates isValid()/remap
-    final long reconnectAtNanos; // marking due: commit now (target) | commit now + ttl/2 (none)
+    final long reconnectAtNanos; // marking due: on apply (target) | apply + ttl/2 (none)
     volatile boolean expired = false;
 
     private RebindState(long seq, Set<SocketAddress> affected, SocketAddress target,

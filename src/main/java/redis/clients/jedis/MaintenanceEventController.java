@@ -115,8 +115,8 @@ final class MaintenanceEventController
 
   /**
    * Registers a hook fired once a MOVING handoff has been processed — its tracked (affected)
-   * connections marked for reconnect. Runs on the marking thread and must not block; exceptions
-   * propagate. Hooks live as long as the controller.
+   * connections retired. Runs on the marking thread and must not block; exceptions propagate. Hooks
+   * live as long as the controller.
    */
   void addHandoffHook(Runnable hook) {
     handoffHooks.add(hook);
@@ -195,41 +195,36 @@ final class MaintenanceEventController
   }
 
   /**
-   * Reaction to an applied (seq-deduplicated) MOVING rebind: mark the snapshot's affected
-   * connections — inline if the reconnect instant is already due, otherwise at that instant. Marked
-   * connections are recycled on return to the pool; the handoff hooks evict marked idles. A marking
-   * pass pending from a superseded epoch is never cancelled — its stale fire is a no-op via the seq
-   * guard.
+   * Reaction to an applied MOVING rebind: retire the snapshot's affected connections — immediately
+   * for a real target, at the reconnect instant for a null-target ('none') MOVING. A pass pending
+   * from a superseded rebind is never cancelled; its stale fire is a no-op via the seq guard.
    */
   private void handleRebind(RebindState snapshot) {
     if (snapshot.target != null) {
-      markAffected(snapshot); // real target: reconnect immediately
+      retireAffected(snapshot); // real target: reconnect immediately
       return;
     }
     // 'none': mark at the reconnect instant (a late merge yields a non-positive delay: runs now)
     long delayNanos = snapshot.reconnectAtNanos - NanoClock.INSTANCE.getAsLong();
     try {
-      scheduler().schedule(() -> markAffected(snapshot), delayNanos, TimeUnit.NANOSECONDS);
+      scheduler().schedule(() -> retireAffected(snapshot), delayNanos, TimeUnit.NANOSECONDS);
     } catch (RejectedExecutionException alreadyClosed) {
       // Controller closed concurrently;
     }
   }
 
   /**
-   * The marking pass: mark every registered connection whose peer is one of the snapshot's sources,
-   * then run the handoff hooks (the pool evicts marked idles). Mark-only — never any I/O; only the
-   * pool destroys. Every state transition (new seq or merged source) marks against the exact
-   * snapshot it produced, so every source is covered by the transition that admitted it;
-   * overlapping passes are harmless (marking is an idempotent one-way write). A stale fire
-   * (superseded epoch) is a no-op via the seq guard.
+   * Retires every registered connection whose peer is one of the snapshot's affected sources, then
+   * runs the handoff hooks. No I/O happens here — the pool destroys retired connections; retiring
+   * is idempotent, so overlapping passes are harmless.
    */
-  private void markAffected(RebindState snapshot) {
+  private void retireAffected(RebindState snapshot) {
     if (rebind.seq != snapshot.seq) {
       return; // superseded; the new epoch's transitions run their own marking passes
     }
     registry.forEachLive(conn -> {
       if (snapshot.affected.contains(conn.getRemoteSocketAddress())) {
-        conn.markForReconnect();
+        conn.retire();
       }
     });
     handoffHooks.forEach(Runnable::run);

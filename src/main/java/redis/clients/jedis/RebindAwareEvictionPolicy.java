@@ -20,7 +20,7 @@ final class RebindAwareEvictionPolicy implements EvictionPolicy<Connection> {
 
   @Override
   public boolean evict(EvictionConfig config, PooledObject<Connection> underTest, int idleCount) {
-    if (underTest.getObject().isMarkedForReconnect()) {
+    if (underTest.getObject().isRetired()) {
       return true;
     }
     return delegate.evict(config, underTest, idleCount);

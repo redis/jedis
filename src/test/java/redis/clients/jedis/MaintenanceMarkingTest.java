@@ -91,12 +91,12 @@ public class MaintenanceMarkingTest {
     assertTrue(scheduler.lastDelayNanos > TimeUnit.SECONDS.toNanos(4)
         && scheduler.lastDelayNanos <= TimeUnit.SECONDS.toNanos(5),
       "at half the raw grace");
-    assertFalse(receiver.isMarkedForReconnect(), "nothing is marked before the pass runs");
+    assertFalse(receiver.isRetired(), "nothing is marked before the pass runs");
     assertEquals(0, notified.get());
 
     scheduler.runPending();
 
-    assertTrue(receiver.isMarkedForReconnect(), "the pass marks the affected source's connection");
+    assertTrue(receiver.isRetired(), "the pass marks the affected source's connection");
     assertEquals(1, notified.get(), "the pass runs the handoff hooks");
   }
 
@@ -108,7 +108,7 @@ public class MaintenanceMarkingTest {
     moving(1L, TARGET_B, 30);
 
     assertEquals(0, scheduler.scheduleCount, "a real target never schedules");
-    assertTrue(receiver.isMarkedForReconnect(), "marked synchronously on the notifying thread");
+    assertTrue(receiver.isRetired(), "marked synchronously on the notifying thread");
     assertEquals(1, notified.get());
   }
 
@@ -119,8 +119,8 @@ public class MaintenanceMarkingTest {
       movingNone(1L, 10);
       scheduler.runPending();
 
-      assertTrue(receiver.isMarkedForReconnect());
-      assertFalse(unrelated.isMarkedForReconnect(), "different peer is out of scope");
+      assertTrue(receiver.isRetired());
+      assertFalse(unrelated.isRetired(), "different peer is out of scope");
     } finally {
       unrelated.close();
     }
@@ -139,7 +139,7 @@ public class MaintenanceMarkingTest {
     Connection reconnect = connect(mockServer);
     try {
       controller.onMoving(new MovingEvent(1L, 10, null), reconnect);
-      assertFalse(reconnect.isMarkedForReconnect(), "post-marking connection is immune");
+      assertFalse(reconnect.isRetired(), "post-marking connection is immune");
       assertTrue(scheduler.pending.isEmpty(), "no second marking pass scheduled");
     } finally {
       reconnect.close();
@@ -198,13 +198,13 @@ public class MaintenanceMarkingTest {
     Connection otherSource = connect(otherServer);
     try {
       controller.onMoving(new MovingEvent(1L, 10, null), otherSource);
-      assertFalse(receiver.isMarkedForReconnect(), "no early marking on merge");
-      assertFalse(otherSource.isMarkedForReconnect(), "no early marking on merge");
+      assertFalse(receiver.isRetired(), "no early marking on merge");
+      assertFalse(otherSource.isRetired(), "no early marking on merge");
 
       scheduler.runPending();
 
-      assertTrue(receiver.isMarkedForReconnect());
-      assertTrue(otherSource.isMarkedForReconnect(), "merged source covered by its scheduled pass");
+      assertTrue(receiver.isRetired());
+      assertTrue(otherSource.isRetired(), "merged source covered by its scheduled pass");
     } finally {
       otherSource.close();
     }
@@ -219,7 +219,7 @@ public class MaintenanceMarkingTest {
     Connection otherSource = connect(otherServer);
     try {
       controller.onMoving(new MovingEvent(1L, 30, TARGET_B), otherSource);
-      assertTrue(otherSource.isMarkedForReconnect(), "late-joining source marked immediately");
+      assertTrue(otherSource.isRetired(), "late-joining source marked immediately");
     } finally {
       otherSource.close();
     }
@@ -236,14 +236,14 @@ public class MaintenanceMarkingTest {
     Runnable staleMarking = scheduler.pending.peek();
 
     moving(2L, TARGET_B, 30); // supersedes; pending passes are never cancelled by design
-    assertTrue(receiver.isMarkedForReconnect(), "new epoch marked inline");
+    assertTrue(receiver.isRetired(), "new epoch marked inline");
     assertEquals(1, notified.get());
 
     // Staleness is the seq guard's job: the superseded epoch's fire is a complete no-op.
     Connection fresh = connect(mockServer);
     try {
       staleMarking.run();
-      assertFalse(fresh.isMarkedForReconnect(), "stale pass marks nothing");
+      assertFalse(fresh.isRetired(), "stale pass marks nothing");
       assertEquals(1, notified.get(), "stale pass notifies nothing");
     } finally {
       fresh.close();

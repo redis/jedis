@@ -171,12 +171,8 @@ public class Connection implements Closeable {
   private boolean isBlocking = false;
   private Set<InitVisitor> initVisitors = new HashSet<>();
 
-  /**
-   * Maintenance mark, written by the controller's marking passes: this connection
-   * must be recycled instead of re-pooled. Advisory — enforced on return and by validation; never
-   * interrupts in-flight work.
-   */
-  private volatile boolean markedForReconnect;
+  /** One-way advisory flag: this connection must leave pool service. See {@link #retire()}. */
+  private volatile boolean retired;
 
   /** Listeners notified synchronously of this connection's maintenance events (pool-injected). */
   private final Set<MaintenanceEventListener> maintenanceEventListeners = ConcurrentHashMap
@@ -544,10 +540,10 @@ public class Connection implements Closeable {
     if (this.memberOf != null) {
       ConnectionPool pool = this.memberOf;
       this.memberOf = null;
-      if (isBroken() || markedForReconnect) {
+      if (isBroken()) {
         pool.returnBrokenResource(this);
       } else {
-        pool.returnResource(this);
+        pool.returnResource(this); // the pool's return hook routes retired connections to disposal
       }
     } else {
       disconnect();
@@ -1073,12 +1069,17 @@ public class Connection implements Closeable {
     this.pushConsumers.remove(consumer);
   }
 
-  void markForReconnect() {
-    this.markedForReconnect = true;
+  /**
+   * Retires this connection from pool service. Advisory and one-way: no I/O happens here; the pool
+   * destroys a retired connection on return, validation, or eviction instead of reusing it.
+   */
+  void retire() {
+    this.retired = true;
   }
 
-  boolean isMarkedForReconnect() {
-    return markedForReconnect;
+  /** Whether this connection was {@link #retire() retired} and must not be reused. */
+  boolean isRetired() {
+    return retired;
   }
 
   ChainedTimeoutSource getTimeoutSource() {

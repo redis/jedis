@@ -241,13 +241,13 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       if (!jedis.isConnected()) {
         return false;
       }
-      if (jedis.isMarkedForReconnect()) {
+      if (jedis.isRetired()) {
         return false; // marked by a maintenance marking pass -> recycle
       }
       reAuthenticate(jedis);
       // Re-check after the ping: its read may consume a buffered MOVING push whose inline
       // marking pass marks this connection.
-      return jedis.ping() && !jedis.isMarkedForReconnect();
+      return jedis.ping() && !jedis.isRetired();
     } catch (final Exception e) {
       logger.warn("Error while validating pooled Connection object.", e);
       return false;

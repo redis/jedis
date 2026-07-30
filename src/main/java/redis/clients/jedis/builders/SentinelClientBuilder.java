@@ -109,7 +109,9 @@ public abstract class SentinelClientBuilder<C>
   @Override
   public C build() {
     if (sentinelClientConfig == null) {
-      sentinelClientConfig = DefaultJedisClientConfig.builder().build();
+      // Sentinel connections use the legacy Jedis client which does not support RESP3
+      // auto-negotiation, so the default config must opt out to avoid a spurious warning.
+      sentinelClientConfig = DefaultJedisClientConfig.builder().serverDefaultProtocol().build();
     }
 
     return super.build();

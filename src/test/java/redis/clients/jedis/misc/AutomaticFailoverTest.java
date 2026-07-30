@@ -71,7 +71,7 @@ public class AutomaticFailoverTest {
   @BeforeEach
   public void setUp() {
     jedis2 = new Jedis(workingEndpoint.getHostAndPort(),
-        workingEndpoint.getClientConfigBuilder().build());
+        workingEndpoint.getClientConfigBuilder().serverDefaultProtocol().build());
     jedis2.flushAll();
   }
 

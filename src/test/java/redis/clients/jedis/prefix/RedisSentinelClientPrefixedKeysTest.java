@@ -18,7 +18,8 @@ public class RedisSentinelClientPrefixedKeysTest extends PrefixedKeysTest<RedisS
   private static final String MASTER_NAME = "mymaster";
   private static final JedisClientConfig MASTER_CLIENT_CONFIG = DefaultJedisClientConfig.builder().password("foobared").build();
   private static Set<HostAndPort> SENTINEL_NODES;
-  private static final JedisClientConfig SENTINEL_CLIENT_CONFIG = DefaultJedisClientConfig.builder().build();
+  private static final JedisClientConfig SENTINEL_CLIENT_CONFIG = DefaultJedisClientConfig.builder()
+      .serverDefaultProtocol().build();
 
   @BeforeAll
   public static void prepareEndpoints() {

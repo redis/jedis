@@ -152,6 +152,13 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     }
   }
 
+  /**
+   * Returns the client-side {@link Cache} this factory uses when creating connections,
+   * or {@code null} if caching is not enabled.
+   *
+   * @return the cache instance, or {@code null}
+   * @since 8.0
+   */
   public Cache getCache() {
     return cache;
   }

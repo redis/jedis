@@ -59,7 +59,7 @@ public class ScanParams implements IParams {
 
   public String match() {
     if (params.containsKey(MATCH)) {
-      return new String(params.get(MATCH).array());
+      return SafeEncoder.encode(params.get(MATCH).array());
     } else {
       return null;
     }

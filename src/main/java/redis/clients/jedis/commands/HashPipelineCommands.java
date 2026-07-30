@@ -106,7 +106,7 @@ public interface HashPipelineCommands {
    * @since 8.0
    */
   @Experimental
-  Response<String> himportPrepare(HashImport fieldset);
+  Response<String> himportPrepare(HashImport<?> fieldset);
 
   /**
    * Pipeline variant of {@code HIMPORT SET} (Hinted Hash Templates, Redis 8.10) — queues creation of
@@ -119,7 +119,7 @@ public interface HashPipelineCommands {
    * @since 8.0
    */
   @Experimental
-  Response<String> himportSet(String key, HashImport fieldset, String... values);
+  Response<String> himportSet(String key, HashImport<String> fieldset, String... values);
 
   /**
    * Pipeline variant of {@code HIMPORT DISCARD} (Hinted Hash Templates, Redis 8.10) — queues removal
@@ -129,7 +129,7 @@ public interface HashPipelineCommands {
    * @since 8.0
    */
   @Experimental
-  Response<Long> himportDiscard(HashImport fieldset);
+  Response<Long> himportDiscard(HashImport<?> fieldset);
 
   /**
    * Pipeline variant of {@code HIMPORT DISCARDALL} (Hinted Hash Templates, Redis 8.10) — queues

@@ -3,9 +3,11 @@ package redis.clients.jedis;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Arrays;
+import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
@@ -18,9 +20,8 @@ public class HashImportTest {
 
   @Test
   public void stringTemplate() {
-    HashImport fs = HashImport.of("name", "email", "age");
-    assertArrayEquals(new String[] { "name", "email", "age" }, fs.fields());
-    assertNull(fs.binaryFields());
+    HashImport<String> fs = HashImport.of("name", "email", "age");
+    assertEquals(Arrays.asList("name", "email", "age"), fs.fields());
     assertEquals(3, fs.size());
     assertTrue(fs.name().startsWith("j:"));
   }
@@ -29,17 +30,18 @@ public class HashImportTest {
   public void binaryTemplate() {
     byte[] f1 = SafeEncoder.encode("name");
     byte[] f2 = SafeEncoder.encode("age");
-    HashImport fs = HashImport.of(f1, f2);
-    assertNull(fs.fields());
-    assertArrayEquals(new byte[][] { f1, f2 }, fs.binaryFields());
-    assertEquals(2, fs.size());
+    HashImport<byte[]> fs = HashImport.of(f1, f2);
+    List<byte[]> fields = fs.fields();
+    assertEquals(2, fields.size());
+    assertArrayEquals(f1, fields.get(0));
+    assertArrayEquals(f2, fields.get(1));
     assertTrue(fs.name().startsWith("j:"));
   }
 
   @Test
   public void namesAreUniqueAndMonotonic() {
-    HashImport a = HashImport.of("x");
-    HashImport b = HashImport.of("x");
+    HashImport<String> a = HashImport.of("x");
+    HashImport<String> b = HashImport.of("x");
     assertNotEquals(a.name(), b.name());
   }
 
@@ -59,6 +61,7 @@ public class HashImportTest {
   @Test
   public void rejectsDuplicateField() {
     assertThrows(IllegalArgumentException.class, () -> HashImport.of("a", "a"));
+    // byte[] duplicates are compared by content.
     assertThrows(IllegalArgumentException.class,
       () -> HashImport.of(SafeEncoder.encode("a"), SafeEncoder.encode("a")));
   }
@@ -66,8 +69,8 @@ public class HashImportTest {
   @Test
   public void constructionCopiesInput() {
     String[] fields = { "a", "b" };
-    HashImport fs = HashImport.of(fields);
+    HashImport<String> fs = HashImport.of(fields);
     fields[0] = "mutated";
-    assertEquals("a", fs.fields()[0]);
+    assertEquals("a", fs.fields().get(0));
   }
 }

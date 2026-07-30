@@ -706,7 +706,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
   public void himport() {
     // A fieldset is session state on the executor's (reused) connection, so PREPARE and the
     // dependent SETs run on the same socket in this single-threaded test.
-    HashImport fs = HashImport.of("name", "email", "age");
+    HashImport<String> fs = HashImport.of("name", "email", "age");
     assertThat(exec(commandObjects.himportPrepare(fs)), equalTo("OK"));
     assertThat(exec(commandObjects.himportSet("user:1", fs, "alice", "alice@example.com", "25")),
         equalTo("OK"));
@@ -732,7 +732,7 @@ public class CommandObjectsHashCommandsTest extends CommandObjectsStandaloneTest
     byte[] key = "buser:1".getBytes();
     byte[] vName = "carol".getBytes();
     byte[] vAge = "41".getBytes();
-    HashImport fs = HashImport.of(fName, fAge);
+    HashImport<byte[]> fs = HashImport.of(fName, fAge);
 
     assertThat(exec(commandObjects.himportPrepare(fs)), equalTo("OK"));
     assertThat(exec(commandObjects.himportSet(key, fs, vName, vAge)), equalTo("OK"));

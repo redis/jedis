@@ -5480,27 +5480,27 @@ public abstract class PipeliningBase
 
   @Experimental
   @Override
-  public Response<String> himportPrepare(HashImport fieldset) {
+  public Response<String> himportPrepare(HashImport<?> fieldset) {
     return appendCommand(commandObjects.himportPrepare(fieldset));
   }
 
   @Experimental
   @Override
-  public Response<String> himportSet(String key, HashImport fieldset, String... values) {
+  public Response<String> himportSet(String key, HashImport<String> fieldset, String... values) {
     requireValueCount(fieldset, values.length);
     return appendCommand(commandObjects.himportSet(key, fieldset, values));
   }
 
   @Experimental
   @Override
-  public Response<String> himportSet(byte[] key, HashImport fieldset, byte[]... values) {
+  public Response<String> himportSet(byte[] key, HashImport<byte[]> fieldset, byte[]... values) {
     requireValueCount(fieldset, values.length);
     return appendCommand(commandObjects.himportSet(key, fieldset, values));
   }
 
   @Experimental
   @Override
-  public Response<Long> himportDiscard(HashImport fieldset) {
+  public Response<Long> himportDiscard(HashImport<?> fieldset) {
     return appendCommand(commandObjects.himportDiscard(fieldset));
   }
 
@@ -5510,7 +5510,7 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.himportDiscardAll());
   }
 
-  private static void requireValueCount(HashImport fieldset, int valueCount) {
+  private static void requireValueCount(HashImport<?> fieldset, int valueCount) {
     if (valueCount != fieldset.size()) {
       throw new IllegalArgumentException("HIMPORT SET for fieldset '" + fieldset.name() + "' expects "
           + fieldset.size() + " values, got " + valueCount);

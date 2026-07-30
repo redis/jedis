@@ -827,7 +827,7 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
 
   @Test
   public void testHimportPrepare() {
-    HashImport fs = HashImport.of("name", "age");
+    HashImport<String> fs = HashImport.of("name", "age");
     when(commandObjects.himportPrepare(fs)).thenReturn(stringCommandObject);
 
     assertThat(pipeliningBase.himportPrepare(fs), is(predefinedResponse));
@@ -836,7 +836,7 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
 
   @Test
   public void testHimportPrepareBinary() {
-    HashImport fs = HashImport.of(SafeEncoder.encode("name"), SafeEncoder.encode("age"));
+    HashImport<byte[]> fs = HashImport.of(SafeEncoder.encode("name"), SafeEncoder.encode("age"));
     when(commandObjects.himportPrepare(fs)).thenReturn(stringCommandObject);
 
     assertThat(pipeliningBase.himportPrepare(fs), is(predefinedResponse));
@@ -845,7 +845,7 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
 
   @Test
   public void testHimportSet() {
-    HashImport fs = HashImport.of("name", "age");
+    HashImport<String> fs = HashImport.of("name", "age");
     when(commandObjects.himportSet("k", fs, "alice", "30")).thenReturn(stringCommandObject);
 
     assertThat(pipeliningBase.himportSet("k", fs, "alice", "30"), is(predefinedResponse));
@@ -857,7 +857,7 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
     byte[] key = SafeEncoder.encode("k");
     byte[] v1 = SafeEncoder.encode("alice");
     byte[] v2 = SafeEncoder.encode("30");
-    HashImport fs = HashImport.of("name", "age");
+    HashImport<byte[]> fs = HashImport.of(SafeEncoder.encode("name"), SafeEncoder.encode("age"));
     when(commandObjects.himportSet(key, fs, v1, v2)).thenReturn(stringCommandObject);
 
     assertThat(pipeliningBase.himportSet(key, fs, v1, v2), is(predefinedResponse));
@@ -866,7 +866,7 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
 
   @Test
   public void testHimportSetRejectsWrongValueCount() {
-    HashImport fs = HashImport.of("name", "age");
+    HashImport<String> fs = HashImport.of("name", "age");
     // Local validation happens before anything is queued.
     assertThrows(IllegalArgumentException.class, () -> pipeliningBase.himportSet("k", fs, "one"));
     assertThat(commands, is(Collections.emptyList()));
@@ -874,7 +874,7 @@ public class PipeliningBaseHashCommandsTest extends PipeliningBaseMockedTestBase
 
   @Test
   public void testHimportDiscard() {
-    HashImport fs = HashImport.of("name");
+    HashImport<String> fs = HashImport.of("name");
     when(commandObjects.himportDiscard(fs)).thenReturn(longCommandObject);
 
     assertThat(pipeliningBase.himportDiscard(fs), is(predefinedResponse));

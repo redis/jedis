@@ -104,5 +104,5 @@ public interface HashPipelineBinaryCommands {
    * @since 8.0
    */
   @Experimental
-  Response<String> himportSet(byte[] key, HashImport fieldset, byte[]... values);
+  Response<String> himportSet(byte[] key, HashImport<byte[]> fieldset, byte[]... values);
 }

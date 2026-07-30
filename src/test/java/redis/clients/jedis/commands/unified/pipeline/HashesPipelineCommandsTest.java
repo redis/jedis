@@ -381,7 +381,7 @@ public class HashesPipelineCommandsTest extends PipelineCommandsTestBase {
   @Test
   @EnabledOnCommand("HIMPORT")
   public void himport() {
-    HashImport fs = HashImport.of("name", "email", "age");
+    HashImport<String> fs = HashImport.of("name", "email", "age");
 
     pipe.himportPrepare(fs);
     pipe.himportSet("user:1", fs, "alice", "alice@example.com", "25");
@@ -397,7 +397,7 @@ public class HashesPipelineCommandsTest extends PipelineCommandsTestBase {
   @Test
   @EnabledOnCommand("HIMPORT")
   public void himportBinary() {
-    HashImport fs = HashImport.of(bbar, bcar);
+    HashImport<byte[]> fs = HashImport.of(bbar, bcar);
 
     pipe.himportPrepare(fs);
     pipe.himportSet(bfoo, fs, bbar1, bbar2);
@@ -411,7 +411,7 @@ public class HashesPipelineCommandsTest extends PipelineCommandsTestBase {
   @Test
   @EnabledOnCommand("HIMPORT")
   public void himportDiscard() {
-    HashImport fs = HashImport.of("f1", "f2");
+    HashImport<String> fs = HashImport.of("f1", "f2");
 
     pipe.himportPrepare(fs);
     pipe.himportSet("d:1", fs, "a", "b");
@@ -426,7 +426,7 @@ public class HashesPipelineCommandsTest extends PipelineCommandsTestBase {
   @Test
   @EnabledOnCommand("HIMPORT")
   public void himportSetRejectsWrongValueCount() {
-    HashImport fs = HashImport.of("name", "age");
+    HashImport<String> fs = HashImport.of("name", "age");
     // Local validation — thrown before anything is queued.
     assertThrows(IllegalArgumentException.class, () -> pipe.himportSet("k", fs, "only-one"));
   }

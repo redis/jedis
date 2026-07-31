@@ -151,12 +151,20 @@ final class MaintenanceEventController
     }
     MovingOperation applied = movingOperations.process(e, affectedPeer);
     if (applied == null) {
-      // Re-delivery from an already-known source.
+      long retireAt = getRetirementFor(affectedPeer);
+      if (retireAt > NanoClock.INSTANCE.getAsLong()) {
+        c.retireAt(retireAt);
+      }
       return;
     }
     logger.debug("Applied MOVING {} -> {} (seq={}, ttl={}s, sources={})", affectedPeer, e.target,
       e.seq, e.ttlSeconds, applied.affected.size());
     handleRebind(applied);
+  }
+
+  private long getRetirementFor(SocketAddress peer) {
+    MovingOperation op = movingOperations.findActive(o -> o.affected.contains(peer));
+    return op == null ? 0 : op.reconnectAtNanos;
   }
 
   /**
@@ -166,12 +174,14 @@ final class MaintenanceEventController
    */
   private void handleRebind(MovingOperation snapshot) {
     if (snapshot.endpoint != null) {
-      retireAffected(snapshot); // real target: reconnect immediately
+      retireAffected(snapshot, NanoClock.INSTANCE.getAsLong()); // real target: reconnect
+                                                                // immediately
+      handoffHook.run();
       return;
     }
     long delayNanos = snapshot.reconnectAtNanos - NanoClock.INSTANCE.getAsLong();
     try {
-      scheduler().schedule(() -> retireAffected(snapshot), delayNanos, TimeUnit.NANOSECONDS);
+      scheduler().schedule(handoffHook::run, delayNanos, TimeUnit.NANOSECONDS);
     } catch (RejectedExecutionException alreadyClosed) {
       // Controller closed concurrently;
     }
@@ -182,16 +192,12 @@ final class MaintenanceEventController
    * runs the handoff hook. No I/O happens here — the pool destroys retired connections; retiring is
    * idempotent, so overlapping passes are harmless.
    */
-  private void retireAffected(MovingOperation snapshot) {
-    if (!snapshot.isValid()) {
-      return; // operation expired; the address may be legitimately live again
-    }
+  private void retireAffected(MovingOperation snapshot, long retireAtNanos) {
     registry.forEachLive(conn -> {
       if (snapshot.affected.contains(conn.getRemoteSocketAddress())) {
-        conn.retire();
+        conn.retireAt(retireAtNanos);
       }
     });
-    handoffHook.run();
   }
 
   ConnectionRegistry registry() {

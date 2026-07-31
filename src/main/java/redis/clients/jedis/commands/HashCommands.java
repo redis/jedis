@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.HashImport;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.HGetExParams;
 import redis.clients.jedis.params.HSetExParams;
@@ -252,4 +254,21 @@ public interface HashCommands {
    *         or -1 if the field exists but has no associated expire or -2 if the field does not exist.
    */
   List<Long> hpersist(String key, String... fields);
+
+  /**
+   * Bulk-imports a hash from a {@link HashImport} field-set template (Hinted Hash Templates, Redis
+   * 8.10), creating (or overwriting) the hash at {@code key} while sending only its values. The
+   * number of {@code values} must equal the template's field count, positionally paired with its
+   * field names. The key produced is an ordinary hash.
+   * <p>
+   * Preparation of the template on the underlying connection is managed transparently; the template
+   * must not be {@linkplain HashImport#isDiscarded() discarded}.
+   * @param key the hash key to create
+   * @param fieldset the field-set template
+   * @param values one value per template field, in field order
+   * @return {@code OK}
+   * @since 8.0
+   */
+  @Experimental
+  String himportSet(String key, HashImport fieldset, String... values);
 }

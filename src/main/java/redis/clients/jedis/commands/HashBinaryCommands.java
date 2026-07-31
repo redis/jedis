@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.HashImport;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.HGetExParams;
 import redis.clients.jedis.params.HSetExParams;
@@ -252,4 +254,16 @@ public interface HashBinaryCommands {
    *         or -1 if the field exists but has no associated expire or -2 if the field does not exist.
    */
   List<Long> hpersist(byte[] key, byte[]... fields);
+
+  /**
+   * Binary variant of {@link HashCommands#himportSet(String, HashImport, String...)} (Hinted Hash
+   * Templates, Redis 8.10).
+   * @param key the hash key to create
+   * @param fieldset the field-set template
+   * @param values one value per template field, in field order
+   * @return {@code OK}
+   * @since 8.0
+   */
+  @Experimental
+  String himportSet(byte[] key, HashImport fieldset, byte[]... values);
 }

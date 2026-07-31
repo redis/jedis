@@ -1465,6 +1465,24 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(HPERSIST).key(key)
         .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
   }
+
+  // Hash Import (HIMPORT) commands. These are internal building blocks for the managed
+  // himportSet on HashCommands/HashBinaryCommands; the fieldset lifecycle (PREPARE/DISCARD) is driven by UnifiedJedis
+  // and per-connection borrow-time reconciliation, not exposed directly.
+  final CommandObject<String> himportPrepare(String fieldset, Collection<byte[]> fields) {
+    return new CommandObject<>(commandArguments(HIMPORT).add(PREPARE).add(fieldset).addObjects(fields),
+        BuilderFactory.STRING);
+  }
+
+  final CommandObject<String> himportSet(String key, String fieldset, String... values) {
+    return new CommandObject<>(commandArguments(HIMPORT).add(Keyword.SET).key(key).add(fieldset)
+        .addObjects((Object[]) values), BuilderFactory.STRING);
+  }
+
+  final CommandObject<String> himportSet(byte[] key, String fieldset, byte[]... values) {
+    return new CommandObject<>(commandArguments(HIMPORT).add(Keyword.SET).key(key).add(fieldset)
+        .addObjects((Object[]) values), BuilderFactory.STRING);
+  }
   // Hash commands
 
   // Set commands

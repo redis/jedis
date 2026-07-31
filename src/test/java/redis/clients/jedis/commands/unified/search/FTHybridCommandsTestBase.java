@@ -2,6 +2,7 @@ package redis.clients.jedis.commands.unified.search;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.closeTo;
+import static org.hamcrest.Matchers.containsStringIgnoringCase;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
@@ -9,7 +10,11 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static redis.clients.jedis.util.AssertUtil.assertIndexSize;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
+import static redis.clients.jedis.util.RedisConditions.ModuleVersion.SEARCH_MOD_VER_810M3;
 
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
@@ -18,6 +23,7 @@ import java.util.Map;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
@@ -29,9 +35,12 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 import java.util.stream.Stream;
 
+import redis.clients.jedis.AbstractPipeline;
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
+import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.util.RedisConditions;
 import redis.clients.jedis.search.Document;
 import redis.clients.jedis.search.FTCreateParams;
 import redis.clients.jedis.search.IndexDataType;
@@ -511,6 +520,137 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
     Document doc = reply.getDocuments().get(0);
     assertThat(doc.hasProperty("combined_score"), equalTo(true));
     assertThat(Double.parseDouble(doc.getString("combined_score")), greaterThanOrEqualTo(0.0));
+  }
+
+  // ========== On-timeout policy tests (CAE-3003) ==========
+
+  private static final String TIMEOUT_INDEX = "hybrid-timeout-idx";
+  private static final String TIMEOUT_PREFIX = "hybrid:timeout:";
+
+  /**
+   * Number of documents indexed by the on-timeout tests. Enough that the hybrid query cannot
+   * complete within the 1ms per-query timeout, so the on-timeout policy is guaranteed to kick in.
+   */
+  private static final int TIMEOUT_DOC_COUNT = 10_000;
+
+  private void createTimeoutHybridIndex() {
+    // Use a dedicated index so we don't pollute the shared index used by the other tests.
+    if (jedis.ftList().contains(TIMEOUT_INDEX)) {
+      jedis.ftDropIndex(TIMEOUT_INDEX);
+    }
+
+    Map<String, Object> vectorAttrs = new HashMap<>();
+    vectorAttrs.put("TYPE", "FLOAT32");
+    vectorAttrs.put("DIM", VECTOR_DIM);
+    vectorAttrs.put("DISTANCE_METRIC", "COSINE");
+
+    assertOK(jedis.ftCreate(TIMEOUT_INDEX,
+      FTCreateParams.createParams().on(IndexDataType.HASH).prefix(TIMEOUT_PREFIX),
+      TextField.of("title"), VectorField.builder().fieldName("image_embedding")
+          .algorithm(VectorField.VectorAlgorithm.HNSW).attributes(vectorAttrs).build()));
+
+    byte[] vector = floatArrayToByteArray(
+      new float[] { 0.1f, 0.2f, 0.3f, 0.4f, 0.5f, 0.6f, 0.7f, 0.8f, 0.9f, 1.0f });
+    try (AbstractPipeline pipeline = jedis.pipelined()) {
+      for (int i = 0; i < TIMEOUT_DOC_COUNT; i++) {
+        Map<byte[], byte[]> fields = new HashMap<>();
+        fields.put("title".getBytes(), ("hello world " + i).getBytes());
+        fields.put("image_embedding".getBytes(), vector);
+        pipeline.hset((TIMEOUT_PREFIX + i).getBytes(), fields);
+      }
+      pipeline.sync();
+    }
+    // A transient CLUSTERDOWN can silently reject pipelined writes (responses are never read);
+    // reading the last document back surfaces such a write failure as a clear error instead of
+    // an obscure index-size mismatch below.
+    byte[] lastKey = (TIMEOUT_PREFIX + (TIMEOUT_DOC_COUNT - 1)).getBytes();
+    assertThat(jedis.hget(lastKey, "title".getBytes()), notNullValue());
+    assertIndexSize(jedis, TIMEOUT_INDEX, TIMEOUT_DOC_COUNT);
+  }
+
+  /**
+   * A hybrid query heavy enough that it cannot finish within a 1ms timeout: it matches every
+   * document on the search side and asks for as many vector neighbours as there are documents.
+   */
+  private FTHybridParams timingOutHybridParams() {
+    // A plain KNN + combine is far too cheap to hit a 1ms budget, so we push many documents through
+    // the post-processing pipeline (high KNN K and a large COMBINE window) and then force real
+    // per-document work in it, exactly like the FT.AGGREGATE timeout query: load the text field
+    // (HMGET per document), blow it up with repeated string formatting, and sort by that
+    // non-numeric
+    // field (the "no optimization" path). This reliably exceeds the timeout on any hardware.
+    return FTHybridParams.builder()
+        .search(FTHybridSearchParams.builder().query("hello world").build())
+        .vectorSearch(FTHybridVectorParams.builder().field("@image_embedding").vector("vector")
+            .method(FTHybridVectorParams.Knn.of(TIMEOUT_DOC_COUNT)).build())
+        .combine(Combiners.linear().alpha(0.5).beta(0.5).window(TIMEOUT_DOC_COUNT))
+        .postProcessing(FTHybridPostProcessingParams.builder().load("@title")
+            .apply(Apply.of("format(\"%s%s%s\",@title,@title,@title)", "a"))
+            .apply(Apply.of("format(\"%s%s%s\",@a,@a,@a)", "a"))
+            .apply(Apply.of("format(\"%s%s%s\",@a,@a,@a)", "a"))
+            .apply(Apply.of("format(\"%s%s%s\",@a,@a,@a)", "a"))
+            .apply(Apply.of("format(\"%s%s%s\",@a,@a,@a)", "a")).sortBy(SortedField.desc("@a"))
+            .build())
+        .timeout(1).param("vector", queryVector).build();
+  }
+
+  /**
+   * FT.HYBRID counterpart of the FT.SEARCH on-timeout FAIL test: the {@code FAIL} policy must
+   * surface a server error rather than partial results. See CAE-3003.
+   */
+  @Test
+  @Disabled("re-enable once MOD-17316 is fixed.")
+  public void hybridOnTimeoutFailReturnsError() {
+    assumeTrue(RedisConditions.of(jedis).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_810M3),
+      "ON_TIMEOUT FAIL policy");
+
+    createTimeoutHybridIndex();
+    assertOK(jedis.configSet("search-on-timeout", "fail"));
+    try {
+      HybridResult result;
+      try {
+        result = jedis.ftHybrid(TIMEOUT_INDEX, timingOutHybridParams());
+      } catch (JedisDataException e) {
+        // Expected: the FAIL policy surfaced the timeout as a server error.
+        assertThat(e.getMessage(), containsStringIgnoringCase("timeout"));
+        return;
+      }
+      // The query returned instead of failing. Surface the effective config and the actual command
+      // output so a CI failure is diagnosable (is search-on-timeout really "fail" on the serving
+      // node, and did the query even time out?) rather than a bare "expected exception but nothing
+      // was thrown".
+      fail(
+        "Expected FT.HYBRID to fail with a timeout error under the FAIL on-timeout policy, but it"
+            + " returned a result. search-on-timeout=" + jedis.configGet("search-on-timeout")
+            + ", result=" + result);
+    } finally {
+      assertOK(jedis.configSet("search-on-timeout", "return"));
+      jedis.ftDropIndex(TIMEOUT_INDEX);
+    }
+  }
+
+  /**
+   * FT.HYBRID counterpart of the FT.SEARCH on-timeout RETURN test: the {@code RETURN} policy must
+   * not throw and must expose the timeout via {@link HybridResult#getWarnings()}. FT.HYBRID carries
+   * warnings on both RESP2 and RESP3. See CAE-3003.
+   */
+  @Test
+  @Disabled("re-enable once MOD-17316 is fixed.")
+  public void hybridOnTimeoutReturnPopulatesWarnings() {
+    assumeTrue(RedisConditions.of(jedis).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_810M3),
+      "ON_TIMEOUT RETURN warnings");
+
+    createTimeoutHybridIndex();
+    assertOK(jedis.configSet("search-on-timeout", "return"));
+    try {
+      HybridResult result = jedis.ftHybrid(TIMEOUT_INDEX, timingOutHybridParams());
+
+      assertThat(result.getWarnings(), notNullValue());
+      assertThat(result.getWarnings(), not(empty()));
+      assertThat(result.getWarnings().toString(), containsStringIgnoringCase("timeout"));
+    } finally {
+      jedis.ftDropIndex(TIMEOUT_INDEX);
+    }
   }
 
   // ========== Scorer Tests ==========

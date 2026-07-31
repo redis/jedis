@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 
 // HIDE_START
 import java.util.List;
-import java.util.ArrayList;
+import java.util.stream.Collectors;
 
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.json.Path2;
@@ -19,7 +19,6 @@ import redis.clients.jedis.exceptions.JedisDataException;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 // HIDE_END
 
 // HIDE_START
@@ -322,35 +321,20 @@ public class QueryAggExample {
 
         // Tests for 'agg4' step.
         // REMOVE_START
+        // Neither the row order nor the order within the 'bicycles' lists is
+        // guaranteed, so sort both before comparing.
         assertEquals(3, rows4.size());
-
-        Row test4Row = rows4.get(0);
-        assertEquals("refurbished", test4Row.getString("condition"));
-
-        ArrayList<String> test4Bikes = (ArrayList<String>) test4Row.get("bicycles");
-        assertEquals(1, test4Bikes.size());
-        assertTrue(test4Bikes.contains("bicycle:9"));
-
-        test4Row = rows4.get(1);
-        assertEquals("used", test4Row.getString("condition"));
-        
-        test4Bikes = (ArrayList<String>) test4Row.get("bicycles");
-        assertEquals(4, test4Bikes.size());
-        assertTrue(test4Bikes.contains("bicycle:1"));
-        assertTrue(test4Bikes.contains("bicycle:2"));
-        assertTrue(test4Bikes.contains("bicycle:3"));
-        assertTrue(test4Bikes.contains("bicycle:4"));
-        
-        test4Row = rows4.get(2);
-        assertEquals("new", test4Row.getString("condition"));
-
-        test4Bikes = (ArrayList<String>) test4Row.get("bicycles");
-        assertEquals(5, test4Bikes.size());
-        assertTrue(test4Bikes.contains("bicycle:0"));
-        assertTrue(test4Bikes.contains("bicycle:5"));
-        assertTrue(test4Bikes.contains("bicycle:6"));
-        assertTrue(test4Bikes.contains("bicycle:7"));
-        assertTrue(test4Bikes.contains("bicycle:8"));
+        assertArrayEquals(
+            new String[] {
+                "new=[bicycle:0, bicycle:5, bicycle:6, bicycle:7, bicycle:8]",
+                "refurbished=[bicycle:9]",
+                "used=[bicycle:1, bicycle:2, bicycle:3, bicycle:4]"
+            },
+            rows4.stream()
+                    .map(r -> r.getString("condition") + "="
+                        + ((List<String>) r.get("bicycles")).stream().sorted().collect(Collectors.toList()))
+                    .sorted().toArray()
+        );
         // REMOVE_END
 
 // HIDE_START

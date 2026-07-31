@@ -130,8 +130,6 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private final JedisClientConfig clientConfig;
   private Supplier<Connection> objectMaker;
   private Connection.Builder connectionBuilder;
-  private final MaintenanceEventController maintenanceController; // null = maintenance off
-
   private AuthXEventListener authXEventListener;
 
   public ConnectionFactory(final HostAndPort hostAndPort) {
@@ -154,7 +152,6 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   public ConnectionFactory(Builder builder) {
     this.clientConfig = builder.getClientConfig();
     this.connectionBuilder = builder.getConnectionBuilder();
-    this.maintenanceController = builder.maintenanceController;
 
     initAuthXManager();
   }
@@ -173,20 +170,8 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
   private Connection build() {
     Connection conn = connectionBuilder.buildUninitialized();
-    registerForMaintenanceEvents(conn);
     initialize(conn);
     return conn;
-  }
-
-  /**
-   * Registers the connection for maintenance-event tracking. Must run before socket init: a
-   * connect racing a MOVING is then either visible to the marking pass (registered first) or
-   * redirected by the applied rebind via the address mapper.
-   */
-  private void registerForMaintenanceEvents(Connection conn) {
-    if (maintenanceController != null) {
-      maintenanceController.registry().register(conn);
-    }
   }
 
   /**

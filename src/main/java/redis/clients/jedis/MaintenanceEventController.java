@@ -173,13 +173,13 @@ final class MaintenanceEventController
    * A pending pass is never cancelled; a stale fire is a no-op once its operation expires.
    */
   private void handleRebind(MovingOperation snapshot) {
-    if (snapshot.endpoint != null) {
-      retireAffected(snapshot, NanoClock.INSTANCE.getAsLong()); // real target: reconnect
-                                                                // immediately
-      handoffHook.run();
-      return;
+    long retireAtNanos = NanoClock.INSTANCE.getAsLong(); // real target: retire immediately
+    long delayNanos = 0;
+    if (snapshot.endpoint == null) {
+      retireAtNanos = snapshot.reconnectAtNanos; // 'none': reconnect at half the grace window
+      delayNanos = retireAtNanos - NanoClock.INSTANCE.getAsLong();
     }
-    long delayNanos = snapshot.reconnectAtNanos - NanoClock.INSTANCE.getAsLong();
+    retireAffected(snapshot, retireAtNanos);
     try {
       scheduler().schedule(handoffHook::run, delayNanos, TimeUnit.NANOSECONDS);
     } catch (RejectedExecutionException alreadyClosed) {

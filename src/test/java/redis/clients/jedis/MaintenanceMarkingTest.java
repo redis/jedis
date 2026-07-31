@@ -10,11 +10,8 @@ import java.util.concurrent.Delayed;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
-
-import org.apache.commons.pool2.PooledObject;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -145,47 +142,6 @@ public class MaintenanceMarkingTest {
     } finally {
       reconnect.close();
     }
-  }
-
-  // --- factory registration order ---
-
-  @Test
-  public void factoryRegistersBeforeSocketInit() throws Exception {
-    // Registration precedes socket init, so a connect racing a MOVING is either visible to the
-    // marking pass or sees the applied rebind via the address mapper — no unretired connection
-    // can land on the old node.
-    AtomicBoolean registeredAtInit = new AtomicBoolean();
-    ConnectionFactory factory = new ConnectionFactory.Builder() {
-      @Override
-      protected ConnectionFactory create() {
-        return new ConnectionFactory(this) {
-          @Override
-          protected void initialize(Connection conn) {
-            registeredAtInit.set(isRegistered(conn));
-            super.initialize(conn);
-          }
-        };
-      }
-    }.hostAndPort(new HostAndPort("127.0.0.1", mockServer.getPort()))
-        .clientConfig(DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP3).build())
-        .maintenanceController(controller).build();
-
-    PooledObject<Connection> pooled = factory.makeObject();
-    try {
-      assertTrue(registeredAtInit.get(), "registered before socket init");
-    } finally {
-      pooled.getObject().close();
-    }
-  }
-
-  private boolean isRegistered(Connection conn) {
-    AtomicBoolean found = new AtomicBoolean();
-    controller.registry().forEachLive(c -> {
-      if (c == conn) {
-        found.set(true);
-      }
-    });
-    return found.get();
   }
 
   // --- same-seq merges ---

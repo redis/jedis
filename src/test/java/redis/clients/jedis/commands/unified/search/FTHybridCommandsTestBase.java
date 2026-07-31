@@ -23,6 +23,7 @@ import java.util.Map;
 
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Tag;
@@ -598,6 +599,7 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
    * surface a server error rather than partial results. See CAE-3003.
    */
   @Test
+  @Disabled("re-enable once MOD-17316 is fixed.")
   public void hybridOnTimeoutFailReturnsError() {
     assumeTrue(RedisConditions.of(jedis).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_810M3),
       "ON_TIMEOUT FAIL policy");
@@ -633,6 +635,7 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
    * warnings on both RESP2 and RESP3. See CAE-3003.
    */
   @Test
+  @Disabled("re-enable once MOD-17316 is fixed.")
   public void hybridOnTimeoutReturnPopulatesWarnings() {
     assumeTrue(RedisConditions.of(jedis).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_810M3),
       "ON_TIMEOUT RETURN warnings");

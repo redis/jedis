@@ -16,6 +16,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -338,8 +339,15 @@ public class Connection implements Closeable {
   }
 
   public <T> T executeCommand(final CommandObject<T> commandObject) {
-    final CommandArguments args = commandObject.getArguments();
+    Consumer<Connection> preProcessHook = commandObject.getPreProcessHook();
+    if (preProcessHook != null) {
+      // Per-connection setup that must precede this command (e.g. HIMPORT injects a lazy PREPARE
+      // before the SET). The command still arrived here through the CommandExecutor, so retry,
+      // cluster redirection and failover apply; the hook reaches this exact connection.
+      preProcessHook.accept(this);
+    }
 
+    final CommandArguments args = commandObject.getArguments();
     sendCommand(args);
     final Object reply;
     if (!args.isBlocking()) {

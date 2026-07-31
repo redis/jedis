@@ -177,21 +177,22 @@ public class Pipeline extends AbstractPipeline implements DatabasePipelineComman
   public Response<String> himportSet(String key, HashImport fieldset, String... values) {
     HashImportSupport.checkArgs(fieldset, values.length);
     himportPrepareBeforeUse(fieldset);
-    return appendCommand(commandObjects.himportSet(key, fieldset.name(), values));
+    return appendCommand(commandObjects.himportSet(key, fieldset, values));
   }
 
   @Override
   public Response<String> himportSet(byte[] key, HashImport fieldset, byte[]... values) {
     HashImportSupport.checkArgs(fieldset, values.length);
     himportPrepareBeforeUse(fieldset);
-    return appendCommand(commandObjects.himportSet(key, fieldset.name(), values));
+    return appendCommand(commandObjects.himportSet(key, fieldset, values));
   }
 
   /**
    * Buffers a {@code HIMPORT PREPARE} ahead of the {@code SET} when this pipeline's connection has
    * not yet prepared the fieldset, recording it in the connection's note so borrow-time
-   * reconciliation discards it after {@link HashImport#close()}. The buffered PREPARE reply is read
-   * (and discarded) at {@code sync()}; there is no retry-once, since pipeline replies are deferred.
+   * reconciliation discards it after {@link HashImport#close()}. The SET command's pre-process hook
+   * is inert here &mdash; a pipeline buffers raw arguments rather than executing on the connection
+   * &mdash; so the PREPARE is injected explicitly.
    */
   private void himportPrepareBeforeUse(HashImport fieldset) {
     if (!connection.himportIsPrepared(fieldset.name())) {

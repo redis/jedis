@@ -1663,37 +1663,19 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
 
   // Hash Import (HIMPORT) commands
 
+  // HIMPORT SET flows through the normal executor. The command carries a connection handler that
+  // injects a lazy PREPARE before the SET on whichever connection the executor picks, so cluster
+  // routing (by the SET's key), retry, and failover all apply.
   @Override
   public String himportSet(String key, HashImport fieldset, String... values) {
-    checkHimportSupported();
     HashImportSupport.checkArgs(fieldset, values.length);
-    return himportSet(fieldset, commandObjects.himportSet(key, fieldset.name(), values));
+    return executeCommand(commandObjects.himportSet(key, fieldset, values));
   }
 
   @Override
   public String himportSet(byte[] key, HashImport fieldset, byte[]... values) {
-    checkHimportSupported();
     HashImportSupport.checkArgs(fieldset, values.length);
-    return himportSet(fieldset, commandObjects.himportSet(key, fieldset.name(), values));
-  }
-
-  private void checkHimportSupported() {
-    if (provider == null) {
-      throw new IllegalStateException("HIMPORT is not supported on this " + getClass().getSimpleName());
-    }
-  }
-
-  /**
-   * Pins a single connection for both the (lazy) PREPARE and the SET, so the fieldset's connection
-   * affinity is guaranteed. In cluster the connection is routed by the SET's key. Borrow-time
-   * reconciliation ({@link ConnectionFactory#activateObject}) discards any fieldsets closed since
-   * the connection was last used.
-   */
-  private String himportSet(HashImport fieldset, CommandObject<String> setCommand) {
-    try (Connection connection = provider.getConnection(setCommand.getArguments())) {
-      return HashImportSupport.set(connection, fieldset,
-          commandObjects.himportPrepare(fieldset.name(), fieldset.fields()), setCommand);
-    }
+    return executeCommand(commandObjects.himportSet(key, fieldset, values));
   }
 
   @Override

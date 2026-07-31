@@ -1466,22 +1466,27 @@ public class CommandObjects {
         .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
   }
 
-  // Hash Import (HIMPORT) commands. These are internal building blocks for the managed
-  // himportSet on HashCommands/HashBinaryCommands; the fieldset lifecycle (PREPARE/DISCARD) is driven by UnifiedJedis
-  // and per-connection borrow-time reconciliation, not exposed directly.
+  // Hash Import (HIMPORT) commands. The SET command carries a pre-process hook that lazily injects
+  // PREPARE just before the SET on whichever connection the CommandExecutor picks (see
+  // HashImportSupport#prepareBeforeUse); PREPARE/DISCARD are internal (DISCARD is issued by
+  // borrow-time reconciliation, not built here).
   final CommandObject<String> himportPrepare(String fieldset, Collection<byte[]> fields) {
     return new CommandObject<>(commandArguments(HIMPORT).add(PREPARE).add(fieldset).addObjects(fields),
         BuilderFactory.STRING);
   }
 
-  final CommandObject<String> himportSet(String key, String fieldset, String... values) {
-    return new CommandObject<>(commandArguments(HIMPORT).add(Keyword.SET).key(key).add(fieldset)
-        .addObjects((Object[]) values), BuilderFactory.STRING);
+  final CommandObject<String> himportSet(String key, HashImport fieldset, String... values) {
+    CommandObject<String> prepare = himportPrepare(fieldset.name(), fieldset.fields());
+    return new CommandObject<>(commandArguments(HIMPORT).add(Keyword.SET).key(key).add(fieldset.name())
+        .addObjects((Object[]) values), BuilderFactory.STRING)
+            .setPreProcessHook(conn -> HashImportSupport.prepareBeforeUse(conn, fieldset, prepare));
   }
 
-  final CommandObject<String> himportSet(byte[] key, String fieldset, byte[]... values) {
-    return new CommandObject<>(commandArguments(HIMPORT).add(Keyword.SET).key(key).add(fieldset)
-        .addObjects((Object[]) values), BuilderFactory.STRING);
+  final CommandObject<String> himportSet(byte[] key, HashImport fieldset, byte[]... values) {
+    CommandObject<String> prepare = himportPrepare(fieldset.name(), fieldset.fields());
+    return new CommandObject<>(commandArguments(HIMPORT).add(Keyword.SET).key(key).add(fieldset.name())
+        .addObjects((Object[]) values), BuilderFactory.STRING)
+            .setPreProcessHook(conn -> HashImportSupport.prepareBeforeUse(conn, fieldset, prepare));
   }
   // Hash commands
 

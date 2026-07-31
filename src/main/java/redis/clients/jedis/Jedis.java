@@ -5157,18 +5157,14 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String himportSet(String key, HashImport fieldset, String... values) {
     checkIsInMultiOrPipeline();
     HashImportSupport.checkArgs(fieldset, values.length);
-    return HashImportSupport.set(connection, fieldset,
-        commandObjects.himportPrepare(fieldset.name(), fieldset.fields()),
-        commandObjects.himportSet(key, fieldset.name(), values));
+    return connection.executeCommand(commandObjects.himportSet(key, fieldset, values));
   }
 
   @Override
   public String himportSet(byte[] key, HashImport fieldset, byte[]... values) {
     checkIsInMultiOrPipeline();
     HashImportSupport.checkArgs(fieldset, values.length);
-    return HashImportSupport.set(connection, fieldset,
-        commandObjects.himportPrepare(fieldset.name(), fieldset.fields()),
-        commandObjects.himportSet(key, fieldset.name(), values));
+    return connection.executeCommand(commandObjects.himportSet(key, fieldset, values));
   }
 
   /**

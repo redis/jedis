@@ -7,9 +7,10 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
- * Identity semantics of {@link MaintenanceEvent#identity()}: event type + seq for all types,
- * refined with the original target endpoint for MOVING. Identity excludes payload that may vary
- * between deliveries of the same operation (remaining time, shard diagnostics).
+ * Identity semantics of {@link MaintenanceEvent#identity()}: seq for all types; MOVING is also
+ * keyed by the original target endpoint, so concurrent MOVINGs to different endpoints stay distinct
+ * operations. Identity excludes payload that may vary between deliveries of the same operation
+ * (remaining time, shard diagnostics).
  */
 @Tag("sch")
 public class MaintenanceEventIdentityTest {
@@ -18,15 +19,12 @@ public class MaintenanceEventIdentityTest {
   private static final HostAndPort TARGET_C = new HostAndPort("node-c.example.com", 6381);
 
   @Test
-  public void seqBasedIdentity_equalWithinType_distinctAcrossTypes() {
+  public void seqIsTheIdentityForNonMovingEvents() {
     assertEquals(new FailingOverEvent(5L, 10, "1").identity(),
-      new FailingOverEvent(5L, 99, "2").identity(), "same type + seq: same operation");
+      new FailingOverEvent(5L, 99, "2").identity(), "same seq: same operation");
     assertEquals(new FailingOverEvent(5L, 10, "1").identity().hashCode(),
       new FailingOverEvent(5L, 99, "2").identity().hashCode());
 
-    assertNotEquals(new FailingOverEvent(5L, 10, "1").identity(),
-      new MigratingEvent(5L, 10, "1").identity(), "same seq across types: distinct operations");
-    assertNotEquals(new MigratedEvent(5L, "1").identity(), new FailedOverEvent(5L, "1").identity());
     assertNotEquals(new FailingOverEvent(5L, 10, "1").identity(),
       new FailingOverEvent(6L, 10, "1").identity());
   }
@@ -49,8 +47,8 @@ public class MaintenanceEventIdentityTest {
   }
 
   @Test
-  public void movingIdentity_neverEqualsSeqBasedIdentity() {
-    // Class-strict equality, symmetric in both directions.
+  public void movingIdentity_neverEqualsSeqOnlyIdentity() {
+    // A MOVING identity is a composite value; it can never equal a plain seq, in either direction.
     assertNotEquals(new MovingEvent(5L, 10, null).identity(),
       new FailingOverEvent(5L, 10, "1").identity());
     assertNotEquals(new FailingOverEvent(5L, 10, "1").identity(),

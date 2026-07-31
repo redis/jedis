@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 /**
- * The pool's active MOVING operations, each deduplicated (by the event's {@link MovingEventId})
+ * The pool's active MOVING operations, each deduplicated (by the event's identity)
  * from the per-connection MOVING events announcing it. Purely a store: admission (dedup + merge)
  * and queries; the dedup rule lives on the event, and reacting to an admitted operation is the
  * caller's job. Operations never supersede each other, they only expire; reads remove expired
@@ -18,7 +18,7 @@ import java.util.function.Predicate;
  */
 final class MovingOperations {
 
-  private final ConcurrentHashMap<MovingEventId, MovingOperation> operations = new ConcurrentHashMap<>();
+  private final ConcurrentHashMap<Object, MovingOperation> operations = new ConcurrentHashMap<>();
 
   /**
    * Processes one MOVING event delivery. Returns the operation snapshot this delivery produced — a
@@ -29,7 +29,7 @@ final class MovingOperations {
    * that path.
    */
   MovingOperation process(MovingEvent e, SocketAddress receiverPeer) {
-    MovingEventId id = e.identity();
+    Object id = e.identity();
     MovingOperation existing = operations.get(id);
     if (existing != null && existing.affected.contains(receiverPeer)) {
       return null;
@@ -84,7 +84,7 @@ final class MovingOperations {
    */
   static final class MovingOperation {
 
-    private final MovingEventId id;
+    private final Object id;
     final long seq;
     /** Original target as sent by the server, unresolved; null = 'none' (no remap). */
     final HostAndPort endpoint;

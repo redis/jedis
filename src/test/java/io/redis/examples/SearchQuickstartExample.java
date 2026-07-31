@@ -44,6 +44,8 @@ public class SearchQuickstartExample {
     } catch (JedisDataException e) {
       System.out.println("Can't connect to Redis: " + e.getMessage());
     }
+    jedis.del("bicycle:0", "bicycle:1", "bicycle:2", "bicycle:3", "bicycle:4",
+        "bicycle:5", "bicycle:6", "bicycle:7", "bicycle:8", "bicycle:9");
     // REMOVE_END
 
     // STEP_START create_index

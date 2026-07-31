@@ -927,6 +927,25 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hpersist(key, fields));
   }
 
+  // HIMPORT needs a lazily-injected PREPARE on the same physical connection as the SET. That is only
+  // well-defined on a single-connection pipeline (see Pipeline#himportSet); a transaction (MULTI
+  // would desync EXEC) and a cluster pipeline (keyless PREPARE cannot be routed by slot) reject it.
+  @Override
+  public Response<String> himportSet(String key, HashImport fieldset, String... values) {
+    throw himportUnsupported();
+  }
+
+  @Override
+  public Response<String> himportSet(byte[] key, HashImport fieldset, byte[]... values) {
+    throw himportUnsupported();
+  }
+
+  UnsupportedOperationException himportUnsupported() {
+    return new UnsupportedOperationException(
+        "HIMPORT is not supported on " + getClass().getSimpleName()
+            + "; use a single-connection pipeline or himportSet on the client");
+  }
+
   @Override
   public Response<Long> sadd(String key, String... members) {
     return appendCommand(commandObjects.sadd(key, members));

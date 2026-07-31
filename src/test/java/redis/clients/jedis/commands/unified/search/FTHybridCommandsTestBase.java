@@ -10,7 +10,7 @@ import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static redis.clients.jedis.util.AssertUtil.assertIndexSize;
 import static redis.clients.jedis.util.AssertUtil.assertOK;
@@ -530,7 +530,7 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
    * Number of documents indexed by the on-timeout tests. Enough that the hybrid query cannot
    * complete within the 1ms per-query timeout, so the on-timeout policy is guaranteed to kick in.
    */
-  private static final int TIMEOUT_DOC_COUNT = 8_500;
+  private static final int TIMEOUT_DOC_COUNT = 10_000;
 
   private void createTimeoutHybridIndex() {
     // Use a dedicated index so we don't pollute the shared index used by the other tests.
@@ -605,9 +605,22 @@ public abstract class FTHybridCommandsTestBase extends UnifiedJedisCommandsTestB
     createTimeoutHybridIndex();
     assertOK(jedis.configSet("search-on-timeout", "fail"));
     try {
-      JedisDataException e = assertThrows(JedisDataException.class,
-        () -> jedis.ftHybrid(TIMEOUT_INDEX, timingOutHybridParams()));
-      assertThat(e.getMessage(), containsStringIgnoringCase("timeout"));
+      HybridResult result;
+      try {
+        result = jedis.ftHybrid(TIMEOUT_INDEX, timingOutHybridParams());
+      } catch (JedisDataException e) {
+        // Expected: the FAIL policy surfaced the timeout as a server error.
+        assertThat(e.getMessage(), containsStringIgnoringCase("timeout"));
+        return;
+      }
+      // The query returned instead of failing. Surface the effective config and the actual command
+      // output so a CI failure is diagnosable (is search-on-timeout really "fail" on the serving
+      // node, and did the query even time out?) rather than a bare "expected exception but nothing
+      // was thrown".
+      fail(
+        "Expected FT.HYBRID to fail with a timeout error under the FAIL on-timeout policy, but it"
+            + " returned a result. search-on-timeout=" + jedis.configGet("search-on-timeout")
+            + ", result=" + result);
     } finally {
       assertOK(jedis.configSet("search-on-timeout", "return"));
       jedis.ftDropIndex(TIMEOUT_INDEX);

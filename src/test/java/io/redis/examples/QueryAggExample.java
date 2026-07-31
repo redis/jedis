@@ -32,6 +32,8 @@ public class QueryAggExample {
         //REMOVE_START
         // Clear any keys here before using them in tests.
         try { jedis.ftDropIndex("idx:bicycle"); } catch (JedisDataException j) {}
+        jedis.del("bicycle:0", "bicycle:1", "bicycle:2", "bicycle:3", "bicycle:4",
+            "bicycle:5", "bicycle:6", "bicycle:7", "bicycle:8", "bicycle:9");
         //REMOVE_END
 // HIDE_END
 

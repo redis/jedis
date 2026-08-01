@@ -627,7 +627,9 @@ public class ClusterCommandObjectsTest {
   @Test
   public void testScanIsRoutedBySlotOfMatchPatternOnTheWire() {
     Charset original = SafeEncoder.DEFAULT_CHARSET;
-    // any charset other than the JVM default, so a default-charset decode becomes observable
+    // any charset other than the JVM default, so a default-charset decode becomes observable;
+    // the substitute must stay ASCII-compatible: Protocol.Command/Keyword freeze their raw bytes
+    // via SafeEncoder on first initialisation, so e.g. UTF-16 here would poison every later test
     SafeEncoder.DEFAULT_CHARSET = StandardCharsets.UTF_8.equals(Charset.defaultCharset())
         ? StandardCharsets.ISO_8859_1
         : StandardCharsets.UTF_8;
@@ -638,6 +640,9 @@ public class ClusterCommandObjectsTest {
       assertEquals(Collections.singleton(slotOnTheWire),
         clusterCommandObjects.scan("0", params).getArguments().getKeyHashSlots(),
         "SCAN must be routed to the slot owning the hash tag of the pattern it sends");
+      assertEquals(Collections.singleton(slotOnTheWire),
+        clusterCommandObjects.scan("0", params, "string").getArguments().getKeyHashSlots(),
+        "SCAN with TYPE must be routed to the same slot");
       assertEquals(Collections.singleton(slotOnTheWire),
         clusterCommandObjects.scan(SafeEncoder.encode("0"), params).getArguments()
             .getKeyHashSlots(),

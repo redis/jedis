@@ -622,7 +622,9 @@ public class ClusterCommandObjectsTest {
    * SCAN is routed by the hash tag of its MATCH pattern, and the pattern reaches the wire as the
    * bytes {@link ScanParams#match(String)} produced with {@link SafeEncoder#DEFAULT_CHARSET}, so
    * the slot has to come from those same bytes. Reading the pattern back with the JVM default
-   * charset instead mis-decodes a non-ASCII hash tag and picks a node that does not own it.
+   * charset instead mis-decodes a non-ASCII hash tag and picks a node that does not own it. The
+   * String/binary routing parity asserted here holds for ASCII-compatible charsets; a
+   * non-ASCII-compatible {@code DEFAULT_CHARSET} would break RESP framing before routing matters.
    */
   @Test
   public void testScanIsRoutedBySlotOfMatchPatternOnTheWire() {

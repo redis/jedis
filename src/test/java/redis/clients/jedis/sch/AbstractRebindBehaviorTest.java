@@ -3,6 +3,7 @@ package redis.clients.jedis.sch;
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
@@ -12,6 +13,7 @@ import java.time.Duration;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.jupiter.api.AfterEach;
@@ -188,6 +190,52 @@ public abstract class AbstractRebindBehaviorTest {
       assertEquals("PONG", client.ping());
       assertEquals(1, mockServer1.getConnectedClientCount());
       assertEquals(1, mockServer2.getConnectedClientCount());
+    }
+  }
+
+  @Test
+  public void testRebindTriggeredByEvictorIdleValidation() throws Exception {
+    ConnectionPoolConfig poolConfig = new ConnectionPoolConfig(); // testWhileIdle, numTests=-1
+    poolConfig.setMaxTotal(1);
+
+    try (
+        UnifiedJedis client = createClient(server1Address, clientConfig, maintConfig, poolConfig)) {
+      ConnectionPool pool = poolOf(client);
+
+      // One idle connection; the MOVING stays buffered on its stream while idle.
+      assertEquals("PONG", client.ping());
+      mockServer1.sendPushMessageToAll("MOVING", 30, 60, server2Address.toString());
+
+      // One eviction cycle: the idle-validation ping consumes the MOVING on the evictor thread.
+      // Retirement is stamped inline and the handoff hook (pool eviction) runs on the maintenance
+      // scheduler, so evict() must return instead of re-entering itself inline (the former
+      // livelock).
+      AtomicReference<Exception> evictError = new AtomicReference<>();
+      Thread evictor = new Thread(() -> {
+        try {
+          pool.evict();
+        } catch (Exception e) {
+          evictError.set(e);
+        }
+      }, "test-evictor");
+      evictor.setDaemon(true);
+      evictor.start();
+      evictor.join(TimeUnit.SECONDS.toMillis(5));
+      if (evictor.isAlive()) {
+        pool.clear(); // unwind the spin so teardown can proceed
+        fail("possible evict() livelock");
+      }
+      assertNull(evictError.get(), "evict() must complete cleanly");
+
+      // The retired connection is recycled and the replacement lands on the MOVING target.
+      await().atMost(Duration.ofSeconds(1)).pollInterval(Duration.ofMillis(20))
+          .until(() -> pool.getDestroyedCount() == 1);
+      assertEquals("PONG", client.ping());
+      await().atMost(Duration.ofSeconds(1)).pollInterval(Duration.ofMillis(20))
+          .untilAsserted(() -> {
+            assertEquals(0, mockServer1.getConnectedClientCount());
+            assertEquals(1, mockServer2.getConnectedClientCount());
+          });
     }
   }
 

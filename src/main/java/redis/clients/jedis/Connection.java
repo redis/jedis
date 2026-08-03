@@ -4,7 +4,6 @@ import static redis.clients.jedis.util.SafeEncoder.encode;
 
 import java.io.Closeable;
 import java.io.IOException;
-import java.lang.ref.WeakReference;
 import java.net.Socket;
 import java.net.SocketAddress;
 import java.net.SocketException;
@@ -12,8 +11,6 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
@@ -142,14 +139,8 @@ public class Connection implements Closeable {
   private final ProtocolHandshake handshake = new ProtocolHandshake(this);
   private final PushConsumerChainImpl pushConsumers = PushConsumerChainImpl.of();
 
-  /**
-   * HIMPORT fieldsets prepared on this physical connection (name &rarr; weak ref to the template).
-   * A fieldset is per-connection server state; this note lets a re-borrow reuse an already-prepared
-   * template and lets {@link #himportReconcileOnBorrow()} discard ones that were closed or
-   * garbage-collected. Lazily created; {@code null} until first HIMPORT use. Not synchronized: a
-   * borrowed connection is single-owner. Cleared whenever the socket is (re)connected or broken.
-   */
-  private Map<String, WeakReference<HashImport>> himportPreparedFieldsets;
+  /** Per-connection HIMPORT bookkeeping (prepared fieldsets + queued discards). */
+  private final HimportConnectionState himportState = new HimportConnectionState();
 
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
@@ -246,42 +237,38 @@ public class Connection implements Closeable {
    * Whether the given HIMPORT fieldset is already prepared on this connection.
    */
   boolean himportIsPrepared(String fieldset) {
-    return himportPreparedFieldsets != null && himportPreparedFieldsets.containsKey(fieldset);
+    return himportState.isPrepared(fieldset);
   }
 
   /**
-   * Records that the given HIMPORT fieldset has been prepared on this connection, keeping a weak
-   * reference so a later borrow can discard it if the template was closed or collected.
+   * Records that the given HIMPORT fieldset has been prepared on this connection, and registers this
+   * connection on the template so {@link HashImport#close()} can later enqueue its discard here.
    */
   void himportMarkPrepared(String fieldset, HashImport template) {
-    if (himportPreparedFieldsets == null) {
-      himportPreparedFieldsets = new HashMap<>();
-    }
-    himportPreparedFieldsets.put(fieldset, new WeakReference<>(template));
+    himportState.markPrepared(fieldset);
+    template.registerConnection(this);
   }
 
   /**
-   * Borrow-time reconciliation of this connection's HIMPORT fieldsets. For each fieldset prepared
-   * here whose template was {@linkplain HashImport#close() discarded} or garbage-collected, issue a
-   * best-effort {@code HIMPORT DISCARD} and drop it from the note. Safe here because the borrowing
-   * thread exclusively owns this connection.
+   * Enqueues a fieldset to discard from this connection on its next borrow. Called by
+   * {@link HashImport#close()}, possibly from a thread that does not own this connection; only the
+   * concurrent queue is touched here, never the socket.
+   */
+  void himportEnqueueDiscard(String fieldset) {
+    himportState.enqueueDiscard(fieldset);
+  }
+
+  /**
+   * Borrow-time reconciliation: issues a best-effort {@code HIMPORT DISCARD} for each fieldset that
+   * {@link HashImport#close()} queued for this connection. O(1) when nothing is queued (the common
+   * case). Safe because the borrowing thread exclusively owns this connection.
    */
   void himportReconcileOnBorrow() {
-    if (himportPreparedFieldsets == null || himportPreparedFieldsets.isEmpty()) {
-      return;
-    }
-    Iterator<Map.Entry<String, WeakReference<HashImport>>> it =
-        himportPreparedFieldsets.entrySet().iterator();
-    while (it.hasNext()) {
-      Map.Entry<String, WeakReference<HashImport>> entry = it.next();
-      HashImport template = entry.getValue().get();
-      if (template == null || template.isDiscarded()) {
-        try {
-          executeCommand(new CommandArguments(Command.HIMPORT).add(Keyword.DISCARD).add(entry.getKey()));
-        } catch (JedisException ignored) {
-          // Best-effort: a failed discard on borrow must not disrupt the command about to run.
-        }
-        it.remove();
+    for (String fieldset : himportState.drainDiscardable()) {
+      try {
+        executeCommand(new CommandArguments(Command.HIMPORT).add(Keyword.DISCARD).add(fieldset));
+      } catch (JedisException ignored) {
+        // Best-effort: a failed discard on borrow must not disrupt the command about to run.
       }
     }
   }
@@ -510,13 +497,11 @@ public class Connection implements Closeable {
   }
 
   /**
-   * Drops this connection's HIMPORT note without issuing any discard: the underlying socket was
+   * Drops this connection's HIMPORT state without issuing any discard: the underlying socket was
    * (re)connected or broken, so the server no longer holds those fieldsets.
    */
   private void himportForget() {
-    if (himportPreparedFieldsets != null) {
-      himportPreparedFieldsets.clear();
-    }
+    himportState.forget();
   }
 
   private JedisConnectionException markBroken(JedisConnectionException ex) {

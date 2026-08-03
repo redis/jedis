@@ -639,6 +639,7 @@
 						<include>**/RedisMultiDbClientSideCacheTest.java</include>
 						<include>**/MultiDbCSCTest.java</include>
 						<include>**/*HashImport*.java</include>
+						<include>**/*Himport*.java</include>
 					</includes>
 				</configuration>
 				<executions>

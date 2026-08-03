@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import redis.clients.jedis.annots.Experimental;
@@ -19,10 +20,12 @@ import redis.clients.jedis.util.SafeEncoder;
  * A fieldset is per-physical-connection server state. Rather than expose the raw
  * {@code PREPARE}/{@code DISCARD} lifecycle, the client manages it transparently: each
  * {@link redis.clients.jedis.commands.HashCommands#himportSet(String, HashImport, String...)
- * himportSet} lazily prepares the template on whichever pooled connection it lands on, and cleanup
- * happens at the only thread-safe moment &mdash; when a connection is next borrowed &mdash; driven
- * by this template's {@linkplain #isDiscarded() discarded} flag (or by garbage collection if the
- * caller drops it without closing). Use it with try-with-resources:
+ * himportSet} lazily prepares the template on whichever pooled connection it lands on. On
+ * {@link #close()} the template pushes a discard onto every connection it was prepared on; each
+ * connection issues that {@code DISCARD} at the only thread-safe moment &mdash; when it is next
+ * borrowed. The template must be closed (it is {@link AutoCloseable}); a template dropped without
+ * {@code close()} leaves its server-side state on those connections until they are recycled. Use it
+ * with try-with-resources:
  * 
  * <pre>
  * {@code
@@ -46,6 +49,15 @@ public final class HashImport implements AutoCloseable {
   private final String name;
   private final List<byte[]> fields;
   private volatile boolean discarded = false;
+
+  /**
+   * Connections this template has been prepared on, so {@link #close()} can enqueue its discard on
+   * each. Concurrent set: preparation (adds) and {@code close()} (iterate + clear) may run on
+   * different threads, and its weakly-consistent iterator needs no external locking. Strong refs
+   * are fine &mdash; the pool already holds every live connection and this short-lived template
+   * releases them on {@code close()}.
+   */
+  private final Set<Connection> connections = ConcurrentHashMap.newKeySet();
 
   private HashImport(String name, List<byte[]> fields) {
     this.name = name;
@@ -113,14 +125,26 @@ public final class HashImport implements AutoCloseable {
   }
 
   /**
-   * Discards this template. The server-side fieldset is not touched synchronously; instead every
-   * connection that prepared it drops it (issuing {@code HIMPORT DISCARD}) the next time it is
-   * borrowed. After this call the template must not be used again.
+   * Discards this template. The server-side fieldset is not touched synchronously; instead each
+   * connection it was prepared on is asked to drop it (issuing {@code HIMPORT DISCARD}) the next
+   * time that connection is borrowed. After this call the template must not be used again.
    * @since 8.0
    */
   @Override
   public void close() {
     discarded = true;
+    for (Connection connection : connections) {
+      connection.himportEnqueueDiscard(name);
+    }
+    connections.clear();
+  }
+
+  /**
+   * Records that this template has been prepared on {@code connection}, so {@link #close()} can
+   * enqueue its discard there. Called during prepare-before-use.
+   */
+  void registerConnection(Connection connection) {
+    connections.add(connection);
   }
 
   /** The wire {@code <fieldset>} token, {@code "j:<seq>"}. */

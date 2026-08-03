@@ -9,12 +9,11 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 
 /**
- * The pool's active MOVING operations, each deduplicated (by the event's identity)
- * from the per-connection MOVING events announcing it. Purely a store: admission (dedup + merge)
- * and queries; the dedup rule lives on the event, and reacting to an admitted operation is the
- * caller's job. Operations never supersede each other, they only expire; reads remove expired
- * entries one by one on detection, so the hot path costs the same after a maintenance cycle as
- * before it.
+ * The pool's active MOVING operations, each deduplicated (by the event's identity) from the
+ * per-connection MOVING events announcing it. Purely a store: admission (dedup + merge) and
+ * queries; the dedup rule lives on the event, and reacting to an admitted operation is the caller's
+ * job. Operations never supersede each other, they only expire; reads remove expired entries one by
+ * one on detection, so the hot path costs the same after a maintenance cycle as before it.
  */
 final class MovingOperations {
 

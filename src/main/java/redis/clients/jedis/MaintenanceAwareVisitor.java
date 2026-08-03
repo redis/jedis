@@ -31,10 +31,14 @@ public class MaintenanceAwareVisitor implements InitVisitor {
    * Installs the pool-wide MOVING rebind timeout overlay before the handshake runs, so a connection
    * opened while a rebind window is open already relaxes its AUTH/HELLO handshake reads. The
    * overlay is torn down again in {@link #visitAfterHandshake(Connection)} if the feature turns out
-   * to be unsupported on this connection.
+   * to be unsupported on this connection. Also registers the connection for maintenance-event
+   * tracking — before {@code connect()}, so a connect racing a MOVING is either visible to the
+   * marking pass (registered first) or redirected by the applied rebind via the address mapper.
    */
   @Override
   public void visitBeforeHandshake(Connection connection) {
+    // must precede connect(): a connect racing a MOVING is then visible to the pass or remapped
+    controller.registry().register(connection);
     MaintenanceNotificationsConfig mConfig = builder.getMaintenanceConfig();
     if (!isMaintenanceEnabled(mConfig)) {
       return;
@@ -131,6 +135,8 @@ public class MaintenanceAwareVisitor implements InitVisitor {
         return "external-ip";
       case EXTERNAL_FQDN:
         return "external-fqdn";
+      case NONE:
+        return "none";
       default:
         throw new JedisException("Unknown endpoint type: " + endpointType);
     }

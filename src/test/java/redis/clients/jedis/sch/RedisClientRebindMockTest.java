@@ -2,13 +2,13 @@ package redis.clients.jedis.sch;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
+import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.util.Pool;
 
 /**
  * Standalone {@link RedisClient} : Verify SCH rebind behavior for standalone client.
@@ -23,7 +23,7 @@ public class RedisClientRebindMockTest extends AbstractRebindBehaviorTest {
   }
 
   @Override
-  protected Pool<Connection> poolOf(UnifiedJedis client) {
-    return ((RedisClient) client).getPool();
+  protected ConnectionPool poolOf(UnifiedJedis client) {
+    return (ConnectionPool) ((RedisClient) client).getPool();
   }
 }

@@ -4,6 +4,8 @@ import java.util.function.Consumer;
 
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.authentication.core.Token;
 import redis.clients.jedis.annots.Experimental;
@@ -14,6 +16,8 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.Pool;
 
 public class ConnectionPool extends Pool<Connection> {
+
+  private static final Logger log = LoggerFactory.getLogger(ConnectionPool.class);
 
   private AuthXManager authXManager;
   private MaintenanceEventController maintenanceController; // null = maintenance off
@@ -82,10 +86,11 @@ public class ConnectionPool extends Pool<Connection> {
     this.maintenanceController = controller;
     attachAuthenticationListener(factoryBuilder.getClientConfig().getAuthXManager());
     if (controller != null) {
-      setEvictionPolicy(new RebindAwareEvictionPolicy(controller, getEvictionPolicy()));
-      controller.addHandoffHook(handoff -> evictQuietly());
-      returnHook = c -> {
-        if (controller.isAffected(c)) {
+      setEvictionPolicy(new RebindAwareEvictionPolicy(getEvictionPolicy()));
+      // handoff processed: evict the retired idles
+      controller.setHandoffHook(this::evictQuietly);
+       returnHook = c -> {
+        if (c.isRetired()) {
           super.returnBrokenResource(c);
         } else {
           super.returnResource(c);
@@ -96,12 +101,19 @@ public class ConnectionPool extends Pool<Connection> {
     }
   }
 
-  /** Wraps the checked-Exception {@link #evict()}. */
+  /**
+   * Handoff-hook reaction: evict retired idles. Runs on the maintenance scheduler thread or inline
+   * on a notifying thread; must never propagate (a failed pass degrades to lazy recycling on
+   * return).
+   */
   private void evictQuietly() {
+    if (isClosed()) {
+      return;
+    }
     try {
       evict();
     } catch (Exception e) {
-      throw new JedisException("Failed to evict pool on maintenance handoff", e);
+      log.warn("Maintenance eviction pass failed; retired connections recycle on return", e);
     }
   }
 
@@ -126,6 +138,17 @@ public class ConnectionPool extends Pool<Connection> {
       }
     } finally {
       super.close();
+    }
+  }
+
+  @Override
+  public void destroy() {
+    try {
+      super.destroy();
+    } finally {
+      if (maintenanceController != null) {
+        maintenanceController.close();
+      }
     }
   }
 

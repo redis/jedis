@@ -171,8 +171,8 @@ public class Connection implements Closeable {
   private boolean isBlocking = false;
   private Set<InitVisitor> initVisitors = new HashSet<>();
 
-  private static final long EXPIRE_NOT_SET = -1;
-  private long expireAt = EXPIRE_NOT_SET;
+  /** One-way advisory flag: this connection must leave pool service. See {@link #retire()}. */
+  private volatile boolean retired;
 
   /** Listeners notified synchronously of this connection's maintenance events (pool-injected). */
   private final Set<MaintenanceEventListener> maintenanceEventListeners = ConcurrentHashMap
@@ -540,22 +540,14 @@ public class Connection implements Closeable {
     if (this.memberOf != null) {
       ConnectionPool pool = this.memberOf;
       this.memberOf = null;
-      if (isBroken() || isExpired()) {
+      if (isBroken()) {
         pool.returnBrokenResource(this);
       } else {
-        pool.returnResource(this);
+        pool.returnResource(this); // the pool's return hook routes retired connections to disposal
       }
     } else {
       disconnect();
     }
-  }
-
-  private boolean isExpired() {
-    if ( expireAt == EXPIRE_NOT_SET) {
-      return  false;
-    }
-
-    return expireAt <= NanoClock.INSTANCE.getAsLong();
   }
 
   /**
@@ -1077,8 +1069,17 @@ public class Connection implements Closeable {
     this.pushConsumers.remove(consumer);
   }
 
-  void expireAt(long expireAt) {
-    this.expireAt = expireAt;
+  /**
+   * Retires this connection from pool service. Advisory and one-way: no I/O happens here; the pool
+   * destroys a retired connection on return, validation, or eviction instead of reusing it.
+   */
+  void retire() {
+    this.retired = true;
+  }
+
+  /** Whether this connection was {@link #retire() retired} and must not be reused. */
+  boolean isRetired() {
+    return retired;
   }
 
   ChainedTimeoutSource getTimeoutSource() {

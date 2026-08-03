@@ -130,7 +130,6 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private final JedisClientConfig clientConfig;
   private Supplier<Connection> objectMaker;
   private Connection.Builder connectionBuilder;
-
   private AuthXEventListener authXEventListener;
 
   public ConnectionFactory(final HostAndPort hostAndPort) {
@@ -228,8 +227,13 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       if (!jedis.isConnected()) {
         return false;
       }
+      if (jedis.isRetired()) {
+        return false; // marked by a maintenance marking pass -> recycle
+      }
       reAuthenticate(jedis);
-      return jedis.ping();
+      // Re-check after the ping: its read may consume a buffered MOVING push whose inline
+      // marking pass marks this connection.
+      return jedis.ping() && !jedis.isRetired();
     } catch (final Exception e) {
       logger.warn("Error while validating pooled Connection object.", e);
       return false;

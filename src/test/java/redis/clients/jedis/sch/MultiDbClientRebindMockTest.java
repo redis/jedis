@@ -7,6 +7,7 @@ import java.io.IOException;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.jupiter.api.Test;
 
+import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPoolConfig;
 import redis.clients.jedis.HostAndPort;
@@ -17,7 +18,6 @@ import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider;
-import redis.clients.jedis.util.Pool;
 import redis.clients.jedis.util.ReflectionTestUtil;
 import redis.clients.jedis.util.server.TcpMockServer;
 
@@ -37,7 +37,7 @@ public class MultiDbClientRebindMockTest extends AbstractRebindBehaviorTest {
   }
 
   @Override
-  protected Pool<Connection> poolOf(UnifiedJedis client) {
+  protected ConnectionPool poolOf(UnifiedJedis client) {
     MultiDbConnectionProvider provider = ReflectionTestUtil.getField(client, "provider");
     return provider.getDatabase().getConnectionPool();
   }

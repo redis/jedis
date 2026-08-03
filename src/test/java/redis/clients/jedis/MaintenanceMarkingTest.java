@@ -211,7 +211,7 @@ public class MaintenanceMarkingTest {
   }
 
   @Test
-  public void expiredOperationPassIsNoop() throws Exception {
+  public void expiredOperationPassRunsHookButStampsNothing() throws Exception {
     AtomicLong now = new AtomicLong(0);
     NanoClock.INSTANCE = now::get;
     try {
@@ -224,12 +224,13 @@ public class MaintenanceMarkingTest {
       now.addAndGet(TimeUnit.SECONDS.toNanos(11)); // past the ttl: operation expired
 
       // The server has dropped the affected connections by the window end; a pass firing late
-      // must not mark connections that landed on the same peer afterwards.
+      // must not mark connections that landed on the same peer afterwards — but it still runs
+      // the handoff hook once, so already-stamped idles (dead sockets by now) are evicted.
       Connection fresh = connect(mockServer);
       try {
         stalePass.run();
         assertFalse(fresh.isRetired(), "expired operation's pass marks nothing");
-        assertEquals(0, notified.get(), "expired operation's pass notifies nothing");
+        assertEquals(1, notified.get(), "the hook still runs, however late");
       } finally {
         fresh.close();
       }

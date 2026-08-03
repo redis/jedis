@@ -173,15 +173,26 @@ final class MaintenanceEventController
    * A pending pass is never cancelled; a stale fire is a no-op once its operation expires.
    */
   private void handleRebind(MovingOperation snapshot) {
-    long retireAtNanos = NanoClock.INSTANCE.getAsLong(); // real target: retire immediately
-    long delayNanos = 0;
+    final long retireAtNanos;
+    final long delayNanos;
     if (snapshot.endpoint == null) {
       retireAtNanos = snapshot.reconnectAtNanos; // 'none': reconnect at half the grace window
       delayNanos = retireAtNanos - NanoClock.INSTANCE.getAsLong();
+    } else {
+      retireAtNanos = NanoClock.INSTANCE.getAsLong(); // real target: retire immediately
+      delayNanos = 0;
     }
     retireAffected(snapshot, retireAtNanos);
     try {
-      scheduler().schedule(handoffHook::run, delayNanos, TimeUnit.NANOSECONDS);
+      scheduler().schedule(() -> {
+        if (snapshot.isValid()) {
+          // second walk: stamps connections registered after the apply-time walk; never stamps
+          // past the window, when the address may be legitimately live again
+          retireAffected(snapshot, retireAtNanos);
+        }
+        // always run the hook, however late: stamped idles are dead sockets by then
+        handoffHook.run();
+      }, delayNanos, TimeUnit.NANOSECONDS);
     } catch (RejectedExecutionException alreadyClosed) {
       // Controller closed concurrently;
     }

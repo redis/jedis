@@ -9,6 +9,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
+import static org.awaitility.Awaitility.await;
+
 import java.time.Duration;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -144,7 +146,8 @@ public class MaintenanceEventControllerTest {
 
     // First MOVING from `receiver` (connected to 127.0.0.1 in setUp()).
     moving(1L, TARGET_B, 100);
-    assertEquals(1, fires.get(), "hook fires on new seq");
+    await().atMost(Duration.ofSeconds(1)).until(() -> fires.get() == 1); // the hook runs on the
+                                                                         // scheduler
     assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer));
 
     // Dual-stack receiver: connect the SAME mock server via the IPv6 loopback. The mock binds the
@@ -163,12 +166,13 @@ public class MaintenanceEventControllerTest {
         "original IPv4 peer still remaps");
       assertEquals(TARGET_B_ADDR, controller.getSocketAddress(ipv6Peer),
         "merged IPv6 peer also remaps to same target");
-      assertEquals(2, fires.get(), "hook fires again on same-seq merge");
+      await().atMost(Duration.ofSeconds(1)).until(() -> fires.get() == 2); // merge fires again
 
       // Idempotent: re-delivering the same MOVING to the same connection is a no-op (source
       // already in the affected set; no state change → no hook fire).
       controller.onMoving(new MovingEvent(1L, 100, TARGET_B), ipv6Receiver);
-      assertEquals(2, fires.get(), "no fire on duplicate merge of an already-present source");
+      await().during(Duration.ofMillis(100)).atMost(Duration.ofMillis(500))
+          .until(() -> fires.get() == 2); // duplicate merge of a known source never fires
     } finally {
       ipv6Receiver.close();
     }
@@ -266,6 +270,8 @@ public class MaintenanceEventControllerTest {
     moving(6L, TARGET_C, 100); // distinct key (other seq): fire
     moving(6L, TARGET_C, 100); // known key, known peer: no fire
 
+    // The hook runs on the controller's scheduler; each applied event fires it once.
+    await().atMost(Duration.ofSeconds(1)).until(() -> fires.get() == 3);
     assertEquals(3, fires.get());
   }
 

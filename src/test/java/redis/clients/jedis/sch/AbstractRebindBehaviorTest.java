@@ -173,9 +173,11 @@ public abstract class AbstractRebindBehaviorTest {
 
       mockServer1.sendPushMessageToAll("MOVING", 30, 60, "localhost:" + mockServer2.getPort());
 
-      // Command on the active connection triggers the rebind; idle connections are evicted.
+      // Command on the active connection triggers the rebind; the handoff hook (pool eviction)
+      // runs off the notifying thread, so the idle connection disappears asynchronously.
       assertTrue(activeConnection.ping());
-      assertEquals(0, pool.getNumIdle());
+      await().atMost(Duration.ofSeconds(1)).pollInterval(Duration.ofMillis(20))
+          .until(() -> pool.getNumIdle() == 0);
       assertEquals(1, pool.getNumActive());
 
       await().atMost(Duration.ofSeconds(1)).pollInterval(Duration.ofMillis(20))

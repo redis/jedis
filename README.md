@@ -140,6 +140,8 @@ We'd love your contributions!
 
 Bug reports are always welcome! [You can open a bug report on GitHub](https://github.com/redis/jedis/issues/new).
 
+To report a security vulnerability, please follow our [Security Policy](https://github.com/redis/jedis/blob/master/SECURITY.md).
+
 You can also contribute documentation -- or anything to improve Jedis. Please see
 [contribution guideline](https://github.com/redis/jedis/blob/master/.github/CONTRIBUTING.md) for more details.
 

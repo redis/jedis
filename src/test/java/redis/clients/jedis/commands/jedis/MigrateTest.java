@@ -68,12 +68,13 @@ public class MigrateTest extends JedisCommandsTestBase {
   public void setUp() throws Exception {
     super.setUp();
 
-    dest = new Jedis(host, port, 500);
+    dest = new Jedis(new HostAndPort(host, port),
+        DefaultJedisClientConfig.builder().serverDefaultProtocol().timeoutMillis(500).build());
     dest.flushAll();
     dest.select(db);
 
     destAuth = new Jedis(destEndpointWithAuth.getHostAndPort(),
-        destEndpointWithAuth.getClientConfigBuilder().build());
+        destEndpointWithAuth.getClientConfigBuilder().serverDefaultProtocol().build());
     destAuth.flushAll();
     destAuth.select(dbAuth);
   }

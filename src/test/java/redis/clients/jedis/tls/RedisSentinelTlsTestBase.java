@@ -71,12 +71,13 @@ public abstract class RedisSentinelTlsTestBase {
 
   protected static DefaultJedisClientConfig createSentinelConfigWithSsl(SslOptions ssl) {
     return Endpoints.getRedisEndpoint("sentinel-standalone0-tls").getClientConfigBuilder()
-        .clientName("sentinel-client").sslOptions(ssl).hostAndPortMapper(SENTINEL_SSL_PORT_MAPPER)
-        .build();
+        .serverDefaultProtocol().clientName("sentinel-client").sslOptions(ssl)
+        .hostAndPortMapper(SENTINEL_SSL_PORT_MAPPER).build();
   }
 
   protected static DefaultJedisClientConfig createSentinelConfigWithoutSsl() {
-    return sentinel.getClientConfigBuilder().clientName("sentinel-client").build();
+    return sentinel.getClientConfigBuilder().serverDefaultProtocol().clientName("sentinel-client")
+        .build();
   }
 
   protected static Stream<Arguments> sslOptionsProvider() {

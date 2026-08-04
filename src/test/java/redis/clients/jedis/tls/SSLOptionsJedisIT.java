@@ -43,7 +43,7 @@ public class SSLOptionsJedisIT extends JedisTlsTestBase {
   @MethodSource("sslOptionsProvider")
   void connectWithClientConfig(String testName, SslOptions ssl) {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().sslOptions(ssl).build())) {
+        endpoint.getClientConfigBuilder().serverDefaultProtocol().sslOptions(ssl).build())) {
       assertEquals("PONG", jedis.ping());
     }
   }
@@ -53,8 +53,8 @@ public class SSLOptionsJedisIT extends JedisTlsTestBase {
    */
   @Test
   public void connectWithAcl() {
-    try (Jedis jedis = new Jedis(aclEndpoint.getHostAndPort(),
-        aclEndpoint.getClientConfigBuilder().sslOptions(sslOptions).build())) {
+    try (Jedis jedis = new Jedis(aclEndpoint.getHostAndPort(), aclEndpoint.getClientConfigBuilder()
+        .serverDefaultProtocol().sslOptions(sslOptions).build())) {
       assertEquals("PONG", jedis.ping());
     }
   }

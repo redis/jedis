@@ -51,6 +51,8 @@ public interface RediSearchCommands {
 
   String ftAliasDel(String aliasName);
 
+  Set<String> ftAliasList(String indexName);
+
   String ftDropIndex(String indexName);
 
   String ftDropIndexDD(String indexName);

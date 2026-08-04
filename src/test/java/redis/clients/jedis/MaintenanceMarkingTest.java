@@ -11,6 +11,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -58,6 +59,17 @@ public class MaintenanceMarkingTest {
     controller.close();
     mockServer.stop();
     otherServer.stop();
+    NanoClock.INSTANCE = System::nanoTime;
+  }
+
+  /**
+   * Deterministic clock; retirement deadlines are computed against it. Starts at 1, not 0: a
+   * retireAt(0) stamp would collide with the field's 0 = not-retired sentinel.
+   */
+  private AtomicLong installTestClock() {
+    AtomicLong now = new AtomicLong(1);
+    NanoClock.INSTANCE = now::get;
+    return now;
   }
 
   private Connection connect(TcpMockServer server) throws Exception {
@@ -78,43 +90,48 @@ public class MaintenanceMarkingTest {
   // --- marking scheduling and coverage ---
 
   @Test
-  public void noneSchedulesMarkingAtHalfGrace() {
+  public void noneRetiresAtHalfGrace() {
+    AtomicLong now = installTestClock();
     AtomicInteger notified = new AtomicInteger();
     controller.setHandoffHook(notified::incrementAndGet);
 
     movingNone(1L, 10);
 
-    assertFalse(scheduler.pending.isEmpty(), "'none' schedules the marking pass");
-    assertTrue(scheduler.lastDelayNanos > TimeUnit.SECONDS.toNanos(4)
-        && scheduler.lastDelayNanos <= TimeUnit.SECONDS.toNanos(5),
-      "at half the raw grace");
-    assertFalse(receiver.isRetired(), "nothing is marked before the pass runs");
+    assertFalse(scheduler.pending.isEmpty(), "'none' schedules the pass");
+    assertEquals(TimeUnit.SECONDS.toNanos(5), scheduler.lastDelayNanos, "at half the raw grace");
+    assertFalse(receiver.isRetired(), "stamped for the reconnect instant; not retired yet");
     assertEquals(0, notified.get());
 
-    scheduler.runPending();
+    now.addAndGet(TimeUnit.SECONDS.toNanos(5));
+    assertTrue(receiver.isRetired(),
+      "retirement flips at the reconnect instant, independent of the scheduler");
 
-    assertTrue(receiver.isRetired(), "the pass marks the affected source's connection");
-    assertEquals(1, notified.get(), "the pass runs the handoff hooks");
+    scheduler.runPending();
+    assertEquals(1, notified.get(), "the scheduled pass runs the hook");
   }
 
   @Test
-  public void targetMarksInline() {
+  public void targetRetiresImmediately() {
     AtomicInteger notified = new AtomicInteger();
     controller.setHandoffHook(notified::incrementAndGet);
 
     moving(1L, TARGET_B, 30);
 
-    assertEquals(0, scheduler.scheduleCount, "a real target never schedules");
-    assertTrue(receiver.isRetired(), "marked synchronously on the notifying thread");
+    assertTrue(receiver.isRetired(), "stamped for immediate retirement on the notifying thread");
+    assertEquals(1, scheduler.scheduleCount, "the hook runs off the notifying thread");
+    assertEquals(0, notified.get());
+
+    scheduler.runPending();
     assertEquals(1, notified.get());
   }
 
   @Test
   public void markingCoversOnlyAffectedPeers() throws Exception {
+    AtomicLong now = installTestClock();
     Connection unrelated = connect(otherServer);
     try {
       movingNone(1L, 10);
-      scheduler.runPending();
+      now.addAndGet(TimeUnit.SECONDS.toNanos(5));
 
       assertTrue(receiver.isRetired());
       assertFalse(unrelated.isRetired(), "different peer is out of scope");
@@ -147,20 +164,21 @@ public class MaintenanceMarkingTest {
 
   @Test
   public void pendingMarkingCoversSourcesMergedBeforeDue() throws Exception {
-    movingNone(1L, 10); // marking pending at +5s, sources = {receiver's peer}
+    AtomicLong now = installTestClock();
+    movingNone(1L, 10); // retirement stamped for +5s, sources = {receiver's peer}
 
     // A second source joins the same epoch BEFORE the reconnect instant: nothing may be marked
     // early — its own scheduled pass fires at that instant and covers it.
     Connection otherSource = connect(otherServer);
     try {
       controller.onMoving(new MovingEvent(1L, 10, null), otherSource);
-      assertFalse(receiver.isRetired(), "no early marking on merge");
-      assertFalse(otherSource.isRetired(), "no early marking on merge");
+      assertFalse(receiver.isRetired(), "no early retirement on merge");
+      assertFalse(otherSource.isRetired(), "no early retirement on merge");
 
-      scheduler.runPending();
+      now.addAndGet(TimeUnit.SECONDS.toNanos(5));
 
       assertTrue(receiver.isRetired());
-      assertTrue(otherSource.isRetired(), "merged source covered by its scheduled pass");
+      assertTrue(otherSource.isRetired(), "merged source stamped for the same reconnect instant");
     } finally {
       otherSource.close();
     }
@@ -181,28 +199,64 @@ public class MaintenanceMarkingTest {
     }
   }
 
-  // --- supersession and stale fires ---
+  // --- overlapping events and stale fires ---
 
   @Test
-  public void supersededPendingMarkingFiresAsNoop() throws Exception {
+  public void pendingNoneRetirementSurvivesNewerEvent() throws Exception {
+    AtomicLong now = installTestClock();
     AtomicInteger notified = new AtomicInteger();
     controller.setHandoffHook(notified::incrementAndGet);
 
-    movingNone(1L, 10);
-    Runnable staleMarking = scheduler.pending.peek();
+    movingNone(1L, 10); // retirement stamped for +5s; pass pending
+    Runnable pendingPass = scheduler.pending.poll();
 
-    moving(2L, TARGET_B, 30); // supersedes; pending passes are never cancelled by design
-    assertTrue(receiver.isRetired(), "new epoch marked inline");
-    assertEquals(1, notified.get());
-
-    // Staleness is the seq guard's job: the superseded epoch's fire is a complete no-op.
-    Connection fresh = connect(mockServer);
+    // An overlapping newer 'none' event on another peer gets its own, later deadline; the earlier
+    // unexpired event is NOT orphaned — its deadline stands and its pending pass still runs.
+    Connection otherSource = connect(otherServer);
     try {
-      staleMarking.run();
-      assertFalse(fresh.isRetired(), "stale pass marks nothing");
-      assertEquals(1, notified.get(), "stale pass notifies nothing");
+      controller.onMoving(new MovingEvent(2L, 30, null), otherSource); // stamped for +15s
+      assertFalse(receiver.isRetired(), "earlier 'none' event never retires early");
+      assertFalse(otherSource.isRetired(), "newer event has its own, later deadline");
+
+      now.addAndGet(TimeUnit.SECONDS.toNanos(5));
+      assertTrue(receiver.isRetired(),
+        "the earlier event's deadline stands despite the newer event");
+      assertFalse(otherSource.isRetired(), "newer event's deadline has not passed");
+
+      pendingPass.run(); // earlier event's pass
+      scheduler.runPending(); // newer event's pass
+      assertEquals(2, notified.get(), "each event's pass runs the hook");
     } finally {
-      fresh.close();
+      otherSource.close();
+    }
+  }
+
+  @Test
+  public void expiredOperationPassRunsHookButStampsNothing() throws Exception {
+    AtomicLong now = new AtomicLong(0);
+    NanoClock.INSTANCE = now::get;
+    try {
+      AtomicInteger notified = new AtomicInteger();
+      controller.setHandoffHook(notified::incrementAndGet);
+
+      movingNone(1L, 10); // pass pending at +5s
+      Runnable stalePass = scheduler.pending.poll();
+
+      now.addAndGet(TimeUnit.SECONDS.toNanos(11)); // past the ttl: operation expired
+
+      // The server has dropped the affected connections by the window end; a pass firing late
+      // must not mark connections that landed on the same peer afterwards — but it still runs
+      // the handoff hook once, so already-stamped idles (dead sockets by now) are evicted.
+      Connection fresh = connect(mockServer);
+      try {
+        stalePass.run();
+        assertFalse(fresh.isRetired(), "expired operation's pass marks nothing");
+        assertEquals(1, notified.get(), "the hook still runs, however late");
+      } finally {
+        fresh.close();
+      }
+    } finally {
+      NanoClock.INSTANCE = System::nanoTime;
     }
   }
 

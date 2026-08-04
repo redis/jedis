@@ -1,8 +1,9 @@
 package redis.clients.jedis;
 
+import java.util.Arrays;
+
 /**
- * A server maintenance event. One subclass per type, each carrying the fields relevant to that
- * type. Dispatched to a {@link MaintenanceEventListener} via {@link #accept}.
+ * A server maintenance event. Dispatched to a {@link MaintenanceEventListener} via {@link #accept}.
  */
 abstract class MaintenanceEvent {
 
@@ -13,6 +14,14 @@ abstract class MaintenanceEvent {
   }
 
   abstract void accept(MaintenanceEventListener listener, Connection conn);
+
+  /**
+   * Identity of the server-side operation this event announces; equality is the dedup rule for
+   * folding per-connection deliveries into one pool-wide operation.
+   */
+  Object identity() {
+    return seq; // sufficient for every type but MOVING, which is also keyed by target
+  }
 }
 
 /**
@@ -27,15 +36,26 @@ final class MovingEvent extends MaintenanceEvent {
    */
   final HostAndPort target;
 
+  /**
+   * Concurrent MOVINGs are told apart by target;
+   */
+  private final Object identity;
+
   MovingEvent(long seq, long ttlSeconds, HostAndPort target) {
     super(seq);
     this.ttlSeconds = ttlSeconds;
     this.target = target;
+    this.identity = Arrays.asList(seq, target);
   }
 
   @Override
   void accept(MaintenanceEventListener l, Connection c) {
     l.onMoving(this, c);
+  }
+
+  @Override
+  Object identity() {
+    return identity;
   }
 }
 

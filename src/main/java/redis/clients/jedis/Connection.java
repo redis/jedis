@@ -171,8 +171,10 @@ public class Connection implements Closeable {
   private boolean isBlocking = false;
   private Set<InitVisitor> initVisitors = new HashSet<>();
 
-  /** One-way advisory flag: this connection must leave pool service. See {@link #retire()}. */
-  private volatile boolean retired;
+  private static final long NOT_RETIRED = 0;
+
+  /** Instant this connection must leave pool service. See {@link #retireAt}. */
+  private volatile long retiredAtNanos = NOT_RETIRED;
 
   /** Listeners notified synchronously of this connection's maintenance events (pool-injected). */
   private final Set<MaintenanceEventListener> maintenanceEventListeners = ConcurrentHashMap
@@ -1070,16 +1072,18 @@ public class Connection implements Closeable {
   }
 
   /**
-   * Retires this connection from pool service. Advisory and one-way: no I/O happens here; the pool
-   * destroys a retired connection on return, validation, or eviction instead of reusing it.
+   * Retires this connection from pool service at the given instant. Advisory: no I/O happens here;
+   * once the deadline passes, the pool destroys the connection on return, validation, or eviction
+   * instead of reusing it.
    */
-  void retire() {
-    this.retired = true;
+  void retireAt(long nanos) {
+    this.retiredAtNanos = nanos;
   }
 
-  /** Whether this connection was {@link #retire() retired} and must not be reused. */
+  /** Whether this connection's {@link #retireAt} deadline has passed and it must not be reused. */
   boolean isRetired() {
-    return retired;
+    long at = retiredAtNanos;
+    return at != NOT_RETIRED && NanoClock.INSTANCE.getAsLong() - at >= 0;
   }
 
   ChainedTimeoutSource getTimeoutSource() {

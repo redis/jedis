@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import java.net.Socket;
+import java.net.SocketAddress;
 import java.time.Duration;
 import java.util.List;
 import java.util.function.LongSupplier;
@@ -108,6 +109,15 @@ public class ConnectionTestHelper {
       poolReaction.run(); // evict first: the pass is fully processed before the test observes it
       hook.run();
     });
+  }
+
+  /**
+   * The pool controller's post-DNS remap for {@code resolved}: the active MOVING target for that
+   * peer, or null (no active event, or a 'none' event). New pool connections only ever resolve the
+   * configured endpoint, so tests assert other peers' mapping windows through this seam.
+   */
+  public static SocketAddress getMappedAddress(ConnectionPool pool, SocketAddress resolved) {
+    return pool.getMaintenanceController().getSocketAddress(resolved);
   }
 
   public static void setClockNanos(LongSupplier clock) {

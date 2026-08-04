@@ -5,7 +5,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -14,6 +17,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.args.Rawable;
+import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.SafeEncoder;
@@ -612,5 +616,41 @@ public class ClusterCommandObjectsTest {
     assertTrue(argsStrings.contains("{sameSlot}:key1"));
     assertTrue(argsStrings.contains("{sameSlot}:key2"));
     assertTrue(argsStrings.contains("{sameSlot}:key3"));
+  }
+
+  /**
+   * SCAN is routed by the hash tag of its MATCH pattern, and the pattern reaches the wire as the
+   * bytes {@link ScanParams#match(String)} produced with {@link SafeEncoder#DEFAULT_CHARSET}, so
+   * the slot has to come from those same bytes. Reading the pattern back with the JVM default
+   * charset instead mis-decodes a non-ASCII hash tag and picks a node that does not own it. The
+   * String/binary routing parity asserted here holds for ASCII-compatible charsets; a
+   * non-ASCII-compatible {@code DEFAULT_CHARSET} would break RESP framing before routing matters.
+   */
+  @Test
+  public void testScanIsRoutedBySlotOfMatchPatternOnTheWire() {
+    Charset original = SafeEncoder.DEFAULT_CHARSET;
+    // any charset other than the JVM default, so a default-charset decode becomes observable;
+    // the substitute must stay ASCII-compatible: Protocol.Command/Keyword freeze their raw bytes
+    // via SafeEncoder on first initialisation, so e.g. UTF-16 here would poison every later test
+    SafeEncoder.DEFAULT_CHARSET = StandardCharsets.UTF_8.equals(Charset.defaultCharset())
+        ? StandardCharsets.ISO_8859_1
+        : StandardCharsets.UTF_8;
+    try {
+      ScanParams params = new ScanParams().match("{caf\u00e9}*");
+      int slotOnTheWire = JedisClusterCRC16.getSlot(params.binaryMatch());
+
+      assertEquals(Collections.singleton(slotOnTheWire),
+        clusterCommandObjects.scan("0", params).getArguments().getKeyHashSlots(),
+        "SCAN must be routed to the slot owning the hash tag of the pattern it sends");
+      assertEquals(Collections.singleton(slotOnTheWire),
+        clusterCommandObjects.scan("0", params, "string").getArguments().getKeyHashSlots(),
+        "SCAN with TYPE must be routed to the same slot");
+      assertEquals(Collections.singleton(slotOnTheWire),
+        clusterCommandObjects.scan(SafeEncoder.encode("0"), params).getArguments()
+            .getKeyHashSlots(),
+        "binary SCAN must be routed to the same slot as the String variant");
+    } finally {
+      SafeEncoder.DEFAULT_CHARSET = original;
+    }
   }
 }

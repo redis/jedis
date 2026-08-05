@@ -6,7 +6,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 import redis.clients.jedis.annots.Experimental;
@@ -52,12 +51,13 @@ public final class HashImport implements AutoCloseable {
 
   /**
    * Connections this template has been prepared on, so {@link #close()} can enqueue its discard on
-   * each. Concurrent set: preparation (adds) and {@code close()} (iterate + clear) may run on
-   * different threads, and its weakly-consistent iterator needs no external locking. Strong refs
-   * are fine &mdash; the pool already holds every live connection and this short-lived template
-   * releases them on {@code close()}.
+   * each. Weakly referenced: a long-lived template never pins a connection the pool has destroyed,
+   * and a connection that dies before {@code close()} needs no discard &mdash; its server-side
+   * state died with the socket. Preparation (register) and {@code close()} (visit) may run on
+   * different threads; the registry is concurrent. A connection re-prepared after a reconnect
+   * registers again; the duplicate discard enqueue is filtered at drain time.
    */
-  private final Set<Connection> connections = ConcurrentHashMap.newKeySet();
+  private final ConnectionRegistry connections = new ConnectionRegistry();
 
   private HashImport(String name, List<byte[]> fields) {
     this.name = name;
@@ -132,11 +132,11 @@ public final class HashImport implements AutoCloseable {
    */
   @Override
   public void close() {
-    discarded = true;
-    for (Connection connection : connections) {
-      connection.himportEnqueueDiscard(name);
+    if (discarded) {
+      return;
     }
-    connections.clear();
+    discarded = true;
+    connections.forEachLive(connection -> connection.himportEnqueueDiscard(name));
   }
 
   /**
@@ -144,7 +144,10 @@ public final class HashImport implements AutoCloseable {
    * enqueue its discard there. Called during prepare-before-use.
    */
   void registerConnection(Connection connection) {
-    connections.add(connection);
+    connections.register(connection);
+    if (discarded) {
+      connections.forEachLive(c -> c.himportEnqueueDiscard(name));
+    }
   }
 
   /** The wire {@code <fieldset>} token, {@code "j:<seq>"}. */

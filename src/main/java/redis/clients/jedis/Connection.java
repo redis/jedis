@@ -326,12 +326,11 @@ public class Connection implements Closeable {
   }
 
   public <T> T executeCommand(final CommandObject<T> commandObject) {
-    Consumer<Connection> preProcessHook = commandObject.getPreProcessHook();
-    if (preProcessHook != null) {
-      // Per-connection setup that must precede this command (e.g. HIMPORT injects a lazy PREPARE
-      // before the SET). The command still arrived here through the CommandExecutor, so retry,
-      // cluster redirection and failover apply; the hook reaches this exact connection.
-      preProcessHook.accept(this);
+    List<Consumer<Connection>> preProcessHooks = commandObject.getPreProcessHooks();
+    if (!preProcessHooks.isEmpty()) {
+      for (Consumer<Connection> preProcessHook : preProcessHooks) {
+        preProcessHook.accept(this);
+      }
     }
 
     final CommandArguments args = commandObject.getArguments();

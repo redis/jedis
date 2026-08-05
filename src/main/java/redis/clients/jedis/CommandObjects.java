@@ -1478,15 +1478,15 @@ public class CommandObjects {
   final CommandObject<String> himportSet(String key, HashImport fieldset, String... values) {
     CommandObject<String> prepare = himportPrepare(fieldset.name(), fieldset.fields());
     return new CommandObject<>(commandArguments(HIMPORT).add(Keyword.SET).key(key).add(fieldset.name())
-        .addObjects((Object[]) values), BuilderFactory.STRING)
-            .setPreProcessHook(conn -> HashImportSupport.prepareBeforeUse(conn, fieldset, prepare));
+        .addObjects((Object[]) values), BuilderFactory.STRING, Collections
+            .singletonList(conn -> HashImportSupport.prepareBeforeUse(conn, fieldset, prepare)));
   }
 
   final CommandObject<String> himportSet(byte[] key, HashImport fieldset, byte[]... values) {
     CommandObject<String> prepare = himportPrepare(fieldset.name(), fieldset.fields());
     return new CommandObject<>(commandArguments(HIMPORT).add(Keyword.SET).key(key).add(fieldset.name())
-        .addObjects((Object[]) values), BuilderFactory.STRING)
-            .setPreProcessHook(conn -> HashImportSupport.prepareBeforeUse(conn, fieldset, prepare));
+        .addObjects((Object[]) values), BuilderFactory.STRING, Collections
+            .singletonList(conn -> HashImportSupport.prepareBeforeUse(conn, fieldset, prepare)));
   }
   // Hash commands
 

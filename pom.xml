@@ -641,6 +641,7 @@
 						<include>**/*HashImport*.java</include>
 						<include>**/*Himport*.java</include>
 						<include>**/ConnectionRegistry*.java</include>
+						<include>**/CommandObjectTest.java</include>
 					</includes>
 				</configuration>
 				<executions>

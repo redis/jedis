@@ -1,7 +1,12 @@
 package redis.clients.jedis;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 import java.util.function.Consumer;
+
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.Rawable;
 
 public class CommandObject<T> {
@@ -10,17 +15,28 @@ public class CommandObject<T> {
   private final Builder<T> builder;
 
   /**
-   * Optional hook run against the {@link Connection} right before this command is sent, for
+   * Hooks run against the {@link Connection} right before this command is sent, in list order, for
    * per-connection setup that must precede it &mdash; HIMPORT injects a lazy {@code PREPARE} ahead
-   * of its {@code SET}. {@code null} for ordinary commands. The command still travels the normal
-   * {@code CommandExecutor} path; {@link Connection#executeCommand(CommandObject)} invokes this hook
-   * on the chosen connection, then sends the command as usual.
+   * of its {@code SET}, cluster ASK redirection appends an {@code ASKING} hook. Empty for ordinary
+   * commands. The command still travels the normal {@code CommandExecutor} path;
+   * {@link Connection#executeCommand(CommandObject)} invokes the hooks on the chosen connection,
+   * then sends the command as usual. Hooks are excluded from {@link #equals}/{@link #hashCode}: a
+   * hook-bearing copy is the same command.
    */
-  private Consumer<Connection> preProcessHook;
+  private final List<Consumer<Connection>> preProcessHooks;
 
   public CommandObject(CommandArguments args, Builder<T> builder) {
+    this(args, builder, Collections.emptyList());
+  }
+
+  CommandObject(CommandArguments args, Builder<T> builder,
+      List<Consumer<Connection>> preProcessHooks) {
     this.arguments = args;
     this.builder = builder;
+    // Defensive copy so no caller-retained reference can mutate this command; empty stays
+    // allocation-free for ordinary commands.
+    this.preProcessHooks = preProcessHooks.isEmpty() ? Collections.emptyList()
+        : Collections.unmodifiableList(new ArrayList<>(preProcessHooks));
   }
 
   public CommandArguments getArguments() {
@@ -31,13 +47,21 @@ public class CommandObject<T> {
     return builder;
   }
 
-  CommandObject<T> setPreProcessHook(Consumer<Connection> preProcessHook) {
-    this.preProcessHook = preProcessHook;
-    return this;
+  List<Consumer<Connection>> getPreProcessHooks() {
+    return preProcessHooks;
   }
 
-  Consumer<Connection> getPreProcessHook() {
-    return preProcessHook;
+  /**
+   * Returns a new command identical to this one with {@code hook} appended to its pre-process
+   * hooks; this instance is immutable and unaffected. Hooks run in append order on the connection
+   * right before the command is sent &mdash;
+   */
+  @Experimental
+  public CommandObject<T> withPreProcessHook(Consumer<Connection> hook) {
+    List<Consumer<Connection>> hooks = new ArrayList<>(preProcessHooks.size() + 1);
+    hooks.addAll(preProcessHooks);
+    hooks.add(hook);
+    return new CommandObject<>(arguments, builder, hooks);
   }
 
   @Override

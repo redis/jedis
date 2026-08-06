@@ -18,6 +18,7 @@ import redis.clients.jedis.util.Pool;
 public class PooledConnectionProvider implements ConnectionProvider {
 
   private final Pool<Connection> pool;
+  private final Cache cache;
   private Object connectionMapKey = "";
 
   public PooledConnectionProvider(HostAndPort hostAndPort) {
@@ -32,7 +33,7 @@ public class PooledConnectionProvider implements ConnectionProvider {
 
   @Experimental
   public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache) {
-    this(new ConnectionPool(hostAndPort, clientConfig, clientSideCache));
+    this(new ConnectionPool(hostAndPort, clientConfig, clientSideCache), clientSideCache);
     this.connectionMapKey = hostAndPort;
   }
 
@@ -45,28 +46,42 @@ public class PooledConnectionProvider implements ConnectionProvider {
   @Experimental
   public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache,
       GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new ConnectionPool(hostAndPort, clientConfig, clientSideCache, poolConfig));
+    this(new ConnectionPool(hostAndPort, clientConfig, clientSideCache, poolConfig), clientSideCache);
     this.connectionMapKey = hostAndPort;
   }
 
   public PooledConnectionProvider(PooledObjectFactory<Connection> factory) {
-    this(new ConnectionPool(factory));
+    this(new ConnectionPool(factory), getCacheOrNull(factory));
     this.connectionMapKey = factory;
   }
 
   public PooledConnectionProvider(PooledObjectFactory<Connection> factory,
       GenericObjectPoolConfig<Connection> poolConfig) {
-    this(new ConnectionPool(factory, poolConfig));
+    this(new ConnectionPool(factory, poolConfig), getCacheOrNull(factory));
     this.connectionMapKey = factory;
   }
 
+  private static Cache getCacheOrNull(PooledObjectFactory<Connection> factory) {
+    return factory instanceof ConnectionFactory ? ((ConnectionFactory) factory).getCache() : null;
+  }
+
   private PooledConnectionProvider(Pool<Connection> pool) {
+    this(pool, null);
+  }
+
+  private PooledConnectionProvider(Pool<Connection> pool, Cache cache) {
     this.pool = pool;
+    this.cache = cache;
   }
 
   @Override
   public void close() {
     pool.close();
+  }
+
+  @Override
+  public Cache getCache() {
+    return cache;
   }
 
   public final Pool<Connection> getPool() {

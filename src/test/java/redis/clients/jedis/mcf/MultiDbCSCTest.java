@@ -54,6 +54,7 @@ public class MultiDbCSCTest {
     MultiDbConnectionProvider p = twoDbProvider(active, standby, true, cache);
     MultiDbClient client = MultiDbClient.builder().connectionProvider(p).build();
     try {
+      assertSame(cache, client.getCache(), "Cache should be exposed through getCache()");
       Database standbyDb = p.getDatabase(standby);
 
       client.set("foo", "bar");
@@ -84,6 +85,7 @@ public class MultiDbCSCTest {
     MultiDbClient client = MultiDbClient.builder().connectionProvider(p).build();
 
     try {
+      assertSame(cache, client.getCache(), "Cache should be exposed through getCache()");
       reset(cache);
       assertThrows(JedisConnectionException.class, () -> client.set("foo", "bar"));
 
@@ -105,6 +107,7 @@ public class MultiDbCSCTest {
     MultiDbConnectionProvider p = twoDbProvider(active, standby, false, cache);
     MultiDbClient client = MultiDbClient.builder().connectionProvider(p).build();
     try {
+      assertSame(cache, client.getCache(), "Cache should be exposed through getCache()");
       Database standbyDb = p.getDatabase(standby);
       client.set("foo", "bar");
 

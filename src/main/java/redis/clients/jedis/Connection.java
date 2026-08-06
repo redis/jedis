@@ -400,7 +400,7 @@ public class Connection implements Closeable {
         inputStream = new RedisInputStream(socket.getInputStream());
 
         broken = false; // unset broken status when connection is (re)initialized
-        himportForget(); // a fresh socket lost any server-side HIMPORT fieldsets
+        himportState.reset(); // a fresh socket lost any server-side HIMPORT fieldsets
 
       } catch (JedisConnectionException jce) {
 
@@ -479,15 +479,6 @@ public class Connection implements Closeable {
 
   public void setBroken() {
     broken = true;
-    himportForget(); // a broken socket lost any server-side HIMPORT fieldsets
-  }
-
-  /**
-   * Drops this connection's HIMPORT state without issuing any discard: the underlying socket was
-   * (re)connected or broken, so the server no longer holds those fieldsets.
-   */
-  private void himportForget() {
-    himportState.forget();
   }
 
   private JedisConnectionException markBroken(JedisConnectionException ex) {

@@ -42,11 +42,11 @@ public class HimportConnectionStateTest {
   }
 
   @Test
-  public void forgetDropsQueuedDiscards() {
+  public void resetDropsAllState() {
     HimportConnectionState state = new HimportConnectionState();
     state.markPrepared("a");
     state.markForDiscard("a");
-    state.forget();
+    state.reset();
 
     assertFalse(state.isPrepared("a"));
     assertTrue(state.drainDiscardable().isEmpty());

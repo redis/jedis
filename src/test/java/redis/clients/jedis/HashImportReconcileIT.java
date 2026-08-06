@@ -7,7 +7,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.RegisterExtension;
 
@@ -19,7 +18,6 @@ import redis.clients.jedis.util.EnabledOnCommandCondition;
  * path, including the ones without pool activation: a direct (unpooled) {@link Jedis} and the
  * legacy {@link JedisPool}.
  */
-@Tag("integration")
 public class HashImportReconcileIT {
 
   private static EndpointConfig endpoint;

@@ -60,10 +60,9 @@ class HimportConnectionState {
   }
 
   /**
-   * Drops all state without any discard: the socket was (re)connected or broken, so the server no
-   * longer holds these fieldsets.
+   * Drops all state without any discard
    */
-  void forget() {
+  void reset() {
     prepared.clear();
     pendingDiscard.clear();
     discardPending = false;

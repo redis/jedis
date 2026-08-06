@@ -1470,19 +1470,39 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(HIMPORT).add(PREPARE).add(fieldset).addObjects(fields),
         BuilderFactory.STRING);
   }
-
+  
   final CommandObject<String> himportSet(String key, HashImport fieldset, String... values) {
     CommandObject<String> prepare = himportPrepare(fieldset.name(), fieldset.fields());
-    return new CommandObject<>(commandArguments(HIMPORT).add(Keyword.SET).key(key).add(fieldset.name())
-        .addObjects((Object[]) values), BuilderFactory.STRING, Collections
-            .singletonList(conn -> HashImportSupport.prepareBeforeUse(conn, fieldset, prepare)));
+    return new CommandObject<>(himportSetArguments(key, fieldset, values), BuilderFactory.STRING,
+        Collections.singletonList(conn -> HashImportSupport.prepareBeforeUse(conn, fieldset, prepare)));
   }
 
   final CommandObject<String> himportSet(byte[] key, HashImport fieldset, byte[]... values) {
     CommandObject<String> prepare = himportPrepare(fieldset.name(), fieldset.fields());
-    return new CommandObject<>(commandArguments(HIMPORT).add(Keyword.SET).key(key).add(fieldset.name())
-        .addObjects((Object[]) values), BuilderFactory.STRING, Collections
-            .singletonList(conn -> HashImportSupport.prepareBeforeUse(conn, fieldset, prepare)));
+    return new CommandObject<>(himportSetArguments(key, fieldset, values), BuilderFactory.STRING,
+        Collections.singletonList(conn -> HashImportSupport.prepareBeforeUse(conn, fieldset, prepare)));
+  }
+
+  /**
+   * Bare {@code HIMPORT SET}, no prepare hook — for callers that own the connection and inject
+   * the PREPARE themselves (see {@link Pipeline}).
+   */
+  final CommandObject<String> himportSetBare(String key, HashImport fieldset, String... values) {
+    return new CommandObject<>(himportSetArguments(key, fieldset, values), BuilderFactory.STRING);
+  }
+
+  final CommandObject<String> himportSetBare(byte[] key, HashImport fieldset, byte[]... values) {
+    return new CommandObject<>(himportSetArguments(key, fieldset, values), BuilderFactory.STRING);
+  }
+
+  private CommandArguments himportSetArguments(String key, HashImport fieldset, String... values) {
+    return commandArguments(HIMPORT).add(Keyword.SET).key(key).add(fieldset.name())
+        .addObjects((Object[]) values);
+  }
+
+  private CommandArguments himportSetArguments(byte[] key, HashImport fieldset, byte[]... values) {
+    return commandArguments(HIMPORT).add(Keyword.SET).key(key).add(fieldset.name())
+        .addObjects((Object[]) values);
   }
   // Hash commands
 

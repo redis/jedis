@@ -14,7 +14,34 @@ import redis.clients.jedis.util.KeyValue;
 
 public class Pipeline extends AbstractPipeline implements DatabasePipelineCommands, Closeable {
 
-  private final Queue<Response<?>> pipelinedResponses = new LinkedList<>();
+  /**
+   * An entry of the wire-order reply queue, marking whether it belongs to a client-internal
+   * command (e.g. HIMPORT's injected {@code PREPARE}): its reply is consumed in wire order like
+   * any other, but it is excluded from user-facing results such as {@link #syncAndReturnAll()}.
+   */
+  private static final class QueuedResponse<T> extends Response<T> {
+
+    private final boolean internal;
+
+    private QueuedResponse(Builder<T> builder, boolean internal) {
+      super(builder);
+      this.internal = internal;
+    }
+
+    static <T> QueuedResponse<T> user(Builder<T> builder) {
+      return new QueuedResponse<>(builder, false);
+    }
+
+    static <T> QueuedResponse<T> internal(Builder<T> builder) {
+      return new QueuedResponse<>(builder, true);
+    }
+
+    boolean isInternal() {
+      return internal;
+    }
+  }
+
+  private final Queue<QueuedResponse<?>> pipelinedResponses = new LinkedList<>();
   protected final Connection connection;
   private final boolean closeConnection;
   //private final CommandObjects commandObjects;
@@ -44,9 +71,18 @@ public class Pipeline extends AbstractPipeline implements DatabasePipelineComman
   @Override
   public final <T> Response<T> appendCommand(CommandObject<T> commandObject) {
     connection.sendCommand(commandObject.getArguments());
-    Response<T> response = new Response<>(commandObject.getBuilder());
+    QueuedResponse<T> response = QueuedResponse.user(commandObject.getBuilder());
     pipelinedResponses.add(response);
     return response;
+  }
+
+  /**
+   * Buffers a client-internal command: its reply is consumed in wire order like any other, but it
+   * is excluded from user-facing results ({@link #syncAndReturnAll()}).
+   */
+  private <T> void appendInternalCommand(CommandObject<T> commandObject) {
+    connection.sendCommand(commandObject.getArguments());
+    pipelinedResponses.add(QueuedResponse.internal(commandObject.getBuilder()));
   }
 
   @Override
@@ -85,9 +121,12 @@ public class Pipeline extends AbstractPipeline implements DatabasePipelineComman
       List<Object> unformatted = connection.getMany(pipelinedResponses.size());
       List<Object> formatted = new ArrayList<>();
       for (Object rawReply : unformatted) {
+        QueuedResponse<?> response = pipelinedResponses.poll();
+        response.set(rawReply);
+        if (response.isInternal()) {
+          continue; // client-internal command; not part of the user's results
+        }
         try {
-          Response<?> response = pipelinedResponses.poll();
-          response.set(rawReply);
           formatted.add(response.get());
         } catch (JedisDataException e) {
           formatted.add(e);
@@ -177,26 +216,26 @@ public class Pipeline extends AbstractPipeline implements DatabasePipelineComman
   public Response<String> himportSet(String key, HashImport fieldset, String... values) {
     HashImportSupport.checkArgs(fieldset, values.length);
     himportPrepareBeforeUse(fieldset);
-    return appendCommand(commandObjects.himportSet(key, fieldset, values));
+    return appendCommand(commandObjects.himportSetBare(key, fieldset, values));
   }
 
   @Override
   public Response<String> himportSet(byte[] key, HashImport fieldset, byte[]... values) {
     HashImportSupport.checkArgs(fieldset, values.length);
     himportPrepareBeforeUse(fieldset);
-    return appendCommand(commandObjects.himportSet(key, fieldset, values));
+    return appendCommand(commandObjects.himportSetBare(key, fieldset, values));
   }
 
   /**
-   * Buffers a {@code HIMPORT PREPARE} ahead of the {@code SET} when this pipeline's connection has
-   * not yet prepared the fieldset, recording it in the connection's note so before-command
-   * reconciliation discards it after {@link HashImport#close()}. The SET command's pre-process hook
-   * is inert here &mdash; a pipeline buffers raw arguments rather than executing on the connection
-   * &mdash; so the PREPARE is injected explicitly.
+   * Buffers an internal {@code HIMPORT PREPARE} ahead of the {@code SET} when this pipeline's
+   * connection has not yet prepared the fieldset, recording it in the connection's note so
+   * before-command reconciliation discards it after {@link HashImport#close()}. The pipeline owns
+   * its connection, so it uses the bare {@code SET} and injects the PREPARE itself; the hook
+   * variant exists for the executor path, where the connection is unknown until execution.
    */
   private void himportPrepareBeforeUse(HashImport fieldset) {
     if (!connection.himportState().isPrepared(fieldset.name())) {
-      appendCommand(commandObjects.himportPrepare(fieldset.name(), fieldset.fields()));
+      appendInternalCommand(commandObjects.himportPrepare(fieldset.name(), fieldset.fields()));
       HashImportSupport.markPrepared(connection, fieldset);
     }
   }

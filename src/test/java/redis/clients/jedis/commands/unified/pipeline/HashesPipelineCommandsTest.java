@@ -393,4 +393,16 @@ public class HashesPipelineCommandsTest extends PipelineCommandsTestBase {
     assertEquals("OK", r2.get());
     assertEquals("OK", rb.get());
   }
+
+  @Test
+  @EnabledOnCommand("HIMPORT")
+  public void himportSetSyncAndReturnAllExcludesInternalPrepare() {
+    HashImport fs = HashImport.of("f");
+    pipe.himportSet("himport:p:all:1", fs, "v1");
+    pipe.himportSet("himport:p:all:2", fs, "v2");
+    pipe.hget("himport:p:all:1", "f");
+
+    // one result per user command; the internally injected PREPARE is not surfaced
+    assertEquals(Arrays.<Object> asList("OK", "OK", "v1"), pipe.syncAndReturnAll());
+  }
 }

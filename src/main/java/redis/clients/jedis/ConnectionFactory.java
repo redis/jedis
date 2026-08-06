@@ -168,10 +168,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
 
   @Override
   public void activateObject(PooledObject<Connection> pooledConnection) throws Exception {
-    // Borrow-time reconciliation: the connection is now exclusively owned, so it can safely discard
-    // any HIMPORT fieldsets whose templates were closed or garbage-collected. No-op for the common
-    // case of a connection that never ran HIMPORT.
-    pooledConnection.getObject().himportReconcileOnBorrow();
+    // what to do ??
   }
 
   @Override

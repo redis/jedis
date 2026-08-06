@@ -31,9 +31,19 @@ final class HashImportSupport {
    */
   static void prepareBeforeUse(Connection connection, HashImport fieldset,
       CommandObject<String> prepareCommand) {
-    if (!connection.himportIsPrepared(fieldset.name())) {
+    if (!connection.himportState().isPrepared(fieldset.name())) {
       connection.executeCommand(prepareCommand);
-      connection.himportMarkPrepared(fieldset.name(), fieldset);
+      markPrepared(connection, fieldset);
     }
+  }
+
+  /**
+   * Records that {@code fieldset} is prepared on {@code connection}. Mark-before-register is
+   * load-bearing: {@code registerConnection} re-checks {@code discarded} and marks a compensating
+   * discard, which the drain only honours for names already in the prepared set.
+   */
+  static void markPrepared(Connection connection, HashImport fieldset) {
+    connection.himportState().markPrepared(fieldset.name());
+    fieldset.registerConnection(connection);
   }
 }

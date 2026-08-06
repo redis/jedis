@@ -189,15 +189,15 @@ public class Pipeline extends AbstractPipeline implements DatabasePipelineComman
 
   /**
    * Buffers a {@code HIMPORT PREPARE} ahead of the {@code SET} when this pipeline's connection has
-   * not yet prepared the fieldset, recording it in the connection's note so borrow-time
+   * not yet prepared the fieldset, recording it in the connection's note so before-command
    * reconciliation discards it after {@link HashImport#close()}. The SET command's pre-process hook
    * is inert here &mdash; a pipeline buffers raw arguments rather than executing on the connection
    * &mdash; so the PREPARE is injected explicitly.
    */
   private void himportPrepareBeforeUse(HashImport fieldset) {
-    if (!connection.himportIsPrepared(fieldset.name())) {
+    if (!connection.himportState().isPrepared(fieldset.name())) {
       appendCommand(commandObjects.himportPrepare(fieldset.name(), fieldset.fields()));
-      connection.himportMarkPrepared(fieldset.name(), fieldset);
+      HashImportSupport.markPrepared(connection, fieldset);
     }
   }
 }

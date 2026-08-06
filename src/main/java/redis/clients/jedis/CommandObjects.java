@@ -1466,10 +1466,6 @@ public class CommandObjects {
         .add(FIELDS).add(fields.length).addObjects((Object[]) fields), BuilderFactory.LONG_LIST);
   }
 
-  // Hash Import (HIMPORT) commands. The SET command carries a pre-process hook that lazily injects
-  // PREPARE just before the SET on whichever connection the CommandExecutor picks (see
-  // HashImportSupport#prepareBeforeUse); PREPARE/DISCARD are internal (DISCARD is issued by
-  // borrow-time reconciliation, not built here).
   final CommandObject<String> himportPrepare(String fieldset, Collection<byte[]> fields) {
     return new CommandObject<>(commandArguments(HIMPORT).add(PREPARE).add(fieldset).addObjects(fields),
         BuilderFactory.STRING);

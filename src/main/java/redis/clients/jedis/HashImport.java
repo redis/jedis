@@ -12,32 +12,29 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
- * A managed {@code HIMPORT} fieldset template (Hinted Hash Templates, Redis 8.10): a locally
- * generated, process-unique fieldset name plus the ordered field names shared by the hashes to
- * import.
- * <p>
- * A fieldset is per-physical-connection server state. Rather than expose the raw
- * {@code PREPARE}/{@code DISCARD} lifecycle, the client manages it transparently: each
+ * A reusable field-set template for {@code HIMPORT} (Hinted Hash Templates, Redis 8.10): declare
+ * the ordered field names once, then create many hashes by sending only their values with
  * {@link redis.clients.jedis.commands.HashCommands#himportSet(String, HashImport, String...)
- * himportSet} lazily prepares the template on whichever pooled connection it lands on. On
- * {@link #close()} the template pushes a discard onto every connection it was prepared on; each
- * connection issues that {@code DISCARD} at the only thread-safe moment &mdash; when it is next
- * borrowed. The template must be closed (it is {@link AutoCloseable}); a template dropped without
- * {@code close()} leaves its server-side state on those connections until they are recycled. Use it
- * with try-with-resources:
- * 
+ * himportSet}.
+ * <p>
+ * A template may be reused across keys, calls, and connections; the server-side
+ * {@code PREPARE}/{@code DISCARD} lifecycle is managed by the client and never exposed. Close the
+ * template when done (it is {@link AutoCloseable}), preferably with try-with-resources; after
+ * {@code close()} it must not be used again. A template dropped without {@code close()} leaves
+ * stale server-side state behind until its connections are recycled.
+ *
  * <pre>
  * {@code
  * try (HashImport fs = HashImport.of("name", "email", "age")) {
  *     jedis.himportSet("u:1", fs, "alice", "a@x.com", "25");
  *     jedis.himportSet("u:2", fs, "bob",   "b@x.com", "30");
- * }   // close() -> the fieldset is discarded from each connection as it is next borrowed
+ * }
  * }
  * </pre>
  * <p>
- * The generated {@link #name()} (<code>"j:&lt;seq&gt;"</code>) is unique per instance and never
- * reused, so a discarded template's name cannot collide with a later one. Empty, {@code null}, and
- * duplicate field names are rejected eagerly; all other validation is server-authoritative.
+ * A template must declare at least one field, with no {@code null} or duplicate names. Each
+ * {@code himportSet} supplies exactly one value per field, in field order; the keys it produces are
+ * ordinary hashes.
  * @since 8.0
  */
 @Experimental
@@ -50,12 +47,12 @@ public final class HashImport implements AutoCloseable {
   private volatile boolean discarded = false;
 
   /**
-   * Connections this template has been prepared on, so {@link #close()} can enqueue its discard on
+   * Connections this template has been prepared on, so {@link #close()} can mark its discard on
    * each. Weakly referenced: a long-lived template never pins a connection the pool has destroyed,
    * and a connection that dies before {@code close()} needs no discard &mdash; its server-side
    * state died with the socket. Preparation (register) and {@code close()} (visit) may run on
    * different threads; the registry is concurrent. A connection re-prepared after a reconnect
-   * registers again; the duplicate discard enqueue is filtered at drain time.
+   * registers again; the duplicate discard mark is filtered at drain time.
    */
   private final ConnectionRegistry connections = new ConnectionRegistry();
 
@@ -125,9 +122,8 @@ public final class HashImport implements AutoCloseable {
   }
 
   /**
-   * Discards this template. The server-side fieldset is not touched synchronously; instead each
-   * connection it was prepared on is asked to drop it (issuing {@code HIMPORT DISCARD}) the next
-   * time that connection is borrowed. After this call the template must not be used again.
+   * Discards this template; it must not be used again afterwards. Server-side cleanup is deferred
+   * and handled by the client. Idempotent.
    * @since 8.0
    */
   @Override
@@ -136,17 +132,17 @@ public final class HashImport implements AutoCloseable {
       return;
     }
     discarded = true;
-    connections.forEachLive(connection -> connection.himportEnqueueDiscard(name));
+    connections.forEachLive(connection -> connection.himportState().markForDiscard(name));
   }
 
   /**
    * Records that this template has been prepared on {@code connection}, so {@link #close()} can
-   * enqueue its discard there. Called during prepare-before-use.
+   * mark its discard there. Called during prepare-before-use.
    */
   void registerConnection(Connection connection) {
     connections.register(connection);
     if (discarded) {
-      connections.forEachLive(c -> c.himportEnqueueDiscard(name));
+      connections.forEachLive(c -> c.himportState().markForDiscard(name));
     }
   }
 

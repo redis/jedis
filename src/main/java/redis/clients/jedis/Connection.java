@@ -234,43 +234,28 @@ public class Connection implements Closeable {
   }
 
   /**
-   * Whether the given HIMPORT fieldset is already prepared on this connection.
+   * This connection's HIMPORT bookkeeping (prepared fieldsets and queued discards).
    */
-  boolean himportIsPrepared(String fieldset) {
-    return himportState.isPrepared(fieldset);
+  HimportConnectionState himportState() {
+    return himportState;
   }
 
   /**
-   * Records that the given HIMPORT fieldset has been prepared on this connection, and registers this
-   * connection on the template so {@link HashImport#close()} can later enqueue its discard here.
+   * Issues the {@code HIMPORT DISCARD}s that {@link HashImport#close()} queued for this
+   * connection, ahead of the command about to run: one packed write, replies drained in one pass.
+   * <p>
+   * Error replies are ignored &mdash; the server does not hold the fieldset either way.
+   * Connection failures propagate so the retry machinery sees them.
    */
-  void himportMarkPrepared(String fieldset, HashImport template) {
-    himportState.markPrepared(fieldset);
-    template.registerConnection(this);
-  }
-
-  /**
-   * Enqueues a fieldset to discard from this connection on its next borrow. Called by
-   * {@link HashImport#close()}, possibly from a thread that does not own this connection; only the
-   * concurrent queue is touched here, never the socket.
-   */
-  void himportEnqueueDiscard(String fieldset) {
-    himportState.enqueueDiscard(fieldset);
-  }
-
-  /**
-   * Borrow-time reconciliation: issues a best-effort {@code HIMPORT DISCARD} for each fieldset that
-   * {@link HashImport#close()} queued for this connection. O(1) when nothing is queued (the common
-   * case). Safe because the borrowing thread exclusively owns this connection.
-   */
-  void himportReconcileOnBorrow() {
-    for (String fieldset : himportState.drainDiscardable()) {
-      try {
-        executeCommand(new CommandArguments(Command.HIMPORT).add(Keyword.DISCARD).add(fieldset));
-      } catch (JedisException ignored) {
-        // Best-effort: a failed discard on borrow must not disrupt the command about to run.
-      }
+  private void himportSendPendingDiscards() {
+    List<String> stale = himportState.drainDiscardable();
+    if (stale.isEmpty()) {
+      return;
     }
+    for (String fieldset : stale) {
+      sendCommand(new CommandArguments(Command.HIMPORT).add(Keyword.DISCARD).add(fieldset));
+    }
+    getMany(stale.size());
   }
 
   /**
@@ -321,11 +306,13 @@ public class Connection implements Closeable {
   }
 
   public Object executeCommand(final CommandArguments args) {
+    himportSendPendingDiscards();
     sendCommand(args);
     return getOne();
   }
 
   public <T> T executeCommand(final CommandObject<T> commandObject) {
+    himportSendPendingDiscards();
     List<Consumer<Connection>> preProcessHooks = commandObject.getPreProcessHooks();
     if (!preProcessHooks.isEmpty()) {
       for (Consumer<Connection> preProcessHook : preProcessHooks) {

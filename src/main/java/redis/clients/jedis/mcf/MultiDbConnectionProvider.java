@@ -343,6 +343,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
     TrackingConnectionPool pool = TrackingConnectionPool.builder()
         .hostAndPort(hostPort(config.getEndpoint())).clientConfig(config.getJedisClientConfig())
+        .maintenanceNotificationsConfig(config.getMaintenanceNotificationsConfig())
         .poolConfig(config.getConnectionPoolConfig()).cache(cache).build();
 
     Database database;

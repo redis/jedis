@@ -11,13 +11,17 @@ import java.nio.ByteBuffer;
 import java.nio.CharBuffer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
+import redis.clients.jedis.TimeoutSource.TimeoutInfo;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.args.ClientAttributeOption;
@@ -34,6 +38,8 @@ public class Connection implements Closeable {
   public static class Builder {
     private JedisSocketFactory socketFactory;
     private JedisClientConfig clientConfig;
+    private MaintenanceNotificationsConfig maintenanceConfig;
+    private final Set<InitVisitor> visitors = new HashSet<>();
 
     public Builder socketFactory(JedisSocketFactory socketFactory) {
       this.socketFactory = socketFactory;
@@ -45,12 +51,34 @@ public class Connection implements Closeable {
       return this;
     }
 
+    /**
+     * Configuration that drives the {@code CLIENT MAINT_NOTIFICATIONS} handshake (mode, endpoint
+     * type). {@code null} (or {@code DISABLED}) skips the handshake.
+     */
+    public Builder maintenanceConfig(MaintenanceNotificationsConfig maintenanceConfig) {
+      this.maintenanceConfig = maintenanceConfig;
+      return this;
+    }
+
     public JedisSocketFactory getSocketFactory() {
       return socketFactory;
     }
 
     public JedisClientConfig getClientConfig() {
       return clientConfig;
+    }
+
+    MaintenanceNotificationsConfig getMaintenanceConfig() {
+      return maintenanceConfig;
+    }
+
+    Builder addVisitor(InitVisitor visitor) {
+      this.visitors.add(visitor);
+      return this;
+    }
+
+    Set<InitVisitor> getVisitors() {
+      return visitors;
     }
 
     public Connection build() {
@@ -124,8 +152,14 @@ public class Connection implements Closeable {
   private Socket socket;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
-  private int soTimeout = 0;
-  private int infiniteSoTimeout = 0;
+
+  /**
+   * Last SO_TIMEOUT value pushed to the underlying socket, used to skip redundant
+   * {@code setSoTimeout} syscalls. Touched only by the command-executing thread (and on connect).
+   * {@code -1} means "unknown / no socket yet".
+   */
+  private int appliedSoTimeout = -1;
+
   private boolean broken = false;
   private volatile Throwable brokenCause = null;
   private boolean strValActive;
@@ -134,6 +168,21 @@ public class Connection implements Closeable {
   protected String version;
   private AtomicReference<RedisCredentials> currentCredentials = new AtomicReference<>(null);
   private AuthXManager authXManager;
+  private boolean isBlocking = false;
+  private Set<InitVisitor> initVisitors = new HashSet<>();
+
+  private static final long NOT_RETIRED = 0;
+
+  /** Instant this connection must leave pool service. See {@link #retireAt}. */
+  private volatile long retiredAtNanos = NOT_RETIRED;
+
+  /** Listeners notified synchronously of this connection's maintenance events (pool-injected). */
+  private final Set<MaintenanceEventListener> maintenanceEventListeners = ConcurrentHashMap
+      .newKeySet();
+
+  private final DefaultTimeoutSource defaultTimeoutSource = new DefaultTimeoutSource(
+      new TimeoutInfo(0, 0));
+
   private JedisClientConfig clientConfig;
   private final ProtocolHandshake handshake = new ProtocolHandshake(this);
   private final PushConsumerChainImpl pushConsumers = PushConsumerChainImpl.of();
@@ -164,21 +213,38 @@ public class Connection implements Closeable {
   public Connection(final JedisSocketFactory socketFactory, JedisClientConfig clientConfig) {
     this.socketFactory = socketFactory;
     this.clientConfig = clientConfig;
+
     initializeFromClientConfig(clientConfig);
   }
 
   protected Connection(Builder builder) {
     this.socketFactory = builder.getSocketFactory();
     this.clientConfig = builder.getClientConfig();
+    this.initVisitors = builder.getVisitors();
   }
 
-  protected void initPushConsumers(JedisClientConfig config) {
-      /*
-       * Default consumers to process push messages.
-       * Marks all @{link PushMessages as processed, except for pub/sub.
-       * Pub/sub messages are propagated to the client.
-       */
-      addPushConsumer(PushConsumerChainImpl.PUBSUB_CONSUMER);
+  /**
+   * Initializes the default {@link PushConsumer}s used to process incoming push messages.
+   *
+   * <p>The consumer chain is configured as follows:</p>
+   *
+   * <ul>
+   *   <li><b>Pub/Sub consumer</b> – Handles Pub/Sub messages and propagates them back to the caller.
+   *       All other message types are considered processed and are not propagated further.</li>
+   *   <li><b>Maintenance event consumer</b> (optional) – Dispatches server maintenance
+   *       notifications to the registered {@link MaintenanceEventListener}s. Registered only when
+   *       maintenance is configured on the builder; non-pooled connections never have it.</li>
+   * </ul>
+   *
+   * @param config the client configuration; if {@code null}, only default consumers are registered
+   */
+    private void initPushConsumers(JedisClientConfig config) {
+    /*
+     * Default consumers to process push messages.
+     * Marks all @{link PushMessages as processed, except for pub/sub.
+     * Pub/sub messages are propagated to the client.
+     */
+    addPushConsumer(PushConsumerChainImpl.PUBSUB_CONSUMER);
   }
 
   @Override
@@ -238,38 +304,109 @@ public class Connection implements Closeable {
     return ((DefaultJedisSocketFactory) socketFactory).getHostAndPort();
   }
 
+  /**
+   * Returns the socket read timeout (SO_TIMEOUT) in milliseconds used for non-blocking commands.
+   *
+   * @return the configured timeout in milliseconds for non-blocking operations
+   * @see MaintenanceNotificationsConfig#getRelaxedTimeout()
+   */
   public int getSoTimeout() {
-    return soTimeout;
+    return defaultTimeoutSource.getDefaults().timeout;
   }
 
-  public void setSoTimeout(int soTimeout) {
-    this.soTimeout = soTimeout;
-    if (this.socket != null) {
-      try {
-        this.socket.setSoTimeout(soTimeout);
-      } catch (SocketException ex) {
-        throw markBroken(new JedisConnectionException(ex));
-      }
+  /**
+   * Returns the socket read timeout (SO_TIMEOUT) in milliseconds used for blocking commands.
+   *
+   * <p>This timeout is applied to blocking Redis operations (e.g. BLPOP, BRPOP) where the
+   * connection is expected to wait for a potentially long or indefinite period.</p>
+   *
+   * @return the configured timeout in milliseconds for blocking operations
+   * @see MaintenanceNotificationsConfig#getRelaxedBlockingTimeout()
+   */
+  int getBlockingSoTimeout() {
+    return defaultTimeoutSource.getDefaults().blockingTimeout;
+  }
+
+  /**
+   * Sets the socket read timeout (SO_TIMEOUT) in milliseconds for non-blocking commands.
+   *
+   * <p>The configured timeout is applied to the underlying socket immediately if the connection
+   * is already established. Otherwise, it will be applied when the socket is created.</p>
+   *
+   * <p>If the connection is currently in a <em>relaxed timeout</em> state (see {@link MaintenanceNotificationsConfig}),
+   * the looser of the value configured here and the relaxed value is in effect on the socket,
+   * {@code 0} (infinite) being the loosest; the configured value alone takes effect once the
+   * relaxation window closes.</p>
+   *
+   * @param millis the timeout value in milliseconds; a value of {@code 0} means infinite timeout
+   * @throws JedisConnectionException if the underlying socket fails to apply the timeout
+   */
+  public void setSoTimeout(int millis) {
+    defaultTimeoutSource.setDefaults(millis, defaultTimeoutSource.getDefaults().blockingTimeout);
+    applyCurrentTimeout();
+  }
+
+  private int currentTimeout() {
+    return isBlocking ? defaultTimeoutSource.get().blockingTimeout : defaultTimeoutSource.get().timeout;
+  }
+
+  void applyCurrentTimeout() {
+    int timeout = currentTimeout();
+     if (timeout == appliedSoTimeout || socket == null) {
+      return;
     }
+    try {
+      socket.setSoTimeout(timeout);
+    } catch (SocketException e) {
+      throw markBroken(new JedisConnectionException("Failed to set SO_TIMEOUT", e));
+    }
+    appliedSoTimeout = timeout;
   }
 
+  /**
+   * Sets the socket read timeout (SO_TIMEOUT) to infinite for blocking commands.
+   *
+   * <p>The effective timeout applied depends on the current connection state:</p>
+   * <ul>
+   *   <li>If relaxed timeout mode is active, the looser of the configured blocking timeout and
+   *   the relaxed blocking timeout is used, {@code 0} (infinite) being the loosest.</li>
+   *   <li>Otherwise, the configured blocking timeout is applied.</li>
+   * </ul>
+   *
+   * <p>This is typically used for blocking Redis commands (e.g. BLPOP, BRPOP) where
+   * the connection is expected to wait indefinitely for server responses.</p>
+   *
+   * @throws JedisConnectionException if the socket cannot be configured or connection fails
+   * @see MaintenanceNotificationsConfig#getRelaxedBlockingTimeout()
+   */
   public void setTimeoutInfinite() {
-    try {
-      if (!isConnected()) {
-        connect();
-      }
-      socket.setSoTimeout(infiniteSoTimeout);
-    } catch (SocketException ex) {
-      throw markBroken(new JedisConnectionException(ex));
+    if (!isConnected()) {
+      connect();
     }
+
+    isBlocking = true;
+    applyCurrentTimeout();
   }
 
+  /**
+   * Restores the socket read timeout (SO_TIMEOUT) to the currently active non-blocking timeout.
+   *
+   * <p>This method is typically called after a blocking operation completes to restore
+   * the connection's normal timeout behavior.</p>
+   *
+   * <p>The restored timeout depends on the current connection state:</p>
+   * <ul>
+   *   <li>The looser of {@link #getSoTimeout()} and {@link MaintenanceNotificationsConfig#getRelaxedTimeout()},
+   *   {@code 0} (infinite) being the loosest, if relaxed timeout mode is active</li>
+   *   <li>{@link #getSoTimeout()} otherwise</li>
+   * </ul>
+   *
+   * @throws JedisConnectionException if the socket cannot be reconfigured
+   * @see MaintenanceNotificationsConfig#getRelaxedTimeout()
+   */
   public void rollbackTimeout() {
-    try {
-      socket.setSoTimeout(this.soTimeout);
-    } catch (SocketException ex) {
-      throw markBroken(new JedisConnectionException(ex));
-    }
+    isBlocking = false;
+    applyCurrentTimeout();
   }
 
   public Object executeCommand(final ProtocolCommand cmd) {
@@ -357,7 +494,18 @@ public class Connection implements Closeable {
     if (!isConnected()) {
       try {
         socket = socketFactory.createSocket();
-        soTimeout = socket.getSoTimeout(); // ?
+        // here clientConfig means we have a potential custom/new value as timeout from supplier, so
+        // we apply it to the socket
+        //
+        // if no clientConfig, we use socket timeout to set defaults in the supplier
+        if (this.clientConfig != null) {
+          socket.setSoTimeout(currentTimeout());
+          // Fresh socket: align the applied-timeout cache with the new socket's actual SO_TIMEOUT.
+          appliedSoTimeout = socket.getSoTimeout();
+        } else {
+          defaultTimeoutSource.setDefaults(socket.getSoTimeout(), getBlockingSoTimeout());
+        }
+
 
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
@@ -397,7 +545,7 @@ public class Connection implements Closeable {
       if (isBroken()) {
         pool.returnBrokenResource(this);
       } else {
-        pool.returnResource(this);
+        pool.returnResource(this); // the pool's return hook routes retired connections to disposal
       }
     } else {
       disconnect();
@@ -514,11 +662,11 @@ public class Connection implements Closeable {
     return (List<Object>) readProtocolWithCheckingBroken();
   }
 
-  @SuppressWarnings("unchecked")
   public Object getUnflushedObject() {
     return readProtocolWithCheckingBroken();
   }
 
+  @SuppressWarnings("unchecked")
   public List<Object> getObjectMultiBulkReply() {
     flush();
     return (List<Object>) readProtocolWithCheckingBroken();
@@ -562,8 +710,8 @@ public class Connection implements Closeable {
     if (broken) {
       throw new JedisConnectionException("Attempting to read from a broken connection.", brokenCause);
     }
-
     try {
+      applyCurrentTimeout();
       return protocolRead(inputStream, pushConsumers);
     } catch (JedisDataException exc) {
       // Redis error reply was fully parsed; the stream is aligned and the connection reusable.
@@ -583,6 +731,7 @@ public class Connection implements Closeable {
     }
 
     try {
+      applyCurrentTimeout();
       if (inputStream.available() > 0) {
         protocolReadPushes(inputStream, pushConsumers);
       }
@@ -639,8 +788,14 @@ public class Connection implements Closeable {
 
   protected void initializeFromClientConfig(final JedisClientConfig config) {
     try {
-      this.soTimeout = config.getSocketTimeoutMillis();
-      this.infiniteSoTimeout = config.getBlockingSocketTimeoutMillis();
+      // Pre-handshake hook: lets visitors install state that must already be in effect while the
+      // AUTH/HELLO handshake talks to the server (e.g. the maintenance rebind timeout overlay).
+      for (InitVisitor visitor : initVisitors) {
+        visitor.visitBeforeHandshake(this);
+      }
+
+      defaultTimeoutSource.setDefaults(config.getSocketTimeoutMillis(),
+        config.getBlockingSocketTimeoutMillis());
 
       initPushConsumers(config);
 
@@ -706,6 +861,10 @@ public class Connection implements Closeable {
         sendCommand(arg);
       }
       getMany(fireAndForgetMsg.size());
+
+      for (InitVisitor visitor : initVisitors) {
+        visitor.visitAfterHandshake(this);
+      }
 
       int dbIndex = config.getDatabase();
       if (dbIndex > 0) {
@@ -897,7 +1056,7 @@ public class Connection implements Closeable {
   /**
    * Returns an unmodifiable view of the registered push consumers.
    *
-   * @return
+   * @return the list of push consumers
    */
   List<PushConsumer> getPushConsumers() {
     return pushConsumers.getConsumers();
@@ -907,4 +1066,47 @@ public class Connection implements Closeable {
   protected void addPushConsumer(PushConsumer consumer) {
     this.pushConsumers.add(consumer);
   }
+
+  void removePushConsumer(PushConsumer consumer) {
+    this.pushConsumers.remove(consumer);
+  }
+
+  /**
+   * Retires this connection from pool service at the given instant. Advisory: no I/O happens here;
+   * once the deadline passes, the pool destroys the connection on return, validation, or eviction
+   * instead of reusing it.
+   */
+  void retireAt(long nanos) {
+    this.retiredAtNanos = nanos;
+  }
+
+  /** Whether this connection's {@link #retireAt} deadline has passed and it must not be reused. */
+  boolean isRetired() {
+    long at = retiredAtNanos;
+    return at != NOT_RETIRED && NanoClock.INSTANCE.getAsLong() - at >= 0;
+  }
+
+  ChainedTimeoutSource getTimeoutSource() {
+    return defaultTimeoutSource;
+  }
+
+  /** The connected peer's address, or {@code null} if the socket is not (yet) open. */
+  SocketAddress getRemoteSocketAddress() {
+    return socket == null ? null : socket.getRemoteSocketAddress();
+  }
+
+  /** Registers a listener notified synchronously of this connection's maintenance events. */
+  void addMaintenanceEventListener(MaintenanceEventListener listener) {
+    maintenanceEventListeners.add(listener);
+  }
+
+  /** Removes a previously registered maintenance event listener. */
+  void removeMaintenanceEventListener(MaintenanceEventListener listener) {
+    maintenanceEventListeners.remove(listener);
+  }
+
+  Set<MaintenanceEventListener> getMaintenanceEventListeners() {
+    return maintenanceEventListeners;
+  }
+
 }

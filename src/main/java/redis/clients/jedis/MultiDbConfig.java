@@ -862,6 +862,17 @@ public final class MultiDbConfig {
     /** Jedis client configuration containing connection settings and authentication. */
     private final JedisClientConfig jedisClientConfig;
 
+    /**
+     * Maintenance notifications used when a database does not explicitly configure one (disabled).
+     * A dedicated instance, not the public {@link MaintenanceNotificationsConfig#DISABLED}
+     * constant, so an explicitly set value is distinguishable.
+     */
+    private static final MaintenanceNotificationsConfig UNSET_MAINTENANCE_NOTIFICATIONS = MaintenanceNotificationsConfig
+        .builder().mode(MaintenanceNotificationsConfig.Mode.DISABLED).build();
+
+    /** Maintenance notifications configuration for this database. */
+    private final MaintenanceNotificationsConfig maintenanceNotificationsConfig;
+
     /** Optional connection pool configuration for managing connections to this database. */
     private GenericObjectPoolConfig<Connection> connectionPoolConfig;
 
@@ -894,6 +905,7 @@ public final class MultiDbConfig {
     public DatabaseConfig(Endpoint endpoint, JedisClientConfig clientConfig) {
       this.endpoint = endpoint;
       this.jedisClientConfig = clientConfig;
+      this.maintenanceNotificationsConfig = UNSET_MAINTENANCE_NOTIFICATIONS;
     }
 
     /**
@@ -907,6 +919,7 @@ public final class MultiDbConfig {
       this.weight = builder.weight;
       this.healthCheckEnabled = builder.healthCheckEnabled;
       this.healthCheckStrategySupplier = builder.healthCheckStrategySupplier;
+      this.maintenanceNotificationsConfig = builder.maintenanceNotificationsConfig;
     }
 
     /**
@@ -935,6 +948,15 @@ public final class MultiDbConfig {
      */
     public JedisClientConfig getJedisClientConfig() {
       return jedisClientConfig;
+    }
+
+    /**
+     * Returns the maintenance notifications configuration for this database. Defaults to
+     * {@link MaintenanceNotificationsConfig#DISABLED} when not explicitly set.
+     * @return the maintenance notifications configuration
+     */
+    public MaintenanceNotificationsConfig getMaintenanceNotificationsConfig() {
+      return maintenanceNotificationsConfig;
     }
 
     /**
@@ -1017,6 +1039,9 @@ public final class MultiDbConfig {
       /** Health check strategy supplier. Default: PingStrategy.DEFAULT */
       private StrategySupplier healthCheckStrategySupplier = PingStrategy.DEFAULT;
 
+      /** Maintenance notifications configuration; defaults to the unset sentinel (disabled). */
+      private MaintenanceNotificationsConfig maintenanceNotificationsConfig = UNSET_MAINTENANCE_NOTIFICATIONS;
+
       /**
        * Constructs a new Builder with required endpoint and client configuration.
        * @param endpoint the Redis endpoint (host and port)
@@ -1040,6 +1065,21 @@ public final class MultiDbConfig {
       public Builder connectionPoolConfig(
           GenericObjectPoolConfig<Connection> connectionPoolConfig) {
         this.connectionPoolConfig = connectionPoolConfig;
+        return this;
+      }
+
+      /**
+       * Sets this database's maintenance notifications. Defaults to
+       * {@link MaintenanceNotificationsConfig#DISABLED} when unset.
+       * @param maintenanceNotificationsConfig the configuration; must not be {@code null}
+       * @return this builder
+       * @throws IllegalArgumentException if {@code maintenanceNotificationsConfig} is {@code null}
+       */
+      public Builder maintenanceNotificationsConfig(
+          MaintenanceNotificationsConfig maintenanceNotificationsConfig) {
+        JedisAsserts.notNull(maintenanceNotificationsConfig,
+          "MaintenanceNotificationsConfig must not be null");
+        this.maintenanceNotificationsConfig = maintenanceNotificationsConfig;
         return this;
       }
 

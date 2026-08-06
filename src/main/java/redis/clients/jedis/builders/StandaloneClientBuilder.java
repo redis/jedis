@@ -17,8 +17,16 @@ import redis.clients.jedis.util.JedisURIHelper;
 public abstract class StandaloneClientBuilder<C>
     extends AbstractClientBuilder<StandaloneClientBuilder<C>, C> {
 
+  /**
+   * Maintenance notifications used when none is explicitly configured (AUTO). A dedicated instance,
+   * so an explicitly set value is distinguishable.
+   */
+  private static final MaintenanceNotificationsConfig UNSET_MAINTENANCE_NOTIFICATIONS = MaintenanceNotificationsConfig
+      .builder().mode(MaintenanceNotificationsConfig.Mode.AUTO).build();
+
   // Standalone-specific configuration fields
   private HostAndPort hostAndPort = new HostAndPort(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
+  private MaintenanceNotificationsConfig maintNotificationsConfig = UNSET_MAINTENANCE_NOTIFICATIONS;
 
   /**
    * Sets the Redis server host and port.
@@ -41,6 +49,21 @@ public abstract class StandaloneClientBuilder<C>
     return this;
   }
 
+  /**
+   * Configures server-side maintenance notifications (timeout relaxation and proactive rebind on
+   * MIGRATING / FAILING_OVER / MOVING). Defaults to AUTO mode (enabled when the server supports
+   * it). To turn the feature off, pass {@link MaintenanceNotificationsConfig#DISABLED}.
+   * @param config maintenance notifications configuration; must not be {@code null}
+   * @return this builder
+   * @throws IllegalArgumentException if {@code config} is {@code null}
+   */
+  public StandaloneClientBuilder<C> maintenanceNotifications(
+      MaintenanceNotificationsConfig config) {
+    JedisAsserts.notNull(config, "MaintenanceNotificationsConfig must not be null");
+    this.maintNotificationsConfig = config;
+    return this;
+  }
+
   @Override
   protected StandaloneClientBuilder<C> self() {
     return this;
@@ -49,7 +72,7 @@ public abstract class StandaloneClientBuilder<C>
   @Override
   protected ConnectionProvider createDefaultConnectionProvider() {
     return new PooledConnectionProvider(this.hostAndPort, this.clientConfig, this.cache,
-        this.poolConfig);
+        this.poolConfig, this.maintNotificationsConfig);
   }
 
   @Override

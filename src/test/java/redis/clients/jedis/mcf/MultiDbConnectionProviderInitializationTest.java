@@ -10,7 +10,6 @@ import org.mockito.MockedConstruction;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import redis.clients.jedis.Connection;
-import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
@@ -37,10 +36,10 @@ public class MultiDbConnectionProviderInitializationTest {
     clientConfig = DefaultJedisClientConfig.builder().build();
   }
 
-  private MockedConstruction<ConnectionPool> mockPool() {
+  private MockedConstruction<TrackingConnectionPool> mockPool() {
     Connection mockConnection = mock(Connection.class);
     lenient().when(mockConnection.ping()).thenReturn(true);
-    return mockConstruction(ConnectionPool.class, (mock, context) -> {
+    return mockConstruction(TrackingConnectionPool.class, (mock, context) -> {
       when(mock.getResource()).thenReturn(mockConnection);
       doNothing().when(mock).close();
     });
@@ -48,7 +47,7 @@ public class MultiDbConnectionProviderInitializationTest {
 
   @Test
   void testInitializationWithMixedHealthCheckConfiguration() {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
       // Create databases with mixed health check configuration
       DatabaseConfig db1 = DatabaseConfig.builder(endpoint1, clientConfig).weight(1.0f)
           .healthCheckEnabled(false) // No health
@@ -78,7 +77,7 @@ public class MultiDbConnectionProviderInitializationTest {
 
   @Test
   void testInitializationWithAllHealthChecksDisabled() {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
       // Create databases with no health checks
       DatabaseConfig db1 = DatabaseConfig.builder(endpoint1, clientConfig).weight(1.0f)
           .healthCheckEnabled(false).build();
@@ -98,7 +97,7 @@ public class MultiDbConnectionProviderInitializationTest {
 
   @Test
   void testInitializationWithSingleDatabase() {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
       DatabaseConfig db = DatabaseConfig.builder(endpoint1, clientConfig).weight(1.0f)
           .healthCheckEnabled(false).build();
 
@@ -141,7 +140,7 @@ public class MultiDbConnectionProviderInitializationTest {
 
   @Test
   void testInitializationWithOneAvailablePolicy() {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
       DatabaseConfig db1 = DatabaseConfig.builder(endpoint1, clientConfig).weight(1.0f)
           .healthCheckEnabled(false).build();
 
@@ -160,7 +159,7 @@ public class MultiDbConnectionProviderInitializationTest {
 
   @Test
   void testInitializationWithAllAvailablePolicy() {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
       DatabaseConfig db1 = DatabaseConfig.builder(endpoint1, clientConfig).weight(1.0f)
           .healthCheckEnabled(false).build();
 
@@ -180,7 +179,7 @@ public class MultiDbConnectionProviderInitializationTest {
 
   @Test
   void testInitializationWithMajorityAvailablePolicy() {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockPool()) {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool()) {
       DatabaseConfig db1 = DatabaseConfig.builder(endpoint1, clientConfig).weight(1.0f)
           .healthCheckEnabled(false).build();
 

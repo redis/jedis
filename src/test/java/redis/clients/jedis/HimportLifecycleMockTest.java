@@ -87,6 +87,24 @@ public class HimportLifecycleMockTest {
   }
 
   @Test
+  public void resetClearsPreparedStateSoNextSetRePrepares() {
+    try (HashImport fs = HashImport.of("f"); Jedis jedis = new Jedis(connection)) {
+      connection.executeCommand(commandObjects.himportSet("k1", fs, "v1"));
+
+      // RESET drops connection-scoped fieldsets server-side; the client note must follow
+      jedis.reset();
+
+      connection.executeCommand(commandObjects.himportSet("k2", fs, "v2"));
+      assertEquals(Arrays.asList( //
+        "HIMPORT PREPARE " + fs.name() + " f", //
+        "HIMPORT SET k1 " + fs.name() + " v1", //
+        "RESET", //
+        "HIMPORT PREPARE " + fs.name() + " f", //
+        "HIMPORT SET k2 " + fs.name() + " v2"), received);
+    }
+  }
+
+  @Test
   public void batchesAllQueuedDiscardsBeforeOneCommand() {
     HashImport fs1 = HashImport.of("a");
     HashImport fs2 = HashImport.of("b");

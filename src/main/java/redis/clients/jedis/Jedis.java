@@ -10459,8 +10459,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   @Override
   public String reset() {
-    connection.sendCommand(Command.RESET);
-    return connection.getStatusCodeReply();
+    try {
+      connection.sendCommand(Command.RESET);
+      return connection.getStatusCodeReply();
+    } finally {
+      connection.himportState().reset();
+    }
   }
 
   @Override

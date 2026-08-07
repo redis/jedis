@@ -8,7 +8,8 @@ import redis.clients.jedis.util.SafeEncoder;
  */
 public enum ClientAttributeOption implements Rawable {
     LIB_NAME("LIB-NAME"),
-    LIB_VER("LIB-VER");
+    LIB_VER("LIB-VER"),
+    REDIRECT("REDIRECT");
 
     private final byte[] raw;
 

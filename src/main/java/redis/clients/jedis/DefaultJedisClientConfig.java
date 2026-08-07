@@ -24,6 +24,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   private volatile Supplier<RedisCredentials> credentialsProvider;
   private final int database;
   private final String clientName;
+  private final ClientCapaConfig clientCapaConfig;
 
   private final boolean ssl;
   private final SSLSocketFactory sslSocketFactory;
@@ -52,6 +53,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     this.credentialsProvider = builder.credentialsProvider;
     this.database = builder.database;
     this.clientName = builder.clientName;
+    this.clientCapaConfig = builder.clientCapaConfig;
     this.ssl = builder.ssl;
     this.sslSocketFactory = builder.sslSocketFactory;
     this.sslParameters = builder.sslParameters;
@@ -120,6 +122,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
   @Override
   public String getClientName() {
     return clientName;
+  }
+
+  @Override
+  public ClientCapaConfig getClientCapaConfig() {
+    return clientCapaConfig;
   }
 
   @Override
@@ -253,6 +260,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     private Supplier<RedisCredentials> credentialsProvider;
     private int database = Protocol.DEFAULT_DATABASE;
     private String clientName = null;
+    private ClientCapaConfig clientCapaConfig = ClientCapaConfig.DEFAULT;
 
     private boolean ssl = false;
     private SSLSocketFactory sslSocketFactory = null;
@@ -380,6 +388,11 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     public Builder clientName(String clientName) {
       this.clientName = clientName;
+      return this;
+    }
+
+    public Builder clientCapaConfig(ClientCapaConfig capaConfig) {
+      this.clientCapaConfig = capaConfig;
       return this;
     }
 
@@ -513,6 +526,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       this.credentialsProvider = instance.getCredentialsProvider();
       this.database = instance.getDatabase();
       this.clientName = instance.getClientName();
+      this.clientCapaConfig = instance.getClientCapaConfig();
       this.ssl = instance.isSsl();
       this.sslSocketFactory = instance.getSslSocketFactory();
       this.sslParameters = instance.getSslParameters();
@@ -575,6 +589,7 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
 
     builder.database(copy.getDatabase());
     builder.clientName(copy.getClientName());
+    builder.clientCapaConfig(copy.getClientCapaConfig());
 
     builder.ssl(copy.isSsl());
     builder.sslSocketFactory(copy.getSslSocketFactory());

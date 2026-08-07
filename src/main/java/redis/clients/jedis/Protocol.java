@@ -54,6 +54,7 @@ public final class Protocol {
   static final List<KeyValue> PROTOCOL_EMPTY_MAP = Collections.unmodifiableList(new ArrayList<>(0));
 
   private static final String ASK_PREFIX = "ASK ";
+  private static final String REDIRECT_PREFIX = "REDIRECT ";
   private static final String MOVED_PREFIX = "MOVED ";
   private static final String CLUSTERDOWN_PREFIX = "CLUSTERDOWN ";
   private static final String BUSY_PREFIX = "BUSY ";
@@ -95,6 +96,8 @@ public final class Protocol {
     } else if (message.startsWith(ASK_PREFIX)) {
       String[] askInfo = parseTargetHostAndSlot(message);
       throw new JedisAskDataException(message, HostAndPort.from(askInfo[1]), Integer.parseInt(askInfo[0]));
+    } else if (message.startsWith(REDIRECT_PREFIX)) {
+      throw new JedisRedirectionException(message, HostAndPort.from(parseTargetHost(message)), -1);
     } else if (message.startsWith(CLUSTERDOWN_PREFIX)) {
       throw new JedisClusterException(message);
     } else if (message.startsWith(BUSY_PREFIX)) {
@@ -126,6 +129,11 @@ public final class Protocol {
     response[0] = messageInfo[1];
     response[1] = messageInfo[2];
     return response;
+  }
+
+  private static String parseTargetHost(String redirectResponse) {
+    String[] messageInfo = redirectResponse.split(" ");
+    return messageInfo[1];
   }
 
   private static Object process(final RedisInputStream is, PushConsumerChain pushConsumer) {
@@ -405,7 +413,7 @@ public final class Protocol {
     DELETE, LIBRARYNAME, WITHCODE, DESCRIPTION, GETKEYS, GETKEYSANDFLAGS, DOCS, FILTERBY, DUMP,
     MODULE, ACLCAT, PATTERN, DOCTOR, LATEST, HISTORY, USAGE, SAMPLES, PURGE, STATS, LOADEX, CONFIG,
     ARGS, RANK, NOW, VERSION, ADDR, SKIPME, USER, LADDR, FIELDS,
-    CHANNELS, NUMPAT, NUMSUB, SHARDCHANNELS, SHARDNUMSUB, NOVALUES, MAXAGE, FXX, FNX,
+    CHANNELS, NUMPAT, NUMSUB, SHARDCHANNELS, SHARDNUMSUB, NOVALUES, MAXAGE, CAPA, FXX, FNX,
     // Vector set keywords
     REDUCE, CAS, NOQUANT, Q8, BIN, EF, SETATTR, M, VALUES, FP32, ELE, FILTER, FILTER_EF, TRUTH, NOTHREAD, RAW, EPSILON, WITHATTRIBS,
     // Hotkeys keywords

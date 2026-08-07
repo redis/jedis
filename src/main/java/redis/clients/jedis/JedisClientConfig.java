@@ -90,6 +90,10 @@ public interface JedisClientConfig {
     return null;
   }
 
+  default ClientCapaConfig getClientCapaConfig() {
+    return ClientCapaConfig.DEFAULT;
+  }
+
   /**
    * Whether TLS/SSL should be used for connections.
    * <p>

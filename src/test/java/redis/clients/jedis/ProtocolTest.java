@@ -23,6 +23,7 @@ import java.util.List;
 
 
 import redis.clients.jedis.exceptions.JedisBusyException;
+import redis.clients.jedis.exceptions.JedisRedirectionException;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
@@ -140,6 +141,20 @@ public class ProtocolTest {
       return;
     }
     fail("Expected a JedisBusyException to be thrown.");
+  }
+
+  @Test
+  public void redirectReply() {
+    final String redirectMessage = "REDIRECT 127.0.0.1:6380";
+    final InputStream is = new ByteArrayInputStream(('-' + redirectMessage + "\r\n").getBytes());
+
+    JedisRedirectionException exception = assertThrows(JedisRedirectionException.class,
+        () -> Protocol.read(new RedisInputStream(is)));
+
+    assertEquals(redirectMessage, exception.getMessage());
+    assertEquals("127.0.0.1", exception.getTargetNode().getHost());
+    assertEquals(6380, exception.getTargetNode().getPort());
+    assertEquals(-1, exception.getSlot());
   }
 
   // ==================== Verbatim String Tests (RESP3) ====================

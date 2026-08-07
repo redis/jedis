@@ -93,6 +93,34 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
+   * Constructs a {@code UnifiedJedis} instance with a redirect-aware provider.
+   *
+   * @param provider connection provider for redirect handling
+   * @param maxAttempts maximum attempts to execute a command before giving up
+   * @param maxTotalRetriesDuration maximum total duration to retry commands before giving up
+   */
+  public UnifiedJedis(RedirectConnectionProvider provider, int maxAttempts,
+      Duration maxTotalRetriesDuration) {
+    this(new RedirectCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider,
+        (RedisProtocol) null, null);
+  }
+
+  /**
+   * Constructs a {@code UnifiedJedis} instance with a redirect-aware provider and explicit RESP
+   * protocol.
+   *
+   * @param provider connection provider for redirect handling
+   * @param maxAttempts maximum attempts to execute a command before giving up
+   * @param maxTotalRetriesDuration maximum total duration to retry commands before giving up
+   * @param protocol Redis protocol implementation to use
+   */
+  protected UnifiedJedis(RedirectConnectionProvider provider, int maxAttempts,
+      Duration maxTotalRetriesDuration, RedisProtocol protocol) {
+    this(new RedirectCommandExecutor(provider, maxAttempts, maxTotalRetriesDuration), provider, protocol,
+        null);
+  }
+
+  /**
    * Builder-facing constructor. The client owns {@link CommandObjects} construction: it reads the
    * protocol (and the {@code CommandObjects} knobs) from {@code clientConfig}, probes the provider
    * when the protocol is left unspecified, then delegates to

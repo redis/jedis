@@ -26,13 +26,14 @@ final class HashImportSupport {
 
   /**
    * Prepare-before-use: if {@code fieldset} is not yet prepared on {@code connection}, send
-   * {@code prepareCommand} and record it in the connection's note. The caller must own the
-   * connection.
+   * {@code HIMPORT PREPARE} and record it in the connection's note. The PREPARE is built here, only
+   * when actually needed &mdash; the common already-prepared case allocates nothing. The caller
+   * must own the connection.
    */
-  static void prepareBeforeUse(Connection connection, HashImport fieldset,
-      CommandObject<String> prepareCommand) {
+  static void prepareBeforeUse(Connection connection, HashImport fieldset) {
     if (!connection.himportState().isPrepared(fieldset.name())) {
-      connection.executeCommand(prepareCommand);
+      connection.executeCommand(new CommandArguments(Protocol.Command.HIMPORT)
+          .add(Protocol.Keyword.PREPARE).add(fieldset.name()).addObjects(fieldset.fields()));
       markPrepared(connection, fieldset);
     }
   }

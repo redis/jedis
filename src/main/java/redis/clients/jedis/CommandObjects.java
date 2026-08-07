@@ -1472,15 +1472,13 @@ public class CommandObjects {
   }
   
   final CommandObject<String> himportSet(String key, HashImport fieldset, String... values) {
-    CommandObject<String> prepare = himportPrepare(fieldset.name(), fieldset.fields());
     return new CommandObject<>(himportSetArguments(key, fieldset, values), BuilderFactory.STRING,
-        Collections.singletonList(conn -> HashImportSupport.prepareBeforeUse(conn, fieldset, prepare)));
+        Collections.singletonList(conn -> HashImportSupport.prepareBeforeUse(conn, fieldset)));
   }
 
   final CommandObject<String> himportSet(byte[] key, HashImport fieldset, byte[]... values) {
-    CommandObject<String> prepare = himportPrepare(fieldset.name(), fieldset.fields());
     return new CommandObject<>(himportSetArguments(key, fieldset, values), BuilderFactory.STRING,
-        Collections.singletonList(conn -> HashImportSupport.prepareBeforeUse(conn, fieldset, prepare)));
+        Collections.singletonList(conn -> HashImportSupport.prepareBeforeUse(conn, fieldset)));
   }
 
   /**

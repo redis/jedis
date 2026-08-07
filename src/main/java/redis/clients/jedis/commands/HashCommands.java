@@ -256,17 +256,26 @@ public interface HashCommands {
   List<Long> hpersist(String key, String... fields);
 
   /**
-   * Bulk-imports a hash from a {@link HashImport} field-set template (Hinted Hash Templates, Redis
-   * 8.10), creating (or overwriting) the hash at {@code key} while sending only its values. The
-   * number of {@code values} must equal the template's field count, positionally paired with its
-   * field names. The key produced is an ordinary hash.
+   * Creates a single hash from values supplied positionally against a reusable {@link HashImport}
+   * field-set template, using the server-side session field-set mechanism ({@code HIMPORT SET},
+   * Redis 8.10). The {@code HIMPORT PREPARE} for {@code fieldset} is injected automatically the
+   * first time it is seen on each underlying connection.
    * <p>
-   * Preparation of the template on the underlying connection is managed transparently; the template
-   * must not be {@linkplain HashImport#isDiscarded() discarded}.
-   * @param key the hash key to create
-   * @param fieldset the field-set template
-   * @param values one value per template field, in field order
+   * The key produced is an ordinary hash. A server error (for example, a key already holding a
+   * non-hash value) is thrown as usual. Cluster-aware: the key routes to its slot, re-preparing
+   * per node as needed. Not supported inside a transaction (the connection-local {@code PREPARE}
+   * cannot be staged in {@code MULTI}/{@code EXEC}).
+   *
+   * @param key the key of the hash to create; any existing hash at this key is replaced
+   * @param fieldset the field-set template describing the ordered field names shared by imported
+   *          hashes
+   * @param values the field values for this hash, matched positionally against the template's
+   *          fields (same count)
    * @return {@code OK}
+   * @throws IllegalArgumentException if the number of values differs from the template's field
+   *           count
+   * @throws IllegalStateException if the template has been {@linkplain HashImport#close() closed}
+   * @see HashImport
    * @since 8.0
    */
   @Experimental

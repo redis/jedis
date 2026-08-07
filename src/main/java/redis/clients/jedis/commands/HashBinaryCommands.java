@@ -256,12 +256,21 @@ public interface HashBinaryCommands {
   List<Long> hpersist(byte[] key, byte[]... fields);
 
   /**
-   * Binary variant of {@link HashCommands#himportSet(String, HashImport, String...)} (Hinted Hash
-   * Templates, Redis 8.10).
-   * @param key the hash key to create
-   * @param fieldset the field-set template
-   * @param values one value per template field, in field order
+   * Binary variant of {@link HashCommands#himportSet(String, HashImport, String...)}: creates a
+   * single hash from values supplied positionally against a reusable {@link HashImport} field-set
+   * template ({@code HIMPORT SET}, Redis 8.10). The {@code HIMPORT PREPARE} for {@code fieldset}
+   * is injected automatically the first time it is seen on each underlying connection.
+   *
+   * @param key the key of the hash to create; any existing hash at this key is replaced
+   * @param fieldset the field-set template describing the ordered field names shared by imported
+   *          hashes
+   * @param values the field values for this hash, matched positionally against the template's
+   *          fields (same count)
    * @return {@code OK}
+   * @throws IllegalArgumentException if the number of values differs from the template's field
+   *           count
+   * @throws IllegalStateException if the template has been {@linkplain HashImport#close() closed}
+   * @see HashImport
    * @since 8.0
    */
   @Experimental

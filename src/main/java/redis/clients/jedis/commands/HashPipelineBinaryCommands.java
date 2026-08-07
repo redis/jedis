@@ -98,13 +98,21 @@ public interface HashPipelineBinaryCommands {
   Response<List<Long>> hpersist(byte[] key, byte[]... fields);
 
   /**
-   * Binary variant of {@link HashPipelineCommands#himportSet(String, HashImport, String...)} (Hinted
-   * Hash Templates, Redis 8.10). Supported only on a single-connection pipeline; a transaction
-   * ({@code MULTI}) or a cluster pipeline throws {@link UnsupportedOperationException}.
-   * @param key the hash key to create
-   * @param fieldset the field-set template
-   * @param values one value per template field, in field order
+   * Binary variant of {@link HashPipelineCommands#himportSet(String, HashImport, String...)}
+   * ({@code HIMPORT SET}, Redis 8.10). Supported only on a single-connection pipeline; a
+   * transaction ({@code MULTI}) or a cluster pipeline throws
+   * {@link UnsupportedOperationException}.
+   *
+   * @param key the key of the hash to create; any existing hash at this key is replaced
+   * @param fieldset the field-set template describing the ordered field names shared by imported
+   *          hashes
+   * @param values the field values for this hash, matched positionally against the template's
+   *          fields (same count)
    * @return the {@code SET} response ({@code OK})
+   * @throws IllegalArgumentException if the number of values differs from the template's field
+   *           count
+   * @throws IllegalStateException if the template has been {@linkplain HashImport#close() closed}
+   * @see HashImport
    * @since 8.0
    */
   @Experimental

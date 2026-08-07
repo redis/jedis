@@ -48,11 +48,12 @@ public final class HashImport implements AutoCloseable {
 
   /**
    * Connections this template has been prepared on, so {@link #close()} can mark its discard on
-   * each. Weakly referenced: a long-lived template never pins a connection the pool has destroyed,
-   * and a connection that dies before {@code close()} needs no discard &mdash; its server-side
-   * state died with the socket. Preparation (register) and {@code close()} (visit) may run on
-   * different threads; the registry is concurrent. A connection re-prepared after a reconnect
-   * registers again; the duplicate discard mark is filtered at drain time.
+   * each. Weakly referenced: a long-lived template never pins a connection that was already
+   * destroyed (e.g. by its pool), and a connection that dies before {@code close()} needs no
+   * discard &mdash; its server-side state died with the socket. Preparation (register) and
+   * {@code close()} (visit) may run on different threads; the registry is concurrent. A connection
+   * re-prepared after a reconnect registers again; the duplicate discard mark is filtered at drain
+   * time.
    */
   private final ConnectionRegistry connections = new ConnectionRegistry();
 

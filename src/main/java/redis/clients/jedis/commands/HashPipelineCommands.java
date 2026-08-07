@@ -98,13 +98,25 @@ public interface HashPipelineCommands {
   Response<List<Long>> hpersist(String key, String... fields);
 
   /**
-   * Pipelined {@link HashCommands#himportSet(String, HashImport, String...)} (Hinted Hash Templates,
-   * Redis 8.10). Supported only on a single-connection pipeline; a transaction ({@code MULTI}) or a
-   * cluster pipeline throws {@link UnsupportedOperationException}.
-   * @param key the hash key to create
-   * @param fieldset the field-set template
-   * @param values one value per template field, in field order
+   * Pipelined {@link HashCommands#himportSet(String, HashImport, String...)} ({@code HIMPORT SET},
+   * Redis 8.10). Each call is applied on its own and may be freely pipelined with unrelated
+   * commands; the {@code HIMPORT PREPARE} for {@code fieldset} is buffered automatically ahead of
+   * the first use on the pipeline's connection and is not part of the user-facing results.
+   * <p>
+   * Supported only on a single-connection pipeline; a transaction ({@code MULTI}) or a cluster
+   * pipeline throws {@link UnsupportedOperationException} (the connection-local {@code PREPARE}
+   * can neither be staged in {@code MULTI}/{@code EXEC} nor routed by slot).
+   *
+   * @param key the key of the hash to create; any existing hash at this key is replaced
+   * @param fieldset the field-set template describing the ordered field names shared by imported
+   *          hashes
+   * @param values the field values for this hash, matched positionally against the template's
+   *          fields (same count)
    * @return the {@code SET} response ({@code OK})
+   * @throws IllegalArgumentException if the number of values differs from the template's field
+   *           count
+   * @throws IllegalStateException if the template has been {@linkplain HashImport#close() closed}
+   * @see HashImport
    * @since 8.0
    */
   @Experimental

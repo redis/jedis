@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1786101665876,
+  "lastUpdate": 1786103049259,
   "repoUrl": "https://github.com/redis/jedis",
   "entries": {
     "Benchmark": [
@@ -20366,6 +20366,274 @@ window.BENCHMARK_DATA = {
           {
             "name": "redis.clients.jedis.benchmark.util.SafeEncoderBenchmark.encodeStringToBytes",
             "value": 34.298523606210026,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Aleksandar Todorov",
+            "username": "a-TODO-rov",
+            "email": "a_t_todorov@yahoo.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "d2f4d5deca4132459da9537bfe0d9670a80f06e1",
+          "message": "[Redis 8.10] Add HIMPORT (Hinted Hash Templates) support (#4667)\n\n* Initial\n\n* Add pipeline support\n\n* Add hooks\n\n* Move state in the template\n\n* Track prepared connections weakly in HashImport\n\nA long-lived template kept strong references to every connection it\nwas prepared on, retaining connections the pool had already destroyed.\n\nRecord them in ConnectionRegistry instead: a weak-reference registry\n(same class as the maintenance-events branch, PR #4668) that prunes\ncollected connections, so close() visits only live ones. close() is\nnow idempotent, and registerConnection re-checks discarded afterwards\nso a close() racing first use cannot leave the fieldset undiscarded.\n\n* Run cluster ASKING as a command pre-process hook\n\nOn an ASK redirect the executor sent ASKING out-of-band before the\ncommand; a command-intrinsic hook such as HIMPORT's lazy PREPARE then\nconsumed the one-shot ASKING state, redirecting the command again\nuntil attempts were exhausted.\n\nCommandObject is now immutable and carries an ordered list of\npre-process hooks; withPreProcessHook() returns a modified copy.\nClusterCommandExecutor appends the ASKING hook to a copy of the\nredirected command, so the wire order is PREPARE, ASKING, SET and\nASKING applies to the command itself.\n\nCovered by CommandObjectTest and testAskResponseWithHimportSet\n(himportSet on a migrating slot), verified against a live cluster.\n\n* Send pending HIMPORT discards before command execution\n\nDiscard reconciliation ran only in ConnectionFactory.activateObject, so\nlegacy JedisPool/JedisSentinelPool and direct unpooled connections never\nissued queued HIMPORT DISCARDs, accumulating server-side fieldsets. A\ndiscard failure was also swallowed there after marking the connection\nbroken, handing a dead connection to the borrower.\n\nMove reconciliation to the Connection.executeCommand entry points: one\nchoke point covers every path, gated by a single volatile read. Pending\ndiscards go out as one packed write with replies drained in one pass;\nerror replies are ignored while connection failures propagate to the\nretry machinery. activateObject is a no-op again.\n\n* Keep internal pipeline commands out of syncAndReturnAll results\n\nThe HIMPORT PREPARE injected before a first-use himportSet was buffered\nlike a user command, so syncAndReturnAll() returned an extra OK and\nshifted the positions callers rely on.\n\nPipeline responses are now QueuedResponse entries flagged internal or\nuser at creation; internal commands are buffered via\nappendInternalCommand and their replies, while still read in wire\norder, are filtered from syncAndReturnAll(). sync() is unchanged.\n\n* Reset HIMPORT state only on reconnect, on the owner thread\n\nsetBroken() cleared the connection's HIMPORT state, but it may be\ncalled by threads that do not own the connection (forceDisconnect,\nmaintenance paths), racing the owner's unsynchronized prepared set.\nThe clear was also unnecessary: broken connections are dropped on\nevery pooled and executor path, never reused.\n\nRemove the reset from setBroken(); connect() alone resets the state\n(renamed HimportConnectionState.reset()), which only the owner thread\nruns. Drop the legacy integration tag from HashImportReconcileIT -\nthe IT suffix alone routes it to failsafe.\n\n* Reject empty field names eagerly; cover HIMPORT lifecycle at wire level\n\nEmpty field names slipped past validation despite the documented\ncontract, deferring the failure to HIMPORT PREPARE on the server.\nReject \"\" and zero-length byte[] in the shared build step.\n\nReplace HashImportReconcileIT (legacy-client, introspection-based)\nwith HimportLifecycleMockTest: a TcpMockServer command log pins the\nwire contract - PREPARE once per connection ahead of the first SET,\nqueued DISCARDs of closed templates drained right before the next\ncommand, batched. Reconciliation runs at the shared\nConnection.executeCommand choke point, so provisioning-path variants\nadded no logic coverage.\n\n* Clear HIMPORT state on RESET\n\nRESET drops connection-scoped fieldsets server-side, but the client\nkept its prepared note, so later himportSet calls skipped PREPARE and\nfailed until reconnect. Jedis.reset() now resets the connection's\nHIMPORT state; clearing in finally is harmless on failure (at worst\none extra re-PREPARE). Raw sendCommand(RESET) is intentionally out of\nscope.\n\n* Add @since to CommandObject.withPreProcessHook\n\nNew public API needs release provenance in the generated docs; also\ncomplete the truncated javadoc sentence.\n\n* Build HIMPORT PREPARE only when a connection needs it\n\nEvery himportSet call eagerly built the PREPARE command object -\nfieldset name plus all field tokens - just to capture it in the\npre-process hook, then discarded it whenever the connection was\nalready prepared, the common case in bulk-import loops.\n\nAssemble the PREPARE arguments inside prepareBeforeUse instead, on\nthe not-prepared branch only; the steady-state path allocates\nnothing PREPARE-related. Wire order covered by\nHimportLifecycleMockTest.\n\n* Document himportSet API and add Hash Import user guide\n\nExpand the himportSet javadoc on all four command interfaces with the\nverified contract: existing hashes are replaced, wrong value count and\nclosed templates fail eagerly, transactions and cluster pipelines are\nunsupported, PREPARE is injected per pooled connection.\n\nAdd docs/hash-import.md under User Guide covering usage, pipelining,\ncluster behavior and limitations, with a compiled example\n(HashImportUsage) mirroring the doc snippets, verified against a live\nRedis 8.10.\n\n---------\n\nCo-authored-by: ggivo <ivo.gaydazhiev@redis.com>",
+          "timestamp": "2026-08-07T10:57:27Z",
+          "url": "https://github.com/redis/jedis/commit/d2f4d5deca4132459da9537bfe0d9670a80f06e1"
+        },
+        "date": 1786103048620,
+        "tool": "jmh",
+        "benches": [
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.get",
+            "value": 11371.212775511443,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.pipelinedGet",
+            "value": 681601.3851895486,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.pipelinedSet",
+            "value": 597681.0472275944,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.set",
+            "value": 11056.622856175245,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.pubsub.PubSubPushBenchmark.publishAndReceive",
+            "value": 7538.933638046214,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.get",
+            "value": 10928.881827462512,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.pipelinedGet",
+            "value": 686026.4750119457,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.pipelinedSet",
+            "value": 602497.2065964334,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.set",
+            "value": 11012.202086305455,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.get",
+            "value": 54408.591288780575,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.pipelinedGet",
+            "value": 1839182.3525643814,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.pipelinedSet",
+            "value": 1393802.1697273902,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.set",
+            "value": 53160.578542320654,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.get",
+            "value": 37657.89028561648,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.pipelinedGet",
+            "value": 1637306.3290197984,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.pipelinedSet",
+            "value": 1219072.435837377,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.set",
+            "value": 37221.16282083765,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.JedisPoolT1.workload",
+            "value": 10900.477495785733,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.JedisPoolT8.workload",
+            "value": 37786.93370211966,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.JedisT1.workload",
+            "value": 11037.138333689833,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientCSCT1.workload",
+            "value": 16899.72195151075,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientCSCT8.workload",
+            "value": 50103.07294563211,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientT1.workload",
+            "value": 10953.58314286678,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientT8.workload",
+            "value": 37332.99952085262,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadArray",
+            "value": 82.84623000934502,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadBulkString",
+            "value": 21.418391471805396,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadMultiBulkResponse",
+            "value": 132.84470036047375,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadSimpleString",
+            "value": 14.520825505382046,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readArray",
+            "value": 82.68194739342945,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readBulkString",
+            "value": 21.522603858158682,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readMultiBulkResponse",
+            "value": 109.20681581568883,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readSimpleString",
+            "value": 14.523177348472156,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readWith100PushMessages",
+            "value": 17649.961084253828,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readWith1PushMessage",
+            "value": 212.2827048823248,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadPushesBenchmark.drain1000Pending",
+            "value": 193194.790674848,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadPushesBenchmark.drain1Pending",
+            "value": 238.84375546117386,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.SendCommandBenchmark.measureSendCommand",
+            "value": 108.82897163436175,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.CRC16Benchmark.getSlotBytes",
+            "value": 38.612314301493385,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.CRC16Benchmark.getSlotString",
+            "value": 81.63291353292394,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.SafeEncoderBenchmark.decodeBytesToString",
+            "value": 30.362456646007946,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.SafeEncoderBenchmark.encodeStringToBytes",
+            "value": 34.312673403221986,
             "unit": "ns/op",
             "extra": "iterations: 5\nforks: 1\nthreads: 1"
           }

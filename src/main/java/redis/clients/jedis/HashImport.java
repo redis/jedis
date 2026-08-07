@@ -32,7 +32,7 @@ import redis.clients.jedis.util.SafeEncoder;
  * }
  * </pre>
  * <p>
- * A template must declare at least one field, with no {@code null} or duplicate names. Each
+ * A template must declare at least one field, with no {@code null}, empty, or duplicate names. Each
  * {@code himportSet} supplies exactly one value per field, in field order; the keys it produces are
  * ordinary hashes.
  * @since 8.0
@@ -63,8 +63,8 @@ public final class HashImport implements AutoCloseable {
 
   /**
    * Creates a template from the given {@link String} field names.
-   * @param fields the ordered field names; must be non-empty with no {@code null} or duplicate
-   *          entries
+   * @param fields the ordered field names; must be non-empty with no {@code null}, empty, or
+   *          duplicate entries
    * @return a new, uniquely named template
    * @since 8.0
    */
@@ -84,8 +84,8 @@ public final class HashImport implements AutoCloseable {
 
   /**
    * Creates a template from the given binary field names.
-   * @param fields the ordered field names; must be non-empty with no {@code null} or duplicate
-   *          entries (duplicates are compared by content). Each array is defensively copied.
+   * @param fields the ordered field names; must be non-empty with no {@code null}, empty, or
+   *          duplicate entries (duplicates are compared by content).
    * @return a new, uniquely named template
    * @since 8.0
    */
@@ -106,6 +106,9 @@ public final class HashImport implements AutoCloseable {
   private static HashImport build(List<byte[]> fields) {
     Set<ByteBuffer> seen = new HashSet<>();
     for (byte[] field : fields) {
+      if (field.length == 0) {
+        throw new IllegalArgumentException("HashImport fields must not contain empty names");
+      }
       if (!seen.add(ByteBuffer.wrap(field))) {
         throw new IllegalArgumentException("HashImport fields must not contain duplicates");
       }

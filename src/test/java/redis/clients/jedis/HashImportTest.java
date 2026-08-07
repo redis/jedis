@@ -42,6 +42,14 @@ public class HashImportTest {
   }
 
   @Test
+  public void rejectsEmptyFieldName() {
+    assertThrows(IllegalArgumentException.class, () -> HashImport.of(""));
+    assertThrows(IllegalArgumentException.class, () -> HashImport.of("ok", ""));
+    assertThrows(IllegalArgumentException.class, () -> HashImport.of(new byte[0]));
+    assertThrows(IllegalArgumentException.class, () -> HashImport.of("a".getBytes(), new byte[0]));
+  }
+
+  @Test
   public void rejectsDuplicateStringFields() {
     assertThrows(IllegalArgumentException.class, () -> HashImport.of("dup", "dup"));
   }

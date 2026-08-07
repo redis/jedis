@@ -54,7 +54,10 @@ public class CommandObject<T> {
   /**
    * Returns a new command identical to this one with {@code hook} appended to its pre-process
    * hooks; this instance is immutable and unaffected. Hooks run in append order on the connection
-   * right before the command is sent &mdash;
+   * right before the command is sent.
+   * @param hook per-connection setup to run just before this command
+   * @return a new {@code CommandObject} carrying the appended hook
+   * @since 8.0
    */
   @Experimental
   public CommandObject<T> withPreProcessHook(Consumer<Connection> hook) {

@@ -28,6 +28,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
@@ -465,6 +466,30 @@ public class UnboundRedisClusterClientTest extends UnboundRedisClusterClientTest
       node2.clusterSetSlotMigrating(slot51, JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
       jc.set("51", "foo");
       assertEquals("foo", jc.get("51"));
+    }
+  }
+
+  /**
+   * HIMPORT SET during slot migration: the lazily injected PREPARE must not consume the one-shot
+   * ASKING state on the importing node — the wire order on the ASK retry is PREPARE, ASKING, SET.
+   */
+  @Test
+  @EnabledOnCommand("HIMPORT")
+  public void testAskResponseWithHimportSet() {
+    try (RedisClusterClient jc = RedisClusterClient.builder()
+        .nodes(Collections.singleton(nodeInfo1))
+        .clientConfig(DEFAULT_CLIENT_CONFIG)
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
+      int slot51 = JedisClusterCRC16.getSlot("51");
+      node3.clusterSetSlotImporting(slot51, JedisClusterTestUtil.getNodeId(node2.clusterNodes()));
+      node2.clusterSetSlotMigrating(slot51, JedisClusterTestUtil.getNodeId(node3.clusterNodes()));
+      try (HashImport fs = HashImport.of("f1", "f2")) {
+        assertEquals("OK", jc.himportSet("51", fs, "v1", "v2"));
+        assertEquals("v1", jc.hget("51", "f1"));
+        assertEquals("v2", jc.hget("51", "f2"));
+      }
     }
   }
 

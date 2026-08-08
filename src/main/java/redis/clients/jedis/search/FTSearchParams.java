@@ -412,7 +412,7 @@ public class FTSearchParams implements IParams {
     if (this.params == null) {
       this.params = new HashMap<>(paramValues);
     } else {
-      this.params.putAll(params);
+      this.params.putAll(paramValues);
     }
     return this;
   }

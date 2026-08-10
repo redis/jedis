@@ -741,6 +741,23 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
   }
 
   @Test
+  public void testQueryParamsMixedAddParamAndMap() {
+    assertOK(jedis.ftCreate(INDEX, NumericField.of("numval")));
+
+    jedis.hset("1", "numval", "1");
+    jedis.hset("2", "numval", "2");
+    jedis.hset("3", "numval", "3");
+
+    Map<String, Object> paramValues = new HashMap<>();
+    paramValues.put("max", 2);
+    assertEquals(2,
+      jedis
+          .ftSearch(INDEX, "@numval:[$min $max]",
+            FTSearchParams.searchParams().addParam("min", 1).params(paramValues).dialect(2))
+          .getTotalResults());
+  }
+
+  @Test
   public void testSortQueryFlags() {
     assertOK(jedis.ftCreate(INDEX, TextField.of("title").sortable()));
 

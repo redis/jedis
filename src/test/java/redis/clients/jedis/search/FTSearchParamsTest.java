@@ -7,6 +7,7 @@ import static redis.clients.jedis.util.CommandArgumentsMatchers.hasArgument;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.CommandArguments;
@@ -15,33 +16,47 @@ import redis.clients.jedis.search.SearchProtocol.SearchCommand;
 
 public class FTSearchParamsTest {
 
-  @Test
-  public void paramsMapMergesWhenParametersAlreadySet() {
-    Map<String, Object> more = new HashMap<>();
-    more.put("added", "2");
+  private static final String INDEX = "idx";
+  private static final String QUERY = "@price:[$min $max]";
 
-    FTSearchParams params = FTSearchParams.searchParams().addParam("existing", "1").params(more);
-
-    CommandArguments args = new CommandArguments(SearchCommand.SEARCH);
-    params.addParams(args);
-
-    assertThat(args, containsArguments("existing", "1", "added", "2"));
-    assertThat(args, hasArgument(2, RawableFactory.from(4)));
+  /** The command prefix FT.SEARCH is built with: SEARCH &lt;index&gt; &lt;query&gt;. */
+  private CommandArguments searchArguments() {
+    return new CommandArguments(SearchCommand.SEARCH).add(INDEX).add(QUERY);
   }
 
-  @Test
-  public void paramsMapMergesAcrossTwoMapCalls() {
-    Map<String, Object> first = new HashMap<>();
-    first.put("first", "1");
-    Map<String, Object> second = new HashMap<>();
-    second.put("second", "2");
+  @Nested
+  class AddParamsTests {
 
-    FTSearchParams params = FTSearchParams.searchParams().params(first).params(second);
+    @Test
+    public void paramsMapMergesWhenParametersAlreadySet() {
+      Map<String, Object> more = new HashMap<>();
+      more.put("max", "2");
 
-    CommandArguments args = new CommandArguments(SearchCommand.SEARCH);
-    params.addParams(args);
+      FTSearchParams params = FTSearchParams.searchParams().addParam("min", "1").params(more);
 
-    assertThat(args, containsArguments("first", "1", "second", "2"));
-    assertThat(args, hasArgument(2, RawableFactory.from(4)));
+      CommandArguments args = searchArguments();
+      params.addParams(args);
+
+      // Expected: FT.SEARCH idx @price:[$min $max] PARAMS 4 <min 1 max 2 in any order>
+      assertThat(args, containsArguments("min", "1", "max", "2"));
+      assertThat(args, hasArgument(4, RawableFactory.from(4)));
+    }
+
+    @Test
+    public void paramsMapMergesAcrossTwoMapCalls() {
+      Map<String, Object> first = new HashMap<>();
+      first.put("min", "1");
+      Map<String, Object> second = new HashMap<>();
+      second.put("max", "2");
+
+      FTSearchParams params = FTSearchParams.searchParams().params(first).params(second);
+
+      CommandArguments args = searchArguments();
+      params.addParams(args);
+
+      // Expected: FT.SEARCH idx @price:[$min $max] PARAMS 4 <min 1 max 2 in any order>
+      assertThat(args, containsArguments("min", "1", "max", "2"));
+      assertThat(args, hasArgument(4, RawableFactory.from(4)));
+    }
   }
 }

@@ -58,5 +58,35 @@ public class FTSearchParamsTest {
       assertThat(args, containsArguments("min", "1", "max", "2"));
       assertThat(args, hasArgument(4, RawableFactory.from(4)));
     }
+
+    @Test
+    public void paramsMapOverwritesValueSetByAddParam() {
+      Map<String, Object> map = new HashMap<>();
+      map.put("min", "9");
+
+      FTSearchParams params = FTSearchParams.searchParams().addParam("min", "1").params(map);
+
+      CommandArguments args = searchArguments();
+      params.addParams(args);
+
+      // Expected: FT.SEARCH idx @price:[$min $max] PARAMS 2 min 9
+      assertThat(args, containsArguments("min", "9"));
+      assertThat(args, hasArgument(4, RawableFactory.from(2)));
+    }
+
+    @Test
+    public void addParamOverwritesValueSetByParamsMap() {
+      Map<String, Object> map = new HashMap<>();
+      map.put("min", "1");
+
+      FTSearchParams params = FTSearchParams.searchParams().params(map).addParam("min", "9");
+
+      CommandArguments args = searchArguments();
+      params.addParams(args);
+
+      // Expected: FT.SEARCH idx @price:[$min $max] PARAMS 2 min 9
+      assertThat(args, containsArguments("min", "9"));
+      assertThat(args, hasArgument(4, RawableFactory.from(2)));
+    }
   }
 }

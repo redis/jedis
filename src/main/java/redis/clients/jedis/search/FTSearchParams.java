@@ -392,12 +392,15 @@ public class FTSearchParams implements IParams {
   }
 
   /**
-   * Parameters can be referenced in the query string by a $ , followed by the parameter name,
-   * e.g., $user , and each such reference in the search query to a parameter name is substituted
-   * by the corresponding parameter value.
+   * Adds a query parameter. Parameters are referenced in the query string by {@code $} followed
+   * by the parameter name, e.g. {@code $user}, and each such reference is substituted by the
+   * corresponding parameter value.
+   * <p>
+   * Adding a parameter with an existing name overwrites its previous value. Parameters
+   * accumulate across {@code addParam} and {@link #params(Map)} calls.
    *
-   * @param name
-   * @param value can be String, long or float
+   * @param name the parameter name, referenced in the query as {@code $name}
+   * @param value the parameter value; can be String, long or float
    * @return the query object itself
    */
   public FTSearchParams addParam(String name, Object value) {
@@ -408,6 +411,15 @@ public class FTSearchParams implements IParams {
     return this;
   }
 
+  /**
+   * Adds all entries of the given map as query parameters, merging them with any parameters
+   * already set via {@link #addParam(String, Object)} or previous {@code params} calls. An entry
+   * whose name is already set overwrites its previous value.
+   *
+   * @param paramValues parameter name to value; values can be String, long or float
+   * @return the query object itself
+   * @see #addParam(String, Object)
+   */
   public FTSearchParams params(Map<String, Object> paramValues) {
     if (this.params == null) {
       this.params = new HashMap<>(paramValues);

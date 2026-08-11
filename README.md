@@ -31,8 +31,11 @@ The most recent version of this library supports redis version
 [7.2](https://github.com/redis/redis/blob/7.2/00-RELEASENOTES),
 [7.4](https://github.com/redis/redis/blob/7.4/00-RELEASENOTES),
 [8.0](https://github.com/redis/redis/blob/8.0/00-RELEASENOTES),
-[8.2](https://github.com/redis/redis/blob/8.2/00-RELEASENOTES) and
-[8.4](https://github.com/redis/redis/blob/8.4/00-RELEASENOTES).
+[8.2](https://github.com/redis/redis/blob/8.2/00-RELEASENOTES),
+[8.4](https://github.com/redis/redis/blob/8.4/00-RELEASENOTES),
+[8.6](https://github.com/redis/redis/blob/8.6/00-RELEASENOTES),
+[8.8](https://github.com/redis/redis/blob/8.8/00-RELEASENOTES) and
+[8.10](https://github.com/redis/redis/blob/8.10/00-RELEASENOTES).
 
 The table below highlights version compatibility of the most-recent library versions with Redis and JDK versions. Compatibility means communication features, and Redis command capabilities.
 

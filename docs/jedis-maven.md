@@ -6,7 +6,7 @@
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>6.2.0</version>
+    <version>8.0.0</version>
 </dependency>
 ```
 
@@ -15,8 +15,8 @@
 ```xml
 <repositories>
     <repository>
-        <id>sonatype-snapshots</id>
-        <url>https://oss.sonatype.org/content/repositories/snapshots</url>
+        <id>central-snapshots</id>
+        <url>https://central.sonatype.com/repository/maven-snapshots/</url>
         <releases>
             <enabled>false</enabled>
         </releases>
@@ -34,7 +34,7 @@ and
     <dependency>
         <groupId>redis.clients</groupId>
         <artifactId>jedis</artifactId>
-        <version>7.0.0-SNAPSHOT</version>
+        <version>8.1.0-SNAPSHOT</version>
     </dependency>
 </dependencies>
 ```

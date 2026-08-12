@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
@@ -31,10 +32,12 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import redis.clients.jedis.HashImport;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.HGetExParams;
@@ -920,5 +923,56 @@ public abstract class HashesCommandsTestBase extends UnifiedJedisCommandsTestBas
 
     assertThat(jedis.httl(bfoo, bbar1, bbar2, bbar3),
         contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
+  }
+
+  @Test
+  @EnabledOnCommand("HIMPORT")
+  public void himportSet() {
+    HashImport fs = HashImport.of("name", "email", "age");
+
+    assertEquals("OK", jedis.himportSet("himport:u:1", fs, "alice", "a@x.com", "25"));
+    assertEquals("OK", jedis.himportSet("himport:u:2", fs, "bob", "b@x.com", "30"));
+
+    Map<String, String> expected1 = new HashMap<>();
+    expected1.put("name", "alice");
+    expected1.put("email", "a@x.com");
+    expected1.put("age", "25");
+    assertEquals(expected1, jedis.hgetAll("himport:u:1"));
+
+    // Produced keys are ordinary hashes; other hash commands work on them.
+    assertEquals("bob", jedis.hget("himport:u:2", "name"));
+    assertEquals(3L, jedis.hlen("himport:u:2"));
+
+    // Binary
+    HashImport bfs = HashImport.of(bbar1, bbar2);
+    assertEquals("OK", jedis.himportSet(bfoo, bfs, bcar, bcare));
+    Map<byte[], byte[]> ball = jedis.hgetAll(bfoo);
+    assertEquals(2, ball.size());
+  }
+
+  @Test
+  @EnabledOnCommand("HIMPORT")
+  public void himportSetReusesTemplateAcrossKeys() {
+    HashImport fs = HashImport.of("k");
+    for (int i = 0; i < 5; i++) {
+      assertEquals("OK", jedis.himportSet("himport:reuse:" + i, fs, "val" + i));
+    }
+    assertEquals("val3", jedis.hget("himport:reuse:3", "k"));
+  }
+
+  @Test
+  @EnabledOnCommand("HIMPORT")
+  public void himportSetRejectsWrongValueCount() {
+    HashImport fs = HashImport.of("a", "b", "c");
+    assertThrows(IllegalArgumentException.class,
+        () -> jedis.himportSet("himport:bad", fs, "only", "two"));
+  }
+
+  @Test
+  @EnabledOnCommand("HIMPORT")
+  public void himportSetRejectsDiscardedTemplate() {
+    HashImport fs = HashImport.of("a");
+    fs.close();
+    assertThrows(IllegalStateException.class, () -> jedis.himportSet("himport:discarded", fs, "x"));
   }
 }

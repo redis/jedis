@@ -138,7 +138,10 @@ services:
     <<: *client-libs-image
     container_name: cluster-stable-1
     #network_mode: host
-    command: --cluster-preferred-endpoint-type hostname --cluster-announce-hostname "localhost" --cluster-node-timeout 150 --tls-auth-clients no --save ""
+    # cluster-node-timeout must be generous here: this env has no failover tests, and a low
+    # value lets brief main-thread stalls (e.g. bulk vector indexing) trigger a transient
+    # CLUSTERDOWN that silently rejects writes mid-test.
+    command: --cluster-preferred-endpoint-type hostname --cluster-announce-hostname "localhost" --cluster-node-timeout 5000 --tls-auth-clients no --save ""
     environment:
       - REDIS_CLUSTER=yes
       - REDIS_PASSWORD=cluster

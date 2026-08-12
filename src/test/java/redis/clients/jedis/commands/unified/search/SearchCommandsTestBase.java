@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.unified.search;
 
+import static io.redis.test.utils.RedisVersion.V8_10_0_RC2_STRING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.containsString;
@@ -13,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
+import io.redis.test.annotations.SinceRedisVersion;
 import java.util.*;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -408,6 +410,32 @@ public abstract class SearchCommandsTestBase extends UnifiedJedisCommandsTestBas
     assertEquals("OK", jedis.ftAliasDel("ALIAS2"));
     try {
       jedis.ftAliasDel("ALIAS2");
+      fail("Should throw JedisDataException");
+    } catch (JedisDataException e) {
+    }
+  }
+
+  @Test
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
+  public void aliasList() {
+    Schema sc = new Schema().addTextField("field1", 1.0);
+    assertEquals("OK", jedis.ftCreate(INDEX, IndexOptions.defaultOptions(), sc));
+
+    // An existing index with no aliases returns an empty collection, not an error.
+    assertEquals(Collections.emptySet(), jedis.ftAliasList(INDEX));
+
+    assertEquals("OK", jedis.ftAliasAdd("ALIAS1", INDEX));
+    assertEquals(Collections.singleton("ALIAS1"), jedis.ftAliasList(INDEX));
+
+    assertEquals("OK", jedis.ftAliasAdd("ALIAS2", INDEX));
+    assertEquals(new HashSet<>(Arrays.asList("ALIAS1", "ALIAS2")), jedis.ftAliasList(INDEX));
+
+    assertEquals("OK", jedis.ftAliasDel("ALIAS1"));
+    assertEquals(Collections.singleton("ALIAS2"), jedis.ftAliasList(INDEX));
+
+    // A non-existent index propagates the server error unchanged.
+    try {
+      jedis.ftAliasList("nonexisting-index");
       fail("Should throw JedisDataException");
     } catch (JedisDataException e) {
     }

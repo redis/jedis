@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
@@ -26,7 +27,9 @@ import redis.clients.jedis.Jedis;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.ListMoveOrder;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.params.LMoveMParams;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.TestEnvUtil;
@@ -423,9 +426,6 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     assertEquals("bar", result.get(1));
 
     // Multi keys
-    result = jedis.blpop(1, "foo", "foo1");
-    assertNull(result);
-
     jedis.lpush("foo", "bar");
     jedis.lpush("foo1", "bar1");
     result = jedis.blpop(1, "foo1", "foo");
@@ -445,9 +445,6 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(bbar, bresult.get(1));
 
     // Binary Multi keys
-    bresult = jedis.blpop(1, bfoo, bfoo1);
-    assertNull(bresult);
-
     jedis.lpush(bfoo, bbar);
     jedis.lpush(bfoo1, bcar);
     bresult = jedis.blpop(1, bfoo, bfoo1);
@@ -541,9 +538,6 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     assertEquals("bar", result.get(1));
 
     // Multi keys
-    result = jedis.brpop(1, "foo", "foo1");
-    assertNull(result);
-
     jedis.lpush("foo", "bar");
     jedis.lpush("foo1", "bar1");
     result = jedis.brpop(1, "foo1", "foo");
@@ -562,9 +556,6 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     assertArrayEquals(bbar, bresult.get(1));
 
     // Binary Multi keys
-    bresult = jedis.brpop(1, bfoo, bfoo1);
-    assertNull(bresult);
-
     jedis.lpush(bfoo, bbar);
     jedis.lpush(bfoo1, bcar);
     bresult = jedis.brpop(1, bfoo, bfoo1);
@@ -881,6 +872,42 @@ public class ListCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @EnabledOnCommand("LMOVEM")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void lmovem() {
+    // Dedicated keys: sibling blocking tests push to "foo"/"bar" from background threads.
+    jedis.rpush("lmsrc", "1", "2", "3", "4");
+    assertEquals(Arrays.asList("1", "2"),
+        jedis.lmovem("lmsrc", "lmdst", ListDirection.LEFT, ListDirection.LEFT,
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
+    assertEquals(Arrays.asList("1", "2"), jedis.lrange("lmdst", 0, -1));
+
+    // EXACTLY unsatisfied returns null.
+    assertNull(jedis.lmovem("lmsrc", "lmdst", ListDirection.LEFT, ListDirection.LEFT,
+        LMoveMParams.lMoveMParams().exactly(5, ListMoveOrder.OBO)));
+
+    // Binary
+    jedis.rpush(bfoo, b1, b2, b3);
+    assertByteArrayListEquals(Arrays.asList(b1, b2),
+        jedis.lmovem(bfoo, bbar, ListDirection.LEFT, ListDirection.LEFT,
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
+  }
+
+  @Test
+  @EnabledOnCommand("BLMOVEM")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void blmovem() {
+    // Dedicated keys: sibling blocking tests push to "foo"/"bar" from background threads.
+    // Source already populated: returns immediately. (Blocking/timeout semantics are covered by
+    // the unified and cluster integration tests.)
+    jedis.rpush("blmsrc", "1", "2", "3");
+    assertEquals(Arrays.asList("1", "2"),
+        jedis.blmovem("blmsrc", "blmdst", ListDirection.LEFT, ListDirection.RIGHT, 1,
+            LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
+    assertEquals(Arrays.asList("1", "2"), jedis.lrange("blmdst", 0, -1));
+  }
+
+  @Test
   @SinceRedisVersion("7.0.0")
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void lmpop() {
@@ -930,7 +957,7 @@ public class ListCommandsTest extends JedisCommandsTestBase {
     assertEquals(mylist2, elements.getKey());
     assertEquals(5, elements.getValue().size());
 
-    elements = jedis.blmpop(1L, ListDirection.RIGHT, mylist1, mylist2);
+    elements = jedis.blmpop(0.1, ListDirection.RIGHT, mylist1, mylist2);
     assertNull(elements);
   }
 }

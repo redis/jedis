@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,13 @@ import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.JedisAsserts;
 
 public class ClusterCommandExecutor implements CommandExecutor {
+
+  /**
+   * Pre-process hook appended to a command retried after an ASK redirection; runs on the target
+   * connection immediately before the command itself.
+   */
+  private static final Consumer<Connection> ASKING_HOOK = connection -> connection
+      .executeCommand(Protocol.Command.ASKING);
 
   private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -235,12 +243,15 @@ public class ClusterCommandExecutor implements CommandExecutor {
     for (int attemptsLeft = this.maxAttempts; attemptsLeft > 0; attemptsLeft--) {
       Connection connection = null;
       try {
+        CommandObject<T> attempt = commandObject;
         if (followRedirections && redirect != null) {
           // Following redirection, we need to use connection to the target node
           connection = provider.getConnection(redirect.getTargetNode());
           if (redirect instanceof JedisAskDataException) {
-            // TODO: Pipeline asking with the original command to make it faster....
-            connection.executeCommand(Protocol.Command.ASKING);
+            // ASKING must immediately precede the redirected command: appended as the last
+            // pre-process hook, it runs after any command-intrinsic hooks (e.g. HIMPORT's lazy
+            // PREPARE), which would otherwise consume the one-shot ASKING state.
+            attempt = commandObject.withPreProcessHook(ASKING_HOOK);
           }
         } else {
           connection = resolver.resolve(commandObject);
@@ -249,7 +260,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
         // Track the node we're using for error reporting
         lastNode = connection.getHostAndPort();
 
-        return execute(connection, commandObject);
+        return execute(connection, attempt);
 
       } catch (JedisClusterOperationException jcoe) {
         throw jcoe;

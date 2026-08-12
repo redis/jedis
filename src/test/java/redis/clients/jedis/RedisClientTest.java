@@ -41,7 +41,7 @@ public class RedisClientTest {
     endpointStandalone1 = Endpoints.getRedisEndpoint("standalone1");
 
     try (Jedis control = new Jedis(endpointStandalone1.getHostAndPort(),
-        endpointStandalone1.getClientConfigBuilder().build())) {
+        endpointStandalone1.getClientConfigBuilder().serverDefaultProtocol().build())) {
       control.flushAll();
     }
   }

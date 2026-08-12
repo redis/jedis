@@ -66,8 +66,8 @@ public class RedisSentinelClientIT extends RedisSentinelTlsTestBase {
   public void connectWithWrongHost() {
     // Sentinel config with hostname mismatch should fail with default hostname verification
     DefaultJedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
-        .user(sentinelWrongHost.getUsername()).password(sentinelWrongHost.getPassword()).ssl(true)
-        .build();
+        .serverDefaultProtocol().user(sentinelWrongHost.getUsername())
+        .password(sentinelWrongHost.getPassword()).ssl(true).build();
     assertThrows(JedisConnectionException.class, () -> {
       try (RedisSentinelClient client = RedisSentinelClient.builder().masterName(MASTER_NAME)
           .sentinels(sentinelsWrongHost).sentinelClientConfig(sentinelConfig).build()) {
@@ -84,7 +84,7 @@ public class RedisSentinelClientIT extends RedisSentinelTlsTestBase {
   public void connectWrongHostWithSslParameters() {
     // Custom SSLParameters without endpoint identification allows connection despite hostname
     // mismatch
-    JedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
+    JedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder().serverDefaultProtocol()
         .user(sentinelWrongHost.getUsername()).password(sentinelWrongHost.getPassword()).ssl(true)
         .sslParameters(new SSLParameters()).build();
 

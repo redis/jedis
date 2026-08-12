@@ -78,6 +78,10 @@ public class JedisTest extends JedisCommandsTestBase {
   @Test
   public void connectWithEmptyConfigInterface() {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), new JedisClientConfig() {
+      @Override
+      public boolean isAutoNegotiateProtocol() {
+        return false;
+      }
     })) {
       jedis.auth(endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
@@ -90,6 +94,11 @@ public class JedisTest extends JedisCommandsTestBase {
       @Override
       public String getPassword() {
         return endpoint.getPassword();
+      }
+
+      @Override
+      public boolean isAutoNegotiateProtocol() {
+        return false;
       }
     })) {
       assertEquals("PONG", jedis.ping());
@@ -120,7 +129,7 @@ public class JedisTest extends JedisCommandsTestBase {
     final String TIMEOUT_STR = "timeout";
 
     Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().timeoutMillis(15000).build());
+        endpoint.getClientConfigBuilder().serverDefaultProtocol().timeoutMillis(15000).build());
 
     // read current config
     final String timeout = jedis.configGet(TIMEOUT_STR).get(TIMEOUT_STR);
@@ -136,7 +145,8 @@ public class JedisTest extends JedisCommandsTestBase {
       jedis.close();
     } finally {
       // reset config
-      jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build());
+      jedis = new Jedis(endpoint.getHostAndPort(),
+          endpoint.getClientConfigBuilder().serverDefaultProtocol().build());
       jedis.configSet(TIMEOUT_STR, timeout);
       jedis.close();
     }
@@ -144,7 +154,9 @@ public class JedisTest extends JedisCommandsTestBase {
 
   @Test
   public void infiniteTimeout() throws Exception {
-    try (Jedis timeoutJedis = new Jedis(endpoint.getHost(), endpoint.getPort(), 200, 200, 200)) {
+    try (Jedis timeoutJedis = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().serverDefaultProtocol().connectionTimeoutMillis(200)
+            .socketTimeoutMillis(200).blockingSocketTimeoutMillis(200).build())) {
       timeoutJedis.auth(endpoint.getPassword());
       try {
         timeoutJedis.blpop(0, "foo");
@@ -288,7 +300,8 @@ public class JedisTest extends JedisCommandsTestBase {
     Instant start = Instant.now();
 
     try (ServerSocket server = new ServerSocket(fakePort);
-        Jedis jedis = new Jedis(uri, timeoutMillis)) {
+        Jedis jedis = new Jedis(uri, DefaultJedisClientConfig.builder().serverDefaultProtocol()
+            .connectionTimeoutMillis(timeoutMillis).socketTimeoutMillis(timeoutMillis).build())) {
       fail("Jedis should fail to connect to a fake port");
     } catch (JedisConnectionException ex) {
       assertSame(SocketTimeoutException.class, ex.getCause().getClass());
@@ -328,7 +341,7 @@ public class JedisTest extends JedisCommandsTestBase {
   @SinceRedisVersion(value = "7.2.0", message = "see https://redis.io/docs/latest/commands/client-setinfo/")
   public void clientSetInfoDefault() {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
-        .clientSetInfoConfig(ClientSetInfoConfig.DEFAULT).build())) {
+        .serverDefaultProtocol().clientSetInfoConfig(ClientSetInfoConfig.DEFAULT).build())) {
       assertEquals("PONG", jedis.ping());
       String info = jedis.clientInfo();
       assertTrue(info.contains("lib-name=" + JedisMetaInfo.getArtifactId()));
@@ -339,7 +352,7 @@ public class JedisTest extends JedisCommandsTestBase {
   @Test
   public void clientSetInfoDisabled() {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder()
-        .clientSetInfoConfig(ClientSetInfoConfig.DISABLED).build())) {
+        .serverDefaultProtocol().clientSetInfoConfig(ClientSetInfoConfig.DISABLED).build())) {
       assertEquals("PONG", jedis.ping());
       String info = jedis.clientInfo();
       assertFalse(info.contains("lib-name=" + JedisMetaInfo.getArtifactId()));
@@ -353,7 +366,8 @@ public class JedisTest extends JedisCommandsTestBase {
     final String libNameSuffix = "for-redis";
     ClientSetInfoConfig setInfoConfig = ClientSetInfoConfig.withLibNameSuffix(libNameSuffix);
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().clientSetInfoConfig(setInfoConfig).build())) {
+        endpoint.getClientConfigBuilder().serverDefaultProtocol()
+            .clientSetInfoConfig(setInfoConfig).build())) {
       assertEquals("PONG", jedis.ping());
       String info = jedis.clientInfo();
       assertTrue(
@@ -369,7 +383,8 @@ public class JedisTest extends JedisCommandsTestBase {
         .build();
     ClientSetInfoConfig setInfoConfig = new ClientSetInfoConfig(driverInfo);
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().clientSetInfoConfig(setInfoConfig).build())) {
+        endpoint.getClientConfigBuilder().serverDefaultProtocol()
+            .clientSetInfoConfig(setInfoConfig).build())) {
       assertEquals("PONG", jedis.ping());
       String info = jedis.clientInfo();
       assertTrue(
@@ -385,7 +400,8 @@ public class JedisTest extends JedisCommandsTestBase {
         .addUpstreamDriver("lettuce-core", "6.4.1").addUpstreamDriver("redisson", "3.25.0").build();
     ClientSetInfoConfig setInfoConfig = new ClientSetInfoConfig(driverInfo);
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().clientSetInfoConfig(setInfoConfig).build())) {
+        endpoint.getClientConfigBuilder().serverDefaultProtocol()
+            .clientSetInfoConfig(setInfoConfig).build())) {
       assertEquals("PONG", jedis.ping());
       String info = jedis.clientInfo();
       assertTrue(info.contains("lib-name=" + JedisMetaInfo.getArtifactId()

@@ -50,6 +50,8 @@ public interface RediSearchPipelineCommands {
 
   Response<String> ftAliasDel(String aliasName);
 
+  Response<Set<String>> ftAliasList(String indexName);
+
   Response<String> ftDropIndex(String indexName);
 
   Response<String> ftDropIndexDD(String indexName);

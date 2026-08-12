@@ -836,7 +836,7 @@ public final class BuilderFactory {
     @Override
     public ScanResult<String> build(Object data) {
       List<Object> result = (List<Object>) data;
-      String newcursor = new String((byte[]) result.get(0));
+      String newcursor = SafeEncoder.encode((byte[]) result.get(0));
       List<byte[]> rawResults = (List<byte[]>) result.get(1);
       List<String> results = new ArrayList<>(rawResults.size());
       for (byte[] bs : rawResults) {
@@ -851,7 +851,7 @@ public final class BuilderFactory {
     @Override
     public ScanResult<Map.Entry<String, String>> build(Object data) {
       List<Object> result = (List<Object>) data;
-      String newcursor = new String((byte[]) result.get(0));
+      String newcursor = SafeEncoder.encode((byte[]) result.get(0));
       List<byte[]> rawResults = (List<byte[]>) result.get(1);
       List<Map.Entry<String, String>> results = new ArrayList<>(rawResults.size() / 2);
       Iterator<byte[]> iterator = rawResults.iterator();
@@ -867,7 +867,7 @@ public final class BuilderFactory {
     @Override
     public ScanResult<String> build(Object data) {
       List<Object> result = (List<Object>) data;
-      String newcursor = new String((byte[]) result.get(0));
+      String newcursor = SafeEncoder.encode((byte[]) result.get(0));
       List<byte[]> rawResults = (List<byte[]>) result.get(1);
       List<String> results = new ArrayList<>(rawResults.size());
       for (byte[] bs : rawResults) {
@@ -881,7 +881,7 @@ public final class BuilderFactory {
     @Override
     public ScanResult<Tuple> build(Object data) {
       List<Object> result = (List<Object>) data;
-      String newcursor = new String((byte[]) result.get(0));
+      String newcursor = SafeEncoder.encode((byte[]) result.get(0));
       List<byte[]> rawResults = (List<byte[]>) result.get(1);
       List<Tuple> results = new ArrayList<>(rawResults.size() / 2);
       Iterator<byte[]> iterator = rawResults.iterator();

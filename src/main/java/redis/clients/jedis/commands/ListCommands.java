@@ -4,6 +4,7 @@ import java.util.List;
 
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
+import redis.clients.jedis.params.LMoveMParams;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
 
@@ -400,6 +401,85 @@ public interface ListCommands {
    * @return The element being popped and pushed
    */
   String blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout);
+
+  /**
+   * <b><a href="https://redis.io/commands/lmovem">LMOVEM Command</a></b>
+   * Atomically move one element from the head (LEFT) or tail (RIGHT) of the list at
+   * {@code srcKey}, push it onto the head (LEFT) or tail (RIGHT) of the list at {@code dstKey}, and
+   * return it wrapped in a list. Without a count block this is equivalent to
+   * {@link #lmove(String, String, ListDirection, ListDirection)}.
+   * <p>
+   * Time complexity: O(1)
+   * @param srcKey the source list
+   * @param dstKey the destination list
+   * @param from where to pop from the source, LEFT or RIGHT
+   * @param to where to push to the destination, LEFT or RIGHT
+   * @return The moved element in a list, or {@code null} if the source list does not exist
+   * @since 8.0
+   */
+  List<String> lmovem(String srcKey, String dstKey, ListDirection from, ListDirection to);
+
+  /**
+   * <b><a href="https://redis.io/commands/lmovem">LMOVEM Command</a></b>
+   * Atomically move multiple elements from the head (LEFT) or tail (RIGHT) of the list at
+   * {@code srcKey} onto the head (LEFT) or tail (RIGHT) of the list at {@code dstKey}, and return
+   * them in destination order. The {@code params} select how many elements to move
+   * ({@code COUNT}: up to; {@code EXACTLY}: exactly or nothing) and their ordering ({@code OBO}:
+   * one by one; {@code BULK}: in bulk).
+   * <p>
+   * Time complexity: O(N) where N is the number of elements moved.
+   * @param srcKey the source list
+   * @param dstKey the destination list
+   * @param from where to pop from the source, LEFT or RIGHT
+   * @param to where to push to the destination, LEFT or RIGHT
+   * @param params the count and ordering of the move
+   * @return The moved elements in destination order, or {@code null} if the source list does not
+   *         exist or, with {@code EXACTLY}, holds fewer than the requested number of elements
+   * @since 8.0
+   */
+  List<String> lmovem(String srcKey, String dstKey, ListDirection from, ListDirection to,
+      LMoveMParams params);
+
+  /**
+   * <b><a href="https://redis.io/commands/blmovem">BLMOVEM Command</a></b>
+   * The blocking variant of {@link #lmovem(String, String, ListDirection, ListDirection)}. When
+   * the source list is empty, Redis blocks the connection until another client pushes to it or
+   * until {@code timeout} is reached.
+   * <p>
+   * Time complexity: O(1)
+   * @param srcKey the source list
+   * @param dstKey the destination list
+   * @param from where to pop from the source, LEFT or RIGHT
+   * @param to where to push to the destination, LEFT or RIGHT
+   * @param timeout the maximum number of seconds to block, interpreted as a double. A timeout of
+   *          zero blocks indefinitely.
+   * @return The moved element in a list, or {@code null} on timeout
+   * @since 8.0
+   */
+  List<String> blmovem(String srcKey, String dstKey, ListDirection from, ListDirection to,
+      double timeout);
+
+  /**
+   * <b><a href="https://redis.io/commands/blmovem">BLMOVEM Command</a></b>
+   * The blocking variant of
+   * {@link #lmovem(String, String, ListDirection, ListDirection, LMoveMParams)}. With a
+   * {@code COUNT} selector it blocks only while the source list is empty; with an {@code EXACTLY}
+   * selector it blocks until the source list holds enough elements, or until {@code timeout} is
+   * reached.
+   * <p>
+   * Time complexity: O(N) where N is the number of elements moved.
+   * @param srcKey the source list
+   * @param dstKey the destination list
+   * @param from where to pop from the source, LEFT or RIGHT
+   * @param to where to push to the destination, LEFT or RIGHT
+   * @param timeout the maximum number of seconds to block, interpreted as a double. A timeout of
+   *          zero blocks indefinitely.
+   * @param params the count and ordering of the move
+   * @return The moved elements in destination order, or {@code null} on timeout
+   * @since 8.0
+   */
+  List<String> blmovem(String srcKey, String dstKey, ListDirection from, ListDirection to,
+      double timeout, LMoveMParams params);
 
   KeyValue<String, List<String>> lmpop(ListDirection direction, String... keys);
 

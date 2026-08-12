@@ -23,7 +23,8 @@ public class SentinelAllKindOfValuesCommandsIT extends AllKindOfValuesCommandsTe
 
   static Set<HostAndPort> sentinels;
 
-  static final JedisClientConfig sentinelClientConfig = DefaultJedisClientConfig.builder().build();
+  static final JedisClientConfig sentinelClientConfig = DefaultJedisClientConfig.builder()
+      .serverDefaultProtocol().build();
 
   static EndpointConfig primary;
 

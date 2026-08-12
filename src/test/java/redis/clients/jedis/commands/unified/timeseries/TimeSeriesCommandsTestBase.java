@@ -8,6 +8,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static io.redis.test.utils.RedisVersion.V8_10_0_RC2_STRING;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.util.AssertUtil.assertEqualsByProtocol;
 
@@ -16,10 +18,12 @@ import java.util.*;
 import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.Tag;
-
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
@@ -29,6 +33,7 @@ import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.TestEnvUtil;
+import redis.clients.jedis.util.TestKeyRegistry;
 
 /**
  * Base test class for Time Series commands using the UnifiedJedis pattern.
@@ -43,6 +48,18 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
 
   public TimeSeriesCommandsTestBase(RedisProtocol protocol) {
     super(protocol);
+  }
+
+  protected TestKeyRegistry keys;
+
+  @BeforeEach
+  public void setUpKeys(TestInfo testInfo) {
+    keys = TestKeyRegistry.create(testInfo);
+  }
+
+  @AfterEach
+  public void cleanUpKeys() {
+    keys.cleanup(jedis);
   }
 
   @Test
@@ -726,6 +743,68 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
     assertEquals(Arrays.asList("seriesQueryIndex1", "seriesQueryIndex2"),
       jedis.tsQueryIndex("l1=v1"));
     assertEquals(Arrays.asList("seriesQueryIndex2"), jedis.tsQueryIndex("l2=v22"));
+  }
+
+  /**
+   * Sets up a small sensor dashboard dataset used by the TS.QUERYLABELS examples. Keys are obtained
+   * from {@link TestKeyRegistry} (registered for cleanup) and deliberately NOT hash-tagged, so in
+   * cluster mode they scatter across shards: TS.QUERYLABELS is keyless and routes to a single
+   * arbitrary node, and asserting a complete reply proves the server coordinates the cluster-wide
+   * fan-out itself (no client-side aggregation).
+   */
+  private void setupQueryLabelsSeries() {
+    jedis.tsCreate(keys.key("temp:living"), TSCreateParams.createParams()
+        .labels(mapOf("type", "sensor", "sensortype", "temperature", "location", "LivingRoom")));
+    jedis.tsCreate(keys.key("temp:kitchen"), TSCreateParams.createParams()
+        .labels(mapOf("type", "sensor", "sensortype", "temperature", "location", "Kitchen")));
+    jedis.tsCreate(keys.key("hum:bedroom"), TSCreateParams.createParams()
+        .labels(mapOf("type", "sensor", "sensortype", "humidity", "location", "BedRoom")));
+    jedis.tsCreate(keys.key("cpu:server"),
+      TSCreateParams.createParams().labels(mapOf("type", "metric", "unit", "percent")));
+  }
+
+  private static Map<String, String> mapOf(String... kvs) {
+    Map<String, String> map = new HashMap<>();
+    for (int i = 0; i < kvs.length; i += 2) {
+      map.put(kvs[i], kvs[i + 1]);
+    }
+    return map;
+  }
+
+  @Test
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
+  public void testQueryLabels() {
+    setupQueryLabelsSeries();
+
+    // LABELS with a filter: distinct label names across the sensor group. The filter is a label
+    // value shared across the DB, not a namespaced key, so other tests may contribute series with
+    // "type=sensor"; assert our labels are present without requiring an exact match.
+    assertThat(jedis.tsQueryLabels("type=sensor"), hasItems("type", "sensortype", "location"));
+
+    // LABELS without a filter: metadata across all indexed series in the DB, so "unit" appears
+    // too. Other tests may add series concurrently, so assert our labels are present.
+    assertThat(jedis.tsQueryLabels(), hasItems("type", "sensortype", "location", "unit"));
+
+    // A filter matching nothing yields an empty reply, not an error.
+    assertEquals(Collections.emptyList(), jedis.tsQueryLabels("type=nonexistent"));
+  }
+
+  @Test
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
+  public void testQueryLabelValues() {
+    setupQueryLabelsSeries();
+
+    // VALUES of a chosen label within the sensor group. Same shared-filter caveat as above:
+    // other tests' "type=sensor" series may add location values, so assert ours are present.
+    assertThat(jedis.tsQueryLabelValues("location", "type=sensor"),
+      hasItems("LivingRoom", "Kitchen", "BedRoom"));
+
+    // VALUES without a filter: collected across all indexed series in the DB. Other tests may
+    // add "sensortype" values, so assert ours are present.
+    assertThat(jedis.tsQueryLabelValues("sensortype"), hasItems("temperature", "humidity"));
+
+    // A label carried by no matching series yields an empty reply, not an error.
+    assertEquals(Collections.emptyList(), jedis.tsQueryLabelValues("nonexistent", "type=sensor"));
   }
 
   @Test
@@ -1872,5 +1951,127 @@ public abstract class TimeSeriesCommandsTestBase extends UnifiedJedisCommandsTes
     // Reading a key that holds a non-timeseries value is a WRONGTYPE error.
     jedis.set("read-str", "not a series");
     assertThrows(JedisDataException.class, () -> jedis.tsRead("read-str", 0L));
+  }
+
+  /**
+   * TS.NRANGE pivots an explicit key list by timestamp: forward order, one value column per key,
+   * NaN where a key has no sample. COUNT limits rows after the merge.
+   */
+  @Test
+  @EnabledOnCommand("TS.NRANGE")
+  public void nRange() {
+    String a = keys.key("{%test%}:a");
+    String b = keys.key("{%test%}:b");
+    jedis.tsCreate(a);
+    jedis.tsCreate(b);
+    jedis.tsAdd(a, 1000L, 10.0);
+    jedis.tsAdd(a, 2000L, 12.0);
+    jedis.tsAdd(b, 1000L, 100.0);
+    jedis.tsAdd(b, 3000L, 300.0);
+
+    String[] seriesKeys = { a, b };
+    List<TSElement> rows = jedis.tsNRange(seriesKeys, 0L, 60000L);
+
+    List<Long> timestamps = new ArrayList<>();
+    for (TSElement row : rows) {
+      timestamps.add(row.getTimestamp());
+    }
+    assertEquals(Arrays.asList(1000L, 2000L, 3000L), timestamps);
+
+    assertEquals(2, rows.get(0).getValues().size());
+    assertEquals(10.0, rows.get(0).getValues().get(0), 0.001);
+    assertEquals(100.0, rows.get(0).getValues().get(1), 0.001);
+    assertEquals(12.0, rows.get(1).getValues().get(0), 0.001);
+    assertTrue(Double.isNaN(rows.get(1).getValues().get(1)));
+    assertTrue(Double.isNaN(rows.get(2).getValues().get(0)));
+    assertEquals(300.0, rows.get(2).getValues().get(1), 0.001);
+
+    List<TSElement> limited = jedis.tsNRange(seriesKeys,
+      TSNRangeParams.nrangeParams(0L, 60000L).count(1));
+    assertEquals(1, limited.size());
+    assertEquals(1000L, limited.get(0).getTimestamp());
+
+    List<TSElement> emptyRange = jedis.tsNRange(new String[] { a }, 900000L, 900001L);
+    assertTrue(emptyRange.isEmpty());
+  }
+
+  /**
+   * TS.NREVRANGE returns the same pivot rows in decreasing-timestamp order; the client preserves
+   * the server order.
+   */
+  @Test
+  @EnabledOnCommand("TS.NREVRANGE")
+  public void nRevRange() {
+    String a = keys.key("{%test%}:a");
+    String b = keys.key("{%test%}:b");
+    jedis.tsCreate(a);
+    jedis.tsCreate(b);
+    jedis.tsAdd(a, 1000L, 10.0);
+    jedis.tsAdd(b, 2000L, 200.0);
+
+    String[] seriesKeys = { a, b };
+    List<TSElement> rows = jedis.tsNRevRange(seriesKeys, 0L, 60000L);
+
+    List<Long> timestamps = new ArrayList<>();
+    for (TSElement row : rows) {
+      timestamps.add(row.getTimestamp());
+    }
+    assertEquals(Arrays.asList(2000L, 1000L), timestamps);
+  }
+
+  /**
+   * Aggregation mode: one aggregator token per key (count must equal numkeys), each token possibly
+   * a comma-separated list, producing a flat value vector per row.
+   */
+  @Test
+  @EnabledOnCommand("TS.NRANGE")
+  public void nRangeAggregation() {
+    String a = keys.key("{%test%}:a");
+    String b = keys.key("{%test%}:b");
+    jedis.tsCreate(a);
+    jedis.tsCreate(b);
+    jedis.tsAdd(a, 1000L, 10.0);
+    jedis.tsAdd(a, 1500L, 20.0);
+    jedis.tsAdd(b, 1000L, 100.0);
+
+    String[] seriesKeys = { a, b };
+
+    List<TSElement> single = jedis.tsNRange(seriesKeys, TSNRangeParams.nrangeParams(0L, 60000L)
+        .aggregation(new AggregationType[] { AggregationType.AVG, AggregationType.SUM }, 1000L));
+    assertEquals(2, single.get(0).getValues().size());
+    assertEquals(15.0, single.get(0).getValues().get(0), 0.001);
+    assertEquals(100.0, single.get(0).getValues().get(1), 0.001);
+
+    List<TSElement> multi = jedis.tsNRange(seriesKeys,
+      TSNRangeParams.nrangeParams(0L, 60000L).aggregation(new AggregationType[][] {
+          { AggregationType.AVG, AggregationType.MAX }, { AggregationType.SUM } },
+        1000L));
+    assertEquals(3, multi.get(0).getValues().size());
+    assertEquals(15.0, multi.get(0).getValues().get(0), 0.001);
+    assertEquals(20.0, multi.get(0).getValues().get(1), 0.001);
+    assertEquals(100.0, multi.get(0).getValues().get(2), 0.001);
+  }
+
+  /**
+   * The client validates one aggregation spec per key at build time (mirroring the server rule), so
+   * a spec-count/numkeys mismatch fails fast with {@link IllegalArgumentException} before any
+   * command is sent. Version-independent, hence no command gate.
+   */
+  @Test
+  public void nRangeAggregatorCountMismatchRejectedClientSide() {
+    String[] seriesKeys = { keys.key("{%test%}:a"), keys.key("{%test%}:b") };
+    // Two keys but one spec.
+    assertThrows(IllegalArgumentException.class,
+      () -> jedis.tsNRange(seriesKeys, TSNRangeParams.nrangeParams(0L, 60000L)
+          .aggregation(new AggregationType[] { AggregationType.AVG }, 1000L)));
+    // Two keys but three specs.
+    assertThrows(IllegalArgumentException.class,
+      () -> jedis
+          .tsNRevRange(seriesKeys,
+            TSNRangeParams.nrangeParams(0L, 60000L).aggregation(new AggregationType[][] {
+                { AggregationType.AVG }, { AggregationType.SUM }, { AggregationType.MIN } },
+              1000L)));
+    // Empty key list.
+    assertThrows(IllegalArgumentException.class, () -> jedis.tsNRange(new String[0], 0L, 60000L));
   }
 }

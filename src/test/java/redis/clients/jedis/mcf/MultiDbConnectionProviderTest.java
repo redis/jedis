@@ -45,9 +45,9 @@ public class MultiDbConnectionProviderTest {
     endpointStandalone1 = Endpoints.getRedisEndpoint("standalone1");
 
     controlJedis0 = new Jedis(endpointStandalone0.getHostAndPort(),
-        endpointStandalone0.getClientConfigBuilder().build());
+        endpointStandalone0.getClientConfigBuilder().serverDefaultProtocol().build());
     controlJedis1 = new Jedis(endpointStandalone1.getHostAndPort(),
-        endpointStandalone1.getClientConfigBuilder().build());
+        endpointStandalone1.getClientConfigBuilder().serverDefaultProtocol().build());
   }
 
   @AfterAll

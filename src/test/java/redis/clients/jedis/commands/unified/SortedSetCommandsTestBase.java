@@ -1599,7 +1599,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   @Test
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bzpopmax() {
-    assertNull(jedis.bzpopmax(1, "foo", "bar"));
+    assertNull(jedis.bzpopmax(0.1, "foo", "bar"));
 
     jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
@@ -1607,7 +1607,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(new KeyValue<>("foo", new Tuple("b", 10d)), jedis.bzpopmax(0, "foo", "bar"));
 
     // Binary
-    assertNull(jedis.bzpopmax(1, bfoo, bbar));
+    assertNull(jedis.bzpopmax(0.1, bfoo, bbar));
 
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 10d, bb);
@@ -1620,7 +1620,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   @Test
   @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bzpopmin() {
-    assertNull(jedis.bzpopmin(1, "bar", "foo"));
+    assertNull(jedis.bzpopmin(0.1, "bar", "foo"));
 
     jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
@@ -1628,7 +1628,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(new KeyValue<>("bar", new Tuple("c", 0.1)), jedis.bzpopmin(0, "bar", "foo"));
 
     // Binary
-    assertNull(jedis.bzpopmin(1, bbar, bfoo));
+    assertNull(jedis.bzpopmin(0.1, bbar, bfoo));
 
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 10d, bb);
@@ -1761,6 +1761,6 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     assertEquals(new Tuple("b", 10d), single.getValue().get(0));
     assertEquals(2, range.getValue().size());
-    assertNull(jedis.bzmpop(1L, SortedSetOption.MAX, "foo"));
+    assertNull(jedis.bzmpop(0.1, SortedSetOption.MAX, "foo"));
   }
 }

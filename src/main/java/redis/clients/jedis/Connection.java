@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Consumer;
 import java.util.function.Supplier;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -138,6 +139,9 @@ public class Connection implements Closeable {
   private final ProtocolHandshake handshake = new ProtocolHandshake(this);
   private final PushConsumerChainImpl pushConsumers = PushConsumerChainImpl.of();
 
+  /** Per-connection HIMPORT bookkeeping (prepared fieldsets + queued discards). */
+  private final HimportConnectionState himportState = new HimportConnectionState();
+
   public Connection() {
     this(Protocol.DEFAULT_HOST, Protocol.DEFAULT_PORT);
   }
@@ -230,6 +234,31 @@ public class Connection implements Closeable {
   }
 
   /**
+   * This connection's HIMPORT bookkeeping (prepared fieldsets and queued discards).
+   */
+  HimportConnectionState himportState() {
+    return himportState;
+  }
+
+  /**
+   * Issues the {@code HIMPORT DISCARD}s that {@link HashImport#close()} queued for this
+   * connection, ahead of the command about to run: one packed write, replies drained in one pass.
+   * <p>
+   * Error replies are ignored &mdash; the server does not hold the fieldset either way.
+   * Connection failures propagate so the retry machinery sees them.
+   */
+  private void himportSendPendingDiscards() {
+    List<String> stale = himportState.drainDiscardable();
+    if (stale.isEmpty()) {
+      return;
+    }
+    for (String fieldset : stale) {
+      sendCommand(new CommandArguments(Command.HIMPORT).add(Keyword.DISCARD).add(fieldset));
+    }
+    getMany(stale.size());
+  }
+
+  /**
    * Returns the host and port of the Redis server this connection is connected to.
    *
    * @return the host and port, or null if not available
@@ -277,13 +306,21 @@ public class Connection implements Closeable {
   }
 
   public Object executeCommand(final CommandArguments args) {
+    himportSendPendingDiscards();
     sendCommand(args);
     return getOne();
   }
 
   public <T> T executeCommand(final CommandObject<T> commandObject) {
-    final CommandArguments args = commandObject.getArguments();
+    himportSendPendingDiscards();
+    List<Consumer<Connection>> preProcessHooks = commandObject.getPreProcessHooks();
+    if (!preProcessHooks.isEmpty()) {
+      for (Consumer<Connection> preProcessHook : preProcessHooks) {
+        preProcessHook.accept(this);
+      }
+    }
 
+    final CommandArguments args = commandObject.getArguments();
     sendCommand(args);
     final Object reply;
     if (!args.isBlocking()) {
@@ -363,6 +400,7 @@ public class Connection implements Closeable {
         inputStream = new RedisInputStream(socket.getInputStream());
 
         broken = false; // unset broken status when connection is (re)initialized
+        himportState.reset(); // a fresh socket lost any server-side HIMPORT fieldsets
 
       } catch (JedisConnectionException jce) {
 

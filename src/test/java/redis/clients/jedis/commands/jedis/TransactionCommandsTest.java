@@ -63,7 +63,7 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     super.setUp();
 
     nj = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().timeoutMillis(500).build());
+        endpoint.getClientConfigBuilder().serverDefaultProtocol().timeoutMillis(500).build());
   }
 
   @AfterEach
@@ -382,7 +382,7 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
   public void testCloseable() {
     // we need to test with fresh instance of Jedis
     Jedis jedis2 = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().timeoutMillis(500).build());;
+        endpoint.getClientConfigBuilder().serverDefaultProtocol().timeoutMillis(500).build());;
 
     Transaction transaction = jedis2.multi();
     transaction.set("a", "1");

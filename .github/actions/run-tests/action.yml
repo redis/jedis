@@ -147,11 +147,12 @@ runs:
         export TEST_WORK_FOLDER=$REDIS_ENV_WORK_DIR
         echo $TEST_WORK_FOLDER
 
-        # Unit tests are run in a separate workflow (unit-tests.yml), skip them here
+        # Unit tests are run in a separate workflow (unit-tests.yml), skip them here.
+        # Javadoc generation is skipped to speed up test runs; it is validated in unit-tests.yml.
         if [ -z "$TESTS" ]; then
-          mvn -B -DskipUnitTests=true clean compile verify
+          mvn -B -DskipUnitTests=true -Dmaven.javadoc.skip=true clean compile verify
         else
-          mvn -B -DskipUnitTests=true -Dtest=$TESTS clean verify
+          mvn -B -DskipUnitTests=true -Dmaven.javadoc.skip=true -Dtest=$TESTS clean verify
         fi
       env:
         REDIS_ENV_WORK_DIR: ${{ steps.args.outputs.redis_env_work_dir }}

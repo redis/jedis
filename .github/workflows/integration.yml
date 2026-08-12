@@ -51,14 +51,13 @@ jobs:
       - name: Maven offline
         run: |
           mvn -q dependency:go-offline
-      - name: Build docs
-        run: |
-          mvn javadoc:jar
       - name: Run tests
         run: |
           export TEST_ENV_PROVIDER=oss-local
           make test-local
         env:
           JVM_OPTS: -Xmx3200m
+          # Skip javadoc generation to speed up test runs; it is validated in unit-tests.yml
+          MAVEN_OPTS: -Dmaven.javadoc.skip=true
           TERM: dumb
           MAVEN_ARGS: ${{ matrix.java == '25' && '-DJVM_OPTS=-Dnet.bytebuddy.experimental=true' || '' }}

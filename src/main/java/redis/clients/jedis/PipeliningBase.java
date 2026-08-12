@@ -652,6 +652,26 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<String>> lmovem(String srcKey, String dstKey, ListDirection from, ListDirection to) {
+    return appendCommand(commandObjects.lmovem(srcKey, dstKey, from, to));
+  }
+
+  @Override
+  public Response<List<String>> lmovem(String srcKey, String dstKey, ListDirection from, ListDirection to, LMoveMParams params) {
+    return appendCommand(commandObjects.lmovem(srcKey, dstKey, from, to, params));
+  }
+
+  @Override
+  public Response<List<String>> blmovem(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout) {
+    return appendCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public Response<List<String>> blmovem(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout, LMoveMParams params) {
+    return appendCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout, params));
+  }
+
+  @Override
   public Response<KeyValue<String, List<String>>> lmpop(ListDirection direction, String... keys) {
     return appendCommand(commandObjects.lmpop(direction, keys));
   }
@@ -907,6 +927,25 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hpersist(key, fields));
   }
 
+  // HIMPORT needs a lazily-injected PREPARE on the same physical connection as the SET. That is only
+  // well-defined on a single-connection pipeline (see Pipeline#himportSet); a transaction (MULTI
+  // would desync EXEC) and a cluster pipeline (keyless PREPARE cannot be routed by slot) reject it.
+  @Override
+  public Response<String> himportSet(String key, HashImport fieldset, String... values) {
+    throw himportUnsupported();
+  }
+
+  @Override
+  public Response<String> himportSet(byte[] key, HashImport fieldset, byte[]... values) {
+    throw himportUnsupported();
+  }
+
+  UnsupportedOperationException himportUnsupported() {
+    return new UnsupportedOperationException(
+        "HIMPORT is not supported on " + getClass().getSimpleName()
+            + "; use a single-connection pipeline or himportSet on the client");
+  }
+
   @Override
   public Response<Long> sadd(String key, String... members) {
     return appendCommand(commandObjects.sadd(key, members));
@@ -973,6 +1012,26 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> sdiffcard(String... keys) {
+    return appendCommand(commandObjects.sdiffcard(keys));
+  }
+
+  @Override
+  public Response<Long> sdiffcard(List<String> keys) {
+    return appendCommand(commandObjects.sdiffcard(keys));
+  }
+
+  @Override
+  public Response<Long> sdiffcard(String key1, String key2, SDiffCardParams params) {
+    return appendCommand(commandObjects.sdiffcard(key1, key2, params));
+  }
+
+  @Override
+  public Response<Long> sdiffcard(List<String> keys, SDiffCardParams params) {
+    return appendCommand(commandObjects.sdiffcard(keys, params));
+  }
+
+  @Override
   public Response<Set<String>> sinter(String... keys) {
     return appendCommand(commandObjects.sinter(keys));
   }
@@ -1000,6 +1059,26 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> sunionstore(String dstKey, String... keys) {
     return appendCommand(commandObjects.sunionstore(dstKey, keys));
+  }
+
+  @Override
+  public Response<Long> sunioncard(String... keys) {
+    return appendCommand(commandObjects.sunioncard(keys));
+  }
+
+  @Override
+  public Response<Long> sunioncard(List<String> keys) {
+    return appendCommand(commandObjects.sunioncard(keys));
+  }
+
+  @Override
+  public Response<Long> sunioncard(String key1, String key2, SUnionCardParams params) {
+    return appendCommand(commandObjects.sunioncard(key1, key2, params));
+  }
+
+  @Override
+  public Response<Long> sunioncard(List<String> keys, SUnionCardParams params) {
+    return appendCommand(commandObjects.sunioncard(keys, params));
   }
 
   @Override
@@ -3067,6 +3146,26 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<byte[]>> lmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
+    return appendCommand(commandObjects.lmovem(srcKey, dstKey, from, to));
+  }
+
+  @Override
+  public Response<List<byte[]>> lmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, LMoveMParams params) {
+    return appendCommand(commandObjects.lmovem(srcKey, dstKey, from, to, params));
+  }
+
+  @Override
+  public Response<List<byte[]>> blmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
+    return appendCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public Response<List<byte[]>> blmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout, LMoveMParams params) {
+    return appendCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout, params));
+  }
+
+  @Override
   public Response<KeyValue<byte[], List<byte[]>>> lmpop(ListDirection direction, byte[]... keys) {
     return appendCommand(commandObjects.lmpop(direction, keys));
   }
@@ -3237,6 +3336,21 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> sdiffcard(byte[]... keys) {
+    return appendCommand(commandObjects.sdiffcard(keys));
+  }
+
+  @Override
+  public Response<Long> sdiffcard(byte[] key1, byte[] key2, SDiffCardParams params) {
+    return appendCommand(commandObjects.sdiffcard(key1, key2, params));
+  }
+
+  @Override
+  public Response<Long> sdiffcard(byte[][] keys, SDiffCardParams params) {
+    return appendCommand(commandObjects.sdiffcard(keys, params));
+  }
+
+  @Override
   public Response<Set<byte[]>> sinter(byte[]... keys) {
     return appendCommand(commandObjects.sinter(keys));
   }
@@ -3264,6 +3378,21 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> sunionstore(byte[] dstkey, byte[]... keys) {
     return appendCommand(commandObjects.sunionstore(dstkey, keys));
+  }
+
+  @Override
+  public Response<Long> sunioncard(byte[]... keys) {
+    return appendCommand(commandObjects.sunioncard(keys));
+  }
+
+  @Override
+  public Response<Long> sunioncard(byte[] key1, byte[] key2, SUnionCardParams params) {
+    return appendCommand(commandObjects.sunioncard(key1, key2, params));
+  }
+
+  @Override
+  public Response<Long> sunioncard(byte[][] keys, SUnionCardParams params) {
+    return appendCommand(commandObjects.sunioncard(keys, params));
   }
 
   @Override
@@ -4118,6 +4247,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Set<String>> ftAliasList(String indexName) {
+    return appendCommand(commandObjects.ftAliasList(indexName));
+  }
+
+  @Override
   public Response<String> ftDropIndex(String indexName) {
     return appendCommand(commandObjects.ftDropIndex(indexName));
   }
@@ -4688,6 +4822,26 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<TSElement>> tsNRange(String[] keys, long fromTimestamp, long toTimestamp) {
+    return appendCommand(commandObjects.tsNRange(keys, fromTimestamp, toTimestamp));
+  }
+
+  @Override
+  public Response<List<TSElement>> tsNRange(String[] keys, TSNRangeParams nrangeParams) {
+    return appendCommand(commandObjects.tsNRange(keys, nrangeParams));
+  }
+
+  @Override
+  public Response<List<TSElement>> tsNRevRange(String[] keys, long fromTimestamp, long toTimestamp) {
+    return appendCommand(commandObjects.tsNRevRange(keys, fromTimestamp, toTimestamp));
+  }
+
+  @Override
+  public Response<List<TSElement>> tsNRevRange(String[] keys, TSNRangeParams nrangeParams) {
+    return appendCommand(commandObjects.tsNRevRange(keys, nrangeParams));
+  }
+
+  @Override
   public Response<Map<String, TSMRangeElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return appendCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }
@@ -4740,6 +4894,16 @@ public abstract class PipeliningBase
   @Override
   public Response<List<String>> tsQueryIndex(String... filters) {
     return appendCommand(commandObjects.tsQueryIndex(filters));
+  }
+
+  @Override
+  public Response<List<String>> tsQueryLabels(String... filters) {
+    return appendCommand(commandObjects.tsQueryLabels(filters));
+  }
+
+  @Override
+  public Response<List<String>> tsQueryLabelValues(String label, String... filters) {
+    return appendCommand(commandObjects.tsQueryLabelValues(label, filters));
   }
 
   @Override

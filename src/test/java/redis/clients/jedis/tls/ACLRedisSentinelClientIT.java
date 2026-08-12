@@ -50,7 +50,7 @@ public class ACLRedisSentinelClientIT extends RedisSentinelTlsTestBase {
         .password(aclEndpoint.getPassword()).hostAndPortMapper(PRIMARY_SSL_PORT_MAPPER).build();
 
     DefaultJedisClientConfig sentinelConfig = Endpoints.getRedisEndpoint("sentinel-standalone0-tls")
-        .getClientConfigBuilder().clientName("sentinel-client").ssl(true)
+        .getClientConfigBuilder().serverDefaultProtocol().clientName("sentinel-client").ssl(true)
         .hostAndPortMapper(SENTINEL_SSL_PORT_MAPPER).build();
 
     try (RedisSentinelClient client = RedisSentinelClient.builder().masterName(MASTER_NAME)
@@ -69,7 +69,7 @@ public class ACLRedisSentinelClientIT extends RedisSentinelTlsTestBase {
         .clientName("master-client").ssl(true).hostAndPortMapper(PRIMARY_SSL_PORT_MAPPER).build();
 
     DefaultJedisClientConfig sentinelConfig = Endpoints.getRedisEndpoint("sentinel-standalone0-tls")
-        .getClientConfigBuilder().clientName("sentinel-client").ssl(true)
+        .getClientConfigBuilder().serverDefaultProtocol().clientName("sentinel-client").ssl(true)
         .hostAndPortMapper(SENTINEL_SSL_PORT_MAPPER).build();
 
     try (RedisSentinelClient client = RedisSentinelClient.builder().masterName(MASTER_NAME)

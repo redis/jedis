@@ -142,7 +142,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
     EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
 
     try (Jedis master = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().build())) {
+        endpoint.getClientConfigBuilder().serverDefaultProtocol().build())) {
 
       List<Object> role = master.role();
       assertEquals("master", role.get(0));
@@ -165,7 +165,7 @@ public class ControlCommandsTest extends JedisCommandsTestBase {
         "standalone4-replica-of-standalone1");
 
     try (Jedis slave = new Jedis(secondaryEndpoint.getHostAndPort(),
-        secondaryEndpoint.getClientConfigBuilder().build())) {
+        secondaryEndpoint.getClientConfigBuilder().serverDefaultProtocol().build())) {
 
       List<Object> role = slave.role();
       assertEquals("slave", role.get(0));

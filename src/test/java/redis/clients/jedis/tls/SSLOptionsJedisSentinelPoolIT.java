@@ -42,7 +42,7 @@ public class SSLOptionsJedisSentinelPoolIT extends RedisSentinelTlsTestBase {
   @Test
   public void sentinelWithoutSslConnectsToRedisWithSsl() {
     DefaultJedisClientConfig masterConfig = aclTlsEndpoint.getClientConfigBuilder()
-        .clientName("master-client").sslOptions(sslOptions)
+        .serverDefaultProtocol().clientName("master-client").sslOptions(sslOptions)
         .hostAndPortMapper(PRIMARY_SSL_PORT_MAPPER).build();
 
     DefaultJedisClientConfig sentinelConfig = createSentinelConfigWithoutSsl();
@@ -64,10 +64,11 @@ public class SSLOptionsJedisSentinelPoolIT extends RedisSentinelTlsTestBase {
   @Test
   public void sentinelWithSslConnectsToRedisWithoutSsl() {
     DefaultJedisClientConfig masterConfig = aclEndpoint.getClientConfigBuilder()
-        .clientName("master-client").build();
+        .serverDefaultProtocol().clientName("master-client").build();
 
     DefaultJedisClientConfig sentinelConfig = sentinelTlsEndpoint.getClientConfigBuilder()
-        .sslOptions(sslOptions).hostAndPortMapper(SENTINEL_SSL_PORT_MAPPER).build();
+        .serverDefaultProtocol().sslOptions(sslOptions).hostAndPortMapper(SENTINEL_SSL_PORT_MAPPER)
+        .build();
 
     try (JedisSentinelPool pool = new JedisSentinelPool(MASTER_NAME, sentinels, masterConfig,
         sentinelConfig)) {
@@ -86,7 +87,7 @@ public class SSLOptionsJedisSentinelPoolIT extends RedisSentinelTlsTestBase {
   @Test
   public void sentinelWithSslConnectsToRedisWithSsl() {
     DefaultJedisClientConfig masterConfig = aclTlsEndpoint.getClientConfigBuilder()
-        .clientName("master-client").sslOptions(sslOptions)
+        .serverDefaultProtocol().clientName("master-client").sslOptions(sslOptions)
         .hostAndPortMapper(PRIMARY_SSL_PORT_MAPPER).build();
 
     DefaultJedisClientConfig sentinelConfig = createSentinelConfigWithSsl(sslOptions);

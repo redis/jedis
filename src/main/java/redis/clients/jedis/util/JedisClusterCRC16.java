@@ -37,9 +37,11 @@ public final class JedisClusterCRC16 {
       throw new NullPointerException("Slot calculation of null is impossible");
     }
 
-    key = JedisClusterHashTag.getHashTag(key);
-    // optimization with modulo operator with power of 2 equivalent to getCRC16(key) % 16384
-    return getCRC16(key) & (16384 - 1);
+    // Scan for the hash tag on the encoded bytes so the '{' and '}' delimiters are located the same
+    // way the server does in keyHashSlot(). Under a DBCS default charset (GBK, Shift_JIS, Big5) a
+    // trail byte can be 0x7B/0x7D while the corresponding char is not a brace, so scanning the
+    // String would pick a different tag (or none) than the wire bytes and route to the wrong slot.
+    return getSlot(SafeEncoder.encode(key));
   }
 
   public static int getSlot(byte[] key) {

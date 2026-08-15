@@ -3,6 +3,8 @@ package redis.clients.jedis.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -47,6 +49,28 @@ public class JedisClusterCRC16Test {
       JedisClusterCRC16.getSlot("{user1000}.followers"));
     assertNotEquals(JedisClusterCRC16.getSlot("foo{}{bar}"), JedisClusterCRC16.getSlot("bar"));
     assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}"), JedisClusterCRC16.getSlot("bar"));
+  }
+
+  @Test
+  public void testHashtagGetSlotMatchesEncodedBytesUnderDbcsCharset() {
+    // GBK bytes 81 7B 41 81 7D: a lead byte followed by 0x7B ('{'), then 'A', then a lead byte
+    // followed by 0x7D ('}'). The server hashes the byte-level tag between 0x7B and 0x7D, so the
+    // String slot must agree with the byte slot regardless of the default charset.
+    byte[] gbkBytes = new byte[] { (byte) 0x81, 0x7B, 0x41, (byte) 0x81, 0x7D };
+    Charset original = SafeEncoder.DEFAULT_CHARSET;
+    try {
+      SafeEncoder.DEFAULT_CHARSET = Charset.forName("GBK");
+      String key = new String(gbkBytes, SafeEncoder.DEFAULT_CHARSET);
+      assertEquals(JedisClusterCRC16.getSlot(SafeEncoder.encode(key)),
+        JedisClusterCRC16.getSlot(key));
+    } finally {
+      SafeEncoder.DEFAULT_CHARSET = original;
+    }
+
+    // Under UTF-8 no multibyte sequence contains 0x7B/0x7D, so String and byte scanning agree.
+    SafeEncoder.DEFAULT_CHARSET = StandardCharsets.UTF_8;
+    assertEquals(JedisClusterCRC16.getSlot(SafeEncoder.encode("foo{bar}zap")),
+      JedisClusterCRC16.getSlot("foo{bar}zap"));
   }
 
   @Test

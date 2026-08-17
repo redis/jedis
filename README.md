@@ -31,8 +31,11 @@ The most recent version of this library supports redis version
 [7.2](https://github.com/redis/redis/blob/7.2/00-RELEASENOTES),
 [7.4](https://github.com/redis/redis/blob/7.4/00-RELEASENOTES),
 [8.0](https://github.com/redis/redis/blob/8.0/00-RELEASENOTES),
-[8.2](https://github.com/redis/redis/blob/8.2/00-RELEASENOTES) and
-[8.4](https://github.com/redis/redis/blob/8.4/00-RELEASENOTES).
+[8.2](https://github.com/redis/redis/blob/8.2/00-RELEASENOTES),
+[8.4](https://github.com/redis/redis/blob/8.4/00-RELEASENOTES),
+[8.6](https://github.com/redis/redis/blob/8.6/00-RELEASENOTES),
+[8.8](https://github.com/redis/redis/blob/8.8/00-RELEASENOTES) and
+[8.10](https://github.com/redis/redis/blob/8.10/00-RELEASENOTES).
 
 The table below highlights version compatibility of the most-recent library versions with Redis and JDK versions. Compatibility means communication features, and Redis command capabilities.
 
@@ -45,6 +48,7 @@ The table below highlights version compatibility of the most-recent library vers
 | >= 5.2        | Version 7.2 to current                | 8, 11, 17, 21     |
 | >= 6.0        | Version 7.2 to current                | 8, 11, 17, 21     |
 | >= 7.0        | Version 7.2 to current                | 8, 11, 17, 21     |
+| >= 8.0        | Version 7.2 to current                | 8, 11, 17, 21, 25 |
 
 ## Getting started
 
@@ -54,7 +58,7 @@ To get started with Jedis, first add it as a dependency in your Java project. If
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>7.1.0</version>
+    <version>8.0.0</version>
 </dependency>
 ```
 
@@ -139,6 +143,8 @@ Hit us up on the [Redis Discord Server](http://discord.gg/redis) or
 We'd love your contributions!
 
 Bug reports are always welcome! [You can open a bug report on GitHub](https://github.com/redis/jedis/issues/new).
+
+To report a security vulnerability, please follow our [Security Policy](https://github.com/redis/jedis/blob/master/SECURITY.md).
 
 You can also contribute documentation -- or anything to improve Jedis. Please see
 [contribution guideline](https://github.com/redis/jedis/blob/master/.github/CONTRIBUTING.md) for more details.

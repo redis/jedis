@@ -10,12 +10,16 @@ import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.function.Executable;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.args.FlushMode;
 import redis.clients.jedis.exceptions.JedisBroadcastException;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.util.SafeEncoder;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertSame;
@@ -84,6 +88,28 @@ public class ClusterScriptingCommandsTest extends ClusterJedisCommandsTestBase {
     byte[] args = "foo".getBytes();
     cluster.eval(script, 1, args);
     assertEquals("bar", cluster.get("foo"));
+  }
+
+  @Test
+  public void evalVarargsCrossSlotKeys() {
+    // "key1" and "key2" hash to different slots; rejected client-side because the first keyCount
+    // varargs are registered for slot computation
+    String script = "return {KEYS[1],KEYS[2]}";
+    String sha1 = cluster.scriptLoad(script, "key1");
+    byte[] bscript = SafeEncoder.encode(script);
+    byte[] bsha1 = SafeEncoder.encode(sha1);
+    byte[] bkey1 = SafeEncoder.encode("key1");
+    byte[] bkey2 = SafeEncoder.encode("key2");
+
+    assertCrossSlotRejected(() -> cluster.eval(script, 2, "key1", "key2"));
+    assertCrossSlotRejected(() -> cluster.eval(bscript, 2, bkey1, bkey2));
+    assertCrossSlotRejected(() -> cluster.evalsha(sha1, 2, "key1", "key2"));
+    assertCrossSlotRejected(() -> cluster.evalsha(bsha1, 2, bkey1, bkey2));
+  }
+
+  private static void assertCrossSlotRejected(Executable command) {
+    JedisClusterOperationException e = assertThrows(JedisClusterOperationException.class, command);
+    assertThat(e.getMessage(), containsString("multiple hash slots"));
   }
 
   @Test

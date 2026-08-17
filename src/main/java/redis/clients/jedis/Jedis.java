@@ -5153,6 +5153,20 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.hpersist(key, fields));
   }
 
+  @Override
+  public String himportSet(String key, HashImport fieldset, String... values) {
+    checkIsInMultiOrPipeline();
+    HashImportSupport.checkArgs(fieldset, values.length);
+    return connection.executeCommand(commandObjects.himportSet(key, fieldset, values));
+  }
+
+  @Override
+  public String himportSet(byte[] key, HashImport fieldset, byte[]... values) {
+    checkIsInMultiOrPipeline();
+    HashImportSupport.checkArgs(fieldset, values.length);
+    return connection.executeCommand(commandObjects.himportSet(key, fieldset, values));
+  }
+
   /**
    * @deprecated As of Jedis 6.1.0, use
    *     {@link #xreadBinary(XReadParams, Map)} or
@@ -10445,8 +10459,12 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   @Override
   public String reset() {
-    connection.sendCommand(Command.RESET);
-    return connection.getStatusCodeReply();
+    try {
+      connection.sendCommand(Command.RESET);
+      return connection.getStatusCodeReply();
+    } finally {
+      connection.himportState().reset();
+    }
   }
 
   @Override

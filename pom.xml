@@ -9,7 +9,7 @@
 	<packaging>jar</packaging>
 	<groupId>redis.clients</groupId>
 	<artifactId>jedis</artifactId>
-	<version>8.0.0-SNAPSHOT</version>
+	<version>8.1.0-SNAPSHOT</version>
 	<name>Jedis</name>
 	<description>Jedis is a blazingly small and sane Redis java client.</description>
 	<url>https://github.com/redis/jedis</url>
@@ -567,13 +567,6 @@
 						<include>**/*IT.java</include>
 						<include>**/scenario/RestEndpointUtil.java</include>
 						<include>src/main/java/redis/clients/jedis/MultiDbConfig.java</include>
-						<include>**/Maintenance*.java</include>
-						<include>**/ConnectionRegistry.java</include>
-						<include>**/MovingOperations.java</include>
-						<include>**/SocketAddress*.java</include>
-						<include>src/test/java/redis/clients/jedis/sch/*.java</include>
-						<include>src/main/java/redis/clients/jedis/util/NumberUtils.java</include>
-						<include>src/test/java/redis/clients/jedis/ConnectionFactoryRebindTest.java</include>
 						<include>src/main/java/redis/clients/jedis/HostAndPort.java</include>
 						<include>**/builders/*.java</include>
 						<include>**/MultiDb*.java</include>
@@ -645,6 +638,10 @@
 						<include>src/test/jmh/**/*.java</include>
 						<include>**/RedisMultiDbClientSideCacheTest.java</include>
 						<include>**/MultiDbCSCTest.java</include>
+						<include>**/*HashImport*.java</include>
+						<include>**/*Himport*.java</include>
+						<include>**/ConnectionRegistry*.java</include>
+						<include>**/CommandObjectTest.java</include>
 						<include>**/Rebind*.java</include>
 						<include>**/TimeoutOptions.java</include>
 						<include>**/*Handler.java</include>
@@ -653,6 +650,12 @@
 						<include>**/*TimeoutSource*.java</include>
 						<include>**/RebindAwareEvictionPolicy.java</include>
 						<include>**/Maintenance*.java</include>
+						<include>**/ConnectionRegistry.java</include>
+						<include>**/MovingOperations.java</include>
+						<include>**/SocketAddress*.java</include>
+						<include>**/sch/*.java</include>
+						<include>**/NumberUtils.java</include>
+						<include>**/ConnectionFactoryRebindTest.java</include>
 					</includes>
 				</configuration>
 				<executions>

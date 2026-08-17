@@ -9,15 +9,15 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Consumer;
 
 /**
- * Weak-reference registry of pool-managed connections; maintenance marking passes visit it.
- * Registration happens at creation; there is no deregistration — a reference dies with its
- * connection, so destroyed connections can never be pinned by a missed removal. Every live
- * connection is strongly held elsewhere (pool idle queue or borrower), so a live connection is
- * never missed by {@link #forEachLive}; visiting an already-destroyed one is harmless by design
- * (callers only flip an advisory flag, never do I/O).
+ * Weak-reference registry of connections. Registration happens when a connection becomes relevant
+ * to the owner; there is no deregistration &mdash; a reference dies with its connection, so a
+ * destroyed connection can never be pinned by a missed removal. Every live connection is strongly
+ * held elsewhere (pool idle queue, borrower, or the owning client), so a live connection is never
+ * missed by {@link #forEachLive}; visiting an already-destroyed one must be harmless by design
+ * (callers may only mutate advisory, thread-safe connection state, never do I/O).
  * <p>
- * Contents are a conservative over-approximation of liveness refreshed at the GC's convenience —
- * never expose counts as metrics or assert them in tests.
+ * Contents are a conservative over-approximation of liveness refreshed at the GC's convenience
+ * &mdash; never expose counts as metrics or assert them in tests.
  */
 final class ConnectionRegistry {
 

@@ -112,6 +112,9 @@ jobs:
         # can't overwrite its unit results with its integration results.
         if: ${{ !cancelled() && steps.gate.outputs.run == 'true' }}
         run: |
+          # nullglob: a suite that never ran leaves no report dir; skip it
+          # instead of passing the unexpanded glob to cp.
+          shopt -s nullglob
           mkdir junit-reports
           for f in target/surefire-reports/*.xml; do cp "$f" "junit-reports/unit-$(basename "$f")"; done
           for f in target/failsafe-reports/*.xml; do cp "$f" "junit-reports/it-$(basename "$f")"; done

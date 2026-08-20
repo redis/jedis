@@ -87,6 +87,13 @@ public interface VectorSetPipelineCommands {
    * @param params additional parameters for the VADD command
    * @return Response wrapping 1 if key was added; 0 if key was not added
    */
+  /**
+   * Add a new element into the vector set with dimension reduction.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Boolean> vadd(String key, float[] vector, String element, int reduceDim);
+
   @Experimental
   Response<Boolean> vadd(String key, float[] vector, String element, int reduceDim,
       VAddParams params);
@@ -105,6 +112,13 @@ public interface VectorSetPipelineCommands {
    * @param params additional parameters for the VADD command
    * @return Response wrapping 1 if key was added; 0 if key was not added
    */
+  /**
+   * Add a new element into the vector set using FP32 binary format with dimension reduction.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim);
+
   @Experimental
   Response<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim,
       VAddParams params);
@@ -145,6 +159,13 @@ public interface VectorSetPipelineCommands {
    *          added)
    * @return Response wrapping map of element names to their similarity scores
    */
+  /**
+   * Return elements similar to a given vector with their similarity scores.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<String, Double>> vsimWithScores(String key, float[] vector);
+
   @Experimental
   Response<Map<String, Double>> vsimWithScores(String key, float[] vector, VSimParams params);
 
@@ -184,6 +205,13 @@ public interface VectorSetPipelineCommands {
    *          added)
    * @return Response wrapping map of element names to their similarity scores
    */
+  /**
+   * Return elements similar to a given element with their similarity scores.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<String, Double>> vsimByElementWithScores(String key, String element);
+
   @Experimental
   Response<Map<String, Double>> vsimByElementWithScores(String key, String element,
       VSimParams params);

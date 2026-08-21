@@ -48,8 +48,8 @@ public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
 
     Builder builder = new Builder();
 
-    // Delegate population to generated class
-    StaticCommandFlagsRegistryInitializer.initialize(builder);
+    // populated from the shared command metadata (MetadataResolver)
+    redis.clients.jedis.CommandFlagsInitializer.initialize(builder);
 
     return builder.build();
   }

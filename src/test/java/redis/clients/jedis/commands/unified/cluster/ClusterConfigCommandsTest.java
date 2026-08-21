@@ -12,7 +12,7 @@ import redis.clients.jedis.commands.unified.ConfigCommandsTestBase;
  * Exercises {@code CONFIG GET} through {@link redis.clients.jedis.RedisClusterClient} against an
  * OSS Cluster. The fan-out and reply aggregation are driven by the request/response policies
  * registered for {@code CONFIG GET} in the
- * {@link redis.clients.jedis.StaticCommandFlagsRegistryInitializer}.
+ * {@link redis.clients.jedis.StaticCommandFlagsRegistry}.
  */
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")

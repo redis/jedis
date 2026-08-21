@@ -27,7 +27,7 @@ public abstract class AbstractCache implements Cache {
   private volatile CacheStats stats = new CacheStats();
 
   protected AbstractCache(int maximumSize) {
-    this(maximumSize, DefaultCacheable.INSTANCE);
+    this(maximumSize, CacheabilityResolver.DEFAULT_RESOLVER);
   }
 
   protected AbstractCache(int maximumSize, Cacheable cacheable) {

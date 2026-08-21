@@ -176,7 +176,7 @@ public abstract class AbstractCache implements Cache {
     if (cacheKey.getRedisKeys().isEmpty()) {
       return false;
     }
-    return cacheable.isCacheable(cacheKey.getRedisCommand(), cacheKey.getRedisKeys());
+    return cacheable.isCacheable(cacheKey.getCommandObject());
   }
 
   @Override

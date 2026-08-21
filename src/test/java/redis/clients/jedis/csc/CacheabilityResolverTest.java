@@ -12,6 +12,9 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 
+import redis.clients.jedis.BuilderFactory;
+import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.MetadataResolver;
 import redis.clients.jedis.MetadataResolver.CommandMetadata;
 import redis.clients.jedis.Protocol.Command;
@@ -155,8 +158,8 @@ public class CacheabilityResolverTest {
 
     // and through the Cacheable interface, with a fallback binding the name to its metadata
     Cacheable resolver = new CacheabilityResolver(metadataResolver, null,
-        (command, keys) -> CacheabilityResolver.isClientSideCacheable(
-          metadataResolver.resolve(SafeEncoder.encode(command.getRaw()))));
+        (command, keys) -> CacheabilityResolver
+            .isClientSideCacheable(metadataResolver.resolve(SafeEncoder.encode(command.getRaw()))));
     assertTrue(
       resolver.isCacheable(() -> SafeEncoder.encode("MEMORY|USAGE"), Collections.emptyList()));
   }
@@ -179,10 +182,8 @@ public class CacheabilityResolverTest {
 
     Cacheable resolver = new CacheabilityResolver(metadataResolver);
     // the merged command from the subcommand constructor hits its precomputed verdict
-    assertTrue(resolver.isCacheable(
-      new redis.clients.jedis.CommandArguments(Command.XINFO,
-          redis.clients.jedis.Protocol.Keyword.STREAM).key("k").getFullCommand(),
-      Collections.emptyList()));
+    assertTrue(resolver.isCacheable(new CommandObject<>(new CommandArguments(Command.XINFO,
+        redis.clients.jedis.Protocol.Keyword.STREAM).key("k"),BuilderFactory.STRING)));
     // a foreign ProtocolCommand with a pipe name is not value-equal to the map keys: fail closed
     ProtocolCommand pipeCommand = () -> SafeEncoder.encode("XINFO|STREAM");
     assertFalse(resolver.isCacheable(pipeCommand, Collections.emptyList()));
@@ -190,12 +191,12 @@ public class CacheabilityResolverTest {
 
   private static CacheKey<?> cacheKey(redis.clients.jedis.CommandArguments args) {
     return new CacheKey<>(
-        new redis.clients.jedis.CommandObject<>(args, redis.clients.jedis.BuilderFactory.STRING));
+        new CommandObject<>(args, redis.clients.jedis.BuilderFactory.STRING));
   }
 
   private static boolean isCacheable(Cacheable cacheable, CacheKey<?> cacheKey) {
     // what AbstractCache does: the CacheKey exposes the pipe-merged full command
-    return cacheable.isCacheable(cacheKey.getRedisCommand(), cacheKey.getRedisKeys());
+    return cacheable.isCacheable(cacheKey.getCommandObject());
   }
 
   /** Container subcommands declared at construction are judged by their own metadata. */
@@ -208,17 +209,17 @@ public class CacheabilityResolverTest {
     redis.clients.jedis.Protocol.Keyword usage = redis.clients.jedis.Protocol.Keyword.USAGE;
 
     assertTrue(isCacheable(resolver,
-      cacheKey(new redis.clients.jedis.CommandArguments(Command.XINFO, stream).key("k"))));
+      cacheKey(new CommandArguments(Command.XINFO, stream).key("k"))));
     assertTrue(isCacheable(resolver,
-      cacheKey(new redis.clients.jedis.CommandArguments(Command.XINFO, groups).key("k"))));
+      cacheKey(new CommandArguments(Command.XINFO, groups).key("k"))));
     assertTrue(isCacheable(resolver,
-      cacheKey(new redis.clients.jedis.CommandArguments(Command.MEMORY, usage).key("k"))));
+      cacheKey(new CommandArguments(Command.MEMORY, usage).key("k"))));
     // nondeterministic sibling stays denied
     assertFalse(isCacheable(resolver, cacheKey(
-      new redis.clients.jedis.CommandArguments(Command.XINFO, consumers).key("k").add("g"))));
+      new CommandArguments(Command.XINFO, consumers).key("k").add("g"))));
     // and the cached-verdict path returns the same answer
     assertTrue(isCacheable(resolver,
-      cacheKey(new redis.clients.jedis.CommandArguments(Command.XINFO, stream).key("k"))));
+      cacheKey(new CommandArguments(Command.XINFO, stream).key("k"))));
   }
 
   /** Excluding a container parent denies its subcommands too: exclusions can only narrow. */
@@ -227,7 +228,7 @@ public class CacheabilityResolverTest {
     CacheabilityResolver resolver = new CacheabilityResolver(new MetadataResolver(),
         Collections.singleton(Command.XINFO), null);
     assertFalse(
-      isCacheable(resolver, cacheKey(new redis.clients.jedis.CommandArguments(Command.XINFO,
+      isCacheable(resolver, cacheKey(new CommandArguments(Command.XINFO,
           redis.clients.jedis.Protocol.Keyword.STREAM).key("k"))));
   }
 
@@ -236,9 +237,9 @@ public class CacheabilityResolverTest {
   public void nonContainerCommandsKeepVerdictThroughCacheKeyPath() {
     CacheabilityResolver resolver = new CacheabilityResolver(new MetadataResolver());
     assertTrue(isCacheable(resolver,
-      cacheKey(new redis.clients.jedis.CommandArguments(Command.GET).key("k"))));
+      cacheKey(new CommandArguments(Command.GET).key("k"))));
     assertFalse(isCacheable(resolver,
-      cacheKey(new redis.clients.jedis.CommandArguments(Command.SET).key("k").add("v"))));
+      cacheKey(new CommandArguments(Command.SET).key("k").add("v"))));
   }
 
   @Test

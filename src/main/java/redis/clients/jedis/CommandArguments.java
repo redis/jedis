@@ -37,26 +37,23 @@ public class CommandArguments implements Iterable<Rawable> {
 
   private boolean blocking;
 
-  private final ProtocolCommand fullCommand;
+  private final boolean hasSubcommand;
 
   private CommandArguments() {
     throw new InstantiationError();
   }
 
   public CommandArguments(ProtocolCommand command) {
-    args = new ArrayList<>();
-    args.add(command);
-    fullCommand = command;
-
-    keys = new ArrayList<>(DEFAULT_KEYS_CAPACITY);
-    cachedHashSlots = null;
+    this(command, null);
   }
 
   public CommandArguments(ProtocolCommand command, Keyword subcommand) {
     args = new ArrayList<>();
     args.add(command);
-    args.add(subcommand);
-    fullCommand = mergeWithPipe(command, subcommand);
+    hasSubcommand = subcommand != null;
+    if (hasSubcommand) {
+      args.add(subcommand);
+    }
 
     keys = new ArrayList<>(DEFAULT_KEYS_CAPACITY);
     cachedHashSlots = null;
@@ -143,8 +140,8 @@ public class CommandArguments implements Iterable<Rawable> {
     return (ProtocolCommand) args.get(0);
   }
 
-  public ProtocolCommand getFullCommand() {
-    return fullCommand;
+  public Keyword getSubcommand() {
+    return hasSubcommand ? (Keyword) args.get(1) : null;
   }
 
   @Experimental
@@ -327,7 +324,7 @@ public class CommandArguments implements Iterable<Rawable> {
    * Returns the keys used in this command.
    * <p>
    * <b>Internal API:</b> This method is internal and should not be used by external code.
-   * It is exposed for internal use by caching ({@link redis.clients.jedis.csc.CacheKey#getRedisKeys()})
+   * It is exposed for internal use by caching ({@link redis.clients.jedis.csc.CacheKey#getCommandObject().getArguments().getKeys()})
    * and cluster operations.
    * <p>
    * <b>Supported types:</b> Keys are stored as either {@link String} or {@code byte[]} depending on

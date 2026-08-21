@@ -249,6 +249,7 @@ public class JedisClusterInfoCache {
     w.lock();
     try {
       resetSlots();
+      primaryNodesCache.clear();
       if (clientSideCache != null) {
         clientSideCache.flush();
       }
@@ -274,6 +275,7 @@ public class JedisClusterInfoCache {
           hostAndPortKeys.add(getNodeKey(targetNode));
           setupNodeIfNotExist(targetNode);
           if (i == MASTER_NODE_INDEX) {
+            primaryNodesCache.put(getNodeKey(targetNode), getNode(targetNode));
             assignSlotsToNode(slotNums, targetNode);
           } else if (clientConfig.isReadOnlyForRedisClusterReplicas()) {
             assignSlotsToReplicaNode(slotNums, targetNode);

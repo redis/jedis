@@ -1,11 +1,16 @@
 package redis.clients.jedis;
 
 import redis.clients.jedis.annots.Experimental;
+import redis.clients.jedis.util.SafeEncoder;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.BooleanSupplier;
 
 /**
  * A chain of PushConsumers that processes events in order.
@@ -15,6 +20,9 @@ import java.util.List;
  */
 @Experimental
 public final class PushConsumerChainImpl implements PushConsumerChain {
+
+  private static final Logger LOG = LoggerFactory.getLogger(PushConsumerChainImpl.class);
+
   /**
    * PushConsumer that marks all push events to be propagated to the caller.
    */
@@ -30,7 +38,9 @@ public final class PushConsumerChainImpl implements PushConsumerChain {
   static final PushConsumerChain PROPAGATE_ALL_CONSUMER_CHAIN = of(PROPAGATE_ALL_CONSUMER);
 
   /**
-   * PushConsumer that marks pub/sub related events to be propagated to the caller.
+   * PushConsumer that marks pub/sub related events to be propagated to the caller unconditionally.
+   * Connections use the gated variant from {@link #pubSubConsumer(BooleanSupplier)} instead, so
+   * pub/sub pushes only propagate while a pub/sub read loop is actually consuming them.
    * <p>
    * NOTE: If a new pub/sub push type is added to {@link PushMessageTypes}, the {@code switch} in
    * {@link #isPubSubType(byte[])} must be updated. {@code PushConsumerChainImplTest} discovers
@@ -42,6 +52,31 @@ public final class PushConsumerChainImpl implements PushConsumerChain {
     }
     return context;
   };
+
+  /**
+   * PushConsumer that propagates pub/sub related events only while {@code activeSubscription}
+   * reports {@code true} (i.e. a pub/sub read loop is driving the connection). A pub/sub push
+   * received outside an active subscription — e.g. a message the server delivered after the
+   * unsubscribe confirmation — must not be returned as a regular command's reply; it is logged and
+   * left to the rest of the chain (consumed by default at end of chain).
+   * @param activeSubscription supplies whether the owning connection currently runs a pub/sub read
+   *          loop
+   * @return a pub/sub push consumer gated on the supplied subscription state
+   */
+  static PushConsumer pubSubConsumer(BooleanSupplier activeSubscription) {
+    return context -> {
+      if (isPubSubType(context.getMessage().getType())) {
+        if (activeSubscription.getAsBoolean()) {
+          context.propagate();
+        } else if (LOG.isDebugEnabled()) {
+          LOG.debug("Ignoring pub/sub push message of type '{}' received without an active "
+              + "subscription.",
+            SafeEncoder.encode(context.getMessage().getType()));
+        }
+      }
+      return context;
+    };
+  }
 
   /**
    * Returns {@code true} iff {@code t} is one of the pub/sub push message types declared in

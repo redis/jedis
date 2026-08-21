@@ -129,6 +129,9 @@ public class Connection implements Closeable {
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
   private volatile Throwable brokenCause = null;
+  // True only while a pub/sub read loop is driving this connection; gates whether pub/sub
+  // pushes are propagated as read results or dropped as stray frames.
+  private volatile boolean activeSubscription = false;
   private boolean strValActive;
   private String strVal;
   protected String server;
@@ -180,9 +183,25 @@ public class Connection implements Closeable {
       /*
        * Default consumers to process push messages.
        * Marks all @{link PushMessages as processed, except for pub/sub.
-       * Pub/sub messages are propagated to the client.
+       * Pub/sub messages are propagated to the client only while a pub/sub read loop is
+       * active on this connection; stray pub/sub frames (e.g. a message delivered after the
+       * unsubscribe confirmation) must not surface as a regular command's reply.
        */
-      addPushConsumer(PushConsumerChainImpl.PUBSUB_CONSUMER);
+      addPushConsumer(PushConsumerChainImpl.pubSubConsumer(this::isActiveSubscription));
+  }
+
+  /**
+   * Marks whether a pub/sub read loop is currently driving this connection. Set by the
+   * pub/sub implementations around their subscribe/process loop.
+   */
+  @Internal
+  void setActiveSubscription(boolean activeSubscription) {
+    this.activeSubscription = activeSubscription;
+  }
+
+  @Internal
+  boolean isActiveSubscription() {
+    return activeSubscription;
   }
 
   @Override

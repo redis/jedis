@@ -47,6 +47,15 @@ public class CommandArguments implements Iterable<Rawable> {
     this(command, null);
   }
 
+  /**
+   * Creates arguments for a container command with its subcommand declared, for example
+   * {@code new CommandArguments(XINFO, STREAM)}. Declaring the subcommand lets consumers such as
+   * the client-side caching policy judge the {@code PARENT|CHILD} pair by its own metadata instead
+   * of the container's.
+   * @param command the container command
+   * @param subcommand the subcommand; null behaves like {@link #CommandArguments(ProtocolCommand)}
+   * @since 8.1
+   */
   public CommandArguments(ProtocolCommand command, Keyword subcommand) {
     args = new ArrayList<>();
     args.add(command);
@@ -63,6 +72,10 @@ public class CommandArguments implements Iterable<Rawable> {
     return (ProtocolCommand) args.get(0);
   }
 
+  /**
+   * The subcommand declared at construction, or null when this command was built without one.
+   * @since 8.1
+   */
   public Keyword getSubcommand() {
     return hasSubcommand ? (Keyword) args.get(1) : null;
   }
@@ -232,8 +245,8 @@ public class CommandArguments implements Iterable<Rawable> {
    * Returns the keys used in this command.
    * <p>
    * <b>Internal API:</b> This method is internal and should not be used by external code.
-   * It is exposed for internal use by caching ({@link redis.clients.jedis.csc.CacheKey#getCommandObject().getArguments().getKeys()})
-   * and cluster operations.
+   * It is exposed for internal use by caching (via
+   * {@link redis.clients.jedis.csc.CacheKey#getCommandObject()}) and cluster operations.
    * <p>
    * <b>Supported types:</b> Keys are stored as either {@link String} or {@code byte[]} depending on
    * how they were added via {@link #key(Object)} or {@link #addHashSlotKey(String)}/{@link #addHashSlotKey(byte[])}.

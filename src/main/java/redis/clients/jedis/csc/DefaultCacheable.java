@@ -8,9 +8,12 @@ import redis.clients.jedis.commands.ProtocolCommand;
 
 
 /**
- * A default {@link Cacheable} implementation that uses the {@link CacheabilityResolver} to determine the cacheability of
- * commands. This class is deprecated and will be removed in future versions. Use CacheConfig builder to configure cacheability instead, like excluding commands or providing a fallback Cacheable.
- * See csc-command-cacheability.md for more details and other options.
+ * The former default {@link Cacheable}, now backed by the metadata-driven resolver so its verdicts
+ * match the current default policy.
+ * @deprecated The default policy is applied automatically; to customize it, use the
+ *             {@link CacheConfig.Builder} instead — exclude commands with
+ *             {@code excludeCommands(...)} or supply a fallback with {@code withFallback(...)}.
+ *             See the {@code docs/csc-command-cacheability.md} page for details.
  */
 @Deprecated
 public class DefaultCacheable implements Cacheable {

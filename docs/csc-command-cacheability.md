@@ -4,26 +4,28 @@ This page documents how Jedis decides which commands are eligible for client-sid
 (CSC). The rules are by design aligned across Redis client libraries, so clients given the same
 command metadata make the same cacheability decision.
 
-## Architecture
+## How it works
 
-Command metadata and cacheability policy are separate components (all package-private in
-`redis.clients.jedis.csc`):
+Jedis ships normalized Redis `COMMAND` metadata (flags, tips, key positions, and key specs),
+generated from a known Redis release and also checked in as `CommandMetadata.json` in the
+repository root. The default cacheability policy applies the eligibility rules below to that
+metadata and resolves a verdict for every command Jedis can issue, container subcommands included
+(keyed `PARENT|CHILD`, for example `MEMORY|USAGE`).
 
-- **`MetadataResolver`** holds normalized Redis `COMMAND` metadata (flags, tips, legacy key
-  positions, key-spec key-name evidence) keyed by command name, **generated from a known Redis
-  release** by `CommandMetadataUtil` — not curated by hand; do not edit the generated block.
-  Container subcommands are keyed `PARENT|CHILD` (for example `MEMORY|USAGE`). An optional
-  override table takes precedence over the generated metadata.
-- **`CacheabilityResolver`** contains the eligibility rules and the known-server-metadata fixes
-  listed below. It resolves the final verdict for every command known to Jedis — precedence,
-  highest first: caller-supplied verdict overrides, metadata fixes, resolved metadata — and
-  materializes the result into a `DefaultCacheable`.
-- **`DefaultCacheable`** is the default policy: a map holding the final verdict per command.
-  Commands missing from the map (no metadata, or a custom `ProtocolCommand`) are not cacheable
-  and logged once per command name.
-- **`CacheableWrapper`** wraps a user-provided `Cacheable` configured through
-  `CacheConfig.Builder`, applying per-command verdict overrides with the same override-first
-  approach.
+The policy is configured through `CacheConfig.Builder`:
+
+- By default, the metadata-derived policy decides every command.
+- `excludeCommands(...)` removes commands from the eligible set. Exclusions can only narrow: a
+  command that is not cacheable by the default policy cannot be made cacheable. Excluding a
+  container command excludes all of its subcommands.
+- `withFallback(...)` supplies a `Cacheable` that decides commands with no metadata verdict (for
+  example custom `ProtocolCommand` implementations). Without a fallback, such commands are not
+  cacheable and logged once per command name.
+- `cacheable(...)` replaces the policy with a user-provided `Cacheable`; it cannot be combined
+  with exclusions or a fallback. For now the custom policy alone decides, preserving pre-8.1
+  behavior; a later major release will let the default policy's denials take precedence.
+
+`DefaultCacheable` is deprecated; its verdicts now match the default policy.
 
 ## Eligibility rules
 
@@ -46,19 +48,18 @@ Unknown commands fail closed: no metadata means not cacheable. Module commands (
 prefix- or data-type-based exclusions.
 
 Container subcommands declare their subcommand at construction
-(`new CommandArguments(XINFO, STREAM)`), and the arguments expose a pipe-merged effective command
-(`getFullCommand()`, for example `XINFO|STREAM`) that the cache key reports and the resolver
-judges by its own metadata — so `XINFO STREAM` and `XINFO GROUPS` are cacheable while their
-sibling `XINFO CONSUMERS` (nondeterministic output) is not, and `MEMORY USAGE` is cacheable.
-Commands built without a declared subcommand keep the parent verdict, which is not cacheable.
-Excluding a parent command excludes all of its subcommands.
+(`new CommandArguments(XINFO, STREAM)`) and are judged by their own `PARENT|CHILD` metadata — so
+`XINFO STREAM` and `XINFO GROUPS` are cacheable while their sibling `XINFO CONSUMERS`
+(nondeterministic output) is not, and `MEMORY USAGE` is cacheable. Commands built without a
+declared subcommand keep the parent verdict, which is not cacheable. Excluding a parent command
+excludes all of its subcommands.
 
 ## Overrides for known metadata gaps
 
-These commands match the metadata rules but are denied through metadata fixes built into
-`MetadataResolver`, because the server metadata is known to be incomplete. Each entry should be
-removed once the corresponding server metadata is fixed (the generator warns when an entry
-becomes obsolete).
+These commands match the metadata rules but are denied through fixes applied to the shipped
+metadata, because the server metadata is known to be incomplete. Each entry should be removed
+once the corresponding server metadata is fixed (regeneration warns when an entry becomes
+obsolete).
 
 | Command | Override | Reason |
 |---|---|---|
@@ -67,42 +68,11 @@ becomes obsolete).
 
 `XREAD` no longer needs an override: the `blocking` flag rule excludes it.
 
-## Regenerating
-
-`CommandMetadataUtil` (test sources) fetches `COMMAND INFO` from a live server and produces both
-outputs:
-
-- `CommandMetadata.json` in the repository root — the full normalized metadata, key specs included.
-- The metadata table of `MetadataResolver.java` — the block between the
-  `GENERATED-METADATA-BEGIN` / `GENERATED-METADATA-END` markers is replaced; everything else in
-  the file is preserved.
-
-Mismatches between the Jedis command set and the server metadata are printed as warnings: Jedis
-`ProtocolCommand` constants with no `COMMAND` metadata (these fail closed at runtime), server
-commands with no `ProtocolCommand` constant, and overrides that have become obsolete.
-
-Run it from the repository root against a server with all modules loaded (the output tracks the
-server it is pointed at):
-
-```sh
-mvn -q test-compile exec:java -Dexec.classpathScope=test \
-    -Dexec.mainClass=redis.clients.jedis.csc.CommandMetadataUtil \
-    -Dexec.args="-remote:localhost:6379"
-```
-
-All arguments are optional: `-remote:host:port` defaults to `localhost:6379`, and
-`-auth:password` / `-user:username` authenticate the connection when needed. When the server is
-unreachable, the tool falls back to the checked-in `CommandMetadata.json`: the file is left
-untouched (it is the source) and only `MetadataResolver.java` is regenerated from it. The JSON
-records its provenance — Redis version, mode, loaded modules, and generation time — so it is
-always clear which server produced the metadata.
-
 ## External metadata file
 
 Setting the `JEDIS_COMMAND_METADATA_PATH` environment variable to a JSON file with the
-`CommandMetadata.json` layout makes `MetadataResolver` load its command table from that file instead
-of the generated table — for example to apply metadata from a newer Redis release without
-rebuilding Jedis. The file is read and parsed once, lazily, on first use, and shared by all
-resolver instances. A missing or malformed file fails fast with an `IllegalStateException`: an
-explicitly configured metadata source is never silently ignored. When the variable is not set,
-the generated table is used.
+`CommandMetadata.json` layout makes Jedis load its command metadata from that file instead of the
+built-in table — for example to apply metadata from a newer Redis release without rebuilding
+Jedis. The file is read and parsed once, lazily, on first use. A missing or malformed file fails
+fast with an `IllegalStateException`: an explicitly configured metadata source is never silently
+ignored. When the variable is not set, the built-in metadata is used.

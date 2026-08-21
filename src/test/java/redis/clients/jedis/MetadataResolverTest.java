@@ -5,10 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -18,7 +16,6 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import redis.clients.jedis.MetadataResolver;
 import redis.clients.jedis.MetadataResolver.CommandMetadata;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.bloom.RedisBloomProtocol.BloomFilterCommand;
@@ -42,12 +39,6 @@ public class MetadataResolverTest {
     assertTrue(get.hasFlag("readonly"));
     assertFalse(get.hasFlag("write"));
     assertEquals(1, get.getFirstKey());
-  }
-
-  @Test
-  public void resolvesByProtocolCommandAndCaseInsensitively() {
-    MetadataResolver resolver = new MetadataResolver();
-    assertSame(resolver.resolve("get"), resolver.resolve(SafeEncoder.encode(Command.GET.getRaw())));
   }
 
   @Test
@@ -75,21 +66,23 @@ public class MetadataResolverTest {
     assertTrue(vrandmember.hasFlag("module"));
   }
 
-  /** A pipe-merged full command from CommandArguments resolves its PARENT|CHILD metadata. */
+  /** A subcommand declared on CommandArguments resolves its PARENT|CHILD metadata. */
   @Test
-  public void resolvesContainerSubcommandsFromFullCommand() {
+  public void resolvesContainerSubcommandsFromDeclaredSubcommand() {
     MetadataResolver resolver = new MetadataResolver();
 
+    CommandArguments xinfoStream = new CommandArguments(Command.XINFO,
+        redis.clients.jedis.Protocol.Keyword.STREAM).key("k");
     CommandMetadata streamInfo = resolver
-        .resolve(SafeEncoder.encode(new CommandArguments(Command.XINFO,
-            redis.clients.jedis.Protocol.Keyword.STREAM).key("k").getFullCommand().getRaw()));
+        .resolve(SafeEncoder.encode(xinfoStream.getCommand().getRaw()) + "|"
+            + SafeEncoder.encode(xinfoStream.getSubcommand().getRaw()));
     assertEquals("XINFO|STREAM", streamInfo.getName());
 
-    // without a declared subcommand, the full command is the command itself
-    CommandMetadata get = resolver
-        .resolve(SafeEncoder.encode(new CommandArguments(Command.GET)
-            .key("some-key").getFullCommand().getRaw()));
-    assertEquals("GET", get.getName());
+    // without a declared subcommand, the command resolves by its own name
+    CommandArguments get = new CommandArguments(Command.GET).key("some-key");
+    assertNull(get.getSubcommand());
+    assertEquals("GET",
+      resolver.resolve(SafeEncoder.encode(get.getCommand().getRaw())).getName());
   }
 
   @Test

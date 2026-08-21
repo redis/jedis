@@ -31,11 +31,20 @@ public class CacheKey<T> {
     return command.getArguments().getKeys();
   }
 
+  /**
+   * The container command of this cache entry; a declared subcommand is not reflected here.
+   * @deprecated Use {@link #getCommandObject()}, whose arguments also expose the declared
+   *             subcommand.
+   */
   @Deprecated
   public ProtocolCommand getRedisCommand() {
     return command.getArguments().getCommand();
   }
 
+  /**
+   * The command object this cache key was built from.
+   * @since 8.1
+   */
   public CommandObject<T> getCommandObject() {
     return command;
   }

@@ -37,86 +37,34 @@ public class CommandArguments implements Iterable<Rawable> {
 
   private boolean blocking;
 
-  private final ProtocolCommand fullCommand;
+  private final boolean hasSubcommand;
 
   private CommandArguments() {
     throw new InstantiationError();
   }
 
   public CommandArguments(ProtocolCommand command) {
-    args = new ArrayList<>();
-    args.add(command);
-    fullCommand = command;
-
-    keys = new ArrayList<>(DEFAULT_KEYS_CAPACITY);
-    cachedHashSlots = null;
+    this(command, null);
   }
 
   public CommandArguments(ProtocolCommand command, Keyword subcommand) {
     args = new ArrayList<>();
     args.add(command);
-    args.add(subcommand);
-    fullCommand = mergeWithPipe(command, subcommand);
+    hasSubcommand = subcommand != null;
+    if (hasSubcommand) {
+      args.add(subcommand);
+    }
 
     keys = new ArrayList<>(DEFAULT_KEYS_CAPACITY);
     cachedHashSlots = null;
-  }
-
-  private ProtocolCommand mergeWithPipe(ProtocolCommand command, Keyword subcommand) {
-    byte[] cmdBytes = command.getRaw();
-    byte[] subBytes = subcommand.getRaw();
-
-    byte[] merged = new byte[cmdBytes.length + 1 + subBytes.length];
-    System.arraycopy(cmdBytes, 0, merged, 0, cmdBytes.length);
-    merged[cmdBytes.length] = '|';
-    System.arraycopy(subBytes, 0, merged, cmdBytes.length + 1, subBytes.length);
-
-    return new MergedProtocolCommand(merged);
-  }
-
-  /**
-   * A pipe-merged {@code PARENT|CHILD} command. Value-equal by its raw bytes, so any two
-   * {@link CommandArguments} built from the same command and subcommand produce interchangeable
-   * map keys.
-   */
-  private static final class MergedProtocolCommand implements ProtocolCommand {
-
-    private final byte[] raw;
-    private final int hashCode;
-
-    MergedProtocolCommand(byte[] raw) {
-      this.raw = raw;
-      this.hashCode = Arrays.hashCode(raw);
-    }
-
-    @Override
-    public byte[] getRaw() {
-      return raw;
-    }
-
-    @Override
-    public int hashCode() {
-      return hashCode;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (!(obj instanceof ProtocolCommand)) {
-        return false;
-      }
-      return Arrays.equals(raw, ((ProtocolCommand) obj).getRaw());
-    }
   }
 
   public ProtocolCommand getCommand() {
     return (ProtocolCommand) args.get(0);
   }
 
-  public ProtocolCommand getFullCommand() {
-    return fullCommand;
+  public Keyword getSubcommand() {
+    return hasSubcommand ? (Keyword) args.get(1) : null;
   }
 
   @Experimental
@@ -284,7 +232,7 @@ public class CommandArguments implements Iterable<Rawable> {
    * Returns the keys used in this command.
    * <p>
    * <b>Internal API:</b> This method is internal and should not be used by external code.
-   * It is exposed for internal use by caching ({@link redis.clients.jedis.csc.CacheKey#getRedisKeys()})
+   * It is exposed for internal use by caching ({@link redis.clients.jedis.csc.CacheKey#getCommandObject().getArguments().getKeys()})
    * and cluster operations.
    * <p>
    * <b>Supported types:</b> Keys are stored as either {@link String} or {@code byte[]} depending on

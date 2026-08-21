@@ -81,13 +81,13 @@ public class MetadataResolverTest {
     MetadataResolver resolver = new MetadataResolver();
 
     CommandMetadata streamInfo = resolver
-        .resolve(SafeEncoder.encode(new redis.clients.jedis.CommandArguments(Command.XINFO,
+        .resolve(SafeEncoder.encode(new CommandArguments(Command.XINFO,
             redis.clients.jedis.Protocol.Keyword.STREAM).key("k").getFullCommand().getRaw()));
     assertEquals("XINFO|STREAM", streamInfo.getName());
 
     // without a declared subcommand, the full command is the command itself
     CommandMetadata get = resolver
-        .resolve(SafeEncoder.encode(new redis.clients.jedis.CommandArguments(Command.GET)
+        .resolve(SafeEncoder.encode(new CommandArguments(Command.GET)
             .key("some-key").getFullCommand().getRaw()));
     assertEquals("GET", get.getName());
   }

@@ -31,7 +31,12 @@ public class CacheKey<T> {
     return command.getArguments().getKeys();
   }
 
+  @Deprecated
   public ProtocolCommand getRedisCommand() {
-    return command.getArguments().getFullCommand();
+    return command.getArguments().getCommand();
+  }
+
+  public CommandObject<T> getCommandObject() {
+    return command;
   }
 }

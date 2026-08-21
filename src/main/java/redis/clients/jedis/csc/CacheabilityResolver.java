@@ -13,9 +13,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.MetadataResolver;
 import redis.clients.jedis.MetadataResolver.CommandMetadata;
 import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.bloom.RedisBloomProtocol.BloomFilterCommand;
 import redis.clients.jedis.bloom.RedisBloomProtocol.CountMinSketchCommand;
 import redis.clients.jedis.bloom.RedisBloomProtocol.CuckooFilterCommand;
@@ -53,6 +56,51 @@ class CacheabilityResolver implements Cacheable {
 
   public static Cacheable DEFAULT_RESOLVER = new CacheabilityResolver(new MetadataResolver());
 
+  /**
+   * A pipe-merged {@code PARENT|CHILD} command. Value-equal by its raw bytes, so any two
+   * {@link CommandArguments} built from the same command and subcommand produce interchangeable map
+   * keys.
+   */
+  static final class ProtocolSubcommand implements ProtocolCommand {
+
+    private final byte[] raw;
+    private final int hashCode;
+
+    ProtocolSubcommand(ProtocolCommand command, Keyword subcommand) {
+      byte[] cmdBytes = command.getRaw();
+      byte[] subBytes = subcommand.getRaw();
+
+      byte[] merged = new byte[cmdBytes.length + 1 + subBytes.length];
+      System.arraycopy(cmdBytes, 0, merged, 0, cmdBytes.length);
+      merged[cmdBytes.length] = '|';
+      System.arraycopy(subBytes, 0, merged, cmdBytes.length + 1, subBytes.length);
+
+      this.raw = merged;
+      this.hashCode = Arrays.hashCode(raw);
+    }
+
+    @Override
+    public byte[] getRaw() {
+      return raw;
+    }
+
+    @Override
+    public int hashCode() {
+      return hashCode;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (!(obj instanceof ProtocolCommand)) {
+        return false;
+      }
+      return Arrays.equals(raw, ((ProtocolCommand) obj).getRaw());
+    }
+  }
+
   private final MetadataResolver metadataResolver;
   private final Set<ProtocolCommand> excludedCommands;
   private final Map<ProtocolCommand, Boolean> cacheabilityMap;
@@ -80,15 +128,28 @@ class CacheabilityResolver implements Cacheable {
 
   @Override
   public boolean isCacheable(ProtocolCommand command, List<Object> keys) {
-    Boolean verdict = cacheabilityMap.get(command);
+    throw new UnsupportedOperationException("Use isCacheable(CommandObject) instead");
+  }
+
+  @Override
+  public boolean isCacheable(CommandObject<?> commandObject) {
+    ProtocolCommand protocolCommand = getWithSubcommand(commandObject.getArguments());
+    Boolean verdict = cacheabilityMap.get(protocolCommand);
     if (verdict == null && fallback != null) {
-      verdict = fallback.isCacheable(command, keys);
+      verdict = fallback.isCacheable(commandObject);
     }
     if (verdict == null) {
-      logUnknownCommandName(command);
+      logUnknownCommandName(protocolCommand);
       return false;
     }
     return verdict;
+  }
+
+  private ProtocolCommand getWithSubcommand(CommandArguments commandArguments) {
+    if (commandArguments.getSubcommand() == null) {
+      return commandArguments.getCommand();
+    }
+    return new ProtocolSubcommand(commandArguments.getCommand(), commandArguments.getSubcommand());
   }
 
   private void logUnknownCommandName(ProtocolCommand command) {

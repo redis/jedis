@@ -170,7 +170,7 @@ public abstract class AbstractCache implements Cache {
 
   @Override
   public boolean isCacheable(CacheKey cacheKey) {
-    return cacheable.isCacheable(cacheKey.getRedisCommand(), cacheKey.getRedisKeys());
+    return cacheable.isCacheable(cacheKey.getCommandObject());
   }
 
   @Override

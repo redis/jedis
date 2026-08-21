@@ -37,9 +37,7 @@ public final class JedisClusterCRC16 {
       throw new NullPointerException("Slot calculation of null is impossible");
     }
 
-    key = JedisClusterHashTag.getHashTag(key);
-    // optimization with modulo operator with power of 2 equivalent to getCRC16(key) % 16384
-    return getCRC16(key) & (16384 - 1);
+    return getSlot(SafeEncoder.encode(key));
   }
 
   public static int getSlot(byte[] key) {

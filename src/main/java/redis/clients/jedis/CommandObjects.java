@@ -63,7 +63,9 @@ public class CommandObjects {
   }
 
   protected CommandArguments commandArguments(ProtocolCommand command, Keyword subcommand) {
-    return new CommandArguments(command, subcommand);
+    CommandArguments comArgs = new CommandArguments(command, subcommand);
+    if (keyPreProcessor != null) comArgs.setKeyArgumentPreProcessor(keyPreProcessor);
+    return comArgs;
   }
 
   protected CommandArguments commandArguments(ProtocolCommand command) {

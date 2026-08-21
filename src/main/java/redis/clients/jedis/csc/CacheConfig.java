@@ -60,9 +60,12 @@ public class CacheConfig {
         }
 
         /**
-         * Sets the fallback {@link Cacheable} to use for commands that have no metadata verdict.
-         * @param fallback fallback {@link Cacheable}; may be null for none
+         * Sets the fallback {@link Cacheable} deciding commands that have no metadata verdict.
+         * Without a fallback, such commands are not cached. Cannot be combined with
+         * {@link #cacheable(Cacheable)}.
+         * @param fallback fallback {@link Cacheable}; must not be null
          * @return this builder
+         * @since 8.1
          */
         public Builder withFallback(Cacheable fallback) {
             JedisAsserts.notNull(fallback, "fallback cannot be null");
@@ -73,10 +76,12 @@ public class CacheConfig {
         /**
          * Excludes the given commands from client-side caching, narrowing the eligible command set.
          * Exclusions can only narrow: a command that is not cacheable by the default policy cannot
-         * be made cacheable.
+         * be made cacheable. Excluding a container command excludes all of its subcommands. Cannot
+         * be combined with {@link #cacheable(Cacheable)}.
          * @param commands commands to exclude; copied, later changes to the given set have no
          *            effect
          * @return this builder
+         * @since 8.1
          */
         public Builder excludeCommands(Set<ProtocolCommand> commands) {
             JedisAsserts.notNull(commands, "commands cannot be null");

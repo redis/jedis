@@ -1,13 +1,14 @@
 package redis.clients.jedis.csc;
 
 import java.util.List;
+import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.util.JedisAsserts;
 
 /**
- * Wraps a user-provided {@link Cacheable} with per-command verdict overrides, applying the same
- * precedence as the default policy: an override wins, every other command falls back to the wrapped
- * policy.
+ * Wraps a user-provided {@link Cacheable} next to the metadata-derived resolver. For now the custom
+ * policy alone decides, preserving pre-8.1 behavior; a later major release will flip the precedence
+ * so a command the resolver denies stays denied regardless of the custom policy.
  */
 class CustomCacheablePolicy implements Cacheable {
 
@@ -15,8 +16,8 @@ class CustomCacheablePolicy implements Cacheable {
   private final Cacheable custom;
 
   /**
-   * @param custom decides commands the resolver already allows; it can only narrow the set
-   * @param resolver the metadata-derived policy; a command it denies stays denied
+   * @param custom the user-provided policy; decides every command for now
+   * @param resolver the metadata-derived policy; retained for the planned precedence flip
    */
   CustomCacheablePolicy(Cacheable custom, CacheabilityResolver resolver) {
     JedisAsserts.notNull(custom, "custom");
@@ -25,16 +26,17 @@ class CustomCacheablePolicy implements Cacheable {
     this.custom = custom;
   }
 
-  /**
-   * Determines whether the given command with the specified keys is cacheable according to the
-   * custom policy, taking into account per-command overrides.
-   */
   @Override
   public boolean isCacheable(ProtocolCommand command, List<Object> keys) {
+    return custom.isCacheable(command, keys);
+  }
+
+  @Override
+  public boolean isCacheable(CommandObject<?> commandObject) {
     // here we are applying only the custom one on purpose to keep the same behavior as before
     // we will replace the logic to not let custom cacheable to override the resolver when command
     // is not eligible.
     // DefaultCacheable deprecated as initial step towards the behaviour change.
-    return custom.isCacheable(command, keys);
+    return custom.isCacheable(commandObject);
   }
 }

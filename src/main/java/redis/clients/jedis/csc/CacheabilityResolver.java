@@ -54,52 +54,7 @@ class CacheabilityResolver implements Cacheable {
     BloomFilterCommand.values(), CuckooFilterCommand.values(), CountMinSketchCommand.values(),
     TopKCommand.values(), TDigestCommand.values());
 
-  public static Cacheable DEFAULT_RESOLVER = new CacheabilityResolver(new MetadataResolver());
-
-  /**
-   * A pipe-merged {@code PARENT|CHILD} command. Value-equal by its raw bytes, so any two
-   * {@link CommandArguments} built from the same command and subcommand produce interchangeable map
-   * keys.
-   */
-  static final class ProtocolSubcommand implements ProtocolCommand {
-
-    private final byte[] raw;
-    private final int hashCode;
-
-    ProtocolSubcommand(ProtocolCommand command, Keyword subcommand) {
-      byte[] cmdBytes = command.getRaw();
-      byte[] subBytes = subcommand.getRaw();
-
-      byte[] merged = new byte[cmdBytes.length + 1 + subBytes.length];
-      System.arraycopy(cmdBytes, 0, merged, 0, cmdBytes.length);
-      merged[cmdBytes.length] = '|';
-      System.arraycopy(subBytes, 0, merged, cmdBytes.length + 1, subBytes.length);
-
-      this.raw = merged;
-      this.hashCode = Arrays.hashCode(raw);
-    }
-
-    @Override
-    public byte[] getRaw() {
-      return raw;
-    }
-
-    @Override
-    public int hashCode() {
-      return hashCode;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (!(obj instanceof ProtocolCommand)) {
-        return false;
-      }
-      return Arrays.equals(raw, ((ProtocolCommand) obj).getRaw());
-    }
-  }
+  static final Cacheable DEFAULT_RESOLVER = new CacheabilityResolver(new MetadataResolver());
 
   private final MetadataResolver metadataResolver;
   private final Set<ProtocolCommand> excludedCommands;
@@ -126,20 +81,33 @@ class CacheabilityResolver implements Cacheable {
     this.fallback = fallback;
   }
 
+  /**
+   * Judges by the given command only; a declared subcommand is not visible through this signature.
+   * Prefer {@link #isCacheable(CommandObject)}, which judges container subcommands by their own
+   * metadata.
+   */
   @Override
   public boolean isCacheable(ProtocolCommand command, List<Object> keys) {
-    throw new UnsupportedOperationException("Use isCacheable(CommandObject) instead");
+    Boolean verdict = cacheabilityMap.get(command);
+    if (verdict == null && fallback != null) {
+      verdict = fallback.isCacheable(command, keys);
+    }
+    if (verdict == null) {
+      logUnknownCommandName(command);
+      return false;
+    }
+    return verdict;
   }
 
   @Override
   public boolean isCacheable(CommandObject<?> commandObject) {
-    ProtocolCommand protocolCommand = getWithSubcommand(commandObject.getArguments());
-    Boolean verdict = cacheabilityMap.get(protocolCommand);
+    ProtocolCommand command = getWithSubcommand(commandObject.getArguments());
+    Boolean verdict = cacheabilityMap.get(command);
     if (verdict == null && fallback != null) {
       verdict = fallback.isCacheable(commandObject);
     }
     if (verdict == null) {
-      logUnknownCommandName(protocolCommand);
+      logUnknownCommandName(command);
       return false;
     }
     return verdict;
@@ -149,7 +117,9 @@ class CacheabilityResolver implements Cacheable {
     if (commandArguments.getSubcommand() == null) {
       return commandArguments.getCommand();
     }
-    return new ProtocolSubcommand(commandArguments.getCommand(), commandArguments.getSubcommand());
+
+    return ProtocolSubcommand.getSubcommand(commandArguments.getCommand(),
+      commandArguments.getSubcommand());
   }
 
   private void logUnknownCommandName(ProtocolCommand command) {
@@ -177,7 +147,7 @@ class CacheabilityResolver implements Cacheable {
         if (metadata != null) {
           cacheabilityMap.put(command, isClientSideCacheable(metadata));
           metadata.getSubcommands().forEach(sub -> cacheabilityMap
-              .put(new ProtocolSubCommand(sub.getName()), isClientSideCacheable(sub)));
+              .put(new ProtocolSubcommand(sub.getName()), isClientSideCacheable(sub)));
 
         }
       }
@@ -193,17 +163,59 @@ class CacheabilityResolver implements Cacheable {
         CommandMetadata metadata = metadataResolver.resolve(toString(protocolCommand));
         if (metadata != null) {
           metadata.getSubcommands()
-              .forEach(sub -> cacheabilityMap.put(new ProtocolSubCommand(sub.getName()), false));
+              .forEach(sub -> cacheabilityMap.put(new ProtocolSubcommand(sub.getName()), false));
         }
       }
     }
   }
 
-  private static class ProtocolSubCommand implements ProtocolCommand {
-    private final byte[] raw;
+  /**
+   * A pipe-merged {@code PARENT|CHILD} command. Value-equal by its raw bytes, so an instance built
+   * from a metadata name and one built from a command plus declared subcommand produce
+   * interchangeable map keys.
+   */
+  private static final class ProtocolSubcommand implements ProtocolCommand {
 
-    ProtocolSubCommand(String name) {
-      this.raw = SafeEncoder.encode(name);
+    /**
+     * Merged {@code PARENT|CHILD} instances memoized per (command, subcommand) pair, so the hot
+     * path builds each merged command once instead of on every lookup. Bounded to Jedis' own
+     * command enums; foreign {@link ProtocolCommand} implementations are merged per call to keep
+     * the cache from growing without limit.
+     */
+    private static Map<ProtocolCommand, Map<Keyword, ProtocolSubcommand>> mergedCommands = new ConcurrentHashMap<>();
+
+    private final byte[] raw;
+    private final int hashCode;
+
+    ProtocolSubcommand(String name) {
+      this(SafeEncoder.encode(name));
+    }
+
+    public static ProtocolCommand getSubcommand(ProtocolCommand command, Keyword subcommand) {
+      // this is guarding against the case where a foreign ProtocolCommand implementation is passed
+      // in, which we don't want to cache forever
+      if (!(command instanceof Enum)) {
+        return new ProtocolSubcommand(command, subcommand);
+      }
+      return mergedCommands.computeIfAbsent(command, c -> new ConcurrentHashMap<>())
+          .computeIfAbsent(subcommand, s -> new ProtocolSubcommand(command, s));
+    }
+
+    ProtocolSubcommand(ProtocolCommand command, Keyword subcommand) {
+      this(mergeWithPipe(command.getRaw(), subcommand.getRaw()));
+    }
+
+    private ProtocolSubcommand(byte[] raw) {
+      this.raw = raw;
+      this.hashCode = Arrays.hashCode(raw);
+    }
+
+    private static byte[] mergeWithPipe(byte[] cmdBytes, byte[] subBytes) {
+      byte[] merged = new byte[cmdBytes.length + 1 + subBytes.length];
+      System.arraycopy(cmdBytes, 0, merged, 0, cmdBytes.length);
+      merged[cmdBytes.length] = '|';
+      System.arraycopy(subBytes, 0, merged, cmdBytes.length + 1, subBytes.length);
+      return merged;
     }
 
     @Override
@@ -213,7 +225,7 @@ class CacheabilityResolver implements Cacheable {
 
     @Override
     public int hashCode() {
-      return Arrays.hashCode(raw);
+      return hashCode;
     }
 
     @Override

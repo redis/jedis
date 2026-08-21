@@ -54,7 +54,7 @@ import redis.clients.jedis.util.SafeEncoder;
  *
  * <pre>
  * mvn -q test-compile exec:java -Dexec.classpathScope=test \
- *     -Dexec.mainClass=redis.clients.jedis.csc.CommandMetadataUtil \
+ *     -Dexec.mainClass=redis.clients.jedis.CommandMetadataUtil \
  *     -Dexec.args="-remote:localhost:6379 -user:default -auth:secret"
  * </pre>
  *

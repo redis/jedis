@@ -14,7 +14,7 @@ public class DefaultCache extends AbstractCache {
     }
 
     protected DefaultCache(int maximumSize, Map<CacheKey, CacheEntry> map) {
-        this(maximumSize, map, DefaultCacheable.INSTANCE, new LRUEviction(maximumSize));
+        this(maximumSize, map, CacheabilityResolver.DEFAULT_RESOLVER, new LRUEviction(maximumSize));
     }
 
     protected DefaultCache(int maximumSize, Cacheable cacheable) {

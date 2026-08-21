@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.util.*;
 
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.args.Rawable;
@@ -36,6 +37,8 @@ public class CommandArguments implements Iterable<Rawable> {
 
   private boolean blocking;
 
+  private final ProtocolCommand fullCommand;
+
   private CommandArguments() {
     throw new InstantiationError();
   }
@@ -43,13 +46,77 @@ public class CommandArguments implements Iterable<Rawable> {
   public CommandArguments(ProtocolCommand command) {
     args = new ArrayList<>();
     args.add(command);
+    fullCommand = command;
 
     keys = new ArrayList<>(DEFAULT_KEYS_CAPACITY);
     cachedHashSlots = null;
   }
 
+  public CommandArguments(ProtocolCommand command, Keyword subcommand) {
+    args = new ArrayList<>();
+    args.add(command);
+    args.add(subcommand);
+    fullCommand = mergeWithPipe(command, subcommand);
+
+    keys = new ArrayList<>(DEFAULT_KEYS_CAPACITY);
+    cachedHashSlots = null;
+  }
+
+  private ProtocolCommand mergeWithPipe(ProtocolCommand command, Keyword subcommand) {
+    byte[] cmdBytes = command.getRaw();
+    byte[] subBytes = subcommand.getRaw();
+
+    byte[] merged = new byte[cmdBytes.length + 1 + subBytes.length];
+    System.arraycopy(cmdBytes, 0, merged, 0, cmdBytes.length);
+    merged[cmdBytes.length] = '|';
+    System.arraycopy(subBytes, 0, merged, cmdBytes.length + 1, subBytes.length);
+
+    return new MergedProtocolCommand(merged);
+  }
+
+  /**
+   * A pipe-merged {@code PARENT|CHILD} command. Value-equal by its raw bytes, so any two
+   * {@link CommandArguments} built from the same command and subcommand produce interchangeable
+   * map keys.
+   */
+  private static final class MergedProtocolCommand implements ProtocolCommand {
+
+    private final byte[] raw;
+    private final int hashCode;
+
+    MergedProtocolCommand(byte[] raw) {
+      this.raw = raw;
+      this.hashCode = Arrays.hashCode(raw);
+    }
+
+    @Override
+    public byte[] getRaw() {
+      return raw;
+    }
+
+    @Override
+    public int hashCode() {
+      return hashCode;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+      if (this == obj) {
+        return true;
+      }
+      if (!(obj instanceof ProtocolCommand)) {
+        return false;
+      }
+      return Arrays.equals(raw, ((ProtocolCommand) obj).getRaw());
+    }
+  }
+
   public ProtocolCommand getCommand() {
     return (ProtocolCommand) args.get(0);
+  }
+
+  public ProtocolCommand getFullCommand() {
+    return fullCommand;
   }
 
   @Experimental

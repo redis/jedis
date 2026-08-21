@@ -32,6 +32,6 @@ public class CacheKey<T> {
   }
 
   public ProtocolCommand getRedisCommand() {
-    return command.getArguments().getCommand();
+    return command.getArguments().getFullCommand();
   }
 }

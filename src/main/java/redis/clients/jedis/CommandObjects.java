@@ -62,6 +62,10 @@ public class CommandObjects {
     this.keyPreProcessor = keyPreProcessor;
   }
 
+  protected CommandArguments commandArguments(ProtocolCommand command, Keyword subcommand) {
+    return new CommandArguments(command, subcommand);
+  }
+
   protected CommandArguments commandArguments(ProtocolCommand command) {
     CommandArguments comArgs = new CommandArguments(command);
     if (keyPreProcessor != null) comArgs.setKeyArgumentPreProcessor(keyPreProcessor);
@@ -3193,56 +3197,56 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> xgroupCreate(String key, String groupName, StreamEntryID id, boolean makeStream) {
-    CommandArguments args = commandArguments(XGROUP).add(CREATE).key(key)
+    CommandArguments args = commandArguments(XGROUP, CREATE).key(key)
         .add(groupName).add(id == null ? "0-0" : id);
     if (makeStream) args.add(MKSTREAM);
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
   public final CommandObject<String> xgroupSetID(String key, String groupName, StreamEntryID id) {
-    return new CommandObject<>(commandArguments(XGROUP).add(SETID)
+    return new CommandObject<>(commandArguments(XGROUP, SETID)
         .key(key).add(groupName).add(id), BuilderFactory.STRING);
   }
 
   public final CommandObject<Long> xgroupDestroy(String key, String groupName) {
-    return new CommandObject<>(commandArguments(XGROUP).add(DESTROY)
+    return new CommandObject<>(commandArguments(XGROUP, DESTROY)
         .key(key).add(groupName), BuilderFactory.LONG);
   }
 
   public final CommandObject<Boolean> xgroupCreateConsumer(String key, String groupName, String consumerName) {
-    return new CommandObject<>(commandArguments(XGROUP).add(CREATECONSUMER)
+    return new CommandObject<>(commandArguments(XGROUP, CREATECONSUMER)
         .key(key).add(groupName).add(consumerName), BuilderFactory.BOOLEAN);
   }
 
   public final CommandObject<Long> xgroupDelConsumer(String key, String groupName, String consumerName) {
-    return new CommandObject<>(commandArguments(XGROUP).add(DELCONSUMER)
+    return new CommandObject<>(commandArguments(XGROUP, DELCONSUMER)
         .key(key).add(groupName).add(consumerName), BuilderFactory.LONG);
   }
 
   public final CommandObject<String> xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream) {
-    CommandArguments args = commandArguments(XGROUP).add(CREATE).key(key)
+    CommandArguments args = commandArguments(XGROUP, CREATE).key(key)
         .add(groupName).add(id);
     if (makeStream) args.add(MKSTREAM);
     return new CommandObject<>(args, BuilderFactory.STRING);
   }
 
   public final CommandObject<String> xgroupSetID(byte[] key, byte[] groupName, byte[] id) {
-    return new CommandObject<>(commandArguments(XGROUP).add(SETID)
+    return new CommandObject<>(commandArguments(XGROUP, SETID)
         .key(key).add(groupName).add(id), BuilderFactory.STRING);
   }
 
   public final CommandObject<Long> xgroupDestroy(byte[] key, byte[] groupName) {
-    return new CommandObject<>(commandArguments(XGROUP).add(DESTROY)
+    return new CommandObject<>(commandArguments(XGROUP, DESTROY)
         .key(key).add(groupName), BuilderFactory.LONG);
   }
 
   public final CommandObject<Boolean> xgroupCreateConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
-    return new CommandObject<>(commandArguments(XGROUP).add(CREATECONSUMER)
+    return new CommandObject<>(commandArguments(XGROUP, CREATECONSUMER)
         .key(key).add(groupName).add(consumerName), BuilderFactory.BOOLEAN);
   }
 
   public final CommandObject<Long> xgroupDelConsumer(byte[] key, byte[] groupName, byte[] consumerName) {
-    return new CommandObject<>(commandArguments(XGROUP).add(DELCONSUMER)
+    return new CommandObject<>(commandArguments(XGROUP, DELCONSUMER)
         .key(key).add(groupName).add(consumerName), BuilderFactory.LONG);
   }
   public final CommandObject<Long> xdel(String key, StreamEntryID... ids) {
@@ -3370,35 +3374,35 @@ public class CommandObjects {
   }
 
   public final CommandObject<StreamInfo> xinfoStream(String key) {
-    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key), BuilderFactory.STREAM_INFO);
+    return new CommandObject<>(commandArguments(XINFO, STREAM).key(key), BuilderFactory.STREAM_INFO);
   }
 
   public final CommandObject<Object> xinfoStream(byte[] key) {
-    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key), BuilderFactory.RAW_OBJECT);
+    return new CommandObject<>(commandArguments(XINFO, STREAM).key(key), BuilderFactory.RAW_OBJECT);
   }
 
   public final CommandObject<StreamFullInfo> xinfoStreamFull(String key) {
-    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL), BuilderFactory.STREAM_FULL_INFO);
+    return new CommandObject<>(commandArguments(XINFO, STREAM).key(key).add(FULL), BuilderFactory.STREAM_FULL_INFO);
   }
 
   public final CommandObject<StreamFullInfo> xinfoStreamFull(String key, int count) {
-    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL).add(COUNT).add(count), BuilderFactory.STREAM_FULL_INFO);
+    return new CommandObject<>(commandArguments(XINFO, STREAM).key(key).add(FULL).add(COUNT).add(count), BuilderFactory.STREAM_FULL_INFO);
   }
 
   public final CommandObject<Object> xinfoStreamFull(byte[] key, int count) {
-    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL).add(COUNT).add(count), BuilderFactory.RAW_OBJECT);
+    return new CommandObject<>(commandArguments(XINFO, STREAM).key(key).add(FULL).add(COUNT).add(count), BuilderFactory.RAW_OBJECT);
   }
 
   public final CommandObject<Object> xinfoStreamFull(byte[] key) {
-    return new CommandObject<>(commandArguments(XINFO).add(STREAM).key(key).add(FULL), BuilderFactory.RAW_OBJECT);
+    return new CommandObject<>(commandArguments(XINFO, STREAM).key(key).add(FULL), BuilderFactory.RAW_OBJECT);
   }
 
   public final CommandObject<List<StreamGroupInfo>> xinfoGroups(String key) {
-    return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.STREAM_GROUP_INFO_LIST);
+    return new CommandObject<>(commandArguments(XINFO, GROUPS).key(key), BuilderFactory.STREAM_GROUP_INFO_LIST);
   }
 
   public final CommandObject<List<Object>> xinfoGroups(byte[] key) {
-    return new CommandObject<>(commandArguments(XINFO).add(GROUPS).key(key), BuilderFactory.RAW_OBJECT_LIST);
+    return new CommandObject<>(commandArguments(XINFO, GROUPS).key(key), BuilderFactory.RAW_OBJECT_LIST);
   }
 
   /**
@@ -3406,15 +3410,15 @@ public class CommandObjects {
    */
   @Deprecated
   public final CommandObject<List<StreamConsumersInfo>> xinfoConsumers(String key, String group) {
-    return new CommandObject<>(commandArguments(XINFO).add(CONSUMERS).key(key).add(group), BuilderFactory.STREAM_CONSUMERS_INFO_LIST);
+    return new CommandObject<>(commandArguments(XINFO, CONSUMERS).key(key).add(group), BuilderFactory.STREAM_CONSUMERS_INFO_LIST);
   }
 
   public final CommandObject<List<StreamConsumerInfo>> xinfoConsumers2(String key, String group) {
-    return new CommandObject<>(commandArguments(XINFO).add(CONSUMERS).key(key).add(group), BuilderFactory.STREAM_CONSUMER_INFO_LIST);
+    return new CommandObject<>(commandArguments(XINFO, CONSUMERS).key(key).add(group), BuilderFactory.STREAM_CONSUMER_INFO_LIST);
   }
 
   public final CommandObject<List<Object>> xinfoConsumers(byte[] key, byte[] group) {
-    return new CommandObject<>(commandArguments(XINFO).add(CONSUMERS).key(key).add(group), BuilderFactory.RAW_OBJECT_LIST);
+    return new CommandObject<>(commandArguments(XINFO, CONSUMERS).key(key).add(group), BuilderFactory.RAW_OBJECT_LIST);
   }
 
   public final CommandObject<List<Map.Entry<String, List<StreamEntry>>>> xread(
@@ -3718,35 +3722,35 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> scriptLoad(String script) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(LOAD).add(script), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(SCRIPT, LOAD).add(script), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> scriptLoad(String script, String sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(LOAD).add(script).addHashSlotKey(sampleKey), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(SCRIPT, LOAD).add(script).addHashSlotKey(sampleKey), BuilderFactory.STRING);
   }
 
-  private final CommandObject<String> SCRIPT_FLUSH_COMMAND_OBJECT = new CommandObject<>(commandArguments(SCRIPT).add(FLUSH), BuilderFactory.STRING);
+  private final CommandObject<String> SCRIPT_FLUSH_COMMAND_OBJECT = new CommandObject<>(commandArguments(SCRIPT, FLUSH), BuilderFactory.STRING);
 
   public final CommandObject<String> scriptFlush() {
     return SCRIPT_FLUSH_COMMAND_OBJECT;
   }
 
   public final CommandObject<String> scriptFlush(String sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).addHashSlotKey(sampleKey), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(SCRIPT, FLUSH).addHashSlotKey(sampleKey), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> scriptFlush(String sampleKey, FlushMode flushMode) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).add(flushMode).addHashSlotKey(sampleKey), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(SCRIPT, FLUSH).add(flushMode).addHashSlotKey(sampleKey), BuilderFactory.STRING);
   }
 
-  private final CommandObject<String> SCRIPT_KILL_COMMAND_OBJECT = new CommandObject<>(commandArguments(SCRIPT).add(KILL), BuilderFactory.STRING);
+  private final CommandObject<String> SCRIPT_KILL_COMMAND_OBJECT = new CommandObject<>(commandArguments(SCRIPT, KILL), BuilderFactory.STRING);
 
   public final CommandObject<String> scriptKill() {
     return SCRIPT_KILL_COMMAND_OBJECT;
   }
 
   public final CommandObject<String> scriptKill(String sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(KILL).addHashSlotKey(sampleKey), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(SCRIPT, KILL).addHashSlotKey(sampleKey), BuilderFactory.STRING);
   }
 
   public final CommandObject<List<Boolean>> scriptExists(byte[] sampleKey, byte[]... sha1s) {
@@ -3755,19 +3759,19 @@ public class CommandObjects {
   }
 
   public final CommandObject<byte[]> scriptLoad(byte[] script, byte[] sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(LOAD).add(script).addHashSlotKey(sampleKey), BuilderFactory.BINARY);
+    return new CommandObject<>(commandArguments(SCRIPT, LOAD).add(script).addHashSlotKey(sampleKey), BuilderFactory.BINARY);
   }
 
   public final CommandObject<String> scriptFlush(byte[] sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).addHashSlotKey(sampleKey), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(SCRIPT, FLUSH).addHashSlotKey(sampleKey), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> scriptFlush(byte[] sampleKey, FlushMode flushMode) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(FLUSH).add(flushMode).addHashSlotKey(sampleKey), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(SCRIPT, FLUSH).add(flushMode).addHashSlotKey(sampleKey), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> scriptKill(byte[] sampleKey) {
-    return new CommandObject<>(commandArguments(SCRIPT).add(KILL).addHashSlotKey(sampleKey), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(SCRIPT, KILL).addHashSlotKey(sampleKey), BuilderFactory.STRING);
   }
 
   private final CommandObject<String> SLOWLOG_RESET_COMMAND_OBJECT
@@ -3808,53 +3812,53 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> functionDelete(String libraryName) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(DELETE).add(libraryName), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(FUNCTION, DELETE).add(libraryName), BuilderFactory.STRING);
   }
 
   public final CommandObject<List<LibraryInfo>> functionList() {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LIST), LibraryInfo.LIBRARY_INFO_LIST);
+    return new CommandObject<>(commandArguments(FUNCTION, LIST), LibraryInfo.LIBRARY_INFO_LIST);
   }
 
   public final CommandObject<List<LibraryInfo>> functionList(String libraryNamePattern) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME)
+    return new CommandObject<>(commandArguments(FUNCTION, LIST).add(LIBRARYNAME)
         .add(libraryNamePattern), LibraryInfo.LIBRARY_INFO_LIST);
   }
 
   public final CommandObject<List<LibraryInfo>> functionListWithCode() {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(WITHCODE), LibraryInfo.LIBRARY_INFO_LIST);
+    return new CommandObject<>(commandArguments(FUNCTION, LIST).add(WITHCODE), LibraryInfo.LIBRARY_INFO_LIST);
   }
 
   public final CommandObject<List<LibraryInfo>> functionListWithCode(String libraryNamePattern) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME)
+    return new CommandObject<>(commandArguments(FUNCTION, LIST).add(LIBRARYNAME)
         .add(libraryNamePattern).add(WITHCODE), LibraryInfo.LIBRARY_INFO_LIST);
   }
 
   public final CommandObject<String> functionLoad(String functionCode) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(functionCode), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(FUNCTION, LOAD).add(functionCode), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> functionLoadReplace(String functionCode) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(REPLACE).add(functionCode), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(FUNCTION, LOAD).add(REPLACE).add(functionCode), BuilderFactory.STRING);
   }
 
   public final CommandObject<FunctionStats> functionStats() {
-    return new CommandObject<>(commandArguments(FUNCTION).add(STATS), FunctionStats.FUNCTION_STATS_BUILDER);
+    return new CommandObject<>(commandArguments(FUNCTION, STATS), FunctionStats.FUNCTION_STATS_BUILDER);
   }
 
   public final CommandObject<Object> functionStatsBinary() {
-    return new CommandObject<>(commandArguments(FUNCTION).add(STATS), BuilderFactory.RAW_OBJECT);
+    return new CommandObject<>(commandArguments(FUNCTION, STATS), BuilderFactory.RAW_OBJECT);
   }
 
   public final CommandObject<String> functionFlush() {
-    return new CommandObject<>(commandArguments(FUNCTION).add(FLUSH), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(FUNCTION, FLUSH), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> functionFlush(FlushMode mode) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(FLUSH).add(mode), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(FUNCTION, FLUSH).add(mode), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> functionKill() {
-    return new CommandObject<>(commandArguments(FUNCTION).add(KILL), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(FUNCTION, KILL), BuilderFactory.STRING);
   }
 
   public final CommandObject<Object> fcall(byte[] name, List<byte[]> keys, List<byte[]> args) {
@@ -3868,7 +3872,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> functionDelete(byte[] libraryName) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(DELETE).add(libraryName), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(FUNCTION, DELETE).add(libraryName), BuilderFactory.STRING);
   }
 
   public final CommandObject<byte[]> functionDump() {
@@ -3876,29 +3880,29 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<Object>> functionListBinary() {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LIST), BuilderFactory.RAW_OBJECT_LIST);
+    return new CommandObject<>(commandArguments(FUNCTION, LIST), BuilderFactory.RAW_OBJECT_LIST);
   }
 
   public final CommandObject<List<Object>> functionList(byte[] libraryNamePattern) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME)
+    return new CommandObject<>(commandArguments(FUNCTION, LIST).add(LIBRARYNAME)
         .add(libraryNamePattern), BuilderFactory.RAW_OBJECT_LIST);
   }
 
   public final CommandObject<List<Object>> functionListWithCodeBinary() {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(WITHCODE), BuilderFactory.RAW_OBJECT_LIST);
+    return new CommandObject<>(commandArguments(FUNCTION, LIST).add(WITHCODE), BuilderFactory.RAW_OBJECT_LIST);
   }
 
   public final CommandObject<List<Object>> functionListWithCode(byte[] libraryNamePattern) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LIST).add(LIBRARYNAME).
+    return new CommandObject<>(commandArguments(FUNCTION, LIST).add(LIBRARYNAME).
         add(libraryNamePattern).add(WITHCODE), BuilderFactory.RAW_OBJECT_LIST);
   }
 
   public final CommandObject<String> functionLoad(byte[] functionCode) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(functionCode), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(FUNCTION, LOAD).add(functionCode), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> functionLoadReplace(byte[] functionCode) {
-    return new CommandObject<>(commandArguments(FUNCTION).add(LOAD).add(REPLACE).add(functionCode), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(FUNCTION, LOAD).add(REPLACE).add(functionCode), BuilderFactory.STRING);
   }
 
   public final CommandObject<String> functionRestore(byte[] serializedValue) {
@@ -3966,51 +3970,51 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> memoryUsage(String key) {
-    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(MEMORY, USAGE).key(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> memoryUsage(String key, int samples) {
-    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key).add(SAMPLES).add(samples), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(MEMORY, USAGE).key(key).add(SAMPLES).add(samples), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> memoryUsage(byte[] key) {
-    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(MEMORY, USAGE).key(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> memoryUsage(byte[] key, int samples) {
-    return new CommandObject<>(commandArguments(MEMORY).add(USAGE).key(key).add(SAMPLES).add(samples), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(MEMORY, USAGE).key(key).add(SAMPLES).add(samples), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> objectRefcount(String key) {
-    return new CommandObject<>(commandArguments(OBJECT).add(REFCOUNT).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(OBJECT, REFCOUNT).key(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<String> objectEncoding(String key) {
-    return new CommandObject<>(commandArguments(OBJECT).add(ENCODING).key(key), BuilderFactory.STRING);
+    return new CommandObject<>(commandArguments(OBJECT, ENCODING).key(key), BuilderFactory.STRING);
   }
 
   public final CommandObject<Long> objectIdletime(String key) {
-    return new CommandObject<>(commandArguments(OBJECT).add(IDLETIME).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(OBJECT, IDLETIME).key(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> objectFreq(String key) {
-    return new CommandObject<>(commandArguments(OBJECT).add(FREQ).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(OBJECT, FREQ).key(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> objectRefcount(byte[] key) {
-    return new CommandObject<>(commandArguments(OBJECT).add(REFCOUNT).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(OBJECT, REFCOUNT).key(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<byte[]> objectEncoding(byte[] key) {
-    return new CommandObject<>(commandArguments(OBJECT).add(ENCODING).key(key), BuilderFactory.BINARY);
+    return new CommandObject<>(commandArguments(OBJECT, ENCODING).key(key), BuilderFactory.BINARY);
   }
 
   public final CommandObject<Long> objectIdletime(byte[] key) {
-    return new CommandObject<>(commandArguments(OBJECT).add(IDLETIME).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(OBJECT, IDLETIME).key(key), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> objectFreq(byte[] key) {
-    return new CommandObject<>(commandArguments(OBJECT).add(FREQ).key(key), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(OBJECT, FREQ).key(key), BuilderFactory.LONG);
   }
 
   public CommandObject<Long> waitReplicas(int replicas, long timeout) {

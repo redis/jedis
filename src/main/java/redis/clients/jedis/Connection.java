@@ -195,12 +195,10 @@ public class Connection implements Closeable {
    * Marks whether a pub/sub read loop is currently driving this connection. Set by the
    * pub/sub implementations around their subscribe/process loop.
    */
-  @Internal
   void setActiveSubscription(boolean active) {
     this.activeSubscription = active;
   }
 
-  @Internal
   boolean isActiveSubscription() {
     return activeSubscription;
   }

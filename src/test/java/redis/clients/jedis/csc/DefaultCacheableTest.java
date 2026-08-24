@@ -37,7 +37,7 @@ public class DefaultCacheableTest {
         CuckooFilterCommand.COUNT, CountMinSketchCommand.QUERY, TopKCommand.QUERY,
         TDigestCommand.QUANTILE, Command.VSIM, Command.ARGET,
         // added once metadata replaced the hand-written list
-        Command.DIGEST, Command.EXPIRETIME, Command.PFCOUNT, Command.SINTERCARD, Command.SORT_RO,
+        Command.DIGEST, Command.EXPIRETIME, Command.PFCOUNT, Command.SINTERCARD,
         Command.ZDIFF, Command.ZINTERCARD, Command.ZUNION };
   }
 
@@ -57,6 +57,8 @@ public class DefaultCacheableTest {
         Command.XREAD,
         // metadata gaps overridden on the client side
         Command.TOUCH, Command.VRANDMEMBER,
+        // BY/GET pattern keys are invisible to invalidation tracking
+        Command.SORT_RO,
         // container commands: cannot be told apart from their non-cacheable subcommands
         Command.XINFO, Command.MEMORY };
   }

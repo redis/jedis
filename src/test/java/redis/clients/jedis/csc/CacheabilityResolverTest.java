@@ -242,6 +242,24 @@ public class CacheabilityResolverTest {
       cacheKey(new CommandArguments(Command.SET).key("k").add("v"))));
   }
 
+  /** Exclusions normalize to the canonical map key, so custom ProtocolCommand instances work. */
+  @Test
+  public void exclusionsWorkForCustomProtocolCommandInstances() {
+    ProtocolCommand rawGet = () -> SafeEncoder.encode("GET");
+    Cacheable cacheable = new CacheabilityResolver(new MetadataResolver(),
+        Collections.singleton(rawGet), null);
+    assertFalse(cacheable.isCacheable(Command.GET, Collections.emptyList()));
+    // other commands keep their metadata verdict
+    assertTrue(cacheable.isCacheable(Command.MGET, Collections.emptyList()));
+  }
+
+  /** SORT_RO replies depend on BY/GET pattern keys that invalidation cannot track. */
+  @Test
+  public void sortRoDeniedByMetadataFix() {
+    Cacheable resolver = new CacheabilityResolver(new MetadataResolver());
+    assertFalse(resolver.isCacheable(Command.SORT_RO, Collections.emptyList()));
+  }
+
   @Test
   public void nullMetadataResolverRejected() {
     assertThrows(NullPointerException.class, () -> new CacheabilityResolver(null));

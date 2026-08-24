@@ -5,10 +5,18 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.slf4j.LoggerFactory;
+
 import redis.clients.jedis.annots.Internal;
+import redis.clients.jedis.bloom.RedisBloomProtocol;
+import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.json.JsonProtocol;
+import redis.clients.jedis.search.SearchProtocol;
+import redis.clients.jedis.timeseries.TimeSeriesProtocol;
 
 /**
  * Shared command-metadata resolver: a lookup table of normalized Redis {@code COMMAND} metadata
@@ -53,7 +61,11 @@ public final class MetadataResolver {
       this.hasKeyNameSpec = hasKeyNameSpec;
     }
 
-    /** Copy of this metadata with the given space-separated tips added; everything else kept. */
+    /**
+     * Adds tips to the existing set, for commands whose server metadata is known to be incomplete.
+     * Applied as a later resolution step, so the server-provided flags, tips, and key metadata are
+     * otherwise respected.
+     */
     void additionalTips(String[] additionalTips) {
       Set<String> merged = new HashSet<>(tips);
       for (String tip : additionalTips) {
@@ -122,8 +134,8 @@ public final class MetadataResolver {
   /** Lazy singleton holder: the table is built on first use and shared by all instances. */
   private static final class CommandTable {
 
-    private static final Map<String, CommandMetadata> INSTANCE = seal(
-      applyKnownMetadataFixes(load()));
+    private static final Map<String, CommandMetadata> INSTANCE = init();
+    private static Exception INIT_FAILURE;
 
     private static Map<String, CommandMetadata> load() {
       String path = System.getenv(COMMAND_METADATA_PATH_ENV);
@@ -150,6 +162,20 @@ public final class MetadataResolver {
 
       return Collections.unmodifiableMap(map);
     }
+
+    private static Map<String, CommandMetadata> init() {
+      try {
+        Map<String, CommandMetadata> map = load();
+        map = applyKnownMetadataFixes(map);
+        return seal(map);
+      } catch (Exception e) {
+        INIT_FAILURE = e;
+        LoggerFactory.getLogger(MetadataResolver.class).error(
+          "Failed to load command metadata properly; command metadata is unavailable and all consumers relying on it will fail.",
+          e);
+      }
+      return null;
+    }
   }
 
   /**
@@ -165,11 +191,50 @@ public final class MetadataResolver {
     KNOWN_SERVER_METADATA_FIXES.put("TOUCH", new String[] { "dont_cache" });
     // random reply, but server metadata lacks the nondeterministic_output tip
     KNOWN_SERVER_METADATA_FIXES.put("VRANDMEMBER", new String[] { "nondeterministic_output" });
+    // BY/GET pattern keys are external to the declared keys ("unknown" key spec), so cached
+    // replies can never be invalidated when those keys change; deny until tracking covers them
+    KNOWN_SERVER_METADATA_FIXES.put("SORT_RO", new String[] { "dont_cache" });
   }
 
-  /** The effective command table, for same-package consumers such as the flags registrar. */
+  /**
+   * Every {@link ProtocolCommand} enum shipped by Jedis; extend when a new protocol enum is added.
+   * Single source of truth for all consumers (cacheability resolution, the metadata tool's mismatch
+   * report).
+   */
+  private static final List<ProtocolCommand[]> PROTOCOL_ENUMS = Arrays.asList(
+    Protocol.Command.values(), JsonProtocol.JsonCommand.values(),
+    SearchProtocol.SearchCommand.values(), TimeSeriesProtocol.TimeSeriesCommand.values(),
+    RedisBloomProtocol.BloomFilterCommand.values(), RedisBloomProtocol.CuckooFilterCommand.values(),
+    RedisBloomProtocol.CountMinSketchCommand.values(), RedisBloomProtocol.TopKCommand.values(),
+    RedisBloomProtocol.TDigestCommand.values());
+
+  /** All {@link ProtocolCommand} enums shipped by Jedis. */
+  @Internal
+  public static List<ProtocolCommand[]> protocolCommandEnums() {
+    return PROTOCOL_ENUMS;
+  }
+
+  /**
+   * The effective command table, for same-package consumers such as the flags registrar.
+   * @throws IllegalStateException when the command metadata failed to load (see the error logged at
+   *           first use); by design consumers must fail rather than run with wrong information
+   */
   static Map<String, CommandMetadata> commandTable() {
+    if (CommandTable.INSTANCE == null) {
+      throw new IllegalStateException("Command metadata is unavailable because loading it failed"
+          + " (typically a bad " + COMMAND_METADATA_PATH_ENV + " file; see the error logged at"
+          + " first use). Client-side caching and the command flags registry cannot operate"
+          + " without it.", CommandTable.INIT_FAILURE);
+    }
     return CommandTable.INSTANCE;
+  }
+
+  /**
+   * The known server metadata fixes (command name to the tips the fix adds), for same-package
+   * consumers such as the metadata tool's obsolescence check.
+   */
+  static Map<String, String[]> knownServerMetadataFixes() {
+    return Collections.unmodifiableMap(KNOWN_SERVER_METADATA_FIXES);
   }
 
   /** Freshly built generated table, independent of the configured metadata source. */
@@ -182,9 +247,13 @@ public final class MetadataResolver {
   public MetadataResolver() {
   }
 
-  /** @return metadata for the command, or {@code null} when the command is unknown */
+  /**
+   * @return metadata for the command, or {@code null} when the command is unknown
+   * @throws IllegalStateException when the command metadata failed to load (see the error logged at
+   *           first use); by design consumers must fail rather than run with wrong information
+   */
   public CommandMetadata resolve(String commandName) {
-    return CommandTable.INSTANCE.get(commandName);
+    return commandTable().get(commandName);
   }
 
   private static CommandMetadata add(Map<String, CommandMetadata> map, String name,

@@ -7,6 +7,7 @@ import java.nio.file.Path;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -51,7 +52,7 @@ final class MetadataReader {
    */
   private static CommandMetadata parse(String key, JSONObject command,
       Map<String, CommandMetadata> table) {
-    String name = key.toUpperCase();
+    String name = key.toUpperCase(Locale.ENGLISH);
     CommandMetadata metadata = new CommandMetadata(name, toSet(command, "flags"),
         toSet(command, "tips"), command.getLong("firstKey"), command.getLong("lastKey"),
         command.getLong("step"), hasKeyNameSpec(command.optJSONArray("keySpecs")));
@@ -72,7 +73,7 @@ final class MetadataReader {
     }
     Set<String> set = new HashSet<>(Math.max(4, values.length() * 2));
     for (int i = 0; i < values.length(); i++) {
-      set.add(values.getString(i).toLowerCase());
+      set.add(values.getString(i).toLowerCase(Locale.ENGLISH));
     }
     return set;
   }

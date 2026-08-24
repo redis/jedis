@@ -23,7 +23,9 @@ The policy is configured through `CacheConfig.Builder`:
   cacheable and logged once per command name.
 - `cacheable(...)` replaces the policy with a user-provided `Cacheable`; it cannot be combined
   with exclusions or a fallback. For now the custom policy alone decides, preserving pre-8.1
-  behavior; a later major release will let the default policy's denials take precedence.
+  behavior; a later major release will let the default policy's denials take precedence. Note
+  that `CacheConfig.getCacheable()` returns an internal wrapper in this case — do not rely on
+  identity with the instance you supplied.
 
 `DefaultCacheable` is deprecated; its verdicts now match the default policy.
 
@@ -65,14 +67,76 @@ obsolete).
 |---|---|---|
 | `TOUCH` | adds `dont_cache` | Excluded by design: mutates key idle time, and its reply is an existence count aggregated across shards. |
 | `VRANDMEMBER` | adds `nondeterministic_output` | Returns random elements, but unlike `SRANDMEMBER`, `ZRANDMEMBER` and `HRANDFIELD` it is not tagged. |
+| `SORT_RO` | adds `dont_cache` | `BY`/`GET` pattern keys are external to the declared keys, so cached replies could never be invalidated when those keys change. |
 
 `XREAD` no longer needs an override: the `blocking` flag rule excludes it.
+
+## Changes from the hand-maintained allowlist (Jedis 8.0)
+
+The metadata-derived policy changed some default verdicts compared to the allowlist shipped
+through Jedis 8.0:
+
+**No longer cached** (previously cacheable by default):
+
+| Command | Reason |
+|---|---|
+| `TS.INFO` | carries the `dont_cache` command tip |
+| `XPENDING` | carries the `nondeterministic_output` command tip |
+
+**Newly cached by default** (previously never cached): commands whose metadata proves they are
+read-only, keyed, and deterministic — including `SINTERCARD`, `ZDIFF`, `ZINTER`, `ZUNION`,
+`ZINTERCARD`, `EXPIRETIME`/`PEXPIRETIME`, `HEXPIRETIME`/`HPEXPIRETIME`, `PFCOUNT`, `DIGEST`,
+`FT.SUGGET`/`FT.SUGLEN`, the vector-set read commands (`VSIM`, `VCARD`, …), and the container
+subcommands `XINFO STREAM`, `XINFO GROUPS`, and `MEMORY USAGE`.
+
+If you relied on the old behavior, configure explicit policies via
+`CacheConfig.builder().excludeCommands(...)` (narrow the default set) or `cacheable(...)`
+(replace it).
+
+The following APIs are deprecated in favor of the metadata-derived policy:
+
+| Deprecated | Replacement |
+|---|---|
+| `DefaultCacheable` (class, `INSTANCE`, `isDefaultCacheableCommand`) | the built-in metadata-derived policy used automatically by `CacheConfig` |
+| `Cacheable.isCacheable(ProtocolCommand, List)` | `Cacheable.isCacheable(CommandObject)` (default method; sees declared subcommands) |
+| `CacheKey.getRedisCommand()` | `CacheKey.getCommandObject()` |
+| `AllowAndDenyListWithStringKeys` | `CacheConfig.builder().excludeCommands(...)` / a custom `Cacheable` |
+
+Existing `Cacheable` implementations keep working unchanged: the new `CommandObject` overload
+delegates to the old signature by default, receiving the container command (e.g. `XINFO`) as
+before. Override the new method if your policy should judge subcommands such as `XINFO STREAM`
+individually.
+
+## Regenerating
+
+Command flags and cluster request/response policies are populated from the same metadata table
+as cacheability, so regenerate it when targeting a new Redis release.
+
+`CommandMetadataUtil` (test sources) fetches `COMMAND INFO` from a live server and produces both
+`CommandMetadata.json` and the generated table of `MetadataResolver.java` (only the block between
+the `GENERATED-METADATA-BEGIN` / `GENERATED-METADATA-END` markers is replaced). When the server is
+unreachable, it falls back to the checked-in JSON and regenerates only the Java table. Mismatches
+between the Jedis command set and the server metadata are printed as warnings, including metadata
+fixes that have become obsolete.
+
+Run from the repository root against a server with all modules loaded:
+
+```sh
+mvn -q test-compile exec:java -Dexec.classpathScope=test \
+    -Dexec.mainClass=redis.clients.jedis.CommandMetadataUtil \
+    -Dexec.args="-remote:localhost:6379"
+```
+
+Optional arguments: `-auth:password`, `-user:username`.
 
 ## External metadata file
 
 Setting the `JEDIS_COMMAND_METADATA_PATH` environment variable to a JSON file with the
 `CommandMetadata.json` layout makes Jedis load its command metadata from that file instead of the
 built-in table — for example to apply metadata from a newer Redis release without rebuilding
-Jedis. The file is read and parsed once, lazily, on first use. A missing or malformed file fails
-fast with an `IllegalStateException`: an explicitly configured metadata source is never silently
-ignored. When the variable is not set, the built-in metadata is used.
+Jedis. The file is read and parsed once, lazily, on first use. A file that cannot be read is an
+error: it is logged with its cause and the command metadata is held as unavailable — an
+explicitly configured source is never silently replaced by the built-in table. Any use of
+client-side caching or the command-flags registry then fails with an `IllegalStateException`
+carrying the original load failure as its cause, so the application cannot keep running with a
+wrong set of command information. When the variable is not set, the built-in metadata is used.

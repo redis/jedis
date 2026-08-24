@@ -17,17 +17,8 @@ import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.MetadataResolver;
 import redis.clients.jedis.MetadataResolver.CommandMetadata;
-import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
-import redis.clients.jedis.bloom.RedisBloomProtocol.BloomFilterCommand;
-import redis.clients.jedis.bloom.RedisBloomProtocol.CountMinSketchCommand;
-import redis.clients.jedis.bloom.RedisBloomProtocol.CuckooFilterCommand;
-import redis.clients.jedis.bloom.RedisBloomProtocol.TDigestCommand;
-import redis.clients.jedis.bloom.RedisBloomProtocol.TopKCommand;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.json.JsonProtocol.JsonCommand;
-import redis.clients.jedis.search.SearchProtocol.SearchCommand;
-import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesCommand;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
@@ -46,15 +37,30 @@ class CacheabilityResolver implements Cacheable {
 
   private static final Logger logger = LoggerFactory.getLogger(CacheabilityResolver.class);
 
-  /**
-   * Every {@link ProtocolCommand} enum shipped by Jedis; extend when a new protocol enum is added.
-   */
-  private static final List<ProtocolCommand[]> PROTOCOL_ENUMS = Arrays.asList(Command.values(),
-    JsonCommand.values(), SearchCommand.values(), TimeSeriesCommand.values(),
-    BloomFilterCommand.values(), CuckooFilterCommand.values(), CountMinSketchCommand.values(),
-    TopKCommand.values(), TDigestCommand.values());
+  private static volatile CacheabilityResolver DEFAULT_RESOLVER = init();
+  private static Exception LOAD_FAILURE;
 
-  static final Cacheable DEFAULT_RESOLVER = new CacheabilityResolver(new MetadataResolver());
+  private static CacheabilityResolver init() {
+    try {
+      return new CacheabilityResolver(new MetadataResolver());
+    } catch (Exception e) {
+      LOAD_FAILURE = e;
+      return null;
+    }
+  }
+
+  /**
+   * The shared default policy, built lazily so a metadata-load failure surfaces as an
+   * {@link IllegalStateException} on every use instead of poisoning this class through a failed
+   * static initializer.
+   * @throws IllegalStateException when the command metadata failed to load
+   */
+  static CacheabilityResolver defaultResolver() {
+    if (DEFAULT_RESOLVER == null) {
+      throw new IllegalStateException("Failed to load command metadata", LOAD_FAILURE);
+    }
+    return DEFAULT_RESOLVER;
+  }
 
   private final MetadataResolver metadataResolver;
   private final Set<ProtocolCommand> excludedCommands;
@@ -141,29 +147,38 @@ class CacheabilityResolver implements Cacheable {
    */
   Map<ProtocolCommand, Boolean> resolve() {
     Map<ProtocolCommand, Boolean> cacheabilityMap = new HashMap<>();
-    for (ProtocolCommand[] values : PROTOCOL_ENUMS) {
+    Map<String, ProtocolCommand> canonicalCommands = new HashMap<>();
+    for (ProtocolCommand[] values : MetadataResolver.protocolCommandEnums()) {
       for (ProtocolCommand command : values) {
         CommandMetadata metadata = metadataResolver.resolve(toString(command));
         if (metadata != null) {
           cacheabilityMap.put(command, isClientSideCacheable(metadata));
-          metadata.getSubcommands().forEach(sub -> cacheabilityMap
-              .put(new ProtocolSubcommand(sub.getName()), isClientSideCacheable(sub)));
-
+          canonicalCommands.put(metadata.getName(), command);
+          metadata.getSubcommands().forEach(sub -> {
+            ProtocolSubcommand subcommand = new ProtocolSubcommand(sub.getName());
+            cacheabilityMap.put(subcommand, isClientSideCacheable(sub));
+            canonicalCommands.put(sub.getName(), subcommand);
+          });
         }
       }
     }
-    applyExclusions(cacheabilityMap);
+    applyExclusions(cacheabilityMap, canonicalCommands);
     return cacheabilityMap;
   }
 
-  private void applyExclusions(Map<ProtocolCommand, Boolean> cacheabilityMap) {
-    if (excludedCommands != null) {
-      for (ProtocolCommand protocolCommand : excludedCommands) {
+  private void applyExclusions(Map<ProtocolCommand, Boolean> cacheabilityMap,
+      Map<String, ProtocolCommand> canonicalCommands) {
+    if (excludedCommands == null) {
+      return;
+    }
+    for (ProtocolCommand protocolCommand : excludedCommands) {
+      if (cacheabilityMap.containsKey(protocolCommand)) {
         cacheabilityMap.put(protocolCommand, false);
-        CommandMetadata metadata = metadataResolver.resolve(toString(protocolCommand));
-        if (metadata != null) {
-          metadata.getSubcommands()
-              .forEach(sub -> cacheabilityMap.put(new ProtocolSubcommand(sub.getName()), false));
+      } else {
+        String command = toString(protocolCommand);
+        ProtocolCommand canonical = canonicalCommands.get(command);
+        if (canonical != null) {
+          cacheabilityMap.put(canonical, false);
         }
       }
     }
@@ -174,7 +189,7 @@ class CacheabilityResolver implements Cacheable {
    * from a metadata name and one built from a command plus declared subcommand produce
    * interchangeable map keys.
    */
-  private static final class ProtocolSubcommand implements ProtocolCommand {
+  static final class ProtocolSubcommand implements ProtocolCommand {
 
     /**
      * Merged {@code PARENT|CHILD} instances memoized per (command, subcommand) pair, so the hot
@@ -182,7 +197,7 @@ class CacheabilityResolver implements Cacheable {
      * command enums; foreign {@link ProtocolCommand} implementations are merged per call to keep
      * the cache from growing without limit.
      */
-    private static Map<ProtocolCommand, Map<Keyword, ProtocolSubcommand>> mergedCommands = new ConcurrentHashMap<>();
+    private static final Map<ProtocolCommand, Map<Keyword, ProtocolSubcommand>> mergedCommands = new ConcurrentHashMap<>();
 
     private final byte[] raw;
     private final int hashCode;
@@ -228,6 +243,13 @@ class CacheabilityResolver implements Cacheable {
       return hashCode;
     }
 
+    /**
+     * A command is identified by its raw wire bytes, so this compares equal to any
+     * {@link ProtocolCommand} with the same raw — regardless of the implementing class — the way
+     * {@code java.util.List} defines equality across implementations. Implementations with
+     * identity-based equality (enums, lambdas) cannot reciprocate; lookups probing with such
+     * instances resolve by their own semantics.
+     */
     @Override
     public boolean equals(Object obj) {
       if (this == obj) {

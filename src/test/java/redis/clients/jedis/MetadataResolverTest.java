@@ -81,8 +81,7 @@ public class MetadataResolverTest {
     // without a declared subcommand, the command resolves by its own name
     CommandArguments get = new CommandArguments(Command.GET).key("some-key");
     assertNull(get.getSubcommand());
-    assertEquals("GET",
-      resolver.resolve(SafeEncoder.encode(get.getCommand().getRaw())).getName());
+    assertEquals("GET", resolver.resolve(SafeEncoder.encode(get.getCommand().getRaw())).getName());
   }
 
   @Test

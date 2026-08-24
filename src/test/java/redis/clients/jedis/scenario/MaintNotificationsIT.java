@@ -12,6 +12,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Stream;
 
 import org.awaitility.core.ConditionTimeoutException;
@@ -30,8 +31,10 @@ import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.MaintNotificationsTestSupport;
+import redis.clients.jedis.MaintNotificationsTestSupport.ReceivedEvent;
 import redis.clients.jedis.MaintNotificationsTestSupport.ReceivedEvents;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.PushMessageTypes;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
 /**
@@ -64,6 +67,12 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
   static Stream<Scenario> noConnDropScenarios() {
     return CATALOG.effect(StandaloneEffect.DATA_MOVEMENT_NO_CONN_DROP).triggers().stream()
         .map(Trigger::scenario);
+  }
+
+  static Stream<Scenario> movingScenarios() {
+    // conn_drop/endpoint_rebind emits exactly [MOVING]
+    return Stream
+        .of(CATALOG.effect(StandaloneEffect.CONN_DROP).trigger("endpoint_rebind").scenario());
   }
 
   /**
@@ -103,6 +112,61 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
 
     // base restored behaviorally for non-blocking and blocking commands, in parallel
     assertProbesTimeOutAtBase("after close");
+    releasePinned();
+  }
+
+  /**
+   * T.1.2 Timeout Handling During Notifications — covers:
+   * <ul>
+   * <li>timeoutRelaxedOnMovingTest — send MOVING, send commands/traffic: commands complete without
+   * timeout during the grace period (no timeout exceptions during handoff).</li>
+   * <li>timeoutUnrelaxedAfterMovingDelayTest — wait for handoff completion, send commands/traffic:
+   * normal timeout behavior restored (timeout exceptions occur as expected).</li>
+   * </ul>
+   * MOVING has no closing notification: receiving it on any pool connection relaxes timeouts on all
+   * connections toward the affected node, until the MOVING ttl window expires.
+   */
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("movingScenarios")
+  @Timeout(300)
+  void timeoutRelaxedWithinMovingWindow(Scenario scenario) {
+    setUpDatabaseAndClient(scenario);
+    warmUpPool();
+    pinned = pinConnection();
+    ReceivedEvents received = MaintNotificationsTestSupport.record(pinned);
+
+    assertProbesTimeOutAtBase("baseline");
+
+    startEffect(scenario);
+
+    awaitPush(received::movingReceived, "MOVING", received);
+    ReceivedEvent moving = received.all().stream()
+        .filter(e -> PushMessageTypes.MOVING.equals(e.type)).findFirst().get();
+    assertEquals(RELAXED_TIMEOUT_MS, MaintNotificationsTestSupport.effectiveTimeoutMillis(pinned),
+      "MOVING must relax the observer socket timeout");
+
+    // pool-wide relaxation: the probes run on other pool connections (the pool recreates the
+    // retired ones toward the MOVING target) and must survive to the server delay
+    runProbes().join().forEach(probe -> assertProbeSucceededAtServerDelay(probe, received));
+
+    assertEquals(RELAXED_TIMEOUT_MS, MaintNotificationsTestSupport.effectiveTimeoutMillis(pinned),
+      "no closing notification: relaxation holds until the window expires");
+
+    // un-relaxation happens only by expiry of the MOVING ttl window
+    await().atMost(Duration.ofSeconds(moving.timeSeconds + 10)).pollInterval(Duration.ofMillis(100))
+        .until(() -> MaintNotificationsTestSupport
+            .effectiveTimeoutMillis(pinned) == CLIENT_SOCKET_TIMEOUT_MS);
+    long relaxedForMillis = (System.nanoTime() - moving.atNanos) / 1_000_000;
+    assertTrue(relaxedForMillis >= TimeUnit.SECONDS.toMillis(moving.timeSeconds) - 100,
+      "relaxation ended " + relaxedForMillis + " ms after MOVING, before its " + moving.timeSeconds
+          + " s window expired");
+
+    joinEffectThreads();
+    assertEffectSucceeded();
+
+    // the observer's socket toward the old endpoint may be dead after the rebind, so probe
+    // without pumping it
+    runProbes().join().forEach(probe -> assertProbeTimedOutAtBase(probe, "after expiry"));
     releasePinned();
   }
 

@@ -13,7 +13,6 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 
-import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.EnvCondition;
 
 import redis.clients.jedis.util.TestEnvUtil;
@@ -21,7 +20,6 @@ import redis.clients.jedis.util.TestEnvUtil;
 import java.io.IOException;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -88,17 +86,9 @@ public class UnavailableConnectionTest {
     threadForBrokenJedis1.join();
     assertFalse(threadForBrokenJedis1.isAlive());
     assertTrue(brokenJedis1.isBroken());
-    try {
-      brokenJedis1.close(); // we need capture/mock to test this properly
-    } catch (JedisException e) {
-      // Behavior change in commons-pool2 2.13.1: GenericObjectPool#invalidateObject now
-      // attempts to replace the invalidated instance, which fails when
-      // ConnectionFactory#makeObject() cannot reach the (unavailable) server. The
-      // underlying socket failure varies by environment (Connection refused / reset /
-      // etc.), so we only assert on the exception type.
-      assertInstanceOf(JedisConnectionException.class, e.getCause(),
-          "Unexpected cause for broken-resource return: " + e.getCause());
-    }
+    // close() must not throw when pool replenishment fails (commons-pool2 2.13+
+    // invalidateObject always calls addObject(); see #4690).
+    brokenJedis1.close();
     try {
       poolForBrokenJedis1.getResource();
       fail("Should not get connection from pool");

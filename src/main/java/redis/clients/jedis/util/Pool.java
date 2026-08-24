@@ -3,9 +3,14 @@ package redis.clients.jedis.util;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import redis.clients.jedis.exceptions.JedisException;
 
 public class Pool<T> extends GenericObjectPool<T> {
+
+  private static final Logger log = LoggerFactory.getLogger(Pool.class);
 
   // Legacy
   public Pool(GenericObjectPoolConfig<T> poolConfig, PooledObjectFactory<T> factory) {
@@ -61,7 +66,10 @@ public class Pool<T> extends GenericObjectPool<T> {
     try {
       super.invalidateObject(resource);
     } catch (Exception e) {
-      throw new JedisException("Could not return the broken resource to the pool", e);
+      // The broken object is already destroyed. commons-pool2 2.13+ then always
+      // tries to replenish (POOL-431); that replacement must not escape close()
+      // when the server is down. Swallowing also covers the 2.12 waiter path.
+      log.warn("Could not return the broken resource to the pool", e);
     }
   }
 

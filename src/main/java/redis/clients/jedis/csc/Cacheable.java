@@ -17,8 +17,8 @@ public interface Cacheable {
   /**
    * Decides cacheability from the full command object. The default implementation delegates to
    * {@link #isCacheable(ProtocolCommand, List)} with the container command and keys, so existing
-   * implementations keep their behavior; policies that need the declared subcommand (for example
-   * to judge {@code XINFO STREAM} separately from {@code XINFO CONSUMERS}) override this method.
+   * implementations keep their behavior; policies that need the declared subcommand (for example to
+   * judge {@code XINFO STREAM} separately from {@code XINFO CONSUMERS}) override this method.
    * @param commandObject the command to judge
    * @return true if the command's reply may be cached
    * @since 8.1

@@ -18,7 +18,7 @@ public class TestCache extends DefaultCache {
   }
 
   public TestCache(int maximumSize, EvictionPolicy evictionPolicy ) {
-    super(maximumSize, new HashMap<CacheKey, CacheEntry>(), CacheabilityResolver.DEFAULT_RESOLVER, evictionPolicy);
+    super(maximumSize, new HashMap<CacheKey, CacheEntry>(), CacheabilityResolver.defaultResolver(), evictionPolicy);
   }
 
   public TestCache(int maximumSize, EvictionPolicy evictionPolicy, Cacheable cacheable ) {

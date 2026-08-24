@@ -24,8 +24,11 @@ public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
   // Default response policy for commands without a specific policy
   public static final ResponsePolicy DEFAULT_RESPONSE_POLICY = ResponsePolicy.DEFAULT;
 
-  // Singleton instance
-  private static final StaticCommandFlagsRegistry REGISTRY = createRegistry();
+  // Singleton instance, built lazily so a metadata-load failure surfaces as an
+  // IllegalStateException on every use instead of poisoning this class through a failed
+  // static initializer
+  private static volatile StaticCommandFlagsRegistry REGISTRY = createRegistry();
+  private static Exception INIT_FAILURE;
 
   private final Commands commands;
 
@@ -39,19 +42,30 @@ public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
    * DO NOT USE THIS METHOD UNLESS YOU KNOW WHAT YOU ARE DOING.
    * </p>
    * @return StaticCommandFlagsRegistry
+   * @throws IllegalStateException when the command metadata failed to load; by design the registry
+   *           fails rather than run with wrong information
    */
   public static StaticCommandFlagsRegistry registry() {
+    if (REGISTRY == null) {
+      throw new IllegalStateException("StaticCommandFlagsRegistry failed to initialize",
+          INIT_FAILURE);
+    }
     return REGISTRY;
   }
 
   private static StaticCommandFlagsRegistry createRegistry() {
+    try {
 
-    Builder builder = new Builder();
+      Builder builder = new Builder();
 
-    // populated from the shared command metadata (MetadataResolver)
-    redis.clients.jedis.CommandFlagsInitializer.initialize(builder);
+      // populated from the shared command metadata (MetadataResolver)
+      CommandFlagsInitializer.initialize(builder);
 
-    return builder.build();
+      return builder.build();
+    } catch (Exception e) {
+      INIT_FAILURE = e;
+      return null;
+    }
   }
 
   /**

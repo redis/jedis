@@ -19,21 +19,13 @@ import java.util.TreeSet;
 
 import redis.clients.jedis.MetadataResolver.CommandMetadata;
 import redis.clients.jedis.Protocol.Command;
-import redis.clients.jedis.bloom.RedisBloomProtocol.BloomFilterCommand;
-import redis.clients.jedis.bloom.RedisBloomProtocol.CountMinSketchCommand;
-import redis.clients.jedis.bloom.RedisBloomProtocol.CuckooFilterCommand;
-import redis.clients.jedis.bloom.RedisBloomProtocol.TDigestCommand;
-import redis.clients.jedis.bloom.RedisBloomProtocol.TopKCommand;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.json.JsonProtocol.JsonCommand;
-import redis.clients.jedis.search.SearchProtocol.SearchCommand;
-import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesCommand;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
- * Maintenance tool (not a test) that regenerates the client-side-caching command configuration
- * from live Redis {@code COMMAND INFO} metadata.
+ * Maintenance tool (not a test) that regenerates the shared command metadata from live Redis
+ * {@code COMMAND INFO} output.
  * <p>
  * It performs two steps:
  * <ol>
@@ -45,9 +37,9 @@ import redis.clients.jedis.util.SafeEncoder;
  * {@code GENERATED-METADATA-END} markers is replaced; everything else in the file is
  * preserved.</li>
  * </ol>
- * Cacheability itself is resolved by {@code CacheabilityResolver} over the generated
- * metadata. Mismatches between the Jedis command set and the server metadata are reported as
- * warnings: {@link ProtocolCommand} constants without server metadata, and server commands
+ * Consumers such as cacheability resolution and the command-flags registry build on the
+ * generated metadata; this tool carries no consumer logic itself. Mismatches between the Jedis
+ * command set and the server metadata are reported as warnings: {@link ProtocolCommand} constants without server metadata, and server commands
  * without a constant in Jedis.
  * <p>
  * Usage (run from the repository root, paths are resolved relative to the working directory):
@@ -76,26 +68,6 @@ public class CommandMetadataUtil {
   /** Entries per generated init method, keeping each method well under the JVM bytecode limit. */
   private static final int CHUNK_SIZE = 250;
 
-  /** Every {@link ProtocolCommand} enum shipped by Jedis; extend when a new protocol enum is added. */
-  private static final List<ProtocolCommand[]> PROTOCOL_ENUMS = Arrays.asList(Command.values(),
-      JsonCommand.values(), SearchCommand.values(), TimeSeriesCommand.values(),
-      BloomFilterCommand.values(), CuckooFilterCommand.values(), CountMinSketchCommand.values(),
-      TopKCommand.values(), TDigestCommand.values());
-
-  /**
-   * Commands whose server metadata is known to be incomplete; {@code MetadataResolver} applies
-   * metadata fixes for them. Keep in sync with {@code MetadataResolver} and
-   * {@code docs/csc-command-cacheability.md}; remove an entry once the corresponding server
-   * metadata is fixed (the tool warns when an entry becomes obsolete).
-   */
-  private static final Map<String, String> CLIENT_SIDE_OVERRIDES = new LinkedHashMap<>();
-  static {
-    CLIENT_SIDE_OVERRIDES.put("TOUCH",
-        "by design: mutates key idle time; reply is an existence count aggregated across shards");
-    CLIENT_SIDE_OVERRIDES.put("VRANDMEMBER",
-        "random reply, but server metadata lacks the nondeterministic_output tip");
-  }
-
   private static final Set<String> NESTED_SPEC_KEYS = new HashSet<>(
       Arrays.asList("begin_search", "find_keys", "spec"));
 
@@ -109,7 +81,6 @@ public class CommandMetadataUtil {
     long step;
     List<Object> keySpecs;
     boolean hasKeyNameSpec;
-    boolean cacheable;
     final List<CommandMeta> subcommands = new ArrayList<>(0);
   }
 
@@ -235,7 +206,6 @@ public class CommandMetadataUtil {
     m.tips = lowerSet(at(entry, 7));
     m.keySpecs = normalizeKeySpecs(at(entry, 8));
     m.hasKeyNameSpec = hasKeyNameSpec(m.keySpecs);
-    m.cacheable = isClientSideCacheable(m);
     out.put(m.name, m);
     Object subs = at(entry, 9);
     if (subs instanceof List) {
@@ -284,10 +254,11 @@ public class CommandMetadataUtil {
   /** Fallback source: the checked-in metadata file, via the same reader the resolver uses. */
   private static TreeMap<String, CommandMeta> readFromCommandMetadataJson() {
     TreeMap<String, CommandMeta> out = new TreeMap<>();
-    for (CommandMetadata metadata : MetadataReader.read(COMMAND_INFO_JSON).values()) {
+    Map<String, CommandMetadata> parsed = MetadataReader.read(COMMAND_INFO_JSON);
+    for (CommandMetadata metadata : parsed.values()) {
       fromMetadata(metadata, out);
     }
-    for (CommandMetadata metadata : MetadataReader.read(COMMAND_INFO_JSON).values()) {
+    for (CommandMetadata metadata : parsed.values()) {
       CommandMeta m = out.get(metadata.getName());
       for (CommandMetadata subcommand : metadata.getSubcommands()) {
         m.subcommands.add(out.get(subcommand.getName()));
@@ -309,7 +280,6 @@ public class CommandMetadataUtil {
     m.step = metadata.getStep();
     m.keySpecs = new ArrayList<>();
     m.hasKeyNameSpec = metadata.hasKeyNameSpec();
-    m.cacheable = isClientSideCacheable(m);
     out.put(m.name, m);
   }
 
@@ -322,21 +292,6 @@ public class CommandMetadataUtil {
     }
     int end = json.indexOf('"', begin + marker.length());
     return json.substring(begin + marker.length(), end);
-  }
-
-  // ------------------------------------------------------- eligibility rules
-
-  private static boolean isClientSideCacheable(CommandMeta m) {
-    return !m.tips.contains("dont_cache") //
-        && m.flags.contains("readonly") //
-        && !m.flags.contains("blocking") //
-        && hasKeyArgument(m) //
-        && !m.tips.contains("nondeterministic_output") //
-        && !m.flags.contains("script_runner");
-  }
-
-  private static boolean hasKeyArgument(CommandMeta m) {
-    return m.hasKeyNameSpec || (m.firstKey > 0 && m.step > 0);
   }
 
   // ------------------------------------------------- RESP reply normalization
@@ -495,7 +450,8 @@ public class CommandMetadataUtil {
     return entry;
   }
 
-  // hand-rolled writer: this tool must not pull third-party (or shaded) JSON libraries
+  // hand-rolled writer: keeps deterministic key order and stable formatting for reviewable
+  // diffs, which org.json (unordered maps) cannot guarantee
   private static void appendJson(Object value, int indent, StringBuilder out) {
     if (value instanceof Map) {
       Map<?, ?> map = (Map<?, ?>) value;
@@ -700,14 +656,14 @@ public class CommandMetadataUtil {
   /** Mismatches between the Jedis command set and the server metadata. */
   private static void reportMismatches(TreeMap<String, CommandMeta> metas) {
     Set<String> jedisWires = new HashSet<>();
-    for (ProtocolCommand[] values : PROTOCOL_ENUMS) {
+    for (ProtocolCommand[] values : MetadataResolver.protocolCommandEnums()) {
       for (ProtocolCommand value : values) {
         Enum<?> constant = (Enum<?>) value;
         String wire = SafeEncoder.encode(value.getRaw()).toUpperCase();
         if (jedisWires.add(wire) && !metas.containsKey(wire)) {
           System.out.println("WARNING: no COMMAND metadata for "
               + constant.getDeclaringClass().getSimpleName() + '.' + constant.name() + " (" + wire
-              + "); it will not be cacheable (fail closed).");
+              + "); metadata consumers will treat it as unknown.");
         }
       }
     }
@@ -716,12 +672,18 @@ public class CommandMetadataUtil {
         System.out.println("WARNING: no ProtocolCommand constant in Jedis for " + m.name + ".");
       }
     }
-    // an override naming a command the metadata already rejects is dead weight
-    for (String override : CLIENT_SIDE_OVERRIDES.keySet()) {
-      CommandMeta m = metas.get(override);
-      if (m == null || !m.cacheable) {
-        System.out.println("WARNING: override for " + override
-            + " is obsolete (metadata already rejects it); remove it from MetadataResolver.");
+    // a metadata fix is obsolete once the server reports the fixed tips natively; the fixes
+    // themselves live in MetadataResolver, so this is a pure metadata comparison
+    for (Map.Entry<String, String[]> fix : MetadataResolver.knownServerMetadataFixes()
+        .entrySet()) {
+      CommandMeta m = metas.get(fix.getKey());
+      if (m == null) {
+        System.out.println("WARNING: metadata fix for " + fix.getKey()
+            + " targets a command the server no longer reports; remove it from MetadataResolver.");
+      } else if (m.tips.containsAll(Arrays.asList(fix.getValue()))) {
+        System.out.println("WARNING: metadata fix for " + fix.getKey()
+            + " is obsolete (the server already reports: " + String.join(" ", fix.getValue())
+            + "); remove it from MetadataResolver.");
       }
     }
   }

@@ -3,6 +3,7 @@ package redis.clients.jedis;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import redis.clients.jedis.CommandFlagsRegistry.CommandFlag;
@@ -56,13 +57,15 @@ final class CommandFlagsInitializer {
   private static final Map<String, ResponsePolicy> RESPONSE_POLICIES_BY_NAME = new HashMap<>(16);
   static {
     for (CommandFlag flag : CommandFlag.values()) {
-      FLAGS_BY_NAME.put(flag.name().toLowerCase(), flag);
+      FLAGS_BY_NAME.put(flag.name().toLowerCase(Locale.ENGLISH), flag);
     }
     for (RequestPolicy policy : RequestPolicy.values()) {
-      REQUEST_POLICIES_BY_NAME.put("request_policy:" + policy.name().toLowerCase(), policy);
+      REQUEST_POLICIES_BY_NAME.put("request_policy:" + policy.name().toLowerCase(Locale.ENGLISH),
+        policy);
     }
     for (ResponsePolicy policy : ResponsePolicy.values()) {
-      RESPONSE_POLICIES_BY_NAME.put("response_policy:" + policy.name().toLowerCase(), policy);
+      RESPONSE_POLICIES_BY_NAME.put("response_policy:" + policy.name().toLowerCase(Locale.ENGLISH),
+        policy);
     }
   }
 

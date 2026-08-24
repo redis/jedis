@@ -37,8 +37,8 @@ public class DefaultCacheableTest {
         CuckooFilterCommand.COUNT, CountMinSketchCommand.QUERY, TopKCommand.QUERY,
         TDigestCommand.QUANTILE, Command.VSIM, Command.ARGET,
         // added once metadata replaced the hand-written list
-        Command.DIGEST, Command.EXPIRETIME, Command.PFCOUNT, Command.SINTERCARD,
-        Command.ZDIFF, Command.ZINTERCARD, Command.ZUNION };
+        Command.DIGEST, Command.EXPIRETIME, Command.PFCOUNT, Command.SINTERCARD, Command.ZDIFF,
+        Command.ZINTERCARD, Command.ZUNION };
   }
 
   static ProtocolCommand[] notCacheable() {

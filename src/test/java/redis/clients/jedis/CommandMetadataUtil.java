@@ -37,10 +37,10 @@ import redis.clients.jedis.util.SafeEncoder;
  * {@code GENERATED-METADATA-END} markers is replaced; everything else in the file is
  * preserved.</li>
  * </ol>
- * Consumers such as cacheability resolution and the command-flags registry build on the
- * generated metadata; this tool carries no consumer logic itself. Mismatches between the Jedis
- * command set and the server metadata are reported as warnings: {@link ProtocolCommand} constants without server metadata, and server commands
- * without a constant in Jedis.
+ * Consumers such as cacheability resolution and the command-flags registry build on the generated
+ * metadata; this tool carries no consumer logic itself. Mismatches between the Jedis command set
+ * and the server metadata are reported as warnings: {@link ProtocolCommand} constants without
+ * server metadata, and server commands without a constant in Jedis.
  * <p>
  * Usage (run from the repository root, paths are resolved relative to the working directory):
  *
@@ -51,16 +51,16 @@ import redis.clients.jedis.util.SafeEncoder;
  * </pre>
  *
  * All arguments are optional: {@code -remote:host:port} defaults to {@code localhost:6379}, and
- * {@code -auth:password} / {@code -user:username} authenticate the connection when given. When
- * the server is unreachable, the tool falls back to the existing {@code CommandMetadata.json}:
- * the file is left untouched (it is the source) and only {@code MetadataResolver.java} is
- * regenerated from it.
+ * {@code -auth:password} / {@code -user:username} authenticate the connection when given. When the
+ * server is unreachable, the tool falls back to the existing {@code CommandMetadata.json}: the file
+ * is left untouched (it is the source) and only {@code MetadataResolver.java} is regenerated from
+ * it.
  */
 public class CommandMetadataUtil {
 
   private static final Path COMMAND_INFO_JSON = Paths.get("CommandMetadata.json");
   private static final Path METADATA_RESOLVER_JAVA = Paths.get("src", "main", "java", "redis",
-      "clients", "jedis", "MetadataResolver.java");
+    "clients", "jedis", "MetadataResolver.java");
 
   private static final String METADATA_BEGIN = "// GENERATED-METADATA-BEGIN";
   private static final String METADATA_END = "// GENERATED-METADATA-END";
@@ -166,7 +166,7 @@ public class CommandMetadataUtil {
   private static void usage(String offending) {
     System.err.println("Unrecognized argument: " + offending);
     System.err.println(
-        "Usage: CommandMetadataUtil [-remote:host:port] [-auth:password] [-user:username]");
+      "Usage: CommandMetadataUtil [-remote:host:port] [-auth:password] [-user:username]");
     System.exit(2);
   }
 
@@ -190,8 +190,7 @@ public class CommandMetadataUtil {
     return out;
   }
 
-  private static void collect(List<?> entry, CommandMeta parent,
-      TreeMap<String, CommandMeta> out) {
+  private static void collect(List<?> entry, CommandMeta parent, TreeMap<String, CommandMeta> out) {
     CommandMeta m = new CommandMeta();
     String name = str(entry.get(0)).toUpperCase();
     // container subcommands report either CHILD or PARENT|CHILD depending on server version
@@ -506,33 +505,33 @@ public class CommandMetadataUtil {
     for (int i = 0; i < s.length(); i++) {
       char c = s.charAt(i);
       switch (c) {
-      case '"':
-        out.append("\\\"");
-        break;
-      case '\\':
-        out.append("\\\\");
-        break;
-      case '\n':
-        out.append("\\n");
-        break;
-      case '\r':
-        out.append("\\r");
-        break;
-      case '\t':
-        out.append("\\t");
-        break;
-      case '\b':
-        out.append("\\b");
-        break;
-      case '\f':
-        out.append("\\f");
-        break;
-      default:
-        if (c < 0x20) {
-          out.append(String.format("\\u%04x", (int) c));
-        } else {
-          out.append(c);
-        }
+        case '"':
+          out.append("\\\"");
+          break;
+        case '\\':
+          out.append("\\\\");
+          break;
+        case '\n':
+          out.append("\\n");
+          break;
+        case '\r':
+          out.append("\\r");
+          break;
+        case '\t':
+          out.append("\\t");
+          break;
+        case '\b':
+          out.append("\\b");
+          break;
+        case '\f':
+          out.append("\\f");
+          break;
+        default:
+          if (c < 0x20) {
+            out.append(String.format("\\u%04x", (int) c));
+          } else {
+            out.append(c);
+          }
       }
     }
     out.append('"');
@@ -591,8 +590,7 @@ public class CommandMetadataUtil {
     }
     lines.add("  }");
 
-    String content = new String(Files.readAllBytes(METADATA_RESOLVER_JAVA),
-        StandardCharsets.UTF_8);
+    String content = new String(Files.readAllBytes(METADATA_RESOLVER_JAVA), StandardCharsets.UTF_8);
     content = spliceRegion(content, METADATA_BEGIN, METADATA_END, lines);
     Files.write(METADATA_RESOLVER_JAVA, content.getBytes(StandardCharsets.UTF_8));
     System.out.println("Updated " + METADATA_RESOLVER_JAVA + " (" + metas.size()
@@ -674,16 +672,15 @@ public class CommandMetadataUtil {
     }
     // a metadata fix is obsolete once the server reports the fixed tips natively; the fixes
     // themselves live in MetadataResolver, so this is a pure metadata comparison
-    for (Map.Entry<String, String[]> fix : MetadataResolver.knownServerMetadataFixes()
-        .entrySet()) {
+    for (Map.Entry<String, String[]> fix : MetadataResolver.knownServerMetadataFixes().entrySet()) {
       CommandMeta m = metas.get(fix.getKey());
       if (m == null) {
         System.out.println("WARNING: metadata fix for " + fix.getKey()
             + " targets a command the server no longer reports; remove it from MetadataResolver.");
       } else if (m.tips.containsAll(Arrays.asList(fix.getValue()))) {
-        System.out.println("WARNING: metadata fix for " + fix.getKey()
-            + " is obsolete (the server already reports: " + String.join(" ", fix.getValue())
-            + "); remove it from MetadataResolver.");
+        System.out.println(
+          "WARNING: metadata fix for " + fix.getKey() + " is obsolete (the server already reports: "
+              + String.join(" ", fix.getValue()) + "); remove it from MetadataResolver.");
       }
     }
   }

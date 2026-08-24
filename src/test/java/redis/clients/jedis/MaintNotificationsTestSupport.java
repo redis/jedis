@@ -5,11 +5,19 @@ import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
  * Test bridge to package-private maintenance-notification internals of {@link Connection}:
- * recording dispatched events.
+ * recording dispatched events and reading the effective (relaxed-aware) socket timeout.
  */
 public final class MaintNotificationsTestSupport {
 
   private MaintNotificationsTestSupport() {
+  }
+
+  /**
+   * The effective socket timeout in millis for non-blocking commands: the relaxed value while a
+   * maintenance relaxation window is open, the configured value otherwise.
+   */
+  public static int effectiveTimeoutMillis(Connection connection) {
+    return connection.currentTimeout();
   }
 
   /** Registers a recorder for every maintenance event dispatched on {@code connection}. */

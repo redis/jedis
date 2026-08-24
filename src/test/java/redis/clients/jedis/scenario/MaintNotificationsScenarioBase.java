@@ -24,6 +24,7 @@ import org.junit.jupiter.api.AfterEach;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
+import redis.clients.jedis.MaintenanceNotificationsConfig.EndpointType;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.RedisProtocol;
@@ -62,12 +63,17 @@ abstract class MaintNotificationsScenarioBase {
    * database gets its own endpoint DNS name.
    */
   void setUpDatabaseAndClient(Scenario scenario) {
+    setUpDatabaseAndClient(scenario, null);
+  }
+
+  /** As {@link #setUpDatabaseAndClient(Scenario)}, requesting a fixed MOVING endpoint type. */
+  void setUpDatabaseAndClient(Scenario scenario, EndpointType endpointType) {
     Map<String, Object> dbConfig = faultInjector.getStandaloneTriggers(scenario.effect())
         .trigger(scenario.trigger().name()).requirement(scenario.requirement().config()).dbConfig();
     Map<String, Object> output = faultInjector.createDatabase(dbConfig);
     bdbId = ((Number) output.get("bdb_id")).longValue();
     awaitEndpointConnectable(URI.create((String) ((List<?>) output.get("endpoints")).get(0)));
-    client = buildClient(output);
+    client = buildClient(output, endpointType);
   }
 
   /**
@@ -89,7 +95,7 @@ abstract class MaintNotificationsScenarioBase {
     throw new IllegalStateException("Endpoint " + endpoint + " not connectable within 60 s", last);
   }
 
-  private static RedisClient buildClient(Map<String, Object> output) {
+  private static RedisClient buildClient(Map<String, Object> output, EndpointType endpointType) {
     URI endpoint = URI.create((String) ((List<?>) output.get("endpoints")).get(0));
 
     DefaultJedisClientConfig.Builder config = DefaultJedisClientConfig.builder()
@@ -111,6 +117,9 @@ abstract class MaintNotificationsScenarioBase {
     MaintenanceNotificationsConfig.Builder maintenance = MaintenanceNotificationsConfig.builder()
         .mode(MaintenanceNotificationsConfig.Mode.ENABLED).relaxedTimeout(RELAXED_TIMEOUT_MS)
         .relaxedBlockingTimeout(RELAXED_TIMEOUT_MS);
+    if (endpointType != null) {
+      maintenance.endpointType(endpointType); // null: auto-resolve from connection characteristics
+    }
 
     // Standalone RedisClient runs commands without retries, so timeouts stay observable.
     return RedisClient.builder().hostAndPort(endpoint.getHost(), endpoint.getPort())

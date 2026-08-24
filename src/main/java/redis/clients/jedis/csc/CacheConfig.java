@@ -76,8 +76,9 @@ public class CacheConfig {
         /**
          * Excludes the given commands from client-side caching, narrowing the eligible command set.
          * Exclusions can only narrow: a command that is not cacheable by the default policy cannot
-         * be made cacheable. Excluding a container command excludes all of its subcommands. Cannot
-         * be combined with {@link #cacheable(Cacheable)}.
+         * be made cacheable. Exclusions apply to the exact command; a container subcommand is
+         * excluded individually by its {@code PARENT|CHILD} name, excluding a parent does not
+         * exclude its subcommands. Cannot be combined with {@link #cacheable(Cacheable)}.
          * @param commands commands to exclude; copied, later changes to the given set have no
          *            effect
          * @return this builder

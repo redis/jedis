@@ -16,8 +16,9 @@ The policy is configured through `CacheConfig.Builder`:
 
 - By default, the metadata-derived policy decides every command.
 - `excludeCommands(...)` removes commands from the eligible set. Exclusions can only narrow: a
-  command that is not cacheable by the default policy cannot be made cacheable. Excluding a
-  container command excludes all of its subcommands.
+  command that is not cacheable by the default policy cannot be made cacheable. Exclusions apply
+  to the exact command; a container subcommand is excluded individually by its `PARENT|CHILD`
+  name (excluding a parent does not exclude its subcommands).
 - `withFallback(...)` supplies a `Cacheable` that decides commands with no metadata verdict (for
   example custom `ProtocolCommand` implementations). Without a fallback, such commands are not
   cacheable and logged once per command name.
@@ -53,8 +54,7 @@ Container subcommands declare their subcommand at construction
 (`new CommandArguments(XINFO, STREAM)`) and are judged by their own `PARENT|CHILD` metadata — so
 `XINFO STREAM` and `XINFO GROUPS` are cacheable while their sibling `XINFO CONSUMERS`
 (nondeterministic output) is not, and `MEMORY USAGE` is cacheable. Commands built without a
-declared subcommand keep the parent verdict, which is not cacheable. Excluding a parent command
-excludes all of its subcommands.
+declared subcommand keep the parent verdict, which is not cacheable.
 
 ## Overrides for known metadata gaps
 

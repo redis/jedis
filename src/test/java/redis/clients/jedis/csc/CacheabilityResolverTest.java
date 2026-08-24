@@ -222,14 +222,25 @@ public class CacheabilityResolverTest {
       cacheKey(new CommandArguments(Command.XINFO, stream).key("k"))));
   }
 
-  /** Excluding a container parent denies its subcommands too: exclusions can only narrow. */
+  /**
+   * Exclusions apply to the exact command: excluding a container parent does not exclude its
+   * subcommands; a subcommand is excluded individually by its PARENT|CHILD name.
+   */
   @Test
-  public void excludedContainerParentDeniesSubcommands() {
-    CacheabilityResolver resolver = new CacheabilityResolver(new MetadataResolver(),
+  public void exclusionsApplyToExactCommandOnly() {
+    CacheabilityResolver parentExcluded = new CacheabilityResolver(new MetadataResolver(),
         Collections.singleton(Command.XINFO), null);
-    assertFalse(
-      isCacheable(resolver, cacheKey(new CommandArguments(Command.XINFO,
-          redis.clients.jedis.Protocol.Keyword.STREAM).key("k"))));
+    assertTrue(isCacheable(parentExcluded, cacheKey(new CommandArguments(Command.XINFO,
+        redis.clients.jedis.Protocol.Keyword.STREAM).key("k"))));
+
+    ProtocolCommand xinfoStream = () -> SafeEncoder.encode("XINFO|STREAM");
+    CacheabilityResolver subcommandExcluded = new CacheabilityResolver(new MetadataResolver(),
+        Collections.singleton(xinfoStream), null);
+    assertFalse(isCacheable(subcommandExcluded, cacheKey(new CommandArguments(Command.XINFO,
+        redis.clients.jedis.Protocol.Keyword.STREAM).key("k"))));
+    // the sibling subcommand keeps its verdict
+    assertTrue(isCacheable(subcommandExcluded, cacheKey(new CommandArguments(Command.XINFO,
+        redis.clients.jedis.Protocol.Keyword.GROUPS).key("k"))));
   }
 
   /** Commands without a declared subcommand keep the fast per-command verdict. */

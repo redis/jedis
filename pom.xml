@@ -653,6 +653,7 @@
 						<include>**/ConnectionRegistry.java</include>
 						<include>**/MovingOperations.java</include>
 						<include>src/test/java/com/redis/test/fi/*.java</include>
+						<include>**/MaintNotificationsIT.java</include>
 						<include>**/MaintNotificationsTestSupport.java</include>
 						<include>**/MaintNotificationsScenarioBase.java</include>
 						<include>**/MaintNotificationsReceptionIT.java</include>

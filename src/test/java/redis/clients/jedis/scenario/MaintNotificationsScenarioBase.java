@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -146,6 +147,31 @@ abstract class MaintNotificationsScenarioBase {
    */
   void observe() {
     pinned.executeCommand(Protocol.Command.PING);
+  }
+
+  /**
+   * Creates every pool connection up front — holding maxTotal borrows simultaneously forces
+   * distinct creations, so tests measure command time, not handshakes.
+   */
+  void warmUpPool() {
+    int size = client.getPool().getMaxTotal();
+    List<Connection> borrowed = new ArrayList<>(size);
+    for (int i = 0; i < size; i++) {
+      borrowed.add(client.getPool().getResource());
+    }
+    borrowed.forEach(Connection::close);
+  }
+
+  /**
+   * Observes the pinned connection until {@code future} completes, then returns its value — the
+   * test thread keeps reading pushes (events, timeout changes stay current) while it waits.
+   */
+  <T> T observeAndAwait(CompletableFuture<T> future) {
+    while (!future.isDone()) {
+      observe();
+      sleepQuietly(100);
+    }
+    return future.join();
   }
 
   /** Runs the effect on a background thread so it is in flight while the test body observes. */

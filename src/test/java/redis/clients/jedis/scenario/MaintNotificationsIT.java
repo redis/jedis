@@ -2,9 +2,15 @@ package redis.clients.jedis.scenario;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.net.Socket;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
@@ -26,13 +32,17 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.junit.jupiter.params.provider.Arguments;
 
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.Connection;
+import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.MaintNotificationsTestSupport;
 import redis.clients.jedis.MaintNotificationsTestSupport.ReceivedEvent;
 import redis.clients.jedis.MaintNotificationsTestSupport.ReceivedEvents;
+import redis.clients.jedis.MaintenanceNotificationsConfig.EndpointType;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.PushMessageTypes;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -73,6 +83,12 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
     // conn_drop/endpoint_rebind emits exactly [MOVING]
     return Stream
         .of(CATALOG.effect(StandaloneEffect.CONN_DROP).trigger("endpoint_rebind").scenario());
+  }
+
+  static Stream<Arguments> handoffScenarios() {
+    return movingScenarios().flatMap(scenario -> Stream.of(EndpointType.EXTERNAL_IP,
+      EndpointType.INTERNAL_IP, EndpointType.EXTERNAL_FQDN, EndpointType.INTERNAL_FQDN)
+        .map(type -> Arguments.of(scenario, type)));
   }
 
   /**
@@ -168,6 +184,104 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
     // without pumping it
     runProbes().join().forEach(probe -> assertProbeTimedOutAtBase(probe, "after expiry"));
     releasePinned();
+  }
+
+  /**
+   * T.2.1 New Connection Establishment — covers newConnectionEstablishedTest,
+   * connectionHandedOffToNewEndpointExternalIPTest, connectionHandedOffToNewEndpointInternalIPTest,
+   * connectionHandoffWithStaticExternalNameTest, connectionHandoffWithStaticInternalNameTest. On an
+   * endpoint_rebind MOVING:
+   * <ul>
+   * <li>a connection borrowed before MOVING completes its in-flight commands gracefully and is
+   * destroyed when returned to the pool;</li>
+   * <li>new connections are created toward the notification's target and get the relaxed timeout
+   * like the rest of the pool; old- and new-endpoint connections work concurrently;</li>
+   * <li>after the window expires, a connection that outlived it throws JedisConnectionException and
+   * is destroyed on return, while the client keeps working through fresh connections to the
+   * configured endpoint name.</li>
+   * </ul>
+   */
+  @ParameterizedTest(name = "{0} [{1}]")
+  @MethodSource("handoffScenarios")
+  @Timeout(300)
+  void connectionHandoffOnMoving(Scenario scenario, EndpointType endpointType) {
+    setUpDatabaseAndClient(scenario, endpointType);
+    warmUpPool();
+    pinned = pinConnection();
+
+    Connection inflight = client.getPool().getResource(); // borrowed before MOVING
+    ReceivedEvents inflightEvents = MaintNotificationsTestSupport.record(inflight);
+
+    startEffect(scenario);
+
+    // continuous commands on the pre-MOVING connection: the read that consumes MOVING mid-command
+    // must still complete gracefully — an exception here fails the test
+    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(120);
+    while (!inflightEvents.movingReceived()) {
+      assertTrue(System.nanoTime() < deadline, "no MOVING within 120 s; received: "
+          + inflightEvents.all() + ", effect failures: " + effectFailures);
+      inflight.executeCommand(Protocol.Command.PING);
+    }
+    ReceivedEvent moving = inflightEvents.all().stream()
+        .filter(e -> PushMessageTypes.MOVING.equals(e.type)).findFirst().get();
+    assertNotNull(moving.target, "endpoint_rebind MOVING must carry a target");
+    // a long in-flight command on the old endpoint still completes inside the grace window
+    inflight.executeCommand(REGULAR_PROBE);
+
+    assumeTargetReachable(moving.target, endpointType);
+
+    // new connections are created toward the notification's endpoint, relaxed like the rest
+    Connection handedOff = client.getPool().getResource();
+    assertEquals(moving.target, MaintNotificationsTestSupport.remoteAddress(handedOff),
+      "new connection must target the MOVING endpoint");
+    assertEquals(RELAXED_TIMEOUT_MS,
+      MaintNotificationsTestSupport.effectiveTimeoutMillis(handedOff),
+      "new connection must comply with the relaxed timeout");
+    // two active connections during handoff: old and new endpoint usable concurrently
+    handedOff.executeCommand(Protocol.Command.PING);
+    inflight.executeCommand(Protocol.Command.PING);
+
+    // the pre-MOVING connection is discarded on return, never handed out again
+    long destroyedBefore = client.getPool().getDestroyedCount();
+    inflight.close();
+    assertTrue(client.getPool().getDestroyedCount() > destroyedBefore,
+      "returning a connection borrowed before MOVING must destroy it");
+    Connection next = client.getPool().getResource();
+    assertEquals(moving.target, MaintNotificationsTestSupport.remoteAddress(next),
+      "replacement for the discarded connection must target the MOVING endpoint");
+    next.close();
+    handedOff.close();
+
+    joinEffectThreads();
+    assertEffectSucceeded();
+
+    // the client keeps working after the grace window expires: new connections can be created
+    // toward the configured endpoint name (repointed by the rebind) and used
+    long windowLeftMillis = TimeUnit.SECONDS.toMillis(moving.timeSeconds)
+        - elapsedMillis(moving.atNanos);
+    if (windowLeftMillis > 0) {
+      sleepQuietly(windowLeftMillis + 1_000);
+    }
+    // a borrowed connection that outlived the rebind window has been disconnected by the server
+    assertThrows(JedisConnectionException.class, () -> pinned.executeCommand(Protocol.Command.PING),
+      "using a connection to the departed endpoint must throw after the rebind window");
+
+    client.getPool().clear(); // drop window-era connections: the next borrow must connect fresh
+    assertEquals("PONG", client.ping(), "client must keep working after the MOVING window expires");
+    releasePinned();
+  }
+
+  /** Internal targets may not be routable/resolvable from the test host; skip, do not fail. */
+  private static void assumeTargetReachable(String target, EndpointType endpointType) {
+    if (endpointType != EndpointType.INTERNAL_IP && endpointType != EndpointType.INTERNAL_FQDN) {
+      return;
+    }
+    HostAndPort hostAndPort = HostAndPort.from(target);
+    try (Socket socket = new Socket()) {
+      socket.connect(new InetSocketAddress(hostAndPort.getHost(), hostAndPort.getPort()), 2_000);
+    } catch (IOException e) {
+      assumeTrue(false, "MOVING target " + target + " is not routable from the test host: " + e);
+    }
   }
 
   // --- probes ---

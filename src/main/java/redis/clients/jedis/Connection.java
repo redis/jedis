@@ -20,6 +20,9 @@ import java.util.function.Supplier;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.TimeoutSource.TimeoutInfo;
@@ -35,6 +38,8 @@ import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 
 public class Connection implements Closeable {
+
+  private static final Logger logger = LoggerFactory.getLogger(Connection.class);
 
   public static class Builder {
     private JedisSocketFactory socketFactory;
@@ -390,6 +395,10 @@ public class Connection implements Closeable {
       throw markBroken(new JedisConnectionException("Failed to set SO_TIMEOUT", e));
     }
     appliedSoTimeout = timeout;
+    if (logger.isDebugEnabled()) {
+      logger.debug("Timeout applied millis={} blocking={} conn={}", timeout, isBlocking,
+        toIdentityString());
+    }
   }
 
   /**
@@ -531,14 +540,18 @@ public class Connection implements Closeable {
     if (!isConnected()) {
       try {
         socket = socketFactory.createSocket();
+        // Fresh socket: the broken flag and the cached identity describe the previous socket;
+        // reset both before anything logs. Any failure below re-marks the connection broken.
+        broken = false;
+        strVal = null;
         // here clientConfig means we have a potential custom/new value as timeout from supplier, so
         // we apply it to the socket
         //
         // if no clientConfig, we use socket timeout to set defaults in the supplier
         if (this.clientConfig != null) {
-          socket.setSoTimeout(currentTimeout());
-          // Fresh socket: align the applied-timeout cache with the new socket's actual SO_TIMEOUT.
-          appliedSoTimeout = socket.getSoTimeout();
+          // Fresh socket: invalidate the applied-timeout cache so the initial timeout is applied
+          appliedSoTimeout = -1;
+          applyCurrentTimeout();
         } else {
           defaultTimeoutSource.setDefaults(socket.getSoTimeout(), getBlockingSoTimeout());
         }
@@ -547,7 +560,6 @@ public class Connection implements Closeable {
         outputStream = new RedisOutputStream(socket.getOutputStream());
         inputStream = new RedisInputStream(socket.getInputStream());
 
-        broken = false; // unset broken status when connection is (re)initialized
         himportState.reset(); // a fresh socket lost any server-side HIMPORT fieldsets
 
       } catch (JedisConnectionException jce) {

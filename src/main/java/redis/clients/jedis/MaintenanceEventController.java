@@ -144,7 +144,10 @@ final class MaintenanceEventController
 
   @Override
   public void onMoving(MovingEvent e, Connection c) {
-    logger.debug("Moving to {} (seq={}, ttl={}s)", e.target, e.seq, e.ttlSeconds);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Moving to {} (seq={}, ttl={}s) conn={}", e.target, e.seq, e.ttlSeconds,
+        c.toIdentityString());
+    }
     SocketAddress affectedPeer = c.getRemoteSocketAddress();
     if (affectedPeer == null) {
       return; // receiver socket already closed; no peer to register
@@ -231,25 +234,36 @@ final class MaintenanceEventController
 
   @Override
   public void onMigrating(MigratingEvent e, Connection c) {
-    logger.debug("Migrating shards {} (seq={}, ttl={}s)", e.shardIds, e.seq, e.ttlSeconds);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Migrating shards {} (seq={}, ttl={}s) conn={}", e.shardIds, e.seq, e.ttlSeconds,
+        c.toIdentityString());
+    }
     relaxConnectionTimeoutsFor(c, maxRelaxedDurationNanos + NanoClock.INSTANCE.getAsLong());
   }
 
   @Override
   public void onFailingOver(FailingOverEvent e, Connection c) {
-    logger.debug("Failing over shards {} (seq={}, ttl={}s)", e.shardIds, e.seq, e.ttlSeconds);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Failing over shards {} (seq={}, ttl={}s) conn={}", e.shardIds, e.seq,
+        e.ttlSeconds, c.toIdentityString());
+    }
     relaxConnectionTimeoutsFor(c, maxRelaxedDurationNanos + NanoClock.INSTANCE.getAsLong());
   }
 
   @Override
   public void onMigrated(MigratedEvent e, Connection c) {
-    logger.debug("Migrated shards {} (seq={})", e.shardIds, e.seq);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Migrated shards {} (seq={}) conn={}", e.shardIds, e.seq, c.toIdentityString());
+    }
     relaxConnectionTimeoutsFor(c, 0);
   }
 
   @Override
   public void onFailedOver(FailedOverEvent e, Connection c) {
-    logger.debug("Failed over shards {} (seq={})", e.shardIds, e.seq);
+    if (logger.isDebugEnabled()) {
+      logger.debug("Failed over shards {} (seq={}) conn={}", e.shardIds, e.seq,
+        c.toIdentityString());
+    }
     relaxConnectionTimeoutsFor(c, 0);
   }
 

@@ -182,16 +182,16 @@ public class CacheabilityResolverTest {
 
     Cacheable resolver = new CacheabilityResolver(metadataResolver);
     // the merged command from the subcommand constructor hits its precomputed verdict
-    assertTrue(resolver.isCacheable(new CommandObject<>(new CommandArguments(Command.XINFO,
-        redis.clients.jedis.Protocol.Keyword.STREAM).key("k"),BuilderFactory.STRING)));
+    assertTrue(resolver.isCacheable(new CommandObject<>(
+        new CommandArguments(Command.XINFO, redis.clients.jedis.Protocol.Keyword.STREAM).key("k"),
+        BuilderFactory.STRING)));
     // a foreign ProtocolCommand with a pipe name is not value-equal to the map keys: fail closed
     ProtocolCommand pipeCommand = () -> SafeEncoder.encode("XINFO|STREAM");
     assertFalse(resolver.isCacheable(pipeCommand, Collections.emptyList()));
   }
 
   private static CacheKey<?> cacheKey(redis.clients.jedis.CommandArguments args) {
-    return new CacheKey<>(
-        new CommandObject<>(args, redis.clients.jedis.BuilderFactory.STRING));
+    return new CacheKey<>(new CommandObject<>(args, redis.clients.jedis.BuilderFactory.STRING));
   }
 
   private static boolean isCacheable(Cacheable cacheable, CacheKey<?> cacheKey) {
@@ -208,18 +208,18 @@ public class CacheabilityResolverTest {
     redis.clients.jedis.Protocol.Keyword consumers = redis.clients.jedis.Protocol.Keyword.CONSUMERS;
     redis.clients.jedis.Protocol.Keyword usage = redis.clients.jedis.Protocol.Keyword.USAGE;
 
-    assertTrue(isCacheable(resolver,
-      cacheKey(new CommandArguments(Command.XINFO, stream).key("k"))));
-    assertTrue(isCacheable(resolver,
-      cacheKey(new CommandArguments(Command.XINFO, groups).key("k"))));
-    assertTrue(isCacheable(resolver,
-      cacheKey(new CommandArguments(Command.MEMORY, usage).key("k"))));
+    assertTrue(
+      isCacheable(resolver, cacheKey(new CommandArguments(Command.XINFO, stream).key("k"))));
+    assertTrue(
+      isCacheable(resolver, cacheKey(new CommandArguments(Command.XINFO, groups).key("k"))));
+    assertTrue(
+      isCacheable(resolver, cacheKey(new CommandArguments(Command.MEMORY, usage).key("k"))));
     // nondeterministic sibling stays denied
-    assertFalse(isCacheable(resolver, cacheKey(
-      new CommandArguments(Command.XINFO, consumers).key("k").add("g"))));
+    assertFalse(isCacheable(resolver,
+      cacheKey(new CommandArguments(Command.XINFO, consumers).key("k").add("g"))));
     // and the cached-verdict path returns the same answer
-    assertTrue(isCacheable(resolver,
-      cacheKey(new CommandArguments(Command.XINFO, stream).key("k"))));
+    assertTrue(
+      isCacheable(resolver, cacheKey(new CommandArguments(Command.XINFO, stream).key("k"))));
   }
 
   /**
@@ -230,27 +230,26 @@ public class CacheabilityResolverTest {
   public void exclusionsApplyToExactCommandOnly() {
     CacheabilityResolver parentExcluded = new CacheabilityResolver(new MetadataResolver(),
         Collections.singleton(Command.XINFO), null);
-    assertTrue(isCacheable(parentExcluded, cacheKey(new CommandArguments(Command.XINFO,
-        redis.clients.jedis.Protocol.Keyword.STREAM).key("k"))));
+    assertTrue(isCacheable(parentExcluded, cacheKey(
+      new CommandArguments(Command.XINFO, redis.clients.jedis.Protocol.Keyword.STREAM).key("k"))));
 
     ProtocolCommand xinfoStream = () -> SafeEncoder.encode("XINFO|STREAM");
     CacheabilityResolver subcommandExcluded = new CacheabilityResolver(new MetadataResolver(),
         Collections.singleton(xinfoStream), null);
-    assertFalse(isCacheable(subcommandExcluded, cacheKey(new CommandArguments(Command.XINFO,
-        redis.clients.jedis.Protocol.Keyword.STREAM).key("k"))));
+    assertFalse(isCacheable(subcommandExcluded, cacheKey(
+      new CommandArguments(Command.XINFO, redis.clients.jedis.Protocol.Keyword.STREAM).key("k"))));
     // the sibling subcommand keeps its verdict
-    assertTrue(isCacheable(subcommandExcluded, cacheKey(new CommandArguments(Command.XINFO,
-        redis.clients.jedis.Protocol.Keyword.GROUPS).key("k"))));
+    assertTrue(isCacheable(subcommandExcluded, cacheKey(
+      new CommandArguments(Command.XINFO, redis.clients.jedis.Protocol.Keyword.GROUPS).key("k"))));
   }
 
   /** Commands without a declared subcommand keep the fast per-command verdict. */
   @Test
   public void nonContainerCommandsKeepVerdictThroughCacheKeyPath() {
     CacheabilityResolver resolver = new CacheabilityResolver(new MetadataResolver());
-    assertTrue(isCacheable(resolver,
-      cacheKey(new CommandArguments(Command.GET).key("k"))));
-    assertFalse(isCacheable(resolver,
-      cacheKey(new CommandArguments(Command.SET).key("k").add("v"))));
+    assertTrue(isCacheable(resolver, cacheKey(new CommandArguments(Command.GET).key("k"))));
+    assertFalse(
+      isCacheable(resolver, cacheKey(new CommandArguments(Command.SET).key("k").add("v"))));
   }
 
   /** Exclusions normalize to the canonical map key, so custom ProtocolCommand instances work. */

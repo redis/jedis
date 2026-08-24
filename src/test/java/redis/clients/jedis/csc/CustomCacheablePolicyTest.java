@@ -31,9 +31,9 @@ public class CustomCacheablePolicyTest {
   @Test
   public void customDecidesForEligibleCommands() {
     assertTrue(new CustomCacheablePolicy(ALLOW_ALL, resolver()).isCacheable(Command.GET,
-        Collections.emptyList()));
+      Collections.emptyList()));
     assertFalse(new CustomCacheablePolicy(DENY_ALL, resolver()).isCacheable(Command.GET,
-        Collections.emptyList()));
+      Collections.emptyList()));
   }
 
   /** Current behavior: the custom policy decides alone, even for metadata-ineligible commands. */
@@ -43,7 +43,7 @@ public class CustomCacheablePolicyTest {
     assertTrue(policy.isCacheable(Command.SET, Collections.emptyList()));
     assertTrue(policy.isCacheable(Command.XREAD, Collections.emptyList()));
     assertFalse(new CustomCacheablePolicy(DENY_ALL, resolver()).isCacheable(Command.GET,
-        Collections.emptyList()));
+      Collections.emptyList()));
   }
 
   @Test

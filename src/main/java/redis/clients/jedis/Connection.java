@@ -15,6 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import redis.clients.jedis.Protocol.Command;
@@ -130,8 +131,10 @@ public class Connection implements Closeable {
   private boolean broken = false;
   private volatile Throwable brokenCause = null;
   // True only while a pub/sub read loop is driving this connection; gates whether pub/sub
-  // pushes are propagated as read results or dropped as stray frames.
-  private volatile boolean activeSubscription = false;
+  // pushes are propagated as read results or dropped as stray frames. Held in a shared
+  // mutable holder (not a plain field) so the push consumer chain observes the flag even
+  // through shallow copies of this connection (e.g. Mockito spies wired via AuthXManager).
+  private final AtomicBoolean activeSubscription = new AtomicBoolean(false);
   private boolean strValActive;
   private String strVal;
   protected String server;
@@ -187,7 +190,9 @@ public class Connection implements Closeable {
        * active on this connection; stray pub/sub frames (e.g. a message delivered after the
        * unsubscribe confirmation) must not surface as a regular command's reply.
        */
-      addPushConsumer(PushConsumerChainImpl.pubSubConsumer(this::isActiveSubscription));
+      // Capture the holder, not `this`: shallow copies of this connection share the holder,
+      // so the chain sees flag updates made through any copy.
+      addPushConsumer(PushConsumerChainImpl.pubSubConsumer(activeSubscription::get));
   }
 
   /**
@@ -195,13 +200,13 @@ public class Connection implements Closeable {
    * pub/sub implementations around their subscribe/process loop.
    */
   @Internal
-  void setActiveSubscription(boolean activeSubscription) {
-    this.activeSubscription = activeSubscription;
+  void setActiveSubscription(boolean active) {
+    this.activeSubscription.set(active);
   }
 
   @Internal
   boolean isActiveSubscription() {
-    return activeSubscription;
+    return activeSubscription.get();
   }
 
   @Override

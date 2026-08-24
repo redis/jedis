@@ -14,6 +14,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.server.TcpMockServer;
 
@@ -142,6 +143,29 @@ public class ConnectionMockTest {
         mockServer.sendPushMessageToAll("message", "channel", "payload");
         Thread.sleep(200);
         assertTrue(conn.ping(), "After the subscription ends, pushes must be dropped again");
+      }
+    }
+
+    @Test
+    public void subscriptionFlagSetThroughShallowCopyIsVisibleToPushConsumers() {
+      // AuthXManager wiring may hand the pub/sub loop a shallow copy of the pooled
+      // connection (e.g. a Mockito spy, as in TokenBasedAuthenticationIntegrationTests).
+      // The subscription flag must stay shared with the push consumer chain, or the
+      // SUBSCRIBE confirmation push would be dropped instead of propagated.
+      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().resp3().build();
+
+      HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
+      DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(hostAndPort, config);
+
+      try (Connection conn = new Connection(socketFactory, config)) {
+        Connection copy = Mockito.spy(conn);
+        ConnectionTestHelper.setActiveSubscription(copy, true);
+
+        mockServer.sendPushMessageToAll("subscribe", "channel1", "1");
+
+        Object reply = copy.getUnflushedObject();
+        List<?> content = assertInstanceOf(List.class, reply);
+        assertArrayEquals(SafeEncoder.encode("subscribe"), (byte[]) content.get(0));
       }
     }
 

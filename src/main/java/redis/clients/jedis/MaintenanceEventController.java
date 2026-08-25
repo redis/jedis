@@ -145,8 +145,8 @@ final class MaintenanceEventController
   @Override
   public void onMoving(MovingEvent e, Connection c) {
     if (logger.isDebugEnabled()) {
-      logger.debug("Moving to {} (seq={}, ttl={}s) conn={}", e.target, e.seq, e.ttlSeconds,
-        c.toIdentityString());
+      logger.debug("Moving to {} (seq={}, grace={}s) conn={}", e.target, e.seq,
+        e.gracePeriodSeconds, c.toIdentityString());
     }
     SocketAddress affectedPeer = c.getRemoteSocketAddress();
     if (affectedPeer == null) {
@@ -160,8 +160,8 @@ final class MaintenanceEventController
       }
       return;
     }
-    logger.debug("Applied MOVING {} -> {} (seq={}, ttl={}s, sources={})", affectedPeer, e.target,
-      e.seq, e.ttlSeconds, applied.affected.size());
+    logger.debug("Applied MOVING {} -> {} (seq={}, grace={}s, sources={})", affectedPeer, e.target,
+      e.seq, e.gracePeriodSeconds, applied.affected.size());
     handleRebind(applied);
   }
 
@@ -235,8 +235,8 @@ final class MaintenanceEventController
   @Override
   public void onMigrating(MigratingEvent e, Connection c) {
     if (logger.isDebugEnabled()) {
-      logger.debug("Migrating shards {} (seq={}, ttl={}s) conn={}", e.shardIds, e.seq, e.ttlSeconds,
-        c.toIdentityString());
+      logger.debug("Migrating shards {} (seq={}, startsIn={}s) conn={}", e.shardIds, e.seq,
+        e.startsInSeconds, c.toIdentityString());
     }
     relaxConnectionTimeoutsFor(c, maxRelaxedDurationNanos + NanoClock.INSTANCE.getAsLong());
   }
@@ -244,8 +244,8 @@ final class MaintenanceEventController
   @Override
   public void onFailingOver(FailingOverEvent e, Connection c) {
     if (logger.isDebugEnabled()) {
-      logger.debug("Failing over shards {} (seq={}, ttl={}s) conn={}", e.shardIds, e.seq,
-        e.ttlSeconds, c.toIdentityString());
+      logger.debug("Failing over shards {} (seq={}, startsIn={}s) conn={}", e.shardIds, e.seq,
+        e.startsInSeconds, c.toIdentityString());
     }
     relaxConnectionTimeoutsFor(c, maxRelaxedDurationNanos + NanoClock.INSTANCE.getAsLong());
   }

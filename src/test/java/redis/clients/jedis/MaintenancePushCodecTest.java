@@ -53,7 +53,7 @@ public class MaintenancePushCodecTest {
     MovingEvent m = assertInstanceOf(MovingEvent.class,
       build(PushType.MOVING, push(type("MOVING"), 30L, 15L, bytes("new-host:6380"))));
     assertEquals(30L, m.seq);
-    assertEquals(15L, m.ttlSeconds);
+    assertEquals(15L, m.gracePeriodSeconds);
     assertEquals(new HostAndPort("new-host", 6380), m.target);
   }
 
@@ -62,7 +62,7 @@ public class MaintenancePushCodecTest {
     MovingEvent m = assertInstanceOf(MovingEvent.class,
       build(PushType.MOVING, push(type("MOVING"), 30L, 15L, null)));
     assertEquals(30L, m.seq);
-    assertEquals(15L, m.ttlSeconds);
+    assertEquals(15L, m.gracePeriodSeconds);
     assertNull(m.target);
   }
 
@@ -71,7 +71,7 @@ public class MaintenancePushCodecTest {
     MigratingEvent e = assertInstanceOf(MigratingEvent.class,
       build(PushType.MIGRATING, push(type("MIGRATING"), 6L, 2L, SHARDS)));
     assertEquals(6L, e.seq);
-    assertEquals(2L, e.ttlSeconds);
+    assertEquals(2L, e.startsInSeconds);
     assertEquals("[\"2\",\"4\"]", e.shardIds);
   }
 
@@ -80,7 +80,7 @@ public class MaintenancePushCodecTest {
     FailingOverEvent e = assertInstanceOf(FailingOverEvent.class,
       build(PushType.FAILING_OVER, push(type("FAILING_OVER"), 6L, 2L, SHARDS)));
     assertEquals(6L, e.seq);
-    assertEquals(2L, e.ttlSeconds);
+    assertEquals(2L, e.startsInSeconds);
     assertEquals("[\"2\",\"4\"]", e.shardIds);
   }
 

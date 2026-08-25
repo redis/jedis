@@ -97,9 +97,10 @@ final class MovingOperations {
       this.endpoint = e.target;
       this.affected = Collections.singleton(receiverPeer);
       // expires at = observed at + time_s
-      this.deadlineNanos = now + TimeUnit.SECONDS.toNanos(e.ttlSeconds);
+      this.deadlineNanos = now + TimeUnit.SECONDS.toNanos(e.gracePeriodSeconds);
       // Reconnect instant: a real target marks immediately; 'none' marks at half the raw grace,
-      this.reconnectAtNanos = e.target == null ? now + TimeUnit.SECONDS.toNanos(e.ttlSeconds) / 2
+      this.reconnectAtNanos = e.target == null
+          ? now + TimeUnit.SECONDS.toNanos(e.gracePeriodSeconds) / 2
           : now;
     }
 

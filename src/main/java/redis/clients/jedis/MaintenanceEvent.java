@@ -26,11 +26,11 @@ abstract class MaintenanceEvent {
 
 /**
  * {@code [MOVING, seq, time_s, host:port | null]} — endpoint moves to {@code target} within
- * {@code ttlSeconds}. A {@code null} target is the {@code none} endpoint type: no remap; reconnect
- * to the configured endpoint.
+ * {@code gracePeriodSeconds}, then the old endpoint hard-disconnects. A {@code null} target is the
+ * {@code none} endpoint type: no remap; reconnect to the configured endpoint.
  */
 final class MovingEvent extends MaintenanceEvent {
-  final long ttlSeconds;
+  final long gracePeriodSeconds;
   /**
    * New endpoint, or {@code null} for the {@code none} type (reconnect to the configured endpoint).
    */
@@ -41,9 +41,9 @@ final class MovingEvent extends MaintenanceEvent {
    */
   private final Object identity;
 
-  MovingEvent(long seq, long ttlSeconds, HostAndPort target) {
+  MovingEvent(long seq, long gracePeriodSeconds, HostAndPort target) {
     super(seq);
-    this.ttlSeconds = ttlSeconds;
+    this.gracePeriodSeconds = gracePeriodSeconds;
     this.target = target;
     this.identity = Arrays.asList(seq, target);
   }
@@ -64,12 +64,12 @@ final class MovingEvent extends MaintenanceEvent {
  * diagnostic.
  */
 final class MigratingEvent extends MaintenanceEvent {
-  final long ttlSeconds;
+  final long startsInSeconds;
   final String shardIds;
 
-  MigratingEvent(long seq, long ttlSeconds, String shardIds) {
+  MigratingEvent(long seq, long startsInSeconds, String shardIds) {
     super(seq);
-    this.ttlSeconds = ttlSeconds;
+    this.startsInSeconds = startsInSeconds;
     this.shardIds = shardIds;
   }
 
@@ -84,12 +84,12 @@ final class MigratingEvent extends MaintenanceEvent {
  * diagnostic.
  */
 final class FailingOverEvent extends MaintenanceEvent {
-  final long ttlSeconds;
+  final long startsInSeconds;
   final String shardIds;
 
-  FailingOverEvent(long seq, long ttlSeconds, String shardIds) {
+  FailingOverEvent(long seq, long startsInSeconds, String shardIds) {
     super(seq);
-    this.ttlSeconds = ttlSeconds;
+    this.startsInSeconds = startsInSeconds;
     this.shardIds = shardIds;
   }
 

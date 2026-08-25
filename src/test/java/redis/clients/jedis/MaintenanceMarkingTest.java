@@ -79,12 +79,12 @@ public class MaintenanceMarkingTest {
     return conn;
   }
 
-  private void movingNone(long seq, long ttlSeconds) {
-    controller.onMoving(new MovingEvent(seq, ttlSeconds, null), receiver);
+  private void movingNone(long seq, long gracePeriodSeconds) {
+    controller.onMoving(new MovingEvent(seq, gracePeriodSeconds, null), receiver);
   }
 
-  private void moving(long seq, HostAndPort target, long ttlSeconds) {
-    controller.onMoving(new MovingEvent(seq, ttlSeconds, target), receiver);
+  private void moving(long seq, HostAndPort target, long gracePeriodSeconds) {
+    controller.onMoving(new MovingEvent(seq, gracePeriodSeconds, target), receiver);
   }
 
   // --- marking scheduling and coverage ---

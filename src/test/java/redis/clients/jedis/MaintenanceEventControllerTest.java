@@ -86,12 +86,12 @@ public class MaintenanceEventControllerTest {
     NanoClock.INSTANCE = System::nanoTime;
   }
 
-  private void moving(long seq, HostAndPort target, long ttlSeconds) {
-    controller.onMoving(new MovingEvent(seq, ttlSeconds, target), receiver);
+  private void moving(long seq, HostAndPort target, long gracePeriodSeconds) {
+    controller.onMoving(new MovingEvent(seq, gracePeriodSeconds, target), receiver);
   }
 
-  private void movingOn(Connection c, long seq, HostAndPort target, long ttlSeconds) {
-    controller.onMoving(new MovingEvent(seq, ttlSeconds, target), c);
+  private void movingOn(Connection c, long seq, HostAndPort target, long gracePeriodSeconds) {
+    controller.onMoving(new MovingEvent(seq, gracePeriodSeconds, target), c);
   }
 
   private void advanceSeconds(long seconds) {

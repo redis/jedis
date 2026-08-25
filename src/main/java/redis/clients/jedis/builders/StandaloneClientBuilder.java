@@ -50,9 +50,10 @@ public abstract class StandaloneClientBuilder<C>
   }
 
   /**
-   * Configures server-side maintenance notifications (timeout relaxation and proactive rebind on
-   * MIGRATING / FAILING_OVER / MOVING). Defaults to AUTO mode (enabled when the server supports
-   * it). To turn the feature off, pass {@link MaintenanceNotificationsConfig#DISABLED}.
+   * Configures server-side maintenance notifications: timeout relaxation on
+   * MIGRATING/FAILING_OVER/MOVING and proactive endpoint handoff on MOVING. Requires RESP3.
+   * Defaults to AUTO mode (enabled when the server supports it). To turn the feature off, pass
+   * {@link MaintenanceNotificationsConfig#DISABLED}.
    * @param config maintenance notifications configuration; must not be {@code null}
    * @return this builder
    * @throws IllegalArgumentException if {@code config} is {@code null}

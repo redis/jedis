@@ -112,37 +112,47 @@ public final class PushMessageTypes {
   // ==================== Maintenance Events ====================
 
   /**
-   * Slot migration notification — server instructs the client to rebind to a new target.
+   * Endpoint handoff notification — connections to this endpoint must move to the new target within
+   * the grace period, after which the old endpoint hard-disconnects.
    * <p>
-   * Format: ["MOVING", slot, "host:port"]
+   * Format: ["MOVING", seq, graceSeconds, "host:port"] — the target is null for the "none" endpoint
+   * type: reconnect to the configured endpoint instead.
    * @since 8.1
    */
   public static final String MOVING = "MOVING";
   public static final byte[] MOVING_BYTES = SafeEncoder.encode(MOVING);
 
   /**
-   * Slot migration starting — relax client timeouts during migration.
+   * Shard migration starts within the lead time — relax client timeouts until MIGRATED.
+   * <p>
+   * Format: ["MIGRATING", seq, startsInSeconds, shard-ids]
    * @since 8.1
    */
   public static final String MIGRATING = "MIGRATING";
   public static final byte[] MIGRATING_BYTES = SafeEncoder.encode(MIGRATING);
 
   /**
-   * Slot migration complete — restore client timeouts.
+   * Shard migration complete — restore client timeouts.
+   * <p>
+   * Format: ["MIGRATED", seq, shard-ids]
    * @since 8.1
    */
   public static final String MIGRATED = "MIGRATED";
   public static final byte[] MIGRATED_BYTES = SafeEncoder.encode(MIGRATED);
 
   /**
-   * Failover starting — relax client timeouts during failover.
+   * Shard failover starts within the lead time — relax client timeouts until FAILED_OVER.
+   * <p>
+   * Format: ["FAILING_OVER", seq, startsInSeconds, shard-ids]
    * @since 8.1
    */
   public static final String FAILING_OVER = "FAILING_OVER";
   public static final byte[] FAILING_OVER_BYTES = SafeEncoder.encode(FAILING_OVER);
 
   /**
-   * Failover complete — restore client timeouts.
+   * Shard failover complete — restore client timeouts.
+   * <p>
+   * Format: ["FAILED_OVER", seq, shard-ids]
    * @since 8.1
    */
   public static final String FAILED_OVER = "FAILED_OVER";

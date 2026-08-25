@@ -61,6 +61,11 @@ public class ConnectionPool extends Pool<Connection> {
     attachAuthenticationListener(clientConfig.getAuthXManager());
   }
 
+  /**
+   * Creates the pool with maintenance notifications configured for its connections; {@code null}
+   * disables them.
+   * @since 8.1
+   */
   @Experimental
   public ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig,
@@ -74,6 +79,11 @@ public class ConnectionPool extends Pool<Connection> {
         : null;
   }
 
+  /**
+   * Creates the pool from a connection-factory builder with maintenance notifications configured
+   * for its connections; {@code null} disables them.
+   * @since 8.1
+   */
   @Experimental
   public ConnectionPool(ConnectionFactory.Builder factoryBuilder,
       GenericObjectPoolConfig<Connection> poolConfig, MaintenanceNotificationsConfig maintConfig) {

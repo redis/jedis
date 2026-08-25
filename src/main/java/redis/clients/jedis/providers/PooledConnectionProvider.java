@@ -50,6 +50,11 @@ public class PooledConnectionProvider implements ConnectionProvider {
     this.connectionMapKey = hostAndPort;
   }
 
+  /**
+   * Creates the provider with maintenance notifications configured for its pooled connections;
+   * {@code null} disables them.
+   * @since 8.1
+   */
   @Experimental
   public PooledConnectionProvider(HostAndPort hostAndPort, JedisClientConfig clientConfig,
       Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig,

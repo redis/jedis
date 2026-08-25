@@ -11,12 +11,16 @@ import redis.clients.jedis.util.JedisAsserts;
 /**
  * Configuration of the {@code CLIENT MAINT_NOTIFICATIONS} feature: how the client reacts to server
  * maintenance push notifications — timeout relaxation and proactive endpoint handoff.
+ * <p>
+ * Maintenance notifications require RESP3: on a RESP2 connection {@link Mode#AUTO} (the default)
+ * leaves the feature inactive and {@link Mode#ENABLED} fails the connection setup.
  * @since 8.1
  */
 public class MaintenanceNotificationsConfig {
 
   /**
-   * Default upper bound on the relaxed-timeout window started by MIGRATING/FAILING_OVER/MOVING.
+   * Default upper bound on the relaxed-timeout window started by MIGRATING/FAILING_OVER when the
+   * matching closing notification is lost. MOVING windows end at their own grace period instead.
    * @since 8.1
    */
   public static final Duration DEFAULT_RELAXED_WINDOW_MAX_DURATION = Duration.ofSeconds(60);
@@ -153,12 +157,11 @@ public class MaintenanceNotificationsConfig {
   /**
    * Mode for maintenance event notifications.
    * <ul>
-   * <li>ENABLED - Maintenance notifications are explicitly enabled. Both timeout relaxation and
-   * proactive rebind are activated. Server must support the feature.</li>
-   * <li>DISABLED - Maintenance notifications are explicitly disabled.</li>
-   * <li>AUTO - Maintenance notifications are automatically enabled if the server supports them.
-   * Silently falls back if not supported. Both timeout relaxation and proactive rebind are
-   * activated when successful.</li>
+   * <li>ENABLED - the handshake must succeed: connection setup fails if the server rejects
+   * {@code CLIENT MAINT_NOTIFICATIONS} or the connection is not RESP3.</li>
+   * <li>DISABLED - the handshake is not attempted; the feature is off.</li>
+   * <li>AUTO - the handshake is attempted on RESP3 connections and the feature is quietly disabled
+   * if the server rejects it (or the connection is not RESP3).</li>
    * </ul>
    * @since 8.1
    */
@@ -190,9 +193,10 @@ public class MaintenanceNotificationsConfig {
   }
 
   /**
-   * Upper bound on the relaxed-timeout window started by MIGRATING/FAILING_OVER/MOVING. The window
-   * reverts automatically after this duration even if the matching closing notification is never
-   * received. Safety net against missed events or misbehaving servers.
+   * Upper bound on the relaxed-timeout window started by MIGRATING/FAILING_OVER. The window reverts
+   * automatically after this duration even if the matching closing notification is never received.
+   * Safety net against missed events or misbehaving servers. MOVING windows end at their own grace
+   * period instead.
    * @since 8.1
    */
   public Duration getRelaxedWindowMaxDuration() {
@@ -200,9 +204,8 @@ public class MaintenanceNotificationsConfig {
   }
 
   /**
-   * Returns whether maintenance event notifications are enabled. When enabled, both timeout
-   * relaxation and proactive rebind features are activated.
-   * @return true if mode is ENABLED or AUTO, false if DISABLED
+   * True when the client will attempt the maintenance-notifications handshake (mode ENABLED or
+   * AUTO); with AUTO the feature still depends on server support.
    * @since 8.1
    */
   public boolean isEnabledOrAuto() {
@@ -210,7 +213,9 @@ public class MaintenanceNotificationsConfig {
   }
 
   /**
-   * Relaxed socket timeout in milliseconds applied while a maintenance window is open.
+   * Relaxed socket timeout in milliseconds applied while a maintenance window is open. The
+   * connection uses the looser of this value and the configured socket timeout ({@code 0} =
+   * infinite is the loosest), so relaxation never tightens a timeout.
    * @since 8.1
    */
   public int getRelaxedTimeout() {
@@ -218,7 +223,9 @@ public class MaintenanceNotificationsConfig {
   }
 
   /**
-   * Relaxed blocking socket timeout in milliseconds; {@code 0} means infinite.
+   * Relaxed blocking socket timeout in milliseconds; {@code 0} means infinite. The connection uses
+   * the looser of this value and the configured blocking socket timeout, so relaxation never
+   * tightens a timeout.
    * @since 8.1
    */
   public int getRelaxedBlockingTimeout() {
@@ -226,7 +233,9 @@ public class MaintenanceNotificationsConfig {
   }
 
   /**
-   * A builder preloaded with the defaults.
+   * A builder preloaded with the defaults: {@link Mode#AUTO}, auto-resolved endpoint type, relaxed
+   * timeouts {@link #DEFAULT_RELAXED_SOCKET_TIMEOUT_MS} /
+   * {@link #DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS}.
    * @since 8.1
    */
   public static Builder builder() {
@@ -285,7 +294,8 @@ public class MaintenanceNotificationsConfig {
     }
 
     /**
-     * Socket timeout in milliseconds applied while a maintenance window is open; defaults to
+     * Socket timeout in milliseconds applied while a maintenance window is open; the connection
+     * uses the looser of this value and the configured socket timeout. Defaults to
      * {@link MaintenanceNotificationsConfig#DEFAULT_RELAXED_SOCKET_TIMEOUT_MS}.
      * @since 8.1
      */
@@ -296,7 +306,8 @@ public class MaintenanceNotificationsConfig {
 
     /**
      * Blocking-command socket timeout in milliseconds applied while a maintenance window is open;
-     * {@code 0} means infinite. Defaults to
+     * {@code 0} means infinite. The connection uses the looser of this value and the configured
+     * blocking socket timeout. Defaults to
      * {@link MaintenanceNotificationsConfig#DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS}.
      * @since 8.1
      */
@@ -306,9 +317,9 @@ public class MaintenanceNotificationsConfig {
     }
 
     /**
-     * Upper bound on relaxation triggered by MIGRATING/FAILING_OVER/MOVING. Acts as a safety net:
-     * the relaxed window reverts after this duration even if the matching closing notification is
-     * lost. Defaults to {@link MaintenanceNotificationsConfig#DEFAULT_RELAXED_WINDOW_MAX_DURATION}.
+     * Upper bound on relaxation triggered by MIGRATING/FAILING_OVER. Acts as a safety net: the
+     * relaxed window reverts after this duration even if the matching closing notification is lost.
+     * Defaults to {@link MaintenanceNotificationsConfig#DEFAULT_RELAXED_WINDOW_MAX_DURATION}.
      * @since 8.1
      */
     public Builder relaxedWindowMaxDuration(Duration duration) {

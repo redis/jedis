@@ -642,10 +642,10 @@
 						<include>**/*Himport*.java</include>
 						<include>**/ConnectionRegistry*.java</include>
 						<include>**/CacheabilityResolver.java</include>
-						<include>**/CustomCacheablePolicy.java.java</include>
-						<include>**/CommandFlagsInitializer.java.java</include>
-						<include>**/MetadataReader.java.java</include>
-						<include>**/MetadataResolver.java.java.java</include>
+						<include>**/CustomCacheablePolicy.java</include>
+						<include>**/CommandFlagsInitializer.java</include>
+						<include>**/MetadataReader.java</include>
+						<include>**/MetadataResolver.java</include>
 						<include>**/CacheabilityResolverTest.java</include>
 						<include>**/CustomCacheablePolicyTest.java</include>
 						<include>**/DefaultCacheableTest.java</include>

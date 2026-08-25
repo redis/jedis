@@ -39,6 +39,8 @@ nav:
     - Transactions/Multi: transactions-multi.md
     - Hash Import (HIMPORT): hash-import.md
     - Smart Client Handoffs: smart-client-handoffs.md
+  - Release Notes:
+      - 8.1.0: release-notes/8.1.0.md
   - Migrating to newer versions:
       - Jedis 8: migration-guides/v7-to-v8.md
       - Jedis 7: migration-guides/v6-to-v7.md

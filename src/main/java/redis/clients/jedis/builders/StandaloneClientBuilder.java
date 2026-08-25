@@ -56,6 +56,7 @@ public abstract class StandaloneClientBuilder<C>
    * @param config maintenance notifications configuration; must not be {@code null}
    * @return this builder
    * @throws IllegalArgumentException if {@code config} is {@code null}
+   * @since 8.1
    */
   public StandaloneClientBuilder<C> maintenanceNotifications(
       MaintenanceNotificationsConfig config) {

@@ -113,6 +113,7 @@ public final class PushConsumerChainImpl implements PushConsumerChain {
    * Remove a consumer from the chain.
    * @param consumer the consumer to remove
    * @return this chain for method chaining
+   * @since 8.1
    */
   public PushConsumerChain remove(PushConsumer consumer) {
     if (consumer != null) {

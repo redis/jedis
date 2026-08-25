@@ -12,6 +12,11 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.JedisAsserts;
 
+/**
+ * Connection-init visitor wiring maintenance notifications: performs the
+ * {@code CLIENT MAINT_NOTIFICATIONS} handshake and installs the relaxed-timeout overlays.
+ * @since 8.1
+ */
 public class MaintenanceAwareVisitor implements InitVisitor {
 
   private static final Logger logger = LoggerFactory.getLogger(MaintenanceAwareVisitor.class);

@@ -8,13 +8,29 @@ import java.time.Duration;
 
 import redis.clients.jedis.util.JedisAsserts;
 
+/**
+ * Configuration of the {@code CLIENT MAINT_NOTIFICATIONS} feature: how the client reacts to server
+ * maintenance push notifications — timeout relaxation and proactive endpoint handoff.
+ * @since 8.1
+ */
 public class MaintenanceNotificationsConfig {
 
-  /** Default upper bound on the relaxed-timeout window started by MIGRATING/FAILING_OVER/MOVING. */
+  /**
+   * Default upper bound on the relaxed-timeout window started by MIGRATING/FAILING_OVER/MOVING.
+   * @since 8.1
+   */
   public static final Duration DEFAULT_RELAXED_WINDOW_MAX_DURATION = Duration.ofSeconds(60);
 
+  /**
+   * Default relaxed socket timeout in milliseconds.
+   * @since 8.1
+   */
   public static final int DEFAULT_RELAXED_SOCKET_TIMEOUT_MS = 10_000;
 
+  /**
+   * Default relaxed blocking socket timeout in milliseconds; {@code 0} means infinite.
+   * @since 8.1
+   */
   public static final int DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS = 0;
 
   private MaintenanceNotificationsConfig(Builder builder) {
@@ -29,7 +45,7 @@ public class MaintenanceNotificationsConfig {
    * Endpoint types for maintenance event notifications.
    * <p>
    * Determines the format of endpoint addresses returned in MOVING notifications.
-   * @since 8.0
+   * @since 8.1
    */
   public enum EndpointType {
     /** Internal IP address (for private network connections) */
@@ -43,7 +59,7 @@ public class MaintenanceNotificationsConfig {
     /**
      * No endpoint: MOVING carries a null target. The client does not remap; it reconnects to the
      * currently-configured endpoint at half the grace period.
-     * @since 8.0
+     * @since 8.1
      */
     NONE
   }
@@ -51,7 +67,7 @@ public class MaintenanceNotificationsConfig {
   /**
    * Strategy determining the {@link EndpointType} to request in MOVING notifications, evaluated per
    * connection at handshake time.
-   * @since 8.0
+   * @since 8.1
    */
   public interface EndpointTypeResolver {
 
@@ -144,6 +160,7 @@ public class MaintenanceNotificationsConfig {
    * Silently falls back if not supported. Both timeout relaxation and proactive rebind are
    * activated when successful.</li>
    * </ul>
+   * @since 8.1
    */
   public enum Mode {
     ENABLED, DISABLED, AUTO
@@ -158,12 +175,16 @@ public class MaintenanceNotificationsConfig {
   /**
    * The strategy that decides which endpoint type to request in MOVING notifications; defaults to
    * auto-resolution from connection characteristics.
-   * @since 8.0
+   * @since 8.1
    */
   public EndpointTypeResolver getEndpointTypeResolver() {
     return endpointTypeResolver;
   }
 
+  /**
+   * The configured mode.
+   * @since 8.1
+   */
   public Mode getMode() {
     return mode;
   }
@@ -172,6 +193,7 @@ public class MaintenanceNotificationsConfig {
    * Upper bound on the relaxed-timeout window started by MIGRATING/FAILING_OVER/MOVING. The window
    * reverts automatically after this duration even if the matching closing notification is never
    * received. Safety net against missed events or misbehaving servers.
+   * @since 8.1
    */
   public Duration getRelaxedWindowMaxDuration() {
     return relaxedWindowMaxDuration;
@@ -181,19 +203,32 @@ public class MaintenanceNotificationsConfig {
    * Returns whether maintenance event notifications are enabled. When enabled, both timeout
    * relaxation and proactive rebind features are activated.
    * @return true if mode is ENABLED or AUTO, false if DISABLED
+   * @since 8.1
    */
   public boolean isEnabledOrAuto() {
     return mode == Mode.ENABLED || mode == Mode.AUTO;
   }
 
+  /**
+   * Relaxed socket timeout in milliseconds applied while a maintenance window is open.
+   * @since 8.1
+   */
   public int getRelaxedTimeout() {
     return relaxedTimeout;
   }
 
+  /**
+   * Relaxed blocking socket timeout in milliseconds; {@code 0} means infinite.
+   * @since 8.1
+   */
   public int getRelaxedBlockingTimeout() {
     return relaxedBlockingTimeout;
   }
 
+  /**
+   * A builder preloaded with the defaults.
+   * @since 8.1
+   */
   public static Builder builder() {
     return new Builder();
   }
@@ -201,10 +236,15 @@ public class MaintenanceNotificationsConfig {
   /**
    * Maintenance notifications disabled. To enable — optionally with custom relaxed timeouts — use
    * {@link #builder()} with mode {@link Mode#AUTO} or {@link Mode#ENABLED}.
+   * @since 8.1
    */
   public static final MaintenanceNotificationsConfig DISABLED = builder().mode(Mode.DISABLED)
       .build();
 
+  /**
+   * Builder for {@link MaintenanceNotificationsConfig}.
+   * @since 8.1
+   */
   public static class Builder {
     private EndpointTypeResolver endpointTypeResolver = AutoEndpointTypeResolver.INSTANCE;
     private Mode mode = Mode.AUTO;
@@ -215,7 +255,7 @@ public class MaintenanceNotificationsConfig {
     /**
      * Requests a fixed endpoint type for all MOVING notifications. Mutually exclusive with
      * {@link #autoResolveEndpointType()}; the last call wins.
-     * @since 8.0
+     * @since 8.1
      */
     public Builder endpointType(EndpointType endpointType) {
       JedisAsserts.notNull(endpointType, "endpointType must not be null");
@@ -228,23 +268,38 @@ public class MaintenanceNotificationsConfig {
      * IP selects {@code INTERNAL_*}, public {@code EXTERNAL_*}; TLS selects {@code *_FQDN},
      * plaintext {@code *_IP}. This is the default. Mutually exclusive with
      * {@link #endpointType(EndpointType)}; the last call wins.
-     * @since 8.0
+     * @since 8.1
      */
     public Builder autoResolveEndpointType() {
       this.endpointTypeResolver = AutoEndpointTypeResolver.INSTANCE;
       return this;
     }
 
+    /**
+     * The notifications mode; defaults to {@link Mode#AUTO}.
+     * @since 8.1
+     */
     public Builder mode(Mode mode) {
       this.mode = mode;
       return this;
     }
 
+    /**
+     * Socket timeout in milliseconds applied while a maintenance window is open; defaults to
+     * {@link MaintenanceNotificationsConfig#DEFAULT_RELAXED_SOCKET_TIMEOUT_MS}.
+     * @since 8.1
+     */
     public Builder relaxedTimeout(int millis) {
       this.relaxedTimeout = millis;
       return this;
     }
 
+    /**
+     * Blocking-command socket timeout in milliseconds applied while a maintenance window is open;
+     * {@code 0} means infinite. Defaults to
+     * {@link MaintenanceNotificationsConfig#DEFAULT_RELAXED_BLOCKING_SOCKET_TIMEOUT_MS}.
+     * @since 8.1
+     */
     public Builder relaxedBlockingTimeout(int millis) {
       this.relaxedBlockingTimeout = millis;
       return this;
@@ -254,6 +309,7 @@ public class MaintenanceNotificationsConfig {
      * Upper bound on relaxation triggered by MIGRATING/FAILING_OVER/MOVING. Acts as a safety net:
      * the relaxed window reverts after this duration even if the matching closing notification is
      * lost. Defaults to {@link MaintenanceNotificationsConfig#DEFAULT_RELAXED_WINDOW_MAX_DURATION}.
+     * @since 8.1
      */
     public Builder relaxedWindowMaxDuration(Duration duration) {
       JedisAsserts.notNull(duration, "duration must not be null");
@@ -261,6 +317,10 @@ public class MaintenanceNotificationsConfig {
       return this;
     }
 
+    /**
+     * Builds the immutable configuration.
+     * @since 8.1
+     */
     public MaintenanceNotificationsConfig build() {
       return new MaintenanceNotificationsConfig(this);
     }

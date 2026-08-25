@@ -954,6 +954,7 @@ public final class MultiDbConfig {
      * Returns the maintenance notifications configuration for this database. Defaults to
      * {@link MaintenanceNotificationsConfig#DISABLED} when not explicitly set.
      * @return the maintenance notifications configuration
+     * @since 8.1
      */
     public MaintenanceNotificationsConfig getMaintenanceNotificationsConfig() {
       return maintenanceNotificationsConfig;
@@ -1074,6 +1075,7 @@ public final class MultiDbConfig {
        * @param maintenanceNotificationsConfig the configuration; must not be {@code null}
        * @return this builder
        * @throws IllegalArgumentException if {@code maintenanceNotificationsConfig} is {@code null}
+       * @since 8.1
        */
       public Builder maintenanceNotificationsConfig(
           MaintenanceNotificationsConfig maintenanceNotificationsConfig) {

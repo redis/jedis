@@ -109,6 +109,10 @@ public class TrackingConnectionPool extends ConnectionPool {
       return this;
     }
 
+    /**
+     * Maintenance notifications configuration applied to connections created by this pool.
+     * @since 8.1
+     */
     public Builder maintenanceNotificationsConfig(
         MaintenanceNotificationsConfig maintenanceNotificationsConfig) {
       this.maintenanceNotificationsConfig = maintenanceNotificationsConfig;

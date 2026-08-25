@@ -60,6 +60,7 @@ public class Connection implements Closeable {
     /**
      * Configuration that drives the {@code CLIENT MAINT_NOTIFICATIONS} handshake (mode, endpoint
      * type). {@code null} (or {@code DISABLED}) skips the handshake.
+     * @since 8.1
      */
     public Builder maintenanceConfig(MaintenanceNotificationsConfig maintenanceConfig) {
       this.maintenanceConfig = maintenanceConfig;

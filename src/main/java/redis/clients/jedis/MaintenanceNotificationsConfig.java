@@ -1,10 +1,12 @@
 package redis.clients.jedis;
 
+import java.net.Inet6Address;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.time.Duration;
 
 import redis.clients.jedis.util.JedisAsserts;
-import redis.clients.jedis.util.NetUtils;
 
 public class MaintenanceNotificationsConfig {
 
@@ -63,9 +65,9 @@ public class MaintenanceNotificationsConfig {
   }
 
   /**
-   * Auto-resolves from connection characteristics: private remote IP (see
-   * {@link NetUtils#isPrivateIp}) selects {@code INTERNAL_*}, public {@code EXTERNAL_*}; TLS
-   * selects {@code *_FQDN}, plaintext {@code *_IP}.
+   * Auto-resolves from connection characteristics: a private remote IP (loopback, link-local,
+   * site-local, or IPv6 unique-local) selects {@code INTERNAL_*}, a public one {@code EXTERNAL_*};
+   * TLS selects {@code *_FQDN}, plaintext {@code *_IP}.
    */
   private static final class AutoEndpointTypeResolver implements EndpointTypeResolver {
 
@@ -73,7 +75,7 @@ public class MaintenanceNotificationsConfig {
 
     @Override
     public EndpointType getEndpointType(SocketAddress remoteAddress, boolean sslEnabled) {
-      if (NetUtils.isPrivateIp(remoteAddress)) {
+      if (isPrivateIp(remoteAddress)) {
         return sslEnabled ? EndpointType.INTERNAL_FQDN : EndpointType.INTERNAL_IP;
       }
       return sslEnabled ? EndpointType.EXTERNAL_FQDN : EndpointType.EXTERNAL_IP;
@@ -103,6 +105,33 @@ public class MaintenanceNotificationsConfig {
     public String toString() {
       return "FixedEndpointTypeResolver(" + endpointType + ")";
     }
+  }
+
+  /**
+   * True if the address is a resolved private IP: loopback, link-local, site-local, or IPv6
+   * unique-local.
+   */
+  private static boolean isPrivateIp(SocketAddress socketAddress) {
+    if (!(socketAddress instanceof InetSocketAddress)) {
+      return false;
+    }
+
+    InetAddress address = ((InetSocketAddress) socketAddress).getAddress();
+    if (address == null || address.isAnyLocalAddress()) {
+      return false;
+    }
+
+    return address.isLoopbackAddress() || address.isLinkLocalAddress()
+        || address.isSiteLocalAddress() || isUniqueLocalAddress(address);
+  }
+
+  // https://datatracker.ietf.org/doc/html/rfc4193
+  private static boolean isUniqueLocalAddress(InetAddress address) {
+    if (!(address instanceof Inet6Address)) {
+      return false;
+    }
+    byte[] bytes = address.getAddress();
+    return (bytes[0] & (byte) 0xfe) == (byte) 0xfc; // fc00::/7
   }
 
   /**

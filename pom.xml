@@ -654,7 +654,6 @@
 						<include>**/MovingOperations.java</include>
 						<include>**/SocketAddress*.java</include>
 						<include>**/sch/*.java</include>
-						<include>**/NumberUtils.java</include>
 						<include>**/ConnectionFactoryRebindTest.java</include>
 					</includes>
 				</configuration>

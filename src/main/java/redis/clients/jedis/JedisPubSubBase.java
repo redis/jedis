@@ -106,10 +106,12 @@ public abstract class JedisPubSubBase<T> {
   public final void proceed(Connection client, T... channels) {
     authenticator.registerForAuthentication(client);
     authenticator.client.setTimeoutInfinite();
+    authenticator.client.setActiveSubscription(true);
     try {
       subscribe(channels);
       process();
     } finally {
+      authenticator.client.setActiveSubscription(false);
       authenticator.client.rollbackTimeout();
     }
   }
@@ -117,10 +119,12 @@ public abstract class JedisPubSubBase<T> {
   public final void proceedWithPatterns(Connection client, T... patterns) {
     authenticator.registerForAuthentication(client);
     authenticator.client.setTimeoutInfinite();
+    authenticator.client.setActiveSubscription(true);
     try {
       psubscribe(patterns);
       process();
     } finally {
+      authenticator.client.setActiveSubscription(false);
       authenticator.client.rollbackTimeout();
     }
   }

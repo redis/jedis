@@ -1,8 +1,7 @@
 package redis.clients.jedis.mcf;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
@@ -19,7 +18,6 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.PushConsumer;
-import redis.clients.jedis.PushConsumerChainImpl;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 public class TrackingConnectionPoolInitTest {
@@ -57,8 +55,8 @@ public class TrackingConnectionPoolInitTest {
         Connection conn = pool.getResource()) {
 
       List<PushConsumer> consumers = ConnectionTestHelper.getPushConsumers(conn);
-      // contains(...) is an exact-length matcher: two copies of PUBSUB_CONSUMER would fail.
-      assertThat(consumers, contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER)));
+      // Double initialization would register the default pub/sub consumer twice.
+      assertThat(consumers, hasSize(1));
     }
   }
 

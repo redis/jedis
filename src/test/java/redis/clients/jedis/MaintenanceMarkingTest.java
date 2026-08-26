@@ -79,6 +79,40 @@ public class MaintenanceMarkingTest {
     return conn;
   }
 
+  /**
+   * A MOVING copy buffered on a connection that outlived its grace must not re-open a window: the
+   * first apply retires every same-peer connection, the window expires, and the stale copy is
+   * finally read from the retired connection.
+   */
+  @Test
+  public void staleMovingOnRetiredConnectionIsNotReadmitted() throws Exception {
+    AtomicLong now = installTestClock();
+    Connection other = connect(mockServer); // same peer as receiver
+    try {
+      moving(1, TARGET_B, 15); // real target: retires all same-peer connections immediately
+      assertTrue(controller.isRebindActive());
+      assertTrue(other.isRetired());
+
+      now.addAndGet(TimeUnit.SECONDS.toNanos(16)); // grace expired; store prunes lazily
+      assertFalse(controller.isRebindActive());
+
+      // the same event's buffered copy, finally read on the other (retired) connection
+      controller.onMoving(new MovingEvent(1, 15, TARGET_B), other);
+      assertFalse(controller.isRebindActive(), "stale MOVING re-opened an expired window");
+    } finally {
+      other.close();
+    }
+  }
+
+  /** A future retirement deadline ('none'-style) must not block admission of a new MOVING. */
+  @Test
+  public void movingOnConnectionRetiringInFutureIsAdmitted() {
+    AtomicLong now = installTestClock();
+    receiver.retireAt(now.get() + TimeUnit.SECONDS.toNanos(10));
+    moving(1, TARGET_B, 15);
+    assertTrue(controller.isRebindActive());
+  }
+
   private void movingNone(long seq, long gracePeriodSeconds) {
     controller.onMoving(new MovingEvent(seq, gracePeriodSeconds, null), receiver);
   }

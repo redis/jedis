@@ -396,8 +396,8 @@ public class Connection implements Closeable {
       throw markBroken(new JedisConnectionException("Failed to set SO_TIMEOUT", e));
     }
     appliedSoTimeout = timeout;
-    if (logger.isDebugEnabled()) {
-      logger.debug("Timeout applied millis={} blocking={} conn={}", timeout, isBlocking,
+    if (logger.isTraceEnabled()) {
+      logger.trace("Timeout applied millis={} blocking={} conn={}", timeout, isBlocking,
         toIdentityString());
     }
   }

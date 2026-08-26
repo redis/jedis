@@ -10,10 +10,16 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.cert.X509Certificate;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.redis.test.fi.FaultInjectorClient;
 import com.redis.test.fi.Scenario;
@@ -28,6 +34,8 @@ import redis.clients.jedis.MaintenanceNotificationsConfig.EndpointType;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.SslOptions;
+import redis.clients.jedis.util.TlsUtil;
 
 /**
  * Shared environment for maintenance-notification scenario tests. The FI is the single source of
@@ -36,18 +44,23 @@ import redis.clients.jedis.RedisProtocol;
  */
 abstract class MaintNotificationsScenarioBase {
 
+  private static final Logger logger = LoggerFactory
+      .getLogger(MaintNotificationsScenarioBase.class);
+
   /** Base socket timeout kept low so relaxed/restored timeouts are directly observable. */
   static final int CLIENT_SOCKET_TIMEOUT_MS = 1_000;
   /** Deliberately different from the non-blocking base, so probes prove which timeout applied. */
   static final int CLIENT_BLOCKING_SOCKET_TIMEOUT_MS = 2_000;
   static final int RELAXED_TIMEOUT_MS = 30_000;
   static final long EFFECT_JOIN_TIMEOUT_MS = 200_000;
+  static final String TRUSTSTORE_PASSWORD = "changeit";
 
   /** One FI client for parameter collection and test execution. */
   static final FaultInjectorClient faultInjector = new FaultInjectorClient();
 
   RedisClient client;
   Connection pinned;
+  Path serverTruststore;
   long bdbId = -1;
   final List<Thread> effectThreads = new ArrayList<>();
   final List<Throwable> effectFailures = Collections.synchronizedList(new ArrayList<>());
@@ -72,8 +85,53 @@ abstract class MaintNotificationsScenarioBase {
         .trigger(scenario.trigger().name()).requirement(scenario.requirement().config()).dbConfig();
     Map<String, Object> output = faultInjector.createDatabase(dbConfig);
     bdbId = ((Number) output.get("bdb_id")).longValue();
-    awaitEndpointConnectable(URI.create((String) ((List<?>) output.get("endpoints")).get(0)));
-    client = buildClient(output, endpointType);
+    URI endpoint = URI.create((String) ((List<?>) output.get("endpoints")).get(0));
+    awaitEndpointConnectable(endpoint);
+    SslOptions sslOptions = null;
+    if (Boolean.TRUE.equals(output.get("tls"))) {
+      serverTruststore = createServerTruststore(endpoint);
+      sslOptions = sslOptionsFor(serverTruststore);
+    }
+    client = buildClient(output, endpointType, sslOptions);
+  }
+
+  /**
+   * Bootstraps client trust for an endpoint whose CA is not available to the test: downloads the
+   * certificate chain the server presents and saves a truststore containing only that chain, so the
+   * client trusts exactly this server and nothing else. The store is a temp file under the test
+   * work folder, deleted when the test completes.
+   */
+  private static Path createServerTruststore(URI endpoint) {
+    try {
+      X509Certificate[] chain = TlsUtil.captureServerChain(endpoint.getHost(), endpoint.getPort());
+      logger.info("Pinning server chain of {}: subject={}, SANs={}", endpoint,
+        chain[0].getSubjectX500Principal(), chain[0].getSubjectAlternativeNames());
+      return TlsUtil.createAndSaveTruststore(chain, TlsUtil.tempTruststorePath("sch-pinned"),
+        TRUSTSTORE_PASSWORD);
+    } catch (Exception e) {
+      throw new IllegalStateException("TLS trust bootstrap failed for " + endpoint, e);
+    }
+  }
+
+  /**
+   * All {@link SslOptions} defaults except the truststore are kept, so the client under test
+   * performs full certificate-chain and hostname verification.
+   */
+  private static SslOptions sslOptionsFor(Path truststore) {
+    return SslOptions.builder().truststore(truststore.toFile(), TRUSTSTORE_PASSWORD.toCharArray())
+        .build();
+  }
+
+  private void deleteServerTruststore() {
+    if (serverTruststore == null) {
+      return;
+    }
+    try {
+      Files.deleteIfExists(serverTruststore);
+    } catch (IOException e) {
+      logger.warn("Failed to delete truststore {}", serverTruststore, e);
+    }
+    serverTruststore = null;
   }
 
   /**
@@ -95,7 +153,8 @@ abstract class MaintNotificationsScenarioBase {
     throw new IllegalStateException("Endpoint " + endpoint + " not connectable within 60 s", last);
   }
 
-  private static RedisClient buildClient(Map<String, Object> output, EndpointType endpointType) {
+  private static RedisClient buildClient(Map<String, Object> output, EndpointType endpointType,
+      SslOptions sslOptions) {
     URI endpoint = URI.create((String) ((List<?>) output.get("endpoints")).get(0));
 
     DefaultJedisClientConfig.Builder config = DefaultJedisClientConfig.builder()
@@ -104,7 +163,10 @@ abstract class MaintNotificationsScenarioBase {
         // finite (default 0 = infinite would hang blocking probes) and distinct from the
         // non-blocking base, so a probe's failure time identifies the timeout that fired
         .blockingSocketTimeoutMillis(CLIENT_BLOCKING_SOCKET_TIMEOUT_MS)
-        .ssl("rediss".equals(endpoint.getScheme())).password((String) output.get("password"));
+        .ssl(Boolean.TRUE.equals(output.get("tls"))).password((String) output.get("password"));
+    if (sslOptions != null) {
+      config.sslOptions(sslOptions);
+    }
     String username = (String) output.get("username");
     if (username != null && !"default".equals(username)) {
       config.user(username);
@@ -239,6 +301,7 @@ abstract class MaintNotificationsScenarioBase {
     } finally {
       effectThreads.clear();
       effectFailures.clear();
+      deleteServerTruststore();
       if (bdbId >= 0) {
         faultInjector.deleteDatabase(bdbId);
         bdbId = -1;

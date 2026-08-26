@@ -129,10 +129,11 @@ public class Connection implements Closeable {
   private int infiniteSoTimeout = 0;
   private boolean broken = false;
   private volatile Throwable brokenCause = null;
-  // True only while a pub/sub read loop is driving this connection; set by the pub/sub
-  // loops and read by the push consumer chain to decide whether pub/sub pushes are
-  // propagated as read results or dropped as stray frames.
-  private volatile boolean activeSubscription = false;
+  // True only while a pub/sub read loop is driving this connection; read by the push
+  // consumer chain to decide whether pub/sub pushes are propagated as read results or
+  // dropped as stray frames. Written and read only by the thread currently driving the
+  // connection; cross-thread hand-off is synchronized by the pool, so no volatile needed.
+  private boolean activeSubscription = false;
   private boolean strValActive;
   private String strVal;
   protected String server;

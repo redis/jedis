@@ -1,6 +1,7 @@
 package com.redis.test.fi;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -125,7 +126,8 @@ public class FaultInjectorClientTest {
     Effect effect = client.getStandaloneTriggers(StandaloneEffect.DATA_MOVEMENT_NO_CONN_DROP);
 
     assertEquals("GET", requests.get(0)[0]);
-    assertEquals("/topology-change-standalone?effect=data_movement_no_conn_drop&cluster_index=0",
+    assertEquals(
+      "/topology-change-standalone?effect=data_movement_no_conn_drop&cluster_index=0&include_tls=true",
       requests.get(0)[1]);
     assertEquals("m-standard", effect.trigger("migrate").requirement().dbConfig().get("name"));
   }
@@ -219,6 +221,9 @@ public class FaultInjectorClientTest {
     assertEquals("single_tls", maintenance.requirements().get(1).config());
     assertEquals("single", maintenance.requirement().config());
     assertEquals("tcs-mm-tls-1-a", maintenance.requirement("single_tls").dbConfig().get("name"));
+    assertEquals("single_tls", maintenance.scenario("single_tls").requirement().config());
+    assertTrue(maintenance.offers("single_tls"));
+    assertFalse(maintenance.offers("no_such_config"));
     assertThrows(IllegalArgumentException.class, () -> maintenance.requirement("no_such_config"));
 
     assertEquals(6, catalog.effect(StandaloneEffect.CONN_DROP).clusterNodes());

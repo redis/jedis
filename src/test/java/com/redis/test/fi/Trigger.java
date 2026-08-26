@@ -43,6 +43,16 @@ public final class Trigger {
     return description;
   }
 
+  /** A scenario running this trigger under the named requirement config; fails loudly if absent. */
+  public Scenario scenario(String config) {
+    return new Scenario(this, requirement(config));
+  }
+
+  /** Whether the FI environment offers the named requirement config for this trigger. */
+  public boolean offers(String config) {
+    return requirements.stream().anyMatch(r -> config.equals(r.config()));
+  }
+
   /** The requirement with the given catalog config name; fails loudly if absent. */
   public Requirement requirement(String config) {
     return requirements.stream().filter(r -> config.equals(r.config())).findFirst()

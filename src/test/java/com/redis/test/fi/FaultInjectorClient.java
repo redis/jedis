@@ -108,8 +108,8 @@ public final class FaultInjectorClient {
    * run under. The envelope is typed; the dbconfigs inside stay opaque maps.
    */
   public Effect getStandaloneTriggers(StandaloneEffect effect) {
-    return Effect.parse(effect,
-      get("/topology-change-standalone?effect=" + effect.wireName() + "&cluster_index=0"));
+    return Effect.parse(effect, get("/topology-change-standalone?effect=" + effect.wireName()
+        + "&cluster_index=0&include_tls=true"));
   }
 
   /**

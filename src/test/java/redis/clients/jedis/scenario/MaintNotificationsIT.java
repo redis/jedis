@@ -29,6 +29,7 @@ import com.redis.test.fi.Trigger;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -205,6 +206,24 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
   @MethodSource("handoffScenarios")
   @Timeout(300)
   void connectionHandoffOnMoving(Scenario scenario, EndpointType endpointType) {
+    assertConnectionHandoffLifecycle(scenario, endpointType);
+  }
+
+  /**
+   * connectionHandoffWithStaticExternalNameTest over TLS: the same handoff lifecycle on a rediss
+   * endpoint with the default FULL verification (pinned truststore + hostname verification) —
+   * validates the TLS handshake against the MOVING target (redis/jedis#4708).
+   */
+  @Test
+  @Timeout(300)
+  void connectionHandoffOnMovingOverTls() {
+    Trigger trigger = CATALOG.effect(StandaloneEffect.CONN_DROP).trigger("endpoint_rebind");
+    assumeTrue(trigger.offers("single_tls"),
+      "single_tls requirement not offered by this FI environment");
+    assertConnectionHandoffLifecycle(trigger.scenario("single_tls"), EndpointType.EXTERNAL_FQDN);
+  }
+
+  private void assertConnectionHandoffLifecycle(Scenario scenario, EndpointType endpointType) {
     setUpDatabaseAndClient(scenario, endpointType);
     warmUpPool();
     pinned = pinConnection();

@@ -8,11 +8,11 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
- * PushConsumer that propagates pub/sub related events only while {@code activeSubscription}
- * reports {@code true} (i.e. a pub/sub read loop is driving the connection). A pub/sub push
- * received outside an active subscription — e.g. a message the server delivered after the
- * unsubscribe confirmation — must not be returned as a regular command's reply; it is logged and
- * left to the rest of the chain (consumed by default at end of chain).
+ * PushConsumer that propagates pub/sub related events only while {@code activeSubscription} reports
+ * {@code true} (i.e. a pub/sub read loop is driving the connection). A pub/sub push received
+ * outside an active subscription — e.g. a message the server delivered after the unsubscribe
+ * confirmation — must not be returned as a regular command's reply; it is logged and left to the
+ * rest of the chain (consumed by default at end of chain).
  */
 final class PubSubPushConsumer implements PushConsumer {
 

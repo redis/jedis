@@ -15,6 +15,7 @@ import java.util.List;
  */
 @Experimental
 public final class PushConsumerChainImpl implements PushConsumerChain {
+
   /**
    * PushConsumer that marks all push events to be propagated to the caller.
    */
@@ -30,18 +31,15 @@ public final class PushConsumerChainImpl implements PushConsumerChain {
   static final PushConsumerChain PROPAGATE_ALL_CONSUMER_CHAIN = of(PROPAGATE_ALL_CONSUMER);
 
   /**
-   * PushConsumer that marks pub/sub related events to be propagated to the caller.
+   * PushConsumer that marks pub/sub related events to be propagated to the caller unconditionally.
+   * Connections use a {@link PubSubPushConsumer} gated on their subscription state instead, so
+   * pub/sub pushes only propagate while a pub/sub read loop is actually consuming them.
    * <p>
    * NOTE: If a new pub/sub push type is added to {@link PushMessageTypes}, the {@code switch} in
    * {@link #isPubSubType(byte[])} must be updated. {@code PushConsumerChainImplTest} discovers
    * pub/sub constants reflectively and will fail until the new type is handled here.
    */
-  public static final PushConsumer PUBSUB_CONSUMER = context -> {
-    if (isPubSubType(context.getMessage().getType())) {
-      context.propagate();
-    }
-    return context;
-  };
+  public static final PushConsumer PUBSUB_CONSUMER = new PubSubPushConsumer(() -> true);
 
   /**
    * Returns {@code true} iff {@code t} is one of the pub/sub push message types declared in

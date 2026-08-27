@@ -169,6 +169,11 @@ public class Connection implements Closeable {
 
   private boolean broken = false;
   private volatile Throwable brokenCause = null;
+  // True only while a pub/sub read loop is driving this connection; read by the push
+  // consumer chain to decide whether pub/sub pushes are propagated as read results or
+  // dropped as stray frames. Written and read only by the thread currently driving the
+  // connection; cross-thread hand-off is synchronized by the pool, so no volatile needed.
+  private boolean activeSubscription = false;
   private boolean strValActive;
   private String strVal;
   protected String server;
@@ -248,13 +253,27 @@ public class Connection implements Closeable {
    *
    * @param config the client configuration; if {@code null}, only default consumers are registered
    */
-    private void initPushConsumers(JedisClientConfig config) {
-    /*
-     * Default consumers to process push messages.
-     * Marks all @{link PushMessages as processed, except for pub/sub.
-     * Pub/sub messages are propagated to the client.
-     */
-    addPushConsumer(PushConsumerChainImpl.PUBSUB_CONSUMER);
+  private void initPushConsumers(JedisClientConfig config) {
+      /*
+       * Default consumers to process push messages.
+       * Marks all @{link PushMessages as processed, except for pub/sub.
+       * Pub/sub messages are propagated to the client only while a pub/sub read loop is
+       * active on this connection; stray pub/sub frames (e.g. a message delivered after the
+       * unsubscribe confirmation) must not surface as a regular command's reply.
+       */
+      addPushConsumer(new PubSubPushConsumer(this::isActiveSubscription));
+  }
+
+  /**
+   * Marks whether a pub/sub read loop is currently driving this connection. Set by the
+   * pub/sub implementations around their subscribe/process loop.
+   */
+  void setActiveSubscription(boolean active) {
+    this.activeSubscription = active;
+  }
+
+  boolean isActiveSubscription() {
+    return activeSubscription;
   }
 
   @Override

@@ -3,7 +3,6 @@ package redis.clients.jedis.csc;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -31,8 +30,8 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.PushConsumer;
-import redis.clients.jedis.PushConsumerChainImpl;
 import redis.clients.jedis.sch.AbstractMaintenanceEventHandlingTest;
+import redis.clients.jedis.sch.MaintenanceEventTestSupport;
 import redis.clients.jedis.sch.AbstractMaintenanceHandshakeTest;
 import redis.clients.jedis.sch.AbstractRelaxedTimeoutBehaviorTest;
 import redis.clients.jedis.util.server.TcpMockServer;
@@ -78,8 +77,8 @@ public class CacheConnectionMockTest {
 
       List<PushConsumer> consumers = ConnectionTestHelper.getPushConsumers(conn);
 
-      // Verify PushInvalidateConsumer is registered
-      assertThat(consumers, contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER),
+      // Verify PushInvalidateConsumer is registered after the default pub/sub consumer
+      assertThat(consumers, contains(MaintenanceEventTestSupport.isPubSubConsumer(),
         instanceOf(PushInvalidateConsumer.class)));
     }
 
@@ -95,8 +94,8 @@ public class CacheConnectionMockTest {
 
       List<PushConsumer> consumers = ConnectionTestHelper.getPushConsumers(conn);
 
-      // Verify PushInvalidateConsumer is registered
-      assertThat(consumers, contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER),
+      // Verify PushInvalidateConsumer is registered after the default pub/sub consumer
+      assertThat(consumers, contains(MaintenanceEventTestSupport.isPubSubConsumer(),
         instanceOf(PushInvalidateConsumer.class)));
     }
 

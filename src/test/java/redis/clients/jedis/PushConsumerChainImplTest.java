@@ -255,6 +255,65 @@ public class PushConsumerChainImplTest {
   }
 
   /**
+   * Test the gated pub/sub consumer propagates pub/sub messages only while the subscription state
+   * reports active.
+   */
+  @Test
+  public void testGatedPubSubConsumerPropagatesOnlyWhileSubscriptionActive() {
+    PushConsumerChainImpl activeChain = PushConsumerChainImpl
+        .of(new PubSubPushConsumer(() -> true));
+    PushConsumerChainImpl inactiveChain = PushConsumerChainImpl
+        .of(new PubSubPushConsumer(() -> false));
+
+    String[] pubSubTypes = { PushMessageTypes.MESSAGE, PushMessageTypes.PMESSAGE,
+        PushMessageTypes.SMESSAGE, PushMessageTypes.SUBSCRIBE, PushMessageTypes.PSUBSCRIBE,
+        PushMessageTypes.SSUBSCRIBE, PushMessageTypes.UNSUBSCRIBE, PushMessageTypes.PUNSUBSCRIBE,
+        PushMessageTypes.SUNSUBSCRIBE };
+
+    for (String type : pubSubTypes) {
+      List<Object> content = new ArrayList<>();
+      content.add(SafeEncoder.encode(type));
+      content.add(SafeEncoder.encode("channel"));
+      PushMessage message = new PushMessage(content);
+
+      assertNotNull(activeChain.process(message),
+        "Pub/sub message type '" + type + "' should be propagated during active subscription");
+      assertNull(inactiveChain.process(message),
+        "Pub/sub message type '" + type + "' should be consumed without active subscription");
+    }
+  }
+
+  /**
+   * Test the gated pub/sub consumer leaves a pub/sub message to the rest of the chain (instead of
+   * dropping it) when no subscription is active, and never touches non-pub/sub messages.
+   */
+  @Test
+  public void testGatedPubSubConsumerFallsThroughWhenInactive() {
+    List<String> invocations = new ArrayList<>();
+    PushConsumer recording = context -> {
+      invocations.add(SafeEncoder.encode(context.getMessage().getType()));
+      return context;
+    };
+    PushConsumerChainImpl chain = PushConsumerChainImpl.of(new PubSubPushConsumer(() -> false),
+      recording);
+
+    List<Object> pubSubContent = new ArrayList<>();
+    pubSubContent.add(SafeEncoder.encode(PushMessageTypes.MESSAGE));
+    pubSubContent.add(SafeEncoder.encode("channel"));
+    assertNull(chain.process(new PushMessage(pubSubContent)));
+
+    List<Object> otherContent = new ArrayList<>();
+    otherContent.add(SafeEncoder.encode(PushMessageTypes.INVALIDATE));
+    otherContent.add(SafeEncoder.encode("key"));
+    assertNull(chain.process(new PushMessage(otherContent)));
+
+    // Both messages reached the next consumer in the chain
+    assertEquals(2, invocations.size(), "Subsequent consumers should still see the messages");
+    assertEquals(PushMessageTypes.MESSAGE, invocations.get(0));
+    assertEquals(PushMessageTypes.INVALIDATE, invocations.get(1));
+  }
+
+  /**
    * Test PROPAGATE_ALL_CONSUMER propagates all messages.
    */
   @Test

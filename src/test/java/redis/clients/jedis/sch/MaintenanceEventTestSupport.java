@@ -1,7 +1,5 @@
 package redis.clients.jedis.sch;
 
-import static org.hamcrest.Matchers.is;
-
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -9,7 +7,6 @@ import org.hamcrest.TypeSafeMatcher;
 import redis.clients.jedis.ConnectionTestHelper;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.PushConsumer;
-import redis.clients.jedis.PushConsumerChainImpl;
 
 /**
  * Shared helpers for SCH (Smart Client Handoff) abstract test bases. Centralizes config-builder
@@ -41,8 +38,18 @@ public final class MaintenanceEventTestSupport {
     };
   }
 
-  /** Matches the shared pub/sub consumer singleton. */
+  /** Matches the connection's gated pub/sub consumer. */
   public static Matcher<? super PushConsumer> isPubSubConsumer() {
-    return is(PushConsumerChainImpl.PUBSUB_CONSUMER);
+    return new TypeSafeMatcher<PushConsumer>() {
+      @Override
+      protected boolean matchesSafely(PushConsumer consumer) {
+        return ConnectionTestHelper.isPubSubPushConsumer(consumer);
+      }
+
+      @Override
+      public void describeTo(Description description) {
+        description.appendText("a PubSubPushConsumer");
+      }
+    };
   }
 }

@@ -446,7 +446,10 @@
 						</goals>
 						<configuration>
 							<skip>${skipScenarioTests}</skip>
-							<argLine>@{failsafeScenarioArgLine} ${JVM_OPTS}</argLine>
+							<!-- short JVM DNS cache: scenario tests reconnect across endpoint rebinds
+							     (default 30s positive cache can outlive the DNS repoint) and await
+							     fresh, not-yet-propagated database names (default 10s negative cache) -->
+							<argLine>@{failsafeScenarioArgLine} ${JVM_OPTS} -Dsun.net.inetaddr.ttl=2 -Dsun.net.inetaddr.negative.ttl=2</argLine>
 							<groups>scenario</groups>
 							<excludedGroups>integration,unit</excludedGroups>
 							<includes>

@@ -47,6 +47,17 @@ abstract class MaintNotificationsScenarioBase {
   private static final Logger logger = LoggerFactory
       .getLogger(MaintNotificationsScenarioBase.class);
 
+  // Short JVM DNS cache: these tests reconnect across endpoint rebinds, where the default 30s
+  // positive cache can outlive the DNS repoint, and await fresh database names, where the
+  // default 10s negative cache delays convergence. The JVM reads these once, at its first name
+  // lookup — this block must run before that (it does under the surefire fork; an IDE may
+  // resolve earlier, in which case pass -Dsun.net.inetaddr.ttl=2 and
+  // -Dsun.net.inetaddr.negative.ttl=2 in the run configuration).
+  static {
+    java.security.Security.setProperty("networkaddress.cache.ttl", "2");
+    java.security.Security.setProperty("networkaddress.cache.negative.ttl", "2");
+  }
+
   /** Base socket timeout kept low so relaxed/restored timeouts are directly observable. */
   static final int CLIENT_SOCKET_TIMEOUT_MS = 1_000;
   /** Deliberately different from the non-blocking base, so probes prove which timeout applied. */
@@ -61,6 +72,8 @@ abstract class MaintNotificationsScenarioBase {
   RedisClient client;
   Connection pinned;
   Path serverTruststore;
+  URI endpoint;
+  private DnsDiagnostics dnsDiag;
   long bdbId = -1;
   final List<Thread> effectThreads = new ArrayList<>();
   final List<Throwable> effectFailures = Collections.synchronizedList(new ArrayList<>());
@@ -85,8 +98,9 @@ abstract class MaintNotificationsScenarioBase {
         .trigger(scenario.trigger().name()).requirement(scenario.requirement().config()).dbConfig();
     Map<String, Object> output = faultInjector.createDatabase(dbConfig);
     bdbId = ((Number) output.get("bdb_id")).longValue();
-    URI endpoint = URI.create((String) ((List<?>) output.get("endpoints")).get(0));
+    endpoint = URI.create((String) ((List<?>) output.get("endpoints")).get(0));
     awaitEndpointConnectable(endpoint);
+    dnsDiag = DnsDiagnostics.follow(endpoint.getHost());
     SslOptions sslOptions = null;
     if (Boolean.TRUE.equals(output.get("tls"))) {
       serverTruststore = createServerTruststore(endpoint);
@@ -205,6 +219,7 @@ abstract class MaintNotificationsScenarioBase {
    */
   void releasePinned() {
     if (pinned != null) {
+      logger.trace("releasing pinned: {}", pinned.toIdentityString());
       pinned.close();
       pinned = null;
     }
@@ -301,6 +316,10 @@ abstract class MaintNotificationsScenarioBase {
     } finally {
       effectThreads.clear();
       effectFailures.clear();
+      if (dnsDiag != null) {
+        dnsDiag.close();
+        dnsDiag = null;
+      }
       deleteServerTruststore();
       if (bdbId >= 0) {
         faultInjector.deleteDatabase(bdbId);

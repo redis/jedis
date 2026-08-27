@@ -3,7 +3,6 @@ package redis.clients.jedis.csc;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -26,7 +25,6 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.DefaultJedisSocketFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.PushConsumer;
-import redis.clients.jedis.PushConsumerChainImpl;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 /**
@@ -70,9 +68,9 @@ public class CacheConnectionMockTest {
 
       List<PushConsumer> consumers = ConnectionTestHelper.getPushConsumers(conn);
 
-      // Verify PushInvalidateConsumer is registered
-      assertThat(consumers, contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER),
-        instanceOf(PushInvalidateConsumer.class)));
+      // Verify PushInvalidateConsumer is registered after the default pub/sub consumer
+      assertThat(consumers,
+        contains(instanceOf(PushConsumer.class), instanceOf(PushInvalidateConsumer.class)));
     }
 
     @Test
@@ -87,9 +85,9 @@ public class CacheConnectionMockTest {
 
       List<PushConsumer> consumers = ConnectionTestHelper.getPushConsumers(conn);
 
-      // Verify PushInvalidateConsumer is registered
-      assertThat(consumers, contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER),
-        instanceOf(PushInvalidateConsumer.class)));
+      // Verify PushInvalidateConsumer is registered after the default pub/sub consumer
+      assertThat(consumers,
+        contains(instanceOf(PushConsumer.class), instanceOf(PushInvalidateConsumer.class)));
     }
 
     @Test

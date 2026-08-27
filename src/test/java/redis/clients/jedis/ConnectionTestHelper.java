@@ -29,6 +29,16 @@ public class ConnectionTestHelper {
   }
 
   /**
+   * Sets the active-subscription flag of a Connection, simulating a pub/sub read loop driving the
+   * connection.
+   * @param connection the connection to modify
+   * @param active whether a pub/sub read loop is active
+   */
+  public static void setActiveSubscription(Connection connection, boolean active) {
+    connection.setActiveSubscription(active);
+  }
+
+  /**
    * Wires the production maintenance handshake onto a builder — same wiring as
    * {@link ConnectionFactory}: maintenance config plus a {@link MaintenanceAwareVisitor} backed by
    * a fresh {@link MaintenanceEventController}.
@@ -48,6 +58,17 @@ public class ConnectionTestHelper {
    */
   public static boolean isMaintenanceEventConsumer(PushConsumer consumer) {
     return consumer instanceof MaintenanceEventConsumer;
+  }
+
+  /**
+   * Returns {@code true} if the consumer is a {@link PubSubPushConsumer}.
+   * <p>
+   * The pub/sub consumer is gated on its owning connection's subscription state, so it cannot be a
+   * shared singleton and must be matched by type rather than identity.
+   * </p>
+   */
+  public static boolean isPubSubPushConsumer(PushConsumer consumer) {
+    return consumer instanceof PubSubPushConsumer;
   }
 
   /**

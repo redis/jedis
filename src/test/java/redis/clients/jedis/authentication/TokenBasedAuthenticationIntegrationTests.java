@@ -25,6 +25,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.AdditionalAnswers;
 import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -194,7 +195,11 @@ public class TokenBasedAuthenticationIntegrationTests {
     authXManager = spy(authXManager);
     List<Connection> connections = new ArrayList<>();
     doAnswer(invocation -> {
-      Connection connection = spy((Connection) invocation.getArgument(0));
+      // A delegating mock records invocations for verify(...) but forwards every call to
+      // the one real Connection, unlike spy() which works on a shallow field-copy and
+      // would fork the connection's state from its push consumer chain.
+      Connection original = invocation.getArgument(0);
+      Connection connection = mock(Connection.class, AdditionalAnswers.delegatesTo(original));
       invocation.getArguments()[0] = connection;
       connections.add(connection);
       Object result = invocation.callRealMethod();

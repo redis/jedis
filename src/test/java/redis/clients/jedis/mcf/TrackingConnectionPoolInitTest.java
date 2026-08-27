@@ -2,7 +2,7 @@ package redis.clients.jedis.mcf;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
-import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.io.IOException;
@@ -23,7 +23,7 @@ import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.PushConsumer;
-import redis.clients.jedis.PushConsumerChainImpl;
+import redis.clients.jedis.sch.MaintenanceEventTestSupport;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 public class TrackingConnectionPoolInitTest {
@@ -65,7 +65,7 @@ public class TrackingConnectionPoolInitTest {
 
       List<PushConsumer> consumers = ConnectionTestHelper.getPushConsumers(conn);
       assertThat(consumers,
-        contains(is(PushConsumerChainImpl.PUBSUB_CONSUMER), matchesMaintenanceConsumer()));
+        contains(MaintenanceEventTestSupport.isPubSubConsumer(), matchesMaintenanceConsumer()));
     }
   }
 

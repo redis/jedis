@@ -22,6 +22,16 @@ public class ConnectionTestHelper {
     return connection.getPushConsumers();
   }
 
+  /**
+   * Sets the active-subscription flag of a Connection, simulating a pub/sub read loop driving the
+   * connection.
+   * @param connection the connection to modify
+   * @param active whether a pub/sub read loop is active
+   */
+  public static void setActiveSubscription(Connection connection, boolean active) {
+    connection.setActiveSubscription(active);
+  }
+
   private ConnectionTestHelper() {
     // Utility class - prevent instantiation
   }

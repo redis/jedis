@@ -152,6 +152,13 @@ final class MaintenanceEventController
     if (affectedPeer == null) {
       return; // receiver socket already closed; no peer to register
     }
+    if (c.isRetired()) {
+      // A retired connection was already covered by an admitted MOVING: anything read from it now
+      // is a stale buffered copy, and admitting it would re-open an expired window.
+      logger.debug("Ignoring MOVING on retired connection (seq={}) conn={}", e.seq,
+        c.toIdentityString());
+      return;
+    }
     MovingOperation applied = movingOperations.process(e, affectedPeer);
     if (applied == null) {
       long retireAt = getRetirementFor(affectedPeer);

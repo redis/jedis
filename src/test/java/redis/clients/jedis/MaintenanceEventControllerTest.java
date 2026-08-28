@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import static org.awaitility.Awaitility.await;
@@ -108,6 +109,30 @@ public class MaintenanceEventControllerTest {
       "affected peer remapped to target");
     SocketAddress other = new InetSocketAddress("unaffected.example.com", 7000);
     assertNull(controller.getSocketAddress(other), "unaffected peer not remapped");
+  }
+
+  /**
+   * The mapper keys on resolved IPs: a lookup result that retains its hostname still matches the
+   * affected peer when the IPs agree, and a repointed (different-IP) resolution of the same name
+   * does not remap.
+   */
+  @Test
+  public void getSocketAddress_comparesResolvedIpsIgnoringHostname() throws Exception {
+    moving(1L, TARGET_B, 10);
+
+    InetSocketAddress peer = (InetSocketAddress) receiverPeer;
+    SocketAddress sameIpWithHostname = new InetSocketAddress(
+        InetAddress.getByAddress("endpoint.example.com", peer.getAddress().getAddress()),
+        peer.getPort());
+    assertEquals(TARGET_B_ADDR, controller.getSocketAddress(sameIpWithHostname),
+      "hostname-carrying resolution with the affected IP must remap");
+
+    // any IP other than the receiver's loopback peer; getByAddress fabricates the resolution
+    byte[] repointedIp = { 10, 9, 8, 7 };
+    SocketAddress repointedIpSameHostname = new InetSocketAddress(
+        InetAddress.getByAddress("endpoint.example.com", repointedIp), peer.getPort());
+    assertNull(controller.getSocketAddress(repointedIpSameHostname),
+      "repointed resolution (different IP) must not remap");
   }
 
   @Test

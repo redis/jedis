@@ -111,6 +111,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   private final JedisClientConfig clientConfig;
   private Supplier<Connection> objectMaker;
   private Connection.Builder connectionBuilder;
+  private final Cache cache;
 
   private AuthXEventListener authXEventListener;
 
@@ -134,6 +135,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
   public ConnectionFactory(Builder builder) {
     this.clientConfig = builder.getClientConfig();
     this.connectionBuilder = builder.getConnectionBuilder();
+    this.cache = builder.getCache();
 
     initAuthXManager();
   }
@@ -148,6 +150,17 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       this.authXEventListener = authXManager.getListener();
       authXManager.start();
     }
+  }
+
+  /**
+   * Returns the client-side {@link Cache} this factory uses when creating connections,
+   * or {@code null} if caching is not enabled.
+   *
+   * @return the cache instance, or {@code null}
+   * @since 8.0
+   */
+  public Cache getCache() {
+    return cache;
   }
 
   private Connection build() {

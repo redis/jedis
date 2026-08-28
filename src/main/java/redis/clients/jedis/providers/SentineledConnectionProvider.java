@@ -169,6 +169,11 @@ public class SentineledConnectionProvider implements ConnectionProvider {
   }
 
   @Override
+  public Cache getCache() {
+    return clientSideCache;
+  }
+
+  @Override
   public Connection getConnection() {
     return pool.getResource();
   }

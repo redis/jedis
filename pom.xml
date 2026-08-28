@@ -57,7 +57,7 @@
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
-		<jackson.version>2.22.1</jackson.version>
+		<jackson.version>2.22.2</jackson.version>
 		<maven.surefire.version>3.5.6</maven.surefire.version>
 		<junit.version>5.14.4</junit.version>
 		<!-- Default JVM options for tests -->
@@ -95,7 +95,7 @@
 		<dependency>
 			<groupId>org.json</groupId>
 			<artifactId>json</artifactId>
-			<version>20260719</version>
+			<version>20260814</version>
 		</dependency>
 		<dependency>
 			<groupId>com.google.code.gson</groupId>
@@ -106,7 +106,7 @@
 		<dependency>
 			<groupId>redis.clients.authentication</groupId>
 			<artifactId>redis-authx-core</artifactId>
-			<version>0.1.1-beta2</version>
+			<version>0.2.0</version>
 		</dependency>
 
 		<!-- Optional dependencies -->
@@ -188,7 +188,7 @@
 		<dependency>
 			<groupId>org.apache.httpcomponents.client5</groupId>
 			<artifactId>httpclient5-fluent</artifactId>
-			<version>5.6.3</version>
+			<version>5.6.4</version>
 			<scope>test</scope>
 		</dependency>
 
@@ -202,7 +202,7 @@
 		<dependency>
 			<groupId>redis.clients.authentication</groupId>
 			<artifactId>redis-authx-entraid</artifactId>
-			<version>0.1.1-beta2</version>
+			<version>0.2.0</version>
 			<scope>test</scope>
 		</dependency>
 

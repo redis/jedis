@@ -9,16 +9,20 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.io.IOException;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.awaitility.core.ConditionTimeoutException;
@@ -251,7 +255,7 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
 
     // new connections are created toward the notification's endpoint, relaxed like the rest
     Connection handedOff = client.getPool().getResource();
-    assertEquals(moving.target, MaintNotificationsTestSupport.remoteAddress(handedOff),
+    assertConnectedToTarget(handedOff, moving.target,
       "new connection must target the MOVING endpoint");
     assertEquals(RELAXED_TIMEOUT_MS,
       MaintNotificationsTestSupport.effectiveTimeoutMillis(handedOff),
@@ -266,7 +270,7 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
     assertTrue(client.getPool().getDestroyedCount() > destroyedBefore,
       "returning a connection borrowed before MOVING must destroy it");
     Connection next = client.getPool().getResource();
-    assertEquals(moving.target, MaintNotificationsTestSupport.remoteAddress(next),
+    assertConnectedToTarget(next, moving.target,
       "replacement for the discarded connection must target the MOVING endpoint");
     next.close();
     handedOff.close();
@@ -288,6 +292,27 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
     client.getPool().clear(); // drop window-era connections: the next borrow must connect fresh
     assertEquals("PONG", client.ping(), "client must keep working after the MOVING window expires");
     releasePinned();
+  }
+
+  /**
+   * Asserts the connection's live peer is the MOVING target, comparing resolved IPs — works for IP
+   * and FQDN targets, whether the connection was routed by the mapper or by already-updated DNS.
+   */
+  private static void assertConnectedToTarget(Connection connection, String target,
+      String message) {
+    InetSocketAddress peer = MaintNotificationsTestSupport.remotePeer(connection);
+    HostAndPort expected = HostAndPort.from(target);
+    Set<String> targetIps;
+    try {
+      targetIps = Arrays.stream(InetAddress.getAllByName(expected.getHost()))
+          .map(InetAddress::getHostAddress).collect(Collectors.toSet());
+    } catch (UnknownHostException e) {
+      fail(message + ": MOVING target " + target + " does not resolve: " + e);
+      return;
+    }
+    assertEquals(expected.getPort(), peer.getPort(), message + ": port of " + peer);
+    assertTrue(targetIps.contains(peer.getAddress().getHostAddress()), message + ": peer " + peer
+        + " is not among the target addresses " + targetIps + " of " + target);
   }
 
   /** Internal targets may not be routable/resolvable from the test host; skip, do not fail. */

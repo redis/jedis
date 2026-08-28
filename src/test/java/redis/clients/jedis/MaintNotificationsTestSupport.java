@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
@@ -15,14 +14,9 @@ public final class MaintNotificationsTestSupport {
   private MaintNotificationsTestSupport() {
   }
 
-  /** The connection's live socket peer as {@code host:port}, comparable to a MOVING target. */
-  public static String remoteAddress(Connection connection) {
-    SocketAddress peer = connection.getRemoteSocketAddress();
-    if (peer instanceof InetSocketAddress) {
-      InetSocketAddress inet = (InetSocketAddress) peer;
-      return inet.getHostString() + ":" + inet.getPort();
-    }
-    return String.valueOf(peer);
+  /** The connection's live socket peer. */
+  public static InetSocketAddress remotePeer(Connection connection) {
+    return (InetSocketAddress) connection.getRemoteSocketAddress();
   }
 
   /**

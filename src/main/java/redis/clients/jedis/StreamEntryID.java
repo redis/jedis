@@ -59,10 +59,22 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
     return timeCompare != 0 ? timeCompare : Long.compareUnsigned(this.sequence, other.sequence);
   }
 
+  /**
+   * Returns the milliseconds part of the ID as the raw bits of an unsigned 64-bit integer. Values
+   * above {@code 2^63-1} appear negative under signed interpretation; use
+   * {@link Long#toUnsignedString(long)}, {@link Long#compareUnsigned(long, long)} and
+   * {@link Long#divideUnsigned(long, long)} for arithmetic covering the full range.
+   */
   public long getTime() {
     return time;
   }
 
+  /**
+   * Returns the sequence part of the ID as the raw bits of an unsigned 64-bit integer. Values above
+   * {@code 2^63-1} appear negative under signed interpretation; use
+   * {@link Long#toUnsignedString(long)}, {@link Long#compareUnsigned(long, long)} and
+   * {@link Long#divideUnsigned(long, long)} for arithmetic covering the full range.
+   */
   public long getSequence() {
     return sequence;
   }

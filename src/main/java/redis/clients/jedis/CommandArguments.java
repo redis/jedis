@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.util.*;
 
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.args.Rawable;
@@ -36,13 +37,32 @@ public class CommandArguments implements Iterable<Rawable> {
 
   private boolean blocking;
 
+  private final boolean hasSubcommand;
+
   private CommandArguments() {
     throw new InstantiationError();
   }
 
   public CommandArguments(ProtocolCommand command) {
+    this(command, null);
+  }
+
+  /**
+   * Creates arguments for a container command with its subcommand declared, for example
+   * {@code new CommandArguments(XINFO, STREAM)}. Declaring the subcommand lets consumers such as
+   * the client-side caching policy judge the {@code PARENT|CHILD} pair by its own metadata instead
+   * of the container's.
+   * @param command the container command
+   * @param subcommand the subcommand; null behaves like {@link #CommandArguments(ProtocolCommand)}
+   * @since 8.1
+   */
+  public CommandArguments(ProtocolCommand command, Keyword subcommand) {
     args = new ArrayList<>();
     args.add(command);
+    hasSubcommand = subcommand != null;
+    if (hasSubcommand) {
+      args.add(subcommand);
+    }
 
     keys = new ArrayList<>(DEFAULT_KEYS_CAPACITY);
     cachedHashSlots = null;
@@ -50,6 +70,14 @@ public class CommandArguments implements Iterable<Rawable> {
 
   public ProtocolCommand getCommand() {
     return (ProtocolCommand) args.get(0);
+  }
+
+  /**
+   * The subcommand declared at construction, or null when this command was built without one.
+   * @since 8.1
+   */
+  public Keyword getSubcommand() {
+    return hasSubcommand ? (Keyword) args.get(1) : null;
   }
 
   @Experimental
@@ -217,8 +245,8 @@ public class CommandArguments implements Iterable<Rawable> {
    * Returns the keys used in this command.
    * <p>
    * <b>Internal API:</b> This method is internal and should not be used by external code.
-   * It is exposed for internal use by caching ({@link redis.clients.jedis.csc.CacheKey#getRedisKeys()})
-   * and cluster operations.
+   * It is exposed for internal use by caching (via
+   * {@link redis.clients.jedis.csc.CacheKey#getCommandObject()}) and cluster operations.
    * <p>
    * <b>Supported types:</b> Keys are stored as either {@link String} or {@code byte[]} depending on
    * how they were added via {@link #key(Object)} or {@link #addHashSlotKey(String)}/{@link #addHashSlotKey(byte[])}.

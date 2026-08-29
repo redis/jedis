@@ -63,6 +63,7 @@ nav:
   - Development guide:
       - Contributing: .github/CONTRIBUTING.md
       - Integration Testing: integration-testing.md
+      - CSC Command Cacheability: csc-command-cacheability.md
       - Redis Client Components Overview: redis-client-components-overview.md
       - Benchmark results: https://redis.github.io/jedis/benchmarks/
 

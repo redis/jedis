@@ -641,7 +641,18 @@
 						<include>**/*HashImport*.java</include>
 						<include>**/*Himport*.java</include>
 						<include>**/ConnectionRegistry*.java</include>
-						<include>**/CommandObjectTest.java</include>
+						<include>**/CacheabilityResolver.java</include>
+						<include>**/CustomCacheablePolicy.java.java</include>
+						<include>**/CommandFlagsInitializer.java.java</include>
+						<include>**/MetadataReader.java.java</include>
+						<include>**/MetadataResolver.java.java.java</include>
+						<include>**/CacheabilityResolverTest.java</include>
+						<include>**/CustomCacheablePolicyTest.java</include>
+						<include>**/DefaultCacheableTest.java</include>
+						<include>**/CommandMetadataTestFactory.java</include>
+						<include>**/CommandMetadataUtil.java</include>
+						<include>**/MetadataReaderTest.java</include>
+						<include>**/MetadataResolverTest.java</include>						
 					</includes>
 				</configuration>
 				<executions>

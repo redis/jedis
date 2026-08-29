@@ -3,9 +3,13 @@ package redis.clients.jedis.util;
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPool;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import redis.clients.jedis.exceptions.JedisException;
 
 public class Pool<T> extends GenericObjectPool<T> {
+
+  private static final Logger log = LoggerFactory.getLogger(Pool.class);
 
   // Legacy
   public Pool(GenericObjectPoolConfig<T> poolConfig, PooledObjectFactory<T> factory) {
@@ -60,8 +64,15 @@ public class Pool<T> extends GenericObjectPool<T> {
     }
     try {
       super.invalidateObject(resource);
-    } catch (Exception e) {
+    } catch (IllegalStateException e) {
+      // The resource is not part of this pool, so nothing was invalidated and the caller
+      // has to hear about it.
       throw new JedisException("Could not return the broken resource to the pool", e);
+    } catch (Exception e) {
+      // The broken resource is already destroyed and removed here: the pool destroys it
+      // before it opens a replacement, and only that replacement can fail this late. Closing
+      // a broken connection must not fail just because the server is still unreachable.
+      log.debug("Could not open a replacement while returning a broken resource to the pool", e);
     }
   }
 

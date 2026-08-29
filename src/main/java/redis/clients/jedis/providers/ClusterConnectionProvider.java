@@ -3,6 +3,7 @@ package redis.clients.jedis.providers;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -131,8 +132,11 @@ public class ClusterConnectionProvider implements ConnectionProvider {
       throw new JedisClusterOperationException("Cannot get connection for command with multiple hash slots");
     }
 
-    int slot = slots.iterator().next();
-    return slot >= 0 ? getConnectionFromSlot(slot) : getConnection();
+    if (slots.isEmpty()) {
+      return getConnection(); // a keyless command can run on any node
+    }
+
+    return getConnectionFromSlot(slots.iterator().next());
   }
 
   public Connection getReplicaConnection(CommandArguments args) {
@@ -142,8 +146,29 @@ public class ClusterConnectionProvider implements ConnectionProvider {
       throw new JedisClusterOperationException("Cannot get connection for command with multiple hash slots");
     }
 
-    int slot = slots.iterator().next();
-    return slot >= 0 ? getReplicaConnectionFromSlot(slot) : getConnection();
+    if (slots.isEmpty()) {
+      return getReplicaConnection(); // a keyless command can run on any replica
+    }
+
+    return getReplicaConnectionFromSlot(slots.iterator().next());
+  }
+
+  /**
+   * Returns a connection to a randomly picked replica, falling back to a primary when the cluster
+   * reports no replica, the same way {@link #getReplicaConnectionFromSlot(int)} does for a slot
+   * whose replicas are unknown.
+   *
+   * @since 8.1
+   */
+  public Connection getReplicaConnection() {
+    Map<String, ConnectionPool> replicas = new HashMap<>(getNodes());
+    replicas.keySet().removeAll(getPrimaryNodes().keySet());
+    if (replicas.isEmpty()) {
+      return getConnection();
+    }
+
+    List<ConnectionPool> pools = new ArrayList<>(replicas.values());
+    return pools.get(ThreadLocalRandom.current().nextInt(pools.size())).getResource();
   }
 
   @Override

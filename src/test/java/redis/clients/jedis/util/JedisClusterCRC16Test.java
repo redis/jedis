@@ -3,6 +3,7 @@ package redis.clients.jedis.util;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -59,6 +60,22 @@ public class JedisClusterCRC16Test {
       JedisClusterCRC16.getSlot("bar".getBytes()));
     assertEquals(JedisClusterCRC16.getSlot("foo{bar}{zap}".getBytes()),
       JedisClusterCRC16.getSlot("bar".getBytes()));
+  }
+
+  @Test
+  public void testStringSlotUsesEncodedBytesForHashTagDetection() {
+    Charset original = SafeEncoder.DEFAULT_CHARSET;
+    try {
+      SafeEncoder.DEFAULT_CHARSET = Charset.forName("GBK");
+      String key = new String(new byte[] { (byte) 0x81, 0x7B, 0x41, (byte) 0x81, 0x7D },
+        SafeEncoder.DEFAULT_CHARSET);
+
+      assertEquals(JedisClusterCRC16.getSlot(SafeEncoder.encode(key)),
+        JedisClusterCRC16.getSlot(key));
+      assertEquals(16212, JedisClusterCRC16.getSlot(key));
+    } finally {
+      SafeEncoder.DEFAULT_CHARSET = original;
+    }
   }
 
 }

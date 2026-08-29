@@ -1,7 +1,9 @@
 package redis.clients.jedis.csc;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class DefaultCache extends AbstractCache {
@@ -26,7 +28,29 @@ public class DefaultCache extends AbstractCache {
     }
 
     protected DefaultCache(int maximumSize, Map<CacheKey, CacheEntry> map, Cacheable cacheable, EvictionPolicy evictionPolicy) {
-        super(maximumSize, cacheable);
+        this(maximumSize, map, cacheable, evictionPolicy, false, Collections.emptyList(), false);
+    }
+
+    protected DefaultCache(int maximumSize, Cacheable cacheable, EvictionPolicy evictionPolicy,
+            boolean broadcastMode, List<String> prefixes) {
+        this(maximumSize, new HashMap<CacheKey, CacheEntry>(), cacheable, evictionPolicy, broadcastMode,
+                prefixes, false);
+    }
+
+    protected DefaultCache(int maximumSize, Cacheable cacheable, EvictionPolicy evictionPolicy,
+            boolean broadcastMode, List<String> prefixes, boolean noLoop) {
+        this(maximumSize, new HashMap<CacheKey, CacheEntry>(), cacheable, evictionPolicy, broadcastMode,
+                prefixes, noLoop);
+    }
+
+    protected DefaultCache(int maximumSize, Map<CacheKey, CacheEntry> map, Cacheable cacheable,
+            EvictionPolicy evictionPolicy, boolean broadcastMode, List<String> prefixes) {
+        this(maximumSize, map, cacheable, evictionPolicy, broadcastMode, prefixes, false);
+    }
+
+    protected DefaultCache(int maximumSize, Map<CacheKey, CacheEntry> map, Cacheable cacheable,
+            EvictionPolicy evictionPolicy, boolean broadcastMode, List<String> prefixes, boolean noLoop) {
+        super(maximumSize, cacheable, broadcastMode, prefixes, noLoop);
         this.cache = map;
         this.evictionPolicy = evictionPolicy;
         this.evictionPolicy.setCache(this);

@@ -154,15 +154,27 @@ public class ClusterConnectionProvider implements ConnectionProvider {
   }
 
   /**
-   * Returns a connection to a randomly picked replica, falling back to a primary when the cluster
-   * reports no replica, the same way {@link #getReplicaConnectionFromSlot(int)} does for a slot
-   * whose replicas are unknown.
+   * Returns a connection to a randomly picked replica. A cluster that reports no replica may just
+   * have a stale topology here, so the slot cache is renewed once before falling back to a primary,
+   * the same way {@link #getReplicaConnectionFromSlot(int)} does for a slot whose replicas are
+   * unknown.
    */
   private Connection getReplicaConnection() {
+    Connection replica = getAnyReplicaConnection();
+    if (replica != null) {
+      return replica;
+    }
+
+    renewSlotCache();
+    replica = getAnyReplicaConnection();
+    return replica != null ? replica : getConnection();
+  }
+
+  private Connection getAnyReplicaConnection() {
     Map<String, ConnectionPool> replicas = new HashMap<>(getNodes());
     replicas.keySet().removeAll(getPrimaryNodes().keySet());
     if (replicas.isEmpty()) {
-      return getConnection();
+      return null;
     }
 
     List<ConnectionPool> pools = new ArrayList<>(replicas.values());

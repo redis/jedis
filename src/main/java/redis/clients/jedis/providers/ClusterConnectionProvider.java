@@ -157,10 +157,8 @@ public class ClusterConnectionProvider implements ConnectionProvider {
    * Returns a connection to a randomly picked replica, falling back to a primary when the cluster
    * reports no replica, the same way {@link #getReplicaConnectionFromSlot(int)} does for a slot
    * whose replicas are unknown.
-   *
-   * @since 8.1
    */
-  public Connection getReplicaConnection() {
+  private Connection getReplicaConnection() {
     Map<String, ConnectionPool> replicas = new HashMap<>(getNodes());
     replicas.keySet().removeAll(getPrimaryNodes().keySet());
     if (replicas.isEmpty()) {

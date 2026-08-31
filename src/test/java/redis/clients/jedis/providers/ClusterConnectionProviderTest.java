@@ -29,17 +29,7 @@ public class ClusterConnectionProviderTest {
   }
 
   @Test
-  public void keylessCommandGetsAReplicaConnectionFromAnyReplica() {
-    ClusterConnectionProvider provider = mock(ClusterConnectionProvider.class, CALLS_REAL_METHODS);
-    Connection anyReplica = mock(Connection.class);
-    doReturn(anyReplica).when(provider).getReplicaConnection();
-
-    assertSame(anyReplica,
-      provider.getReplicaConnection(new CommandArguments(Protocol.Command.PING)));
-  }
-
-  @Test
-  public void anyReplicaConnectionSkipsThePrimaryNodes() {
+  public void keylessCommandGetsAReplicaConnectionFromANodeThatIsNotAPrimary() {
     ClusterConnectionProvider provider = mock(ClusterConnectionProvider.class, CALLS_REAL_METHODS);
     Connection replicaConnection = mock(Connection.class);
     ConnectionPool primaryPool = mock(ConnectionPool.class);
@@ -53,11 +43,12 @@ public class ClusterConnectionProviderTest {
     doReturn(Collections.singletonMap("127.0.0.1:7000", primaryPool)).when(provider)
         .getPrimaryNodes();
 
-    assertSame(replicaConnection, provider.getReplicaConnection());
+    assertSame(replicaConnection,
+      provider.getReplicaConnection(new CommandArguments(Protocol.Command.PING)));
   }
 
   @Test
-  public void anyReplicaConnectionFallsBackToAPrimaryWhenTheClusterHasNoReplica() {
+  public void keylessReplicaCommandFallsBackToAPrimaryWhenTheClusterHasNoReplica() {
     ClusterConnectionProvider provider = mock(ClusterConnectionProvider.class, CALLS_REAL_METHODS);
     Connection anyNode = mock(Connection.class);
     ConnectionPool primaryPool = mock(ConnectionPool.class);
@@ -66,7 +57,7 @@ public class ClusterConnectionProviderTest {
     doReturn(nodes).when(provider).getPrimaryNodes();
     doReturn(anyNode).when(provider).getConnection();
 
-    assertSame(anyNode, provider.getReplicaConnection());
+    assertSame(anyNode, provider.getReplicaConnection(new CommandArguments(Protocol.Command.PING)));
   }
 
   @Test

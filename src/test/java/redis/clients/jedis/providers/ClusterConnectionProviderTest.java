@@ -2,8 +2,10 @@ package redis.clients.jedis.providers;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -56,8 +58,32 @@ public class ClusterConnectionProviderTest {
     doReturn(nodes).when(provider).getNodes();
     doReturn(nodes).when(provider).getPrimaryNodes();
     doReturn(anyNode).when(provider).getConnection();
+    doNothing().when(provider).renewSlotCache();
 
     assertSame(anyNode, provider.getReplicaConnection(new CommandArguments(Protocol.Command.PING)));
+    verify(provider).renewSlotCache();
+  }
+
+  @Test
+  public void keylessReplicaCommandUsesAReplicaThatOnlyTheRenewedTopologyKnows() {
+    ClusterConnectionProvider provider = mock(ClusterConnectionProvider.class, CALLS_REAL_METHODS);
+    Connection replicaConnection = mock(Connection.class);
+    ConnectionPool primaryPool = mock(ConnectionPool.class);
+    ConnectionPool replicaPool = mock(ConnectionPool.class);
+    doReturn(replicaConnection).when(replicaPool).getResource();
+
+    Map<String, ConnectionPool> primaryOnly = Collections.singletonMap("127.0.0.1:7000",
+      primaryPool);
+    Map<String, ConnectionPool> afterRenew = new HashMap<>(primaryOnly);
+    afterRenew.put("127.0.0.1:7001", replicaPool);
+    doReturn(primaryOnly).doReturn(afterRenew).when(provider).getNodes();
+    doReturn(primaryOnly).when(provider).getPrimaryNodes();
+    doReturn(mock(Connection.class)).when(provider).getConnection();
+    doNothing().when(provider).renewSlotCache();
+
+    assertSame(replicaConnection,
+      provider.getReplicaConnection(new CommandArguments(Protocol.Command.PING)));
+    verify(provider).renewSlotCache();
   }
 
   @Test

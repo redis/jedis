@@ -1561,11 +1561,14 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
   }
 
   /**
-   * Number of documents indexed by the on-timeout tests. Large enough that scanning, scoring and
-   * sorting them cannot complete within the 1ms per-query timeout, so the query engine's on-timeout
-   * policy is guaranteed to kick in.
+   * Number of documents indexed by the on-timeout tests. With {@code search-workers > 0} the
+   * {@code FAIL} policy is enforced by a blocked-client timeout callback racing the worker thread
+   * that runs the query: the error is only returned when the callback wins, so a query that only
+   * slightly overruns its timeout may still return full results (intended server behavior). The
+   * query runtime must therefore exceed the 1ms per-query timeout by a wide margin — outcomes were
+   * measured flaky below ~10x, while 100k documents keep the margin around ~200x.
    */
-  private static final int ON_TIMEOUT_DOC_COUNT = 10_000;
+  private static final int ON_TIMEOUT_DOC_COUNT = 100_000;
 
   private void populateOnTimeoutIndex() {
     assertOK(jedis.ftCreate(INDEX, FTCreateParams.createParams(), TextField.of("title"),

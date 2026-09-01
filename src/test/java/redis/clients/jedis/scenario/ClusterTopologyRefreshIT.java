@@ -12,6 +12,8 @@ import redis.clients.jedis.providers.ClusterConnectionProvider;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -96,8 +98,20 @@ public class ClusterTopologyRefreshIT {
       assertTrue(fakeApp.capturedExceptions().isEmpty());
 
       log.info("Commands executed: {}", commandsExecuted.get());
-      for (long i = 0; i < commandsExecuted.get(); i++) {
-        assertTrue(client.exists(String.valueOf(i)));
+      // pipelined verification: one exists() round-trip per key does not fit the global test
+      // timeout (n grows with the fault-injection action's duration)
+      try (AbstractPipeline pipe = client.pipelined()) {
+        Map<Long, Response<Boolean>> pending = new LinkedHashMap<>();
+        for (long i = 0; i < commandsExecuted.get(); i++) {
+          pending.put(i, pipe.exists(String.valueOf(i)));
+          if (pending.size() == 500) {
+            pipe.sync();
+            pending.forEach((key, response) -> assertTrue(response.get(), "missing key " + key));
+            pending.clear();
+          }
+        }
+        pipe.sync();
+        pending.forEach((key, response) -> assertTrue(response.get(), "missing key " + key));
       }
 
       Set<String> afterReshardNodes = client.getClusterNodes().keySet();

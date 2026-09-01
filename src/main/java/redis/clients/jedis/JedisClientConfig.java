@@ -209,4 +209,5 @@ public interface JedisClientConfig {
   default int getSearchDialect() {
     return SearchProtocol.DEFAULT_DIALECT;
   }
+
 }

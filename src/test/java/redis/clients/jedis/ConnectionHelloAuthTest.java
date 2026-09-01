@@ -130,6 +130,8 @@ public class ConnectionHelloAuthTest {
 
   private static JedisClientConfig noAuthConfig(RedisProtocol proto) {
     // Disable auto-negotiation so the legacy "no HELLO" path is exercised when proto is null.
+    // Direct Connection construction has no maintenance controller, so the maint handshake is
+    // skipped.
     return DefaultJedisClientConfig.builder().protocol(proto).autoNegotiateProtocol(false)
         .clientSetInfoConfig(ClientSetInfoConfig.DISABLED).build();
   }

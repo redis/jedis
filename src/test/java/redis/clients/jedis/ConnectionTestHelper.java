@@ -1,6 +1,12 @@
 package redis.clients.jedis;
 
+import java.net.Socket;
+import java.net.SocketAddress;
+import java.time.Duration;
 import java.util.List;
+import java.util.function.LongSupplier;
+
+import redis.clients.jedis.util.ReflectionTestUtil;
 
 /**
  * Test helper for accessing package-private/protected members of Connection.
@@ -30,6 +36,122 @@ public class ConnectionTestHelper {
    */
   public static void setActiveSubscription(Connection connection, boolean active) {
     connection.setActiveSubscription(active);
+  }
+
+  /**
+   * Wires the production maintenance handshake onto a builder — same wiring as
+   * {@link ConnectionFactory}: maintenance config plus a {@link MaintenanceAwareVisitor} backed by
+   * a fresh {@link MaintenanceEventController}.
+   */
+  public static Connection.Builder withMaintenanceHandshake(Connection.Builder builder,
+      MaintenanceNotificationsConfig maintConfig) {
+    return builder.maintenanceConfig(maintConfig).addVisitor(
+      new MaintenanceAwareVisitor(builder, MaintenanceEventController.from(maintConfig)));
+  }
+
+  /**
+   * Returns {@code true} if the consumer is a {@link MaintenanceEventConsumer}.
+   * <p>
+   * The maintenance consumer captures its owning connection, so it cannot be a shared singleton and
+   * must be matched by type rather than identity.
+   * </p>
+   */
+  public static boolean isMaintenanceEventConsumer(PushConsumer consumer) {
+    return consumer instanceof MaintenanceEventConsumer;
+  }
+
+  /**
+   * Returns {@code true} if the consumer is a {@link PubSubPushConsumer}.
+   * <p>
+   * The pub/sub consumer is gated on its owning connection's subscription state, so it cannot be a
+   * shared singleton and must be matched by type rather than identity.
+   * </p>
+   */
+  public static boolean isPubSubPushConsumer(PushConsumer consumer) {
+    return consumer instanceof PubSubPushConsumer;
+  }
+
+  /**
+   * Maintenance relaxed-timeout state on {@link Connection}. Relaxation is wired only when the
+   * maintenance feature is active (a {@link MaintenanceEventController} attached via the pool), and
+   * is layered as overrides on the connection's timeout source chain — the pool-wide rebind window
+   * ({@code RebindTimeoutSource}) and the per-connection MOVING window
+   * ({@code ExpiringTimeoutSource}). The timeout is relaxed whenever any override currently has an
+   * opinion, so this observes the chain rather than a single source.
+   */
+  public static boolean isRelaxedTimeoutActive(Connection connection) {
+    return connection.getTimeoutSource().getOverrideInfo() != null;
+  }
+
+  public static void relaxTimeouts(Connection connection, Duration period) {
+    ChainedTimeoutSource dts = connection.getTimeoutSource();
+    ExpiringTimeoutSource ets = ((ExpiringTimeoutSource) dts.seekBy(ExpiringTimeoutSource.class));
+    ets.setExpirationTime(NanoClock.INSTANCE.getAsLong() + period.toNanos());
+  }
+
+  public static void resetRelaxedTimeouts(Connection connection) {
+    ChainedTimeoutSource dts = connection.getTimeoutSource();
+    ExpiringTimeoutSource ets = ((ExpiringTimeoutSource) dts.seekBy(ExpiringTimeoutSource.class));
+    ets.setExpirationTime(0);
+  }
+
+  public static int getRelaxedSoTimeout(Connection connection) {
+    return relaxedInfo(connection).timeout;
+  }
+
+  public static int getRelaxedBlockingSoTimeout(Connection connection) {
+    return relaxedInfo(connection).blockingTimeout;
+  }
+
+  /** The configured relaxed timeouts, or {@code null} when relaxation was never wired. */
+  private static TimeoutSource.TimeoutInfo relaxedInfo(Connection connection) {
+    ExpiringTimeoutSource source = (ExpiringTimeoutSource) connection.getTimeoutSource()
+        .seekBy(ExpiringTimeoutSource.class);
+    return source == null ? null : source.get();
+  }
+
+  /**
+   * Returns the underlying {@link Socket} of a Connection so tests can assert OS-level state (e.g.
+   * the applied {@code SO_TIMEOUT}). The field is private, so reflection is centralized here rather
+   * than repeated in test bodies.
+   */
+  public static Socket getSocket(Connection connection) {
+    return ReflectionTestUtil.getField(connection, "socket");
+  }
+
+  /**
+   * Chains a test hook after the pool's own handoff reaction, so tests can await the marking pass
+   * instead of polling.
+   */
+  public static void addHandoffHook(ConnectionPool pool, Runnable hook) {
+    MaintenanceEventController controller = pool.getMaintenanceController();
+    Runnable poolReaction = controller.getHandoffHook();
+    controller.setHandoffHook(() -> {
+      poolReaction.run(); // evict first: the pass is fully processed before the test observes it
+      hook.run();
+    });
+  }
+
+  /**
+   * The pool controller's post-DNS remap for {@code resolved}: the active MOVING target for that
+   * peer, or null (no active event, or a 'none' event). New pool connections only ever resolve the
+   * configured endpoint, so tests assert other peers' mapping windows through this seam.
+   */
+  public static SocketAddress getMappedAddress(ConnectionPool pool, SocketAddress resolved) {
+    return pool.getMaintenanceController().getSocketAddress(resolved);
+  }
+
+  public static void setClockNanos(LongSupplier clock) {
+    NanoClock.INSTANCE = clock;
+  }
+
+  /** Restores the process-wide monotonic clock to {@link System#nanoTime()}. */
+  public static void resetClockNanos() {
+    NanoClock.INSTANCE = System::nanoTime;
+  }
+
+  public static int getBlockingSoTimeout(Connection connection) {
+    return connection.getBlockingSoTimeout();
   }
 
   private ConnectionTestHelper() {

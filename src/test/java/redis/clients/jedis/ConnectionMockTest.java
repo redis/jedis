@@ -1,12 +1,20 @@
 package redis.clients.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
+import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
 
 import java.io.IOException;
 import java.util.List;
@@ -14,6 +22,13 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mockito;
+import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.sch.AbstractMaintenanceEventHandlingTest;
+import redis.clients.jedis.sch.AbstractMaintenanceHandshakeTest;
+import redis.clients.jedis.sch.AbstractRelaxedTimeoutBehaviorTest;
+import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.server.CommandHandler;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.server.TcpMockServer;
 
@@ -28,10 +43,12 @@ import redis.clients.jedis.util.server.TcpMockServer;
 public class ConnectionMockTest {
 
   private TcpMockServer mockServer;
+  private final CommandHandler mockHandler = Mockito.mock(CommandHandler.class);
 
   @BeforeEach
   public void setUp() throws IOException {
     mockServer = new TcpMockServer();
+    mockServer.setCommandHandler(mockHandler);
     mockServer.start();
   }
 
@@ -56,8 +73,8 @@ public class ConnectionMockTest {
 
       List<PushConsumer> consumers = ConnectionTestHelper.getPushConsumers(conn);
 
-      // Verify only the (gated) pub/sub consumer is registered by default
-      assertThat(consumers, hasSize(1));
+      // Verify only PUBSUB_CONSUMER is registered by default
+      assertThat(consumers, contains(instanceOf(PubSubPushConsumer.class)));
     }
 
     @Test
@@ -72,8 +89,8 @@ public class ConnectionMockTest {
 
       List<PushConsumer> consumers = ConnectionTestHelper.getPushConsumers(conn);
 
-      // Verify only the (gated) pub/sub consumer is registered by default
-      assertThat(consumers, hasSize(1));
+      // Verify only PUBSUB_CONSUMER is registered by default
+      assertThat(consumers, contains(instanceOf(PubSubPushConsumer.class)));
     }
 
     @Test
@@ -101,48 +118,130 @@ public class ConnectionMockTest {
       }
     }
 
-    @Test
-    public void pubSubPushWithoutActiveSubscriptionDoesNotCorruptReply() throws Exception {
-      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().resp3().build();
+  }
 
-      HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
-      DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(hostAndPort, config);
+  @Test
+  public void pubSubPushWithoutActiveSubscriptionDoesNotCorruptReply() throws Exception {
+    DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().resp3().build();
 
-      try (Connection conn = new Connection(socketFactory, config)) {
-        assertTrue(conn.ping());
+    HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
+    DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(hostAndPort, config);
 
-        // A pub/sub message delivered while no pub/sub loop is running, e.g. a message the
-        // server sent after the unsubscribe confirmation on a reused pooled connection
-        mockServer.sendPushMessageToAll("message", "channel", "payload");
-        Thread.sleep(200); // let the push land in the socket receive buffer
+    try (Connection conn = new Connection(socketFactory, config)) {
+      assertTrue(conn.ping());
 
-        assertTrue(conn.ping(), "PING must not receive the stray pub/sub push as its reply");
-        assertFalse(conn.isBroken(), "Connection should not be broken");
-      }
+      // A pub/sub message delivered while no pub/sub loop is running, e.g. a message the
+      // server sent after the unsubscribe confirmation on a reused pooled connection
+      mockServer.sendPushMessageToAll("message", "channel", "payload");
+      Thread.sleep(200); // let the push land in the socket receive buffer
+
+      assertTrue(conn.ping(), "PING must not receive the stray pub/sub push as its reply");
+      assertFalse(conn.isBroken(), "Connection should not be broken");
+    }
+  }
+
+  @Test
+  public void pubSubPushPropagatedDuringActiveSubscription() throws Exception {
+    DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().resp3().build();
+
+    HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
+    DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(hostAndPort, config);
+
+    try (Connection conn = new Connection(socketFactory, config)) {
+      ConnectionTestHelper.setActiveSubscription(conn, true);
+
+      mockServer.sendPushMessageToAll("message", "channel", "payload");
+
+      // Blocking read; the pub/sub loop consumes propagated pushes this way
+      Object reply = conn.getUnflushedObject();
+      List<?> content = assertInstanceOf(List.class, reply);
+      assertArrayEquals(SafeEncoder.encode("message"), (byte[]) content.get(0));
+
+      ConnectionTestHelper.setActiveSubscription(conn, false);
+      mockServer.sendPushMessageToAll("message", "channel", "payload");
+      Thread.sleep(200);
+      assertTrue(conn.ping(), "After the subscription ends, pushes must be dropped again");
+    }
+  }
+
+  @Nested
+  class MaintenanceEventHandling extends AbstractMaintenanceEventHandlingTest {
+
+    @Override
+    protected ConnectionPool createPool(HostAndPort hp, JedisClientConfig cfg,
+        MaintenanceNotificationsConfig maint) {
+      return new ConnectionPool(hp, cfg, /* cache */ null, new ConnectionPoolConfig(), maint);
+    }
+
+    @Override
+    protected Connection buildDirect(HostAndPort hostAndPort, JedisClientConfig config) {
+      return new Connection(hostAndPort, config);
+    }
+
+    @Override
+    protected Connection buildFromBuilder(DefaultJedisSocketFactory socketFactory,
+        JedisClientConfig config) {
+      return Connection.builder().socketFactory(socketFactory).clientConfig(config).build();
+    }
+  }
+
+  /**
+   * RESP2-specific maintenance-handshake behavior on plain {@link Connection}. The RESP3 paths
+   * applicable to both connection types live in {@link AbstractMaintenanceHandshakeTest}.
+   */
+  @Nested
+  class MaintenanceHandshake extends AbstractMaintenanceHandshakeTest {
+
+    @Override
+    protected Connection.Builder newConnectionBuilder() {
+      return Connection.builder();
     }
 
     @Test
-    public void pubSubPushPropagatedDuringActiveSubscription() throws Exception {
-      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().resp3().build();
+    public void enabledMode_overResp2_throwsConnectionException() {
+      MaintenanceNotificationsConfig maint = MaintenanceNotificationsConfig.builder()
+          .mode(MaintenanceNotificationsConfig.Mode.ENABLED).build();
+      JedisClientConfig cfg = DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP2)
+          .build();
 
-      HostAndPort hostAndPort = new HostAndPort("localhost", mockServer.getPort());
-      DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(hostAndPort, config);
+      HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
+      JedisConnectionException ex = assertThrows(JedisConnectionException.class,
+        () -> buildConnection(hp, cfg, maint));
+      assertTrue(ex.getMessage().toUpperCase().contains("RESP3"),
+        "exception message should mention RESP3 requirement, got: " + ex.getMessage());
+    }
 
-      try (Connection conn = new Connection(socketFactory, config)) {
-        ConnectionTestHelper.setActiveSubscription(conn, true);
+    @Test
+    public void autoMode_overResp2_succeedsAndDoesNotSendMaintCommand() {
+      CommandHandler localHandler = Mockito.mock(CommandHandler.class);
+      mockServer.setCommandHandler(localHandler);
 
-        mockServer.sendPushMessageToAll("message", "channel", "payload");
+      JedisClientConfig cfg = DefaultJedisClientConfig.builder().protocol(RedisProtocol.RESP2)
+          .build();
 
-        // Blocking read; the pub/sub loop consumes propagated pushes this way
-        Object reply = conn.getUnflushedObject();
-        List<?> content = assertInstanceOf(List.class, reply);
-        assertArrayEquals(SafeEncoder.encode("message"), (byte[]) content.get(0));
-
-        ConnectionTestHelper.setActiveSubscription(conn, false);
-        mockServer.sendPushMessageToAll("message", "channel", "payload");
-        Thread.sleep(200);
-        assertTrue(conn.ping(), "After the subscription ends, pushes must be dropped again");
+      HostAndPort hp = new HostAndPort("localhost", mockServer.getPort());
+      try (Connection c = buildConnection(hp, cfg, MaintenanceNotificationsConfig.builder()
+          .mode(MaintenanceNotificationsConfig.Mode.AUTO).build())) {
+        assertTrue(c.isConnected());
+        assertEquals(RedisProtocol.RESP2, c.getRedisProtocol());
       }
+      // CLIENT MAINT_NOTIFICATIONS must not be sent when the protocol is RESP2.
+      verify(localHandler, never()).handleCommand(argThat(args -> {
+        if (args.size() < 2) return false;
+        String cmd = SafeEncoder.encode(args.getCommand().getRaw());
+        String sub = SafeEncoder.encode(args.get(1).getRaw());
+        return "CLIENT".equalsIgnoreCase(cmd) && "MAINT_NOTIFICATIONS".equalsIgnoreCase(sub);
+      }), anyString());
+    }
+  }
+
+  @Nested
+  public class RelaxedTimeoutTest extends AbstractRelaxedTimeoutBehaviorTest {
+
+    @Override
+    protected ConnectionPool createPool(HostAndPort hp, JedisClientConfig cfg,
+        MaintenanceNotificationsConfig maint) {
+      return new ConnectionPool(hp, cfg, /* cache */ null, new ConnectionPoolConfig(), maint);
     }
 
   }

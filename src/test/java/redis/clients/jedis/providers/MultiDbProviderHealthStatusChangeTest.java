@@ -10,7 +10,6 @@ import org.mockito.MockedConstruction;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import redis.clients.jedis.Connection;
-import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
@@ -18,6 +17,7 @@ import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.mcf.HealthStatus;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider;
 import redis.clients.jedis.mcf.MultiDbConnectionProviderHelper;
+import redis.clients.jedis.mcf.TrackingConnectionPool;
 
 /**
  * Tests for MultiDbConnectionProvider event handling behavior during initialization and throughout
@@ -39,10 +39,10 @@ public class MultiDbProviderHealthStatusChangeTest {
     clientConfig = DefaultJedisClientConfig.builder().build();
   }
 
-  private MockedConstruction<ConnectionPool> mockConnectionPool() {
+  private MockedConstruction<TrackingConnectionPool> mockConnectionPool() {
     Connection mockConnection = mock(Connection.class);
     lenient().when(mockConnection.ping()).thenReturn(true);
-    return mockConstruction(ConnectionPool.class, (mock, context) -> {
+    return mockConstruction(TrackingConnectionPool.class, (mock, context) -> {
       when(mock.getResource()).thenReturn(mockConnection);
       doNothing().when(mock).close();
     });
@@ -50,7 +50,7 @@ public class MultiDbProviderHealthStatusChangeTest {
 
   @Test
   void postInit_unhealthy_active_sets_grace_and_fails_over() throws Exception {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
       // Create databases without health checks
       MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
@@ -82,7 +82,7 @@ public class MultiDbProviderHealthStatusChangeTest {
 
   @Test
   void postInit_nonActive_changes_do_not_switch_active() throws Exception {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
       MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
       MultiDbConfig.DatabaseConfig database2 = MultiDbConfig.DatabaseConfig
@@ -128,7 +128,7 @@ public class MultiDbProviderHealthStatusChangeTest {
 
   @Test
   void init_selects_highest_weight_healthy_when_checks_disabled() throws Exception {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
       MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
@@ -154,7 +154,7 @@ public class MultiDbProviderHealthStatusChangeTest {
 
   @Test
   void init_single_database_initializes_and_is_healthy() throws Exception {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
       MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
@@ -178,7 +178,7 @@ public class MultiDbProviderHealthStatusChangeTest {
 
   @Test
   void postInit_two_hop_failover_chain_respected() throws Exception {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
       MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
@@ -221,7 +221,7 @@ public class MultiDbProviderHealthStatusChangeTest {
 
   @Test
   void postInit_rapid_events_respect_grace_and_keep_active_stable() throws Exception {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
       MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 

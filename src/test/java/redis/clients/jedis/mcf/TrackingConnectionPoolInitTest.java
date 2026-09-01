@@ -1,6 +1,7 @@
 package redis.clients.jedis.mcf;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -8,6 +9,9 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import org.hamcrest.Description;
+import org.hamcrest.Matcher;
+import org.hamcrest.TypeSafeMatcher;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -16,8 +20,10 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionTestHelper;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.PushConsumer;
+import redis.clients.jedis.sch.MaintenanceEventTestSupport;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 public class TrackingConnectionPoolInitTest {
@@ -51,13 +57,30 @@ public class TrackingConnectionPoolInitTest {
 
     try (
         TrackingConnectionPool pool = TrackingConnectionPool.builder().hostAndPort(hostAndPort)
-            .clientConfig(config).build();
+            .clientConfig(config)
+            .maintenanceNotificationsConfig(MaintenanceNotificationsConfig.builder()
+                .mode(MaintenanceNotificationsConfig.Mode.ENABLED).build())
+            .build();
         Connection conn = pool.getResource()) {
 
       List<PushConsumer> consumers = ConnectionTestHelper.getPushConsumers(conn);
-      // Double initialization would register the default pub/sub consumer twice.
-      assertThat(consumers, hasSize(1));
+      assertThat(consumers,
+        contains(MaintenanceEventTestSupport.isPubSubConsumer(), matchesMaintenanceConsumer()));
     }
+  }
+
+  private static Matcher<PushConsumer> matchesMaintenanceConsumer() {
+    return new TypeSafeMatcher<PushConsumer>() {
+      @Override
+      protected boolean matchesSafely(PushConsumer consumer) {
+        return ConnectionTestHelper.isMaintenanceEventConsumer(consumer);
+      }
+
+      @Override
+      public void describeTo(Description description) {
+        description.appendText("a maintenance event consumer");
+      }
+    };
   }
 
   /**

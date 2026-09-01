@@ -38,6 +38,7 @@ nav:
   - User Guide:
     - Transactions/Multi: transactions-multi.md
     - Hash Import (HIMPORT): hash-import.md
+    - Smart Client Handoffs: smart-client-handoffs.md
   - Release Notes:
       - 8.1.0: release-notes/8.1.0.md
   - Migrating to newer versions:

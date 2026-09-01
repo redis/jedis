@@ -261,9 +261,9 @@ public class PushConsumerChainImplTest {
   @Test
   public void testGatedPubSubConsumerPropagatesOnlyWhileSubscriptionActive() {
     PushConsumerChainImpl activeChain = PushConsumerChainImpl
-        .of(PushConsumerChainImpl.pubSubConsumer(() -> true));
+        .of(new PubSubPushConsumer(() -> true));
     PushConsumerChainImpl inactiveChain = PushConsumerChainImpl
-        .of(PushConsumerChainImpl.pubSubConsumer(() -> false));
+        .of(new PubSubPushConsumer(() -> false));
 
     String[] pubSubTypes = { PushMessageTypes.MESSAGE, PushMessageTypes.PMESSAGE,
         PushMessageTypes.SMESSAGE, PushMessageTypes.SUBSCRIBE, PushMessageTypes.PSUBSCRIBE,
@@ -294,8 +294,8 @@ public class PushConsumerChainImplTest {
       invocations.add(SafeEncoder.encode(context.getMessage().getType()));
       return context;
     };
-    PushConsumerChainImpl chain = PushConsumerChainImpl
-        .of(PushConsumerChainImpl.pubSubConsumer(() -> false), recording);
+    PushConsumerChainImpl chain = PushConsumerChainImpl.of(new PubSubPushConsumer(() -> false),
+      recording);
 
     List<Object> pubSubContent = new ArrayList<>();
     pubSubContent.add(SafeEncoder.encode(PushMessageTypes.MESSAGE));

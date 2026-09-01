@@ -642,6 +642,19 @@
 						<include>**/*Himport*.java</include>
 						<include>**/ConnectionRegistry*.java</include>
 						<include>**/CommandObjectTest.java</include>
+						<include>**/Rebind*.java</include>
+						<include>**/TimeoutOptions.java</include>
+						<include>**/*Handler.java</include>
+						<include>**/InitVisitor.java</include>
+						<include>**/NanoClock.java</include>
+						<include>**/*TimeoutSource*.java</include>
+						<include>**/RebindAwareEvictionPolicy.java</include>
+						<include>**/Maintenance*.java</include>
+						<include>**/ConnectionRegistry.java</include>
+						<include>**/MovingOperations.java</include>
+						<include>**/SocketAddress*.java</include>
+						<include>**/sch/*.java</include>
+						<include>**/ConnectionFactoryRebindTest.java</include>
 					</includes>
 				</configuration>
 				<executions>

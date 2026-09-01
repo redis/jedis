@@ -414,15 +414,20 @@ public class JedisClusterInfoCache {
   }
 
   /**
-   * Returns the pools of the replicas that serve the given slot, or {@code null} when none is
-   * known. Replicas are only recorded for a client configured with
-   * {@link JedisClientConfig#isReadOnlyForRedisClusterReplicas()}, so this is always {@code null}
-   * for a client that does not track them.
+   * Returns the pools of the replicas that serve the given slot, or {@code null} when this client
+   * does not record replicas at all. Replicas are only recorded for a client configured with
+   * {@link JedisClientConfig#isReadOnlyForRedisClusterReplicas()}. With that option a slot whose
+   * replicas are not known yet returns an empty list, which a slot cache renewal can still fill;
+   * without it the result is always {@code null}, and no renewal can change that.
    */
   public List<ConnectionPool> getSlotReplicaPools(int slot) {
     r.lock();
     try {
-      return replicaSlots == null ? null : replicaSlots[slot];
+      if (replicaSlots == null) {
+        return null;
+      }
+      List<ConnectionPool> replicaPools = replicaSlots[slot];
+      return replicaPools == null ? Collections.emptyList() : replicaPools;
     } finally {
       r.unlock();
     }

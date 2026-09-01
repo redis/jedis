@@ -2,6 +2,7 @@ package redis.clients.jedis.providers;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
+import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -74,5 +75,34 @@ public class ClusterConnectionProviderTest {
     CommandArguments args = new CommandArguments(Protocol.Command.GET).key("foo");
 
     assertSame(slotReplica, provider.getReplicaConnection(args));
+  }
+
+  @Test
+  public void keyedReplicaCommandFallsBackToAPrimaryWithoutRenewingTheSlotCacheWhenReplicasAreNotRecorded() {
+    ClusterConnectionProvider provider = mock(ClusterConnectionProvider.class, CALLS_REAL_METHODS);
+    Connection slotOwner = mock(Connection.class);
+    int slot = JedisClusterCRC16.getSlot("foo");
+    doReturn(null).when(provider).getSlotReplicaPools(slot);
+    doReturn(slotOwner).when(provider).getConnectionFromSlot(slot);
+    doNothing().when(provider).renewSlotCache();
+
+    assertSame(slotOwner, provider.getReplicaConnectionFromSlot(slot));
+    // renewing cannot record a replica for a client that does not track them
+    verify(provider, never()).renewSlotCache();
+  }
+
+  @Test
+  public void keyedReplicaCommandRenewsTheSlotCacheWhenTheSlotHasNoRecordedReplicaYet() {
+    ClusterConnectionProvider provider = mock(ClusterConnectionProvider.class, CALLS_REAL_METHODS);
+    Connection replicaConnection = mock(Connection.class);
+    ConnectionPool replicaPool = mock(ConnectionPool.class);
+    doReturn(replicaConnection).when(replicaPool).getResource();
+    int slot = JedisClusterCRC16.getSlot("foo");
+    doReturn(Collections.<ConnectionPool> emptyList())
+        .doReturn(Collections.singletonList(replicaPool)).when(provider).getSlotReplicaPools(slot);
+    doNothing().when(provider).renewSlotCache();
+
+    assertSame(replicaConnection, provider.getReplicaConnectionFromSlot(slot));
+    verify(provider).renewSlotCache();
   }
 }

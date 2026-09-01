@@ -2,14 +2,12 @@ package redis.clients.jedis.providers;
 
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.mockito.Mockito.CALLS_REAL_METHODS;
-import static org.mockito.Mockito.doNothing;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
@@ -31,59 +29,28 @@ public class ClusterConnectionProviderTest {
   }
 
   @Test
-  public void keylessCommandGetsAReplicaConnectionFromANodeThatIsNotAPrimary() {
+  public void keylessCommandGetsAReplicaConnectionFromAReplicaOfTheTopology() {
     ClusterConnectionProvider provider = mock(ClusterConnectionProvider.class, CALLS_REAL_METHODS);
     Connection replicaConnection = mock(Connection.class);
-    ConnectionPool primaryPool = mock(ConnectionPool.class);
     ConnectionPool replicaPool = mock(ConnectionPool.class);
     doReturn(replicaConnection).when(replicaPool).getResource();
-
-    Map<String, ConnectionPool> nodes = new HashMap<>();
-    nodes.put("127.0.0.1:7000", primaryPool);
-    nodes.put("127.0.0.1:7001", replicaPool);
-    doReturn(nodes).when(provider).getNodes();
-    doReturn(Collections.singletonMap("127.0.0.1:7000", primaryPool)).when(provider)
-        .getPrimaryNodes();
+    doReturn(Collections.singletonMap("127.0.0.1:7001", replicaPool)).when(provider)
+        .getReplicaNodes();
 
     assertSame(replicaConnection,
       provider.getReplicaConnection(new CommandArguments(Protocol.Command.PING)));
   }
 
   @Test
-  public void keylessReplicaCommandFallsBackToAPrimaryWhenTheClusterHasNoReplica() {
+  public void keylessReplicaCommandFallsBackToAPrimaryWithoutRenewingTheSlotCache() {
     ClusterConnectionProvider provider = mock(ClusterConnectionProvider.class, CALLS_REAL_METHODS);
     Connection anyNode = mock(Connection.class);
-    ConnectionPool primaryPool = mock(ConnectionPool.class);
-    Map<String, ConnectionPool> nodes = Collections.singletonMap("127.0.0.1:7000", primaryPool);
-    doReturn(nodes).when(provider).getNodes();
-    doReturn(nodes).when(provider).getPrimaryNodes();
+    doReturn(Collections.<String, ConnectionPool> emptyMap()).when(provider).getReplicaNodes();
     doReturn(anyNode).when(provider).getConnection();
-    doNothing().when(provider).renewSlotCache();
 
     assertSame(anyNode, provider.getReplicaConnection(new CommandArguments(Protocol.Command.PING)));
-    verify(provider).renewSlotCache();
-  }
-
-  @Test
-  public void keylessReplicaCommandUsesAReplicaThatOnlyTheRenewedTopologyKnows() {
-    ClusterConnectionProvider provider = mock(ClusterConnectionProvider.class, CALLS_REAL_METHODS);
-    Connection replicaConnection = mock(Connection.class);
-    ConnectionPool primaryPool = mock(ConnectionPool.class);
-    ConnectionPool replicaPool = mock(ConnectionPool.class);
-    doReturn(replicaConnection).when(replicaPool).getResource();
-
-    Map<String, ConnectionPool> primaryOnly = Collections.singletonMap("127.0.0.1:7000",
-      primaryPool);
-    Map<String, ConnectionPool> afterRenew = new HashMap<>(primaryOnly);
-    afterRenew.put("127.0.0.1:7001", replicaPool);
-    doReturn(primaryOnly).doReturn(afterRenew).when(provider).getNodes();
-    doReturn(primaryOnly).when(provider).getPrimaryNodes();
-    doReturn(mock(Connection.class)).when(provider).getConnection();
-    doNothing().when(provider).renewSlotCache();
-
-    assertSame(replicaConnection,
-      provider.getReplicaConnection(new CommandArguments(Protocol.Command.PING)));
-    verify(provider).renewSlotCache();
+    // a cluster without replicas would otherwise renew the whole topology on every keyless call
+    verify(provider, never()).renewSlotCache();
   }
 
   @Test

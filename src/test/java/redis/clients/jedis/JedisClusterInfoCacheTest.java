@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
+import static org.hamcrest.Matchers.anEmptyMap;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
@@ -181,6 +182,39 @@ public class JedisClusterInfoCacheTest {
             hasEntry(equalTo(getNodeKey(REPLICA_1_HOST)), equalTo(cache.getNode(REPLICA_1_HOST))));
     assertThat(cache.getShuffledPrimaryNodesPool(), equalTo(
             Collections.singletonList(cache.getNode(REPLICA_1_HOST))));
+  }
+
+  @Test
+  public void replicaLookupsAreEmptyWhenReplicaTrackingIsDisabled() {
+    // readOnlyForRedisClusterReplicas defaults to false, so no replica is recorded at all
+    JedisClusterInfoCache cache = new JedisClusterInfoCache(
+        DefaultJedisClientConfig.builder().build(),
+        new HashSet<>(Collections.singletonList(MASTER_HOST)));
+
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(masterReplicaSlotsResponse(MASTER_HOST, REPLICA_1_HOST));
+    cache.discoverClusterNodesAndSlots(mockConnection);
+
+    assertNull(cache.getSlotReplicaPools(TEST_SLOT));
+    assertThat(cache.getReplicaNodes(), anEmptyMap());
+  }
+
+  @Test
+  public void replicaNodesFollowTheDiscoveredTopology() {
+    JedisClusterInfoCache cache = createCacheWithReplicasEnabled();
+
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(masterReplicaSlotsResponse(MASTER_HOST, REPLICA_1_HOST))
+        .thenReturn(masterOnlySlotsResponse());
+
+    cache.discoverClusterNodesAndSlots(mockConnection);
+    assertThat(cache.getReplicaNodes(), aMapWithSize(1));
+    assertThat(cache.getReplicaNodes(), hasEntry(equalTo(getNodeKey(REPLICA_1_HOST)),
+      equalTo(cache.getNode(REPLICA_1_HOST))));
+
+    // the replica is gone from the topology, so it must be gone from the replica nodes too
+    cache.discoverClusterNodesAndSlots(mockConnection);
+    assertThat(cache.getReplicaNodes(), anEmptyMap());
   }
 
   private List<Object> masterReplicaSlotsResponse(HostAndPort masterHost, HostAndPort replicaHost) {

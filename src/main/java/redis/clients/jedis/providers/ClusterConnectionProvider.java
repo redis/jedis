@@ -3,7 +3,6 @@ package redis.clients.jedis.providers;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -116,6 +115,10 @@ public class ClusterConnectionProvider implements ConnectionProvider {
     return cache.getPrimaryNodes();
   }
 
+  Map<String, ConnectionPool> getReplicaNodes() {
+    return cache.getReplicaNodes();
+  }
+
   public HostAndPort getNode(int slot) {
     return slot >= 0 ? cache.getSlotNode(slot) : null;
   }
@@ -147,38 +150,26 @@ public class ClusterConnectionProvider implements ConnectionProvider {
     }
 
     if (slots.isEmpty()) {
-      return getReplicaConnection(); // a keyless command can run on any replica
+      return getAnyReplicaConnection(); // a keyless command can run on any replica
     }
 
     return getReplicaConnectionFromSlot(slots.iterator().next());
   }
 
   /**
-   * Returns a connection to a randomly picked replica. A cluster that reports no replica may just
-   * have a stale topology here, so the slot cache is renewed once before falling back to a primary,
-   * the same way {@link #getReplicaConnectionFromSlot(int)} does for a slot whose replicas are
-   * unknown.
+   * Returns a connection to a randomly picked replica of the current topology, or a primary
+   * connection when that topology records no replica. Replicas are recorded only for a client
+   * configured with {@link JedisClientConfig#isReadOnlyForRedisClusterReplicas()}, so a client
+   * that does not track them falls back right away instead of renewing the slot cache, which is
+   * an expensive operation, on every keyless call.
    */
-  private Connection getReplicaConnection() {
-    Connection replica = getAnyReplicaConnection();
-    if (replica != null) {
-      return replica;
-    }
-
-    renewSlotCache();
-    replica = getAnyReplicaConnection();
-    return replica != null ? replica : getConnection();
-  }
-
   private Connection getAnyReplicaConnection() {
-    Map<String, ConnectionPool> replicas = new HashMap<>(getNodes());
-    replicas.keySet().removeAll(getPrimaryNodes().keySet());
+    List<ConnectionPool> replicas = new ArrayList<>(getReplicaNodes().values());
     if (replicas.isEmpty()) {
-      return null;
+      return getConnection();
     }
 
-    List<ConnectionPool> pools = new ArrayList<>(replicas.values());
-    return pools.get(ThreadLocalRandom.current().nextInt(pools.size())).getResource();
+    return replicas.get(ThreadLocalRandom.current().nextInt(replicas.size())).getResource();
   }
 
   @Override

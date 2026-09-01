@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
@@ -200,6 +201,18 @@ public class JedisClusterInfoCacheTest {
   }
 
   @Test
+  public void replicaPoolsOfAnUnknownSlotAreEmptyWhenReplicaTrackingIsEnabled() {
+    JedisClusterInfoCache cache = createCacheWithReplicasEnabled();
+
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(masterOnlySlotsResponse());
+    cache.discoverClusterNodesAndSlots(mockConnection);
+
+    // a later renewal can still record a replica for this slot, unlike a client that tracks none
+    assertThat(cache.getSlotReplicaPools(TEST_SLOT), empty());
+  }
+
+  @Test
   public void replicaNodesFollowTheDiscoveredTopology() {
     JedisClusterInfoCache cache = createCacheWithReplicasEnabled();
 
@@ -244,8 +257,9 @@ public class JedisClusterInfoCacheTest {
   }
 
   private void assertNoReplicasAvailable(JedisClusterInfoCache cache) {
+    // the client records replicas, so an unknown slot is an empty list and not a null
     List<ConnectionPool> caheReplicaNodePools = cache.getSlotReplicaPools(TEST_SLOT);
-    assertNull(caheReplicaNodePools);
+    assertThat(caheReplicaNodePools, empty());
   }
 
   private void assertReplicasAvailable(JedisClusterInfoCache cache, HostAndPort... replicaNodes) {

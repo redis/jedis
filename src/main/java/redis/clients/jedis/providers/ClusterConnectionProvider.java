@@ -119,6 +119,10 @@ public class ClusterConnectionProvider implements ConnectionProvider {
     return cache.getReplicaNodes();
   }
 
+  List<ConnectionPool> getSlotReplicaPools(int slot) {
+    return cache.getSlotReplicaPools(slot);
+  }
+
   public HostAndPort getNode(int slot) {
     return slot >= 0 ? cache.getSlotNode(slot) : null;
   }
@@ -228,16 +232,21 @@ public class ClusterConnectionProvider implements ConnectionProvider {
   }
 
   public Connection getReplicaConnectionFromSlot(int slot) {
-    List<ConnectionPool> connectionPools = cache.getSlotReplicaPools(slot);
+    List<ConnectionPool> connectionPools = getSlotReplicaPools(slot);
+    if (connectionPools == null) {
+      // This client records no replica, so renewing the slot cache cannot produce one.
+      return getConnectionFromSlot(slot);
+    }
+
     ThreadLocalRandom random = ThreadLocalRandom.current();
-    if (connectionPools != null && !connectionPools.isEmpty()) {
+    if (!connectionPools.isEmpty()) {
       // pick up randomly a connection
       int idx = random.nextInt(connectionPools.size());
       return connectionPools.get(idx).getResource();
     }
 
     renewSlotCache();
-    connectionPools = cache.getSlotReplicaPools(slot);
+    connectionPools = getSlotReplicaPools(slot);
     if (connectionPools != null && !connectionPools.isEmpty()) {
       int idx = random.nextInt(connectionPools.size());
       return connectionPools.get(idx).getResource();

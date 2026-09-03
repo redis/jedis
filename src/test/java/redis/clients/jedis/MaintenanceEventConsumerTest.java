@@ -159,5 +159,15 @@ public class MaintenanceEventConsumerTest {
     public void onFailedOver(FailedOverEvent e, Connection c) {
       calls.add(new Call("onFailedOver", e, c));
     }
+
+    @Override
+    public void onSMigrating(SMigratingEvent e, Connection c) {
+      throw new UnsupportedOperationException("Unimplemented method 'onSMigrating'");
+    }
+
+    @Override
+    public void onSMigrated(SMigratedEvent e, Connection c) {
+      throw new UnsupportedOperationException("Unimplemented method 'onSMigrated'");
+    }
   }
 }

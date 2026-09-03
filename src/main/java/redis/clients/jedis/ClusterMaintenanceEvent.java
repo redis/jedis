@@ -8,21 +8,10 @@ import java.util.List;
  * {@link MaintenanceEvent}: the two message families are exclusive contracts — a connection
  * receives one family or the other, never both.
  */
-abstract class ClusterMaintenanceEvent {
-
-  final long seq;
+abstract class ClusterMaintenanceEvent extends MaintenanceEvent {
 
   ClusterMaintenanceEvent(long seq) {
-    this.seq = seq;
-  }
-
-  /**
-   * Identity of the server-side operation this event announces; SMIGRATING and its terminating
-   * SMIGRATED share the same seq, and equality is the dedup rule for folding the per-node broadcast
-   * into one client-wide operation.
-   */
-  Object identity() {
-    return seq;
+    super(seq);
   }
 }
 
@@ -37,6 +26,12 @@ final class SMigratingEvent extends ClusterMaintenanceEvent {
     super(seq);
     this.slots = slots;
   }
+
+  @Override
+  void accept(MaintenanceEventListener listener, Connection conn) {
+    listener.onSMigrating(this, conn);
+  }
+
 }
 
 /**
@@ -49,6 +44,11 @@ final class SMigratedEvent extends ClusterMaintenanceEvent {
   SMigratedEvent(long seq, List<SlotMigration> migrations) {
     super(seq);
     this.migrations = Collections.unmodifiableList(migrations);
+  }
+
+  @Override
+  void accept(MaintenanceEventListener listener, Connection conn) {
+    listener.onSMigrated(this, conn);
   }
 }
 

@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import java.util.Set;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -28,8 +29,7 @@ final class MaintenanceEventConsumer implements PushConsumer {
     PushMessage message = context.getMessage();
     MaintenancePushCodec.PushType type = MaintenancePushCodec.PushType.resolve(message.getType());
 
-    // not a maintenance event; cluster-family frames pass through until their dispatch path
-    // (ClusterMaintenanceEventListener) is wired
+    // not a maintenance event
     if (type == null) {
       return context;
     }

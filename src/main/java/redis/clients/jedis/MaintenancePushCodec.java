@@ -21,29 +21,15 @@ final class MaintenancePushCodec {
     FAILING_OVER(PushMessageTypes.FAILING_OVER_BYTES, MaintenancePushCodec::failingOver),
     MIGRATED(PushMessageTypes.MIGRATED_BYTES, MaintenancePushCodec::migrated),
     FAILED_OVER(PushMessageTypes.FAILED_OVER_BYTES, MaintenancePushCodec::failedOver),
-    SMIGRATING(PushMessageTypes.SMIGRATING_BYTES, MaintenancePushCodec::sMigrating, true),
-    SMIGRATED(PushMessageTypes.SMIGRATED_BYTES, MaintenancePushCodec::sMigrated, true);
+    SMIGRATING(PushMessageTypes.SMIGRATING_BYTES, MaintenancePushCodec::sMigrating),
+    SMIGRATED(PushMessageTypes.SMIGRATED_BYTES, MaintenancePushCodec::sMigrated);
 
     private final byte[] token;
     private final Function<List<Object>, MaintenanceEvent> decoder;
-    private final Function<List<Object>, ClusterMaintenanceEvent> clusterDecoder;
 
     PushType(byte[] token, Function<List<Object>, MaintenanceEvent> decoder) {
       this.token = token;
       this.decoder = decoder;
-      this.clusterDecoder = null;
-    }
-
-    PushType(byte[] token, Function<List<Object>, ClusterMaintenanceEvent> clusterDecoder,
-        boolean cluster) {
-      this.token = token;
-      this.decoder = null;
-      this.clusterDecoder = clusterDecoder;
-    }
-
-    /** True for the OSS-cluster message family (decoded via {@link #buildCluster}). */
-    boolean isCluster() {
-      return clusterDecoder != null;
     }
 
     /**
@@ -85,17 +71,6 @@ final class MaintenancePushCodec {
    */
   static MaintenanceEvent build(PushType type, PushMessage msg) {
     return type.decoder.apply(msg.getContent());
-  }
-
-  /**
-   * Builds the domain event for an already-resolved cluster push type
-   * ({@link PushType#isCluster()}).
-   * @throws MalformedMaintenanceEventException if the frame's fields are malformed (missing or
-   *           wrong-typed seq, unparseable slots-or-ranges, or an SMIGRATED entry without a valid
-   *           src/dest {@code host:port})
-   */
-  static ClusterMaintenanceEvent buildCluster(PushType type, PushMessage msg) {
-    return type.clusterDecoder.apply(msg.getContent());
   }
 
   private static MaintenanceEvent moving(List<Object> c) { // [MOVING, seq, time_s, host:port |

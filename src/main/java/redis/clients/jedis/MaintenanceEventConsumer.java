@@ -30,7 +30,7 @@ final class MaintenanceEventConsumer implements PushConsumer {
 
     // not a maintenance event; cluster-family frames pass through until their dispatch path
     // (ClusterMaintenanceEventListener) is wired
-    if (type == null || type.isCluster()) {
+    if (type == null) {
       return context;
     }
 

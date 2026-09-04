@@ -13,6 +13,7 @@ import java.net.SocketAddress;
 import static org.awaitility.Awaitility.await;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -298,6 +299,37 @@ public class MaintenanceEventControllerTest {
     // The hook runs on the controller's scheduler; each applied event fires it once.
     await().atMost(Duration.ofSeconds(1)).until(() -> fires.get() == 3);
     assertEquals(3, fires.get());
+  }
+
+  // --- Cluster maintenance events: out of contract for this controller, must be inert ---
+
+  @Test
+  public void clusterEvents_areIgnored() {
+    HashSlotRanges slots = HashSlotRanges.parse("0-100");
+    controller.onSMigrating(new SMigratingEvent(1L, slots), receiver);
+    controller.onSMigrated(new SMigratedEvent(1L,
+        Collections.singletonList(new SlotMigration(TARGET_B, TARGET_C, slots))),
+      receiver);
+
+    assertFalse(controller.isRebindActive(), "cluster events must not open a rebind window");
+    assertNull(controller.getTimeoutSupplier().get(), "cluster events must not relax pool-wide");
+    assertNull(controller.getSocketAddress(receiverPeer), "cluster events must not remap");
+  }
+
+  @Test
+  public void clusterEvents_doNotDisturbStandaloneState() {
+    moving(1L, TARGET_B, 10);
+    assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer));
+
+    controller.onSMigrating(new SMigratingEvent(2L, HashSlotRanges.parse("5")), receiver);
+    controller.onSMigrated(new SMigratedEvent(2L, Collections.emptyList()), receiver2);
+
+    assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer),
+      "MOVING remap survives cluster events");
+    assertNull(controller.getSocketAddress(receiver2Peer),
+      "a cluster event on another connection does not make it an affected source");
+    assertTrue(controller.isRebindActive(), "the MOVING window stays open");
+    assertNotNull(controller.getTimeoutSupplier().get(), "pool-wide relaxation stays in effect");
   }
 
   // --- Relax-on-borrow ---

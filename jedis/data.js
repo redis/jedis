@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1788485657213,
+  "lastUpdate": 1788572076743,
   "repoUrl": "https://github.com/redis/jedis",
   "entries": {
     "Benchmark": [
@@ -28674,6 +28674,274 @@ window.BENCHMARK_DATA = {
           {
             "name": "redis.clients.jedis.benchmark.util.SafeEncoderBenchmark.encodeStringToBytes",
             "value": 46.783852464683925,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Ivo Gaydazhiev",
+            "username": "ggivo",
+            "email": "ivo.gaydazhiev@redis.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "6dac31d4c224fb3257c216f3985340c6f500cdcb",
+          "message": "Smart Client Handoffs (SCH): maintenance notifications support (#4668)\n\n* [maintenance events] Support maintenance PUSH notification  (#4473)\n\n* Introduce push handler\n\n   - Preparation step for processing custom push notifications\n   - Push notification can appear out-of band in-between executed commands\n   - Current Connection implementation does not support out of band Push notifications\n   - Meaning it will crash if \"CLIENT TRACKING ON is enabled\" on regular Jedis Connection and \"invalidation\" push event is triggered\n\n This commit provides a way to register push handler for the connection which process incoming push messages, before actual command is executed.  To preserve backward compatibility unprocessed push messages are forward to application logic as before.\n\n   - By default Connection will start with NOOP push handler which marks any incoming push event as processed and skips it\n   - On subcsribe/psubscribe a dedicated push handler is registered which propagates to the app only supported push  vents such as (message, subscribe, unsubscribe ...)\n   - CacheConection is refactored to use a push handler handling \"invalidate\" push events only, and skipping any other\n\n# Conflicts:\n#\tsrc/main/java/redis/clients/jedis/Connection.java\n#\tsrc/test/java/redis/clients/jedis/commands/jedis/PublishSubscribeCommandsTest.java\n\n* Introduce PushHandlerChain for composable push event handling\n\nThis commit adds a new PushHandlerChain class that implements the Chain of\nResponsibility pattern for Redis RESP3 push message handling. Key features:\n\n- Allows composing multiple PushHandlers in a processing chain\n- Push events propagate through the complete chain in sequence\n- Events marked as not processed are propagated to the client application\n- Provides both constructor-based and fluent builder API for chain creation\n- Includes predefined handlers for common use cases (CONSUME_ALL, PROPAGATE_ALL)\n- Supports immutable chain transformations via methods like then(),\n\nThe chain approach provides a flexible way to handle different types of push\nmessages (invalidations, pub/sub, etc.) with specialized handlers while\nmaintaining a clean separation of concerns.\n\nExample usage:\n  PushHandlerChain chain = PushHandlerChain.of(loggingHandler)\n      .then(invalidationHandler)\n      .then(PushHandlerChain.PROPAGATE_PUB_SUB_PUSH_HANDLER);\n\n* Handle relax timeout for maintenance events\n  - code clean up\n  - added relaxed timeout configuration\n  - fix unit tests\n\n* Support custom Push listeners for Jedis client\n\n* Add proactiveRebindEnabled configuration option\n\n* PushHandler is now provided through JedisClientConfig instead through constructors.\n\n* Fix NPE in CacheConnection\n\nRegister PushInvalidateConsumer after cache is initialised\n\n* [cleanup] Use weak reference in AdaptiveTimeoutHandler to avoid memory leak\n\n* [cleanup] Fix javadoc errors\n\n* [cleanup] Fix TransactionCommandsTest mocked test\n\n* Moving/Rebind initial support\n\n* Mocked relaxed timeout test\n\n* Mocked rebind test\n\n* Fix : wrong order connection.rebind pool.clear\n\nConenctionFactory should be rebound before triggering the disposal of Idle connection, so that any newly creaetd are using the proper hostname\n\n* [clean up] Address review comments from a-TODO-rov\n\n* add more rebind tests\n\n* clean up\n\n* clean up remove unused test method\n\n* fix relaxed timeout on blocking command\n\nIssue : If Maintenace notifications are received during blocking command, relaxTimeout is enforced instead of infinit timeout.\n\nFix: Introduce dedicated relax timeout setting for blocking commands. It will fall back to infinit timeout if not set\n\n* format\n\n* enforce code formating for new classes\n\n* reformat to fix java docs\n\n* force formating of TimeoutOptions.java\n\n* Address review comments\n\n* Address review comments\n\n* Address review comments\n   - Mark all pushes by default as processed\n   - Remove CONSUME_ALL_HANDLER\n\n* format ConnectionTestHelper\n\n* fix  merge errors after rebase\n - Use existing ReflectionTestUtil instead of ReflectionTestUtils.java\n - address connection pool now uses builder - socketFactory not accessible\n - test should now use Endpoints\n - ListenerNotificationConsumer from Jedis\n        moved to Connection\n - fix PushMessageNotificationTest\n - fix pom.xml missing includes tag\n - ConnectionTestHelper is obsolete after rebase\n\n* remove support for generic listeners for Push events\n\n* per connection maintenance event handler\n\n - fix A MIGRATING event on connection A triggers AdaptiveTimeoutHandler for all connections\n\n* use Connection memberOf reference to its owning ConnectionPool to notify it for move event\n\n* PushConsumerContext rename and clean up\n\n* drop readProtocolWithCheckingBroken(pushConsumer)\n\n- propagate connection configured pushConsumers\n\n* fix tests\n - ClientSideCacheFunctionalityTest.testConcurrentAccessWithStats:420 expected: <100000> but was: <60006>\n- ClientSideCacheFunctionalityTest.testEvictionPolicyMultithreaded:562 expected: <0> but was: <29>\n- ClientSideCacheFunctionalityTest.testMaxSize:463 expected: <110000> but was: <17>\n-  RedisClientSideCacheTest>UnifiedJedisClientSideCacheTestBase.invalidationOnCacheHitTest:212 » NullPointer\n\n* tcp mock clean up & improvements\n\n* fix : Single-argument Protocol.read returns wrong type for pushes\n\n* fix : Builder constructor skips MaintenanceEventConsumer registration for relaxed timeouts\n\n* address review comments\n\n* fix: PushMessageNotificationTest\n\n* format and fix moving target parsing\n\n* Address review comments from @atakavci\n\n* Add out-of-band push notification handling\n\nHandle unsupported push notifications gracefully instead of failing the connection.\n\nFixes errors occurring when push messages are received on connections that are not configured to process them. For example, enabling CLIENT TRACKING on a regular Connection may result in errors when invalidate push messages are delivered.\n\nThis change introduces initial support for out-of-band push notifications by:\n- detecting push messages on the connection\n- silently skipping unsupported push types\n\n* clean up tests\n\n* fix: Wrong @Experimental annotation\n\n* add unit test for PushConsumerChainImpl\n\n* address review comments\n\n* add test PushInvalidateConsumer triggers cache invalidations\n\n* format\n\n* [csc] protocolReadPushes now uses  pushConsumers instead of custom invalidate processing\n\n* fix: NumberUtils.safeToInt does not consider negative\n\n* format\n\n* update maint event format\n\nMIGRATING <seq_number> <time> <shard_id-s>:\nMIGRATED <seq_number> <shard_id-s>\nFAILING_OVER <seq_number> <time> <shard_id-s>\nFAILED_OVER <seq_number> <shard_id-s>\nMOVING <seq_number> <time> <endpoint>\n\n* Unify maintenance notifications configuration and add MAINT_NOTIFICATIONS ON handshake command\n\n - add maint notification handshake (CLIENT MAINT_NOTIFICATIONS ON)  - Move TimeoutOptions from JedisClientConfig to MaintenanceNotificationsConfig\n - Remove proactiveRebindEnabled flag from JedisClientConfig\n\n* extract known push message types as consts\n\n* remove commented code\n\n* push consumer chain is now required\n\n* document push handling\n\n* enforce push message as required when initialising PushMessageContext\n\n* add benchmark for Protocol.read(RedisInputStream,PushConsumerChain)\n\n* perf: eliminate string decoding in PushMessage type checking\n\nReplace string-based type checking with byte array comparisons using\nArrays.equals(). PushMessage.getType() now returns byte[] directly\nfrom content.get(0) without decoding or caching.\n\nAdds *_BYTES constants to PushMessageTypes for efficient comparison.\n\n* address review comments\n - npe guard\n - check invalidation message format\n - fix tests\n\n* format\n\n* format\n\n* format\n\n* fix UnifiedJedisProactiveRebindTest\n    - apache commons pool creates new connection upon invalidating existing one\n\n* protocol is now required for CommandObjects\n\n* remove a noisy test message on disconnect\n\n* remove a noisy test message on disconnect\n\n* fix auto-merge error error - TRACKING ON missing for CacheConnection\n\n* rename DISABLED_TIMEOUT -> UNSET_TIMEOUT\n\n* fix: parse MOVING endpoint at index 3 to match [\"MOVING\", seq, time_s, host:port] format\n\n* Make MOVING pool rebind bounded, lock-free and seq-guarded\n\nThe rebind to a MOVING target was permanent and reprocessed every duplicate\nevent. Now it expires back to the original endpoint after time_s, and a\nmonotonic seq guard ignores duplicate/out-of-order MOVINGs.\n\nImplemented as a lock-free overlay in DefaultJedisSocketFactory (one\nAtomicReference holding {seq, target, deadline}); new connections pick the\ntarget while in the grace window, else the original. Deduplication is keyed\nsolely on the seq number: the first event for a given seq wins, any seq <=\nthe last applied is ignored as STALE, and any strictly-newer seq applies as\nAPPLIED_NEW_TARGET. ConnectionPool clears idle connections on each applied\nevent.\n\n* fix: guard MOVING seq/time_s casts; overflow-safe deadline check\n\n* chore: add DefaultJedisSocketFactoryRebindTest to formatter includes\n\n* Move MOVING rebind overlay ownership to ConnectionFactory\n\nConnectionFactory now owns the {seq, target, deadline} rebind overlay and\nthe seq-guarded apply; DefaultJedisSocketFactory becomes a plain resolver\nthat reads the target through an injected supplier (override during the\ngrace window, else the configured host). Target selection is a pure read of\nthe CAS-updated state, so it can never observe a stale target, and revert is\nimplicit once the window expires.\n\nReplace DefaultJedisSocketFactoryRebindTest with ConnectionFactoryRebindTest.\n\n* Revert relaxed timeouts after the maintenance window\n\nRelaxed timeouts were activated on MIGRATING/FAILING_OVER/MOVING but never\nreverted for MOVING (it has no closing event), leaving connections stuck on\nthe relaxed read timeout. A connection now holds a time-bounded relaxed-timeout\noverlay that reverts lazily once its window passes: MIGRATED/FAILED_OVER revert\nearly, MIGRATING/FAILING_OVER fall back to a configurable max duration if the\nclosing event is lost, and MOVING relaxes for time_s.\n\nRelaxation is applied on pool borrow, so every connection handed out during a\nrebind window is relaxed - not only the one that received MOVING.\n\nAdd TimeoutOptions.relaxedTimeoutMaxDuration (default 60s).\n\n* Parse maintenance events into a typed hierarchy\n\n* Centralize maintenance handling in a pool-owned controller\n\nMaintenance is a pool-only feature handled by a single MaintenanceEventController\nthat owns the MOVING rebind overlay, the relax-window policy, and the handoff\nhooks fired when a MOVING is applied.\n\n- ConnectionPool creates and owns the controller and hands it to the factory.\n- ConnectionFactory wires the socket-factory target resolver and relaxes on\n  borrow.\n- Connection forwards events to the controller and keeps the per-socket\n  relaxed-timeout overlay.\n- Handoff hooks (public add/removeHandoffHook): registered synchronous hooks,\n  fired once per applied MOVING with a MaintenanceHandoff payload (seq, target,\n  ttl); CopyOnWriteArrayList; hook exceptions propagate. ConnectionPool wires\n  the pool's clear() through this hook.\n\n* set moving-target-type during handshake\n\n* add example with enabled maint-events\n\n* Rebalance pool on MOVING via post-DNS address mapping\n\nReplace the pre-DNS global target override + pool.clear() with a post-DNS,\nper-affected-peer redirect and selective idle eviction:\n\n- New SocketAddressMapper interface (post-DNS)\n- RebindAwareEvictionPolicy wraps the user's EvictionPolicy, destroying idle\n  connections whose peer is affected; handoff hook triggers evict() (not clear()).\n- Connection gains getRemoteSocketAddress() to provide the affected key.\n- Tests use 127.0.0.1 (deterministic post-DNS match) and assert connected-client\n  counts.\n\n* format\n\n* fix SentineledConnectionProviderReconnectionTest\n\n* drop EndpointType.NONE till complete support is implmented\n\n* Merge same-seq MOVING peers into the rebind's affected set\n\n   same node could resolve to multiple ip's\n\n* Default MaintenanceNotificationsConfig.DEFAULT mode to AUTO\n\n* Apply and revert relaxed socket timeouts on each read\n\nRelaxed SO_TIMEOUT was pushed from maintenance event handlers and the\npool's borrow hook, requiring every affecting site to keep the socket\nin sync. The protocol read now pulls the desired value from the\nconnection's per-receiver window and the pool controller's rebind\nstate, applying it through a cached last-applied value so\nsetSoTimeout fires only on actual transitions.\nThe server-supplied MOVING ttl is capped at the configured\nrelaxedTimeoutMaxDuration, and expired relaxation state is cleared\nlazily on first observe.\n\n* Fix stale relaxed-timeout Javadoc\n\n* Require RESP3 for maintenance notifications\n\nMaintenance push frames need RESP3. Mode.ENABLED now throws on a\nRESP2 connection; Mode.AUTO logs and falls back without maintenance.\nTcpMockServer gains per-connection HELLO negotiation so the new\nMaintenanceHandshake tests can exercise both paths.\n\n* clean up\n\n* maintenance and relaxed-timeout mock tests for CacheConnection\n\n* Fix TcpMockServer dropping HELLO from custom CommandHandler\n\n* Require maintenance controller for MAINT_NOTIFICATIONS; unregister consumer on server reject\n\n* Add sch/ to formatter includes; format Abstract* tests\n\n* Rename UnifiedJedisProactiveRebindTest -> sch/RebindMockTest\n\n* Inject maintenance controller into socket factory at construction time\n\nThe controller used to be wired post-construction via\nConnectionFactory.attachMaintenanceController + DefaultJedisSocketFactory\n.setSocketAddressMapper. That created a window where a ConnectionFactory\nexisted without a fully-wired socket factory, and the instanceof\nDefaultJedisSocketFactory gate inside attachMaintenanceController silently\ndropped the mapper for any custom factory.\n\nMove the wiring into the builder. ConnectionFactory.Builder now carries the\ncontroller; withDefaults() constructs a DefaultJedisSocketFactory with the\nmapper baked in via a new package-private ctor (h, c, mapper) and feeds the\nsame controller into the default Connection.Builder. The field becomes\nfinal; setSocketAddressMapper and attachMaintenanceController are deleted.\n\nConnectionPool.wireMaintenance shrinks to installMaintenanceHooks: it only\nadds the rebind-aware eviction policy + handoff hook, reading the (already\nattached) controller back from the factory. Controller construction moves\nto a new buildFactoryWithMaintenance helper used by the four host+config\nconvenience constructors -- a temporary location; C2 will lift this up to\nStandaloneClientBuilder where the maintenance decision actually belongs.\n\n* Move MaintenanceNotificationsConfig to StandaloneClientBuilder; split TimeoutOptions\n\nThe maintenance config no longer rides on JedisClientConfig -- only the\nRedisClient builder accepts it, which makes the feature's scope explicit\nand prevents silent no-ops on JedisPool/JedisCluster/Jedis.\n\nMaintenanceEventController becomes public final so RedisClient-style\nbuilders outside redis.clients.jedis can wire it without indirection;\nimplemented MaintenanceEvent.Handler and SocketAddressMapper interfaces\nstay package-private, so dispatch and remap entry points remain internal.\n\nStandaloneClientBuilder creates the controller directly and injects it\nvia a new 5-arg clientConfig-aware constructor on ConnectionPool /\nPooledConnectionProvider that also attaches the AuthX listener, preserving\nthe contract that AuthX wiring lives in clientConfig-aware constructors.\n\nENABLED + custom ConnectionProvider throws IllegalArgumentException at\nbuild time; AUTO + custom logs at debug and disables.\n\nTimeoutOptions is dropped entirely: relaxedSocketTimeoutMillis and\nrelaxedBlockingSocketTimeoutMillis move to JedisClientConfig as peers of\nsocketTimeoutMillis/blockingSocketTimeoutMillis; relaxedWindowMaxDuration\n(the per-window backstop) stays on MaintenanceNotificationsConfig with a\nclearer name. Connection reads relaxed timeouts directly from clientConfig.\n\n* Wire pool maintenance hooks via explicit controller\n\nPool-side hook installation (rebind-aware eviction +handoff-driven evict)\nnow happens only when the caller explicitly hands a\nMaintenanceEventController to the clientConfig-aware 5-arg constructor:\n\n  ConnectionPool(host, cfg, cache, poolConfig, controller)\n  PooledConnectionProvider(host, cfg, cache, poolConfig, controller)\n\n* Decouple Connection timeout decision from MaintenanceEventController\n\nConnection's SO_TIMEOUT no longer queries the controller's rebind state\ndirectly. A pluggable SoTimeoutSupplier (package-private, int getSoTimeout\n(boolean blocking)) is consulted before each read; it returns the timeout\nto apply or UNSET_TIMEOUT_MS to defer to the connection's own calculation.\n\nThe pool wires a controller-backed supplier in ConnectionFactory that\nrelaxes the timeout while a MOVING rebind window is active and defers\notherwise. Relaxed values are captured from the immutable client config at\nwiring time. Connection keeps no reference to the controller on the timeout\npath; the controller is still used for event dispatch and the handshake.\n\n* Dispatch maintenance events to listeners; drop controller from Connection\n\nConnection no longer references MaintenanceEventController. Maintenance push\nframes are dispatched to registered MaintenanceEventListener(s)\n, invoked synchronously on the read thread.\n\n* Make MaintenanceEventController package-private\n\nThread the public MaintenanceNotificationsConfig from the builder through the\nprovider to ConnectionPool, which creates the controller in-package and wires\nit into the factory + eviction.\n\n* Trim unused maintenance accessors; pool owns the controller\n\nShrinks the maintenance surface and moves the controller reference\nfrom ConnectionFactory to ConnectionPool, which owns it.\n\n- Drop dead MaintenanceEventController.getMode/getEndpointType\n  (duplicated MaintenanceNotificationsConfig accessors).\n- Drop test-only isTimeoutRelaxed and\n  DefaultJedisSocketFactory.getSocketAddressMapper.\n- ConnectionPool holds the controller; ConnectionTestHelper reads it\n  from the pool instead of the factory.\n\nborrowRelaxesConnection_duringRebindWindow asserts via isRebindActive;\nobsolete factory-wiring tests removed.\n\n* [maintenance events] Wire maintenance config/controller into multidb components  (#4569)\n\n* wire maintenance config/controller to multidb compoenents\n\n* fix multiDb mocking issues in test\n\n* fix flaky rebind test\n\n* Apply MOVING rebind mapper to multidb pool connections\n\n* Preserve maintenance config across multidb pool rebuild\n\n* attachAuthenticationListener() now invoked in supper\n\n* address @atakavci review\n  - maintNotificationsConfig set to DEFAULT in StandaloneClientBuilder\n  - add MaintenanceNotificationsConfig shorthand config methods\n  - code clean up\n\n* address @atakavci review comments\n  - maintenance event parsing optimised\n  - extract push notification parsing from domain MaintenanceEvent in dedicated MaintenancePushCodec and optimise parsing to one pass message type processing and parsing\n\n* extract MaintenanceEventConsumer as top level class and add test\n\n* Move relaxed-timeout config to the maintenance feature\n\nRelaxed socket/blocking timeouts were public knobs on JedisClientConfig\nbut only take effect during SCH maintenance windows. Move them to\nMaintenanceNotificationsConfig (sourced by Connection/ConnectionFactory)\nand make the connection-level relax API package-private, so the public\nsurface only exposes settings wired end-to-end.\n\nAddresses @atakavci: don't add interface config that isn't supported\nend-to-end via core components — it only creates user-side confusion.\n\n* Set per-client maintenance-notifications defaults: standalone AUTO, MCF DISABLED\n\nRedisClient defaults to AUTO; MultiDbClient databases default to DISABLED.\nEach builder tracks the unset state via a dedicated sentinel instance, so an\nexplicit value is distinguishable from the default and the default can change\nin a future release without overriding clients that set one.\n\nPending: \"auto\" endpoint-type discovery for MOVING (from IP format + TLS\nconfig), to become the resolved default under AUTO mode.\n\n* Signal malformed maintenance pushes via exception\n  - add todo for missing `none` support for moving event\n\n* [maintenance events] Alternative approach for handling timeout changes via TimeoutSupplier (#4572)\n\n* fix duble authx registration\n\n* draft timeoutsupplier\n\n* hot path perf optimization\n\n* micro optimization by AI =) ridiculously micro\n\n* - clean up connection from rebindstate\n- preserver the old semantics with timout getters on conneciton\n- use last reference for relaxingtimeouts instead of list\n- drop simpletimeoutsupplier\n- improve controller to hold rebinding connections.\n- introduce returnHook in ConnectionPool\n\n* clean up\n\n* - feedback from @ggivo\n\n* - clean duplicate fields\n- fix compile issue\n\n* - introduce TimeoutSupplierChain\n- replace AdvancedTimeoutSupplier\n\n* fix duration-timestamp issue with relaxation\n\n* - drop weakhashmap\n- remove applysotimeout at getStatusCodeReplyInner\n\n* - fix possible refencing corruption with unified timeoutsupplierchain instance from controller\n\n* - add expiration to conneciton in case future renewals needed\n- improve connection with init visitors and disect the logic  out to relevant components for optional features.\n\n* - rollback to using isBlocking at connection level\n-clean up with configuration classes\n\n* - feedback from @copilot\n\n* - polish names\n\n* - move applyCurrentTimeout into readProtocol\n\n* - refactor type names\n\n* - introduce upluggable source\n\n* - move customtimeoutsupplier setup into maintenanceawarevisitor\n\n* - fix test-compiler issues\n\n* - inject maintenance initiation responsibililty into connection.builder\n\n* - fix controller unit tests\n\n* - fix connection build for maintenancevisitor\n- fix AbstractRelaxedTimeoutBehaviorTest\n\n* - probe and add controller as listener in maintenancevisitor\n\n* fix java doc refs\n\n* polish\n\n* - address @cursor feedback\n\n* clean up connection builder\n\n* - fix tests\n\n* feeback from @curosr\n\n* - format\n\n* - format\n\n* Align TimeoutSource chain naming with its chain-of-responsibility role\n\nTimeoutSourceNode leaked the linked-list implementation into the type\nname and forced every source to be chainable through the\nTimeoutSource/UnplugableSource split.\n\n- TimeoutSourceNode -> ChainedTimeoutSource; overrideWith/unplug ->\n  addOverride/removeOverride, typed to the chain class\n- TimeoutSource slimmed to the read contract; the null-means-no-opinion\n  protocol is now documented on get()\n- UnplugableSource, its unused generic and the unchecked cast removed\n- anonymous controller node named RebindTimeoutSource\n- get() snapshots the volatile override to avoid an NPE against a\n  concurrent removeOverride\n\n---------\n\nCo-authored-by: ggivo <ivo.gaydazhiev@redis.com>\n\n* - format\n\n* Restore connect-on-demand in setTimeoutInfinite and revert to SocketException when applying socket.setSoTimeout\n\n* drop public listener from maintenanceconfig\n\n* remove maintennace init in conn builder\n\n* remove comments\n\n* - fix failing MaintenanceHandshake tests\n\n* Scope shared maintenance handshake tests to connection level\n\nThe shared handshake tests built a full RedisClient per test, coupling\nconnection-level behavior to client wiring. The base test now wires the\nhandshake onto a Connection.Builder directly, mirroring ConnectionFactory\nproduction wiring. Client-level wiring coverage moves to a dedicated\nRedisClient test.\n\n* CacheConnectionMockTest use test cache\n\n* mark connection expire immediately upon receiving MOVING\n\n---------\n\nCo-authored-by: atakavci <a_takavci@yahoo.com>\n\n* [maintenance events] Fix accessors with connection (#4610)\n\n* fix accessors\n\n* Potential fix for pull request finding\n\nCo-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>\n\n* - fix tests\n\n---------\n\nCo-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>\n\n* [maintenance events] Relaxed maintenance timeouts only loosen, never tighten the deadline (#4611)\n\n-to not reduce the timeout by changes on timeout config\n\n* [maintenance events] Auto-resolve moving-endpoint-type from connection characteristics (#4613)\n\n* Auto-resolve moving-endpoint-type from connection characteristics\n\nCAE-1560. The handshake previously always requested the configured\nfixed endpoint type (default external-ip), which is wrong for private\nnetworks and TLS. The default is now resolved per connection, matching\nLettuce: private peer IP selects internal-*, public external-*; TLS\nselects *-fqdn, plaintext *-ip. TLS is taken from the declared client\nconfig (ssl flag or sslOptions set), mirroring\nDefaultJedisSocketFactory; custom socket factories deviating from the\ndeclared configuration are not supported.\n\nendpointType(...) still forces a fixed type.\n\n* Rename EndpointTypeSource to EndpointTypeResolver\n\nResolver better conveys the per-connection resolution strategy.\nAddresses review feedback on #4613.\n\n* [maintenance events] Relax handshake reads for connections opened during a rebind window (#4623)\n\n* - plug timeoutSources before handshake, unplug after handshake if disabled.\n\n* format\n\n* fix merge issue\n\n* javadoc fix\n\n* format\n\n* - feedback from copilot\n\n* apply timeouts right after relaxation\n\n* change log level for MaintenanceAwareVisitor\n\n* fix flaky one in TBA tests\n\n* [maintenance events] Support 'none' moving-endpoint-type via connection registry (CAE-1559) (#4625)\n\n* Support 'none' moving-endpoint-type: wire decoding and handshake\n\nGroundwork shared with the deadline-based implementation (PR #4620):\nEndpointType.NONE with the 'none' handshake token, RESP3 null MOVING\ntarget decoded as a null-target MovingEvent, and test-server support\nfor RESP3 null frames and server-side client drops.\n\n* Mark MOVING-affected connections via registry walk and scheduled pass\n\nThe controller tracks every pool-managed connection in a weak-reference\nregistry and runs one marking pass per applied MOVING transition (new\nseq or merged source) - inline for a real target, at half the grace\nperiod for 'none' - flipping an advisory volatile flag and running the\nhandoff hooks so the pool evicts marked idles. Marked in-use connections\nretire on return; validation reports them invalid under\ntestOnBorrow/testWhileIdle.\n\nConnections register before socket init, so a connect racing a MOVING\ncommit is either visible to its marking pass or remapped via the\ncommitted rebind. Connections created after the pass are never visited,\nso a reconnect that re-lands on a not-yet-repointed endpoint (and its\nsame-seq re-notification) is immune by construction.\n\n* Include ConnectionRegistry in formatter validation\n\nNew file was missing from the formatter includes, failing\nformatter:validate in CI; add it and apply the formatter.\n\n* Create the maintenance scheduler lazily on first null-target rebind\n\nThe endpoint type can be auto-resolved per connection, so the config\nalone cannot decide whether a scheduler is needed. Creating it on the\nfirst null-target rebind.\n\n* Use the raw MOVING ttl as the relax window\n\nMOVING's time_s is the server's completion bound (move done, old\nconnections dropped by then), so it is a trustworthy horizon and the\nrelaxedWindowMaxDuration cap does not apply. The backstop remains for\nMIGRATING/FAILING_OVER, whose time_s only means \"starts within\".\n\n* Fix error after merge\n\n* Remove unused MaintenanceEventController.isAffected\n\nConnection-level affected checks now go through getSocketAddress; the\nper-connection variant had no remaining callers.\n\n* Rename connection reconnect mark to 'retire' and route returns in one place\n\n'markedForReconnect' suggested the connection re-establishes its own\nsocket; it never does — the pool disposes of it and creates a\nreplacement. 'retire()' / 'isRetired()' name the actual contract:\ngeneric, advisory, one-way removal from pool service.\n\nConnection.close() no longer special-cases the flag; the pool's return\nhook is the single routing point for retired connections. Addresses\nreview feedback on #4625.\n\n* Bind the handoff hook to a single owner\n\nA multi-hook list suggested the controller outlives its pool and can be\nshared; it cannot — one owner creates it, registers its reaction, and\ncloses it. Replace the list with a single-slot setHandoffHook and state\nthe ownership contract on the class. Addresses review feedback on #4625.\n\n* Explain the registration-before-init contract in comments\n\nThe register-before-connect ordering carries the marking-pass coverage\nguarantee; state the why on the factory helper and align comments with\nthe code's 'applied' vocabulary. Addresses review feedback on #4625.\n\n* Move maintenance registration into the visitor\n\nvisitBeforeHandshake runs before connect(), so the visitor gives the\nsame register-before-connect guarantee as the factory did — and all\nmaintenance wiring now lives in one component. ConnectionFactory loses\nits maintenance code entirely. Addresses review feedback on #4625.\n\n* [maintenance events] Support overlapping MOVING events at pool level (CAE-3395) (#4636)\n\n* Support 'none' moving-endpoint-type: wire decoding and handshake\n\nGroundwork shared with the deadline-based implementation (PR #4620):\nEndpointType.NONE with the 'none' handshake token, RESP3 null MOVING\ntarget decoded as a null-target MovingEvent, and test-server support\nfor RESP3 null frames and server-side client drops.\n\n* Mark MOVING-affected connections via registry walk and scheduled pass\n\nThe controller tracks every pool-managed connection in a weak-reference\nregistry and runs one marking pass per applied MOVING transition (new\nseq or merged source) - inline for a real target, at half the grace\nperiod for 'none' - flipping an advisory volatile flag and running the\nhandoff hooks so the pool evicts marked idles. Marked in-use connections\nretire on return; validation reports them invalid under\ntestOnBorrow/testWhileIdle.\n\nConnections register before socket init, so a connect racing a MOVING\ncommit is either visible to its marking pass or remapped via the\ncommitted rebind. Connections created after the pass are never visited,\nso a reconnect that re-lands on a not-yet-repointed endpoint (and its\nsame-seq re-notification) is immune by construction.\n\n* Include ConnectionRegistry in formatter validation\n\nNew file was missing from the formatter includes, failing\nformatter:validate in CI; add it and apply the formatter.\n\n* Create the maintenance scheduler lazily on first null-target rebind\n\nThe endpoint type can be auto-resolved per connection, so the config\nalone cannot decide whether a scheduler is needed. Creating it on the\nfirst null-target rebind.\n\n* Use the raw MOVING ttl as the relax window\n\nMOVING's time_s is the server's completion bound (move done, old\nconnections dropped by then), so it is a trustworthy horizon and the\nrelaxedWindowMaxDuration cap does not apply. The backstop remains for\nMIGRATING/FAILING_OVER, whose time_s only means \"starts within\".\n\n* Support overlapping MOVING events at pool level\n\nDistinct MOVING events (different seq or endpoint) can overlap on one\npool. The single rebind slot let a newer event orphan an earlier\nunexpired one: its remap stopped, its pending 'none' pass no-oped, and\nthe relax window could be silently truncated.\n\nEvents are now keyed by (seq, original endpoint) in an immutable\nsnapshot map and only expire — never supersede. Remap resolves the\nmatched event's endpoint at connect time; relaxation holds until the\nlast event expires; a marking pass is a no-op only if its event was\npruned.\n\n* Cover overlapping MOVING events in rebind and relaxation suites\n\nReal-world scenario: DNS round-robin (simulated with a host-port\nmapper) spreads the pool over two backends; each announces its own\nMOVING to a different target, the second within the first's window.\nAsserts pool-wide relaxation holds until the last event expires and\nthat connections created during each window land on that window's\ntarget only while it is open.\n\n* Fix error after merge\n\n* Remove unused MaintenanceEventController.isAffected\n\nConnection-level affected checks now go through getSocketAddress; the\nper-connection variant had no remaining callers.\n\n* Rename connection reconnect mark to 'retire' and route returns in one place\n\n'markedForReconnect' suggested the connection re-establishes its own\nsocket; it never does — the pool disposes of it and creates a\nreplacement. 'retire()' / 'isRetired()' name the actual contract:\ngeneric, advisory, one-way removal from pool service.\n\nConnection.close() no longer special-cases the flag; the pool's return\nhook is the single routing point for retired connections. Addresses\nreview feedback on #4625.\n\n* Bind the handoff hook to a single owner\n\nA multi-hook list suggested the controller outlives its pool and can be\nshared; it cannot — one owner creates it, registers its reaction, and\ncloses it. Replace the list with a single-slot setHandoffHook and state\nthe ownership contract on the class. Addresses review feedback on #4625.\n\n* Explain the registration-before-init contract in comments\n\nThe register-before-connect ordering carries the marking-pass coverage\nguarantee; state the why on the factory helper and align comments with\nthe code's 'applied' vocabulary. Addresses review feedback on #4625.\n\n* Move maintenance registration into the visitor\n\nvisitBeforeHandshake runs before connect(), so the visitor gives the\nsame register-before-connect guarantee as the factory did — and all\nmaintenance wiring now lives in one component. ConnectionFactory loses\nits maintenance code entirely. Addresses review feedback on #4625.\n\n* Simplify event identity to seq plus target for MOVING\n\nOnly MOVING operations are deduplicated pool-wide, so the id classes\nand their type component were dead generality: seq is sufficient for\nevery other notification. identity() now returns an opaque value —\nboxed seq, or (seq, target) for MOVING so concurrent MOVINGs to\ndifferent endpoints stay distinct. Addresses review feedback on #4636.\n\n* [maintenance  events]Proposal for early retirement of connections (#4670)\n\n* tag with expireAt early, schedule a delayed evict\n\n* fix delayed schedule and retirement\n\n* Re-walk the registry in the scheduled pass; always run the hook\n\nThe pass stamps connections registered after the apply-time walk; the\nhook runs however late, when stamped idles are dead sockets.\n\n* Fix tests for deadline-based retirement\n\nTests drive a deterministic clock and await the off-thread hook.\n\n---------\n\nCo-authored-by: ggivo <ivo.gaydazhiev@redis.com>\n\n* Format MovingOperations and add it to the formatter includes\n\nCI's check-format validates every file a PR adds; the file was missing\nfrom the formatter includes, so local runs never formatted it.\n\n* test : Add test against evict() livelock on evictor-triggered rebind\n\nThe idle-validation ping consumes the MOVING on the evictor thread;\nretirement is stamped inline and the eviction hook runs on the\nmaintenance scheduler.\n\n---------\n\nCo-authored-by: atakavci <a_takavci@yahoo.com>\n\n* Log connection identity for maintenance events and applied socket timeouts (#4703)\n\nMaintenance handling is per connection, but the debug logs did not say\nwhich connection an event or timeout change applied to. Every\ncontroller event log now carries the connection identity, and each\nSO_TIMEOUT actually pushed to a socket logs value, blocking flag, and\nconnection.\n\n* [clean-up] Remove unused NumberUtils\n\n* [clean-up] Inline private-IP detection into MaintenanceNotificationsConfig\n\nNetUtils had a single consumer, the auto endpoint-type resolver;\nfolding it in removes a public util class from the API surface. Its\nunit coverage moves to the resolver's public contract.\n\n* [clean-up] Set @since 8.1 on the maintenance-notifications public API\n\n* [clean-up] Make MaintenanceAwareVisitor package-private\n\n* [clean-up] Rename maintenance event ttlSeconds to match its meaning\n\nMOVING carries a grace period, MIGRATING/FAILING_OVER a lead time.\n\n* [clean-up] Correct and complete maintenance-notifications javadocs\n\n* Add smart client handoffs user guide\n\n* Add smart client handoffs to 8.1.0 release notes\n\n* [clean-up] Make Connection.Builder.maintenanceConfig package-private\n\nSCH activation is pool-scoped: the setter is inert without the\npool-injected visitor and controller, so it is not a usable public\nknob. Its only callers are same-package.\n\n* [clean-up] reduce timeout applied log level\n\nThe line fires per connection creation and twice per blocking command,\nflooding DEBUG output at command rate. Maintenance transitions remain\nvisible at DEBUG via MaintenanceEventController.\n\n* [maintenance events] Ignore MOVING delivered on retired connections (#4709)\n\nIgnore MOVING delivered on retired connections\n\nA MOVING copy buffered on a connection that outlives its grace period\nis consumed only after the operation expired and was pruned, so it was\nre-admitted as a fresh operation and re-opened a relaxation window. A\nretired connection was already covered by the admitted MOVING that\ncondemned it, so anything read from it is stale; the marking pass is\nexhaustive and same-peer operations do not overlap, making the drop\nloss-free. Observed live via a pinned connection reading its buffered\ncopy 22s after emission.\n\n* [clean-up] drop MaintenanceEventsExample, format PubSubPushConsumer\n\n* Cover the mapper's resolved-IP peer matching with a unit test\n\nThe MOVING mapper redirects a creation only when the freshly resolved\naddress matches an affected peer; InetSocketAddress compares resolved\naddresses by IP and port, ignoring hostnames. Pin both directions:\na hostname-carrying resolution with the affected IP remaps, a\nrepointed (different-IP) resolution of the same name does not.\n\n* [clean-up] label controller test seams, trace skipped retirement stamps\n\nisRebindActive and getHandoffHook have no production callers by\ndesign; label them so they do not read as leftovers. Trace when a\npost-deadline delivery skips the retirement stamp: retireAt is a\nrecycle schedule, and stamping a past instant would recycle healthy\nsame-peer connections.\n\n---------\n\nCo-authored-by: atakavci <a_takavci@yahoo.com>\nCo-authored-by: Copilot Autofix powered by AI <175728472+Copilot@users.noreply.github.com>",
+          "timestamp": "2026-09-01T08:56:05Z",
+          "url": "https://github.com/redis/jedis/commit/6dac31d4c224fb3257c216f3985340c6f500cdcb"
+        },
+        "date": 1788572075336,
+        "tool": "jmh",
+        "benches": [
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.get",
+            "value": 11657.560127056004,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.pipelinedGet",
+            "value": 704286.765216354,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.pipelinedSet",
+            "value": 615663.8822486307,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.set",
+            "value": 11539.467445410459,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.pubsub.PubSubPushBenchmark.publishAndReceive",
+            "value": 7267.691778072568,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.get",
+            "value": 11510.465623511285,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.pipelinedGet",
+            "value": 699053.3674887081,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.pipelinedSet",
+            "value": 617691.782097407,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.set",
+            "value": 11256.464868164845,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.get",
+            "value": 54767.16660856594,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.pipelinedGet",
+            "value": 1883238.8343759223,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.pipelinedSet",
+            "value": 1395945.0289647512,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.set",
+            "value": 54113.45271788966,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.get",
+            "value": 38027.251730877804,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.pipelinedGet",
+            "value": 1633313.769912039,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.pipelinedSet",
+            "value": 1235881.7971933929,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.set",
+            "value": 37802.99918525628,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.JedisPoolT1.workload",
+            "value": 11299.60897432713,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.JedisPoolT8.workload",
+            "value": 37946.86397716847,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.JedisT1.workload",
+            "value": 11432.556912083204,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientCSCT1.workload",
+            "value": 17833.017654958625,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientCSCT8.workload",
+            "value": 51358.87151086063,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientT1.workload",
+            "value": 11250.742467131782,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientT8.workload",
+            "value": 37691.94862788152,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadArray",
+            "value": 85.01502599043839,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadBulkString",
+            "value": 21.341175796768997,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadMultiBulkResponse",
+            "value": 110.41899552554207,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadSimpleString",
+            "value": 14.55401215497115,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readArray",
+            "value": 82.87005566046443,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readBulkString",
+            "value": 21.360425249026623,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readMultiBulkResponse",
+            "value": 112.84499454452084,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readSimpleString",
+            "value": 14.521311286860813,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readWith100PushMessages",
+            "value": 17970.840515462096,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readWith1PushMessage",
+            "value": 245.17827971830684,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadPushesBenchmark.drain1000Pending",
+            "value": 194689.650407767,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadPushesBenchmark.drain1Pending",
+            "value": 215.7643192248065,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.SendCommandBenchmark.measureSendCommand",
+            "value": 107.90504774949356,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.CRC16Benchmark.getSlotBytes",
+            "value": 39.164890108117234,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.CRC16Benchmark.getSlotString",
+            "value": 82.70818899863461,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.SafeEncoderBenchmark.decodeBytesToString",
+            "value": 30.568565412726535,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.SafeEncoderBenchmark.encodeStringToBytes",
+            "value": 34.20328096720599,
             "unit": "ns/op",
             "extra": "iterations: 5\nforks: 1\nthreads: 1"
           }

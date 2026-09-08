@@ -27,7 +27,7 @@ Are you looking for a high-level library to handle object mapping? See [redis-om
 
 ## Supported Redis versions
 
-The most recent version of this library supports redis version 
+The most recent version of this library supports Redis versions
 [7.2](https://github.com/redis/redis/blob/7.2/00-RELEASENOTES),
 [7.4](https://github.com/redis/redis/blob/7.4/00-RELEASENOTES),
 [8.0](https://github.com/redis/redis/blob/8.0/00-RELEASENOTES),
@@ -64,7 +64,7 @@ To get started with Jedis, first add it as a dependency in your Java project. If
 
 To use the cutting-edge Jedis, check [here](https://redis.github.io/jedis/jedis-maven/).
 
-Next, you'll need to connect to Redis. Consider installing a redis server with docker:
+Next, you'll need to connect to Redis. Consider installing a Redis server with Docker:
 
 ```bash
 docker run -p 6379:6379 -it redis:latest

@@ -1661,6 +1661,23 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return executeCommand(commandObjects.hmget(key, fields));
   }
 
+  // Hash Import (HIMPORT) commands
+
+  // HIMPORT SET flows through the normal executor. The command carries a connection handler that
+  // injects a lazy PREPARE before the SET on whichever connection the executor picks, so cluster
+  // routing (by the SET's key), retry, and failover all apply.
+  @Override
+  public String himportSet(String key, HashImport fieldset, String... values) {
+    HashImportSupport.checkArgs(fieldset, values.length);
+    return executeCommand(commandObjects.himportSet(key, fieldset, values));
+  }
+
+  @Override
+  public String himportSet(byte[] key, HashImport fieldset, byte[]... values) {
+    HashImportSupport.checkArgs(fieldset, values.length);
+    return executeCommand(commandObjects.himportSet(key, fieldset, values));
+  }
+
   @Override
   public long hincrBy(String key, String field, long value) {
     return executeCommand(commandObjects.hincrBy(key, field, value));

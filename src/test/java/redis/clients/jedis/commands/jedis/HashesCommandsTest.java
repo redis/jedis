@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
@@ -39,6 +40,8 @@ import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
 
+import io.redis.test.annotations.EnabledOnCommand;
+import redis.clients.jedis.HashImport;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
@@ -958,5 +961,27 @@ public class HashesCommandsTest extends JedisCommandsTestBase {
 
     assertThat(jedis.httl(bfoo, bbar1, bbar2, bbar3),
         contains(equalTo(-1L), equalTo(-1L), equalTo(-2L)));
+  }
+
+  @Test
+  @EnabledOnCommand("HIMPORT")
+  public void himportSet() {
+    HashImport fs = HashImport.of("name", "age");
+    assertEquals("OK", jedis.himportSet("himport:j:1", fs, "alice", "25"));
+    assertEquals("OK", jedis.himportSet("himport:j:2", fs, "bob", "30"));
+
+    Map<String, String> expected = new HashMap<>();
+    expected.put("name", "alice");
+    expected.put("age", "25");
+    assertEquals(expected, jedis.hgetAll("himport:j:1"));
+    assertEquals("bob", jedis.hget("himport:j:2", "name"));
+
+    // Binary
+    HashImport bfs = HashImport.of(bbar1, bbar2);
+    assertEquals("OK", jedis.himportSet(bfoo, bfs, bcar, bcare));
+    assertEquals(2, jedis.hgetAll(bfoo).size());
+
+    fs.close();
+    assertThrows(IllegalStateException.class, () -> jedis.himportSet("himport:j:3", fs, "x", "y"));
   }
 }

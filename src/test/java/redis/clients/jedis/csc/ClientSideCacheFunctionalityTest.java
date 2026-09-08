@@ -105,6 +105,9 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
   }
 
   @Test
+  // Relies on OSS `CLIENT LIST` output-buffer fields (oll/omem) that the Enterprise proxy
+  // does not faithfully expose for the tracked connection.
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void pendingInvalidationMessagesTest() {
     final int count = 1000; // Hundreds of keys
 

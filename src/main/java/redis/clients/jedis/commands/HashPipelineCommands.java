@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.HashImport;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.HGetExParams;
 import redis.clients.jedis.params.HSetExParams;
@@ -94,4 +96,29 @@ public interface HashPipelineCommands {
   Response<List<Long>> hpttl(String key, String... fields);
 
   Response<List<Long>> hpersist(String key, String... fields);
+
+  /**
+   * Pipelined {@link HashCommands#himportSet(String, HashImport, String...)} ({@code HIMPORT SET},
+   * Redis 8.10). Each call is applied on its own and may be freely pipelined with unrelated
+   * commands; the {@code HIMPORT PREPARE} for {@code fieldset} is buffered automatically ahead of
+   * the first use on the pipeline's connection and is not part of the user-facing results.
+   * <p>
+   * Supported only on a single-connection pipeline; a transaction ({@code MULTI}) or a cluster
+   * pipeline throws {@link UnsupportedOperationException} (the connection-local {@code PREPARE}
+   * can neither be staged in {@code MULTI}/{@code EXEC} nor routed by slot).
+   *
+   * @param key the key of the hash to create; any existing hash at this key is replaced
+   * @param fieldset the field-set template describing the ordered field names shared by imported
+   *          hashes
+   * @param values the field values for this hash, matched positionally against the template's
+   *          fields (same count)
+   * @return the {@code SET} response ({@code OK})
+   * @throws IllegalArgumentException if the number of values differs from the template's field
+   *           count
+   * @throws IllegalStateException if the template has been {@linkplain HashImport#close() closed}
+   * @see HashImport
+   * @since 8.0
+   */
+  @Experimental
+  Response<String> himportSet(String key, HashImport fieldset, String... values);
 }

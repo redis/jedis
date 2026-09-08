@@ -109,10 +109,6 @@ public class TSAddParams implements IParams {
       args.add(DUPLICATE_POLICY).add(duplicatePolicy);
     }
 
-    if (duplicatePolicy != null) {
-      args.add(DUPLICATE_POLICY).add(duplicatePolicy);
-    }
-
     if (onDuplicate != null) {
       args.add(ON_DUPLICATE).add(onDuplicate);
     }

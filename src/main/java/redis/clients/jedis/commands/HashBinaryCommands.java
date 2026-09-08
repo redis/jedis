@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.HashImport;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.HGetExParams;
 import redis.clients.jedis.params.HSetExParams;
@@ -252,4 +254,25 @@ public interface HashBinaryCommands {
    *         or -1 if the field exists but has no associated expire or -2 if the field does not exist.
    */
   List<Long> hpersist(byte[] key, byte[]... fields);
+
+  /**
+   * Binary variant of {@link HashCommands#himportSet(String, HashImport, String...)}: creates a
+   * single hash from values supplied positionally against a reusable {@link HashImport} field-set
+   * template ({@code HIMPORT SET}, Redis 8.10). The {@code HIMPORT PREPARE} for {@code fieldset}
+   * is injected automatically the first time it is seen on each underlying connection.
+   *
+   * @param key the key of the hash to create; any existing hash at this key is replaced
+   * @param fieldset the field-set template describing the ordered field names shared by imported
+   *          hashes
+   * @param values the field values for this hash, matched positionally against the template's
+   *          fields (same count)
+   * @return {@code OK}
+   * @throws IllegalArgumentException if the number of values differs from the template's field
+   *           count
+   * @throws IllegalStateException if the template has been {@linkplain HashImport#close() closed}
+   * @see HashImport
+   * @since 8.0
+   */
+  @Experimental
+  String himportSet(byte[] key, HashImport fieldset, byte[]... values);
 }

@@ -3,14 +3,18 @@ package redis.clients.jedis;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+import java.util.Collections;
+import java.util.List;
+
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
- * Identity semantics of {@link MaintenanceEvent#identity()}: seq for all types; MOVING is also
- * keyed by the original target endpoint, so concurrent MOVINGs to different endpoints stay distinct
- * operations. Identity excludes payload that may vary between deliveries of the same operation
- * (remaining time, shard diagnostics).
+ * Identity semantics of {@link MaintenanceEvent#identity()}: seq for all types (including the
+ * cluster SMIGRATING/SMIGRATED family); MOVING is also keyed by the original target endpoint, so
+ * concurrent MOVINGs to different endpoints stay distinct operations. Identity excludes payload
+ * that may vary between deliveries of the same operation (remaining time, shard diagnostics, slot
+ * ranges).
  */
 @Tag("sch")
 public class MaintenanceEventIdentityTest {
@@ -53,5 +57,30 @@ public class MaintenanceEventIdentityTest {
       new FailingOverEvent(5L, 10, "1").identity());
     assertNotEquals(new FailingOverEvent(5L, 10, "1").identity(),
       new MovingEvent(5L, 10, null).identity());
+  }
+
+  @Test
+  public void clusterEventsUseSeqIdentity() {
+    HashSlotRanges slotsA = HashSlotRanges.parse("0-100");
+    HashSlotRanges slotsB = HashSlotRanges.parse("200");
+    List<SlotMigration> delta = Collections
+        .singletonList(new SlotMigration(TARGET_B, TARGET_C, slotsA));
+
+    assertEquals(new SMigratingEvent(5L, slotsA).identity(),
+      new SMigratingEvent(5L, slotsB).identity(), "same seq: same operation regardless of slots");
+    assertEquals(new SMigratingEvent(5L, slotsA).identity().hashCode(),
+      new SMigratingEvent(5L, slotsB).identity().hashCode());
+    assertNotEquals(new SMigratingEvent(5L, slotsA).identity(),
+      new SMigratingEvent(6L, slotsA).identity());
+
+    assertEquals(new SMigratedEvent(5L, delta).identity(),
+      new SMigratedEvent(5L, Collections.emptyList()).identity(),
+      "same seq: same operation regardless of the slot delta");
+    assertNotEquals(new SMigratedEvent(5L, delta).identity(),
+      new SMigratedEvent(6L, delta).identity());
+
+    assertEquals(new SMigratingEvent(5L, slotsA).identity(),
+      new SMigratedEvent(5L, delta).identity(),
+      "an SMIGRATED terminates the SMIGRATING with the same seq");
   }
 }

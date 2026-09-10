@@ -28,6 +28,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     private Cache cache;
     private HostAndPort hostAndPort;
     private MaintenanceController maintenanceController;
+    private SocketAddressMapper socketAddressMapper;
 
     // Fluent API methods (preferred)
     public Builder clientConfig(JedisClientConfig clientConfig) {
@@ -62,6 +63,11 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
      */
     Builder maintenanceController(MaintenanceController maintenanceController) {
       this.maintenanceController = maintenanceController;
+      return this;
+    }
+
+    Builder socketAddressMapper(SocketAddressMapper socketAddressMapper) {
+      this.socketAddressMapper = socketAddressMapper;
       return this;
     }
 
@@ -107,8 +113,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       if (hostAndPort == null) {
         throw new IllegalStateException("HostAndPort is required when no socketFactory is provided");
       }
-      return new DefaultJedisSocketFactory(hostAndPort, clientConfig,
-          maintenanceController == null ? null : maintenanceController.socketAddressMapper());
+      return new DefaultJedisSocketFactory(hostAndPort, clientConfig, socketAddressMapper);
     }
 
     private Connection.Builder createDefaultConnectionBuilder() {

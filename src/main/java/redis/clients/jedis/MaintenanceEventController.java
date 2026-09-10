@@ -77,11 +77,6 @@ final class MaintenanceEventController
     dts.removeOverride(dts.seekBy(ExpiringTimeoutSource.class));
   }
 
-  @Override
-  public SocketAddressMapper socketAddressMapper() {
-    return this;
-  }
-
   /**
    * Construct a controller from the given config. The creator owns the controller and must
    * {@link #close()} it.

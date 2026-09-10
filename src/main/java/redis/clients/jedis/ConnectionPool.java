@@ -74,9 +74,14 @@ public class ConnectionPool extends Pool<Connection> {
         .cache(clientSideCache), poolConfig, maintConfig);
   }
 
-  private static MaintenanceEventController controllerFor(MaintenanceNotificationsConfig config) {
-    return config != null && config.isEnabledOrAuto() ? MaintenanceEventController.from(config)
-        : null;
+  private static MaintenanceEventController controllerFor(MaintenanceNotificationsConfig config,
+      ConnectionFactory.Builder factoryBuilder) {
+    if (config != null && config.isEnabledOrAuto()) {
+      MaintenanceEventController controller = MaintenanceEventController.from(config);
+      factoryBuilder.socketAddressMapper(controller);
+      return controller;
+    }
+    return null;
   }
 
   /**
@@ -87,7 +92,7 @@ public class ConnectionPool extends Pool<Connection> {
   @Experimental
   public ConnectionPool(ConnectionFactory.Builder factoryBuilder,
       GenericObjectPoolConfig<Connection> poolConfig, MaintenanceNotificationsConfig maintConfig) {
-    this(factoryBuilder, poolConfig, controllerFor(maintConfig));
+    this(factoryBuilder, poolConfig, controllerFor(maintConfig, factoryBuilder));
   }
 
   ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache,

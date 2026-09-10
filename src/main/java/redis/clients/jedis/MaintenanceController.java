@@ -16,12 +16,6 @@ interface MaintenanceController extends AutoCloseable {
   /** The config this controller was built from; drives the MAINT_NOTIFICATIONS handshake. */
   MaintenanceNotificationsConfig getConfig();
 
-  // TODO : verify if this should be a part of the interface
-  /** Post-DNS address mapper for this controller's connections; {@code null} = no remap. */
-  default SocketAddressMapper socketAddressMapper() {
-    return null;
-  }
-
   void register(Connection connection);
 
   void unregister(Connection connection);

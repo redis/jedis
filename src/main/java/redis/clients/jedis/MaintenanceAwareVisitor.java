@@ -1,59 +1,49 @@
 package redis.clients.jedis;
 
-import java.util.Set;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.Protocol.Command;
-import redis.clients.jedis.TimeoutSource.TimeoutInfo;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.JedisAsserts;
 
 /**
- * Connection-init visitor wiring maintenance notifications: performs the
- * {@code CLIENT MAINT_NOTIFICATIONS} handshake and installs the relaxed-timeout overlays.
+ * Connection-init visitor wiring maintenance notifications, identically for both deployment types:
+ * performs the {@code CLIENT MAINT_NOTIFICATIONS} handshake, registers the pool's controller as the
+ * connection's maintenance listener, and installs the controller's relax overlays. What those
+ * overlays are, whether the connection is tracked, and how events are reacted to is entirely the
+ * {@link MaintenanceController} subtype's business.
  */
 class MaintenanceAwareVisitor implements InitVisitor {
 
   private static final Logger logger = LoggerFactory.getLogger(MaintenanceAwareVisitor.class);
 
   private final Connection.Builder builder;
-  private final MaintenanceEventController controller;
+  private final MaintenanceController controller;
 
-  MaintenanceAwareVisitor(Connection.Builder builder,
-      MaintenanceEventController maintenanceController) {
+  MaintenanceAwareVisitor(Connection.Builder builder, MaintenanceController controller) {
     JedisAsserts.notNull(builder, "Connection.Builder must not be null");
-    JedisAsserts.notNull(maintenanceController, "MaintenanceEventController must not be null");
+    JedisAsserts.notNull(controller, "MaintenanceController must not be null");
     this.builder = builder;
-    this.controller = maintenanceController;
+    this.controller = controller;
   }
 
   /**
-   * Installs the pool-wide MOVING rebind timeout overlay before the handshake runs, so a connection
-   * opened while a rebind window is open already relaxes its AUTH/HELLO handshake reads. The
-   * overlay is torn down again in {@link #visitAfterHandshake(Connection)} if the feature turns out
-   * to be unsupported on this connection. Also registers the connection for maintenance-event
-   * tracking — before {@code connect()}, so a connect racing a MOVING is either visible to the
-   * marking pass (registered first) or redirected by the applied rebind via the address mapper.
+   * Tracks the connection (before {@code connect()}, so a connect racing a maintenance operation is
+   * visible to the controller) and installs the controller's relax overlays before the handshake
+   * runs, so a connection opened while a relax window is open already relaxes its AUTH/HELLO
+   * handshake reads. The overlays are torn down again in {@link #visitAfterHandshake(Connection)}
+   * if the feature turns out to be unsupported on this connection.
    */
   @Override
   public void visitBeforeHandshake(Connection connection) {
-    // must precede connect(): a connect racing a MOVING is then visible to the pass or remapped
-    controller.registry().register(connection);
     MaintenanceNotificationsConfig mConfig = builder.getMaintenanceConfig();
     if (!isMaintenanceEnabled(mConfig)) {
       return;
     }
-
-    ChainedTimeoutSource dts = connection.getTimeoutSource();
-    dts.addOverride(new RebindTimeoutSource(controller));
-
-    TimeoutInfo relaxedTimeout = new TimeoutInfo(mConfig.getRelaxedTimeout(),
-        mConfig.getRelaxedBlockingTimeout());
-    dts.addOverride(new ExpiringTimeoutSource(relaxedTimeout));
+    controller.register(connection);
   }
 
   @Override
@@ -66,6 +56,7 @@ class MaintenanceAwareVisitor implements InitVisitor {
     boolean strict = mConfig.getMode() == MaintenanceNotificationsConfig.Mode.ENABLED;
     boolean keepOverrides = false;
 
+    MaintenanceEventConsumer consumer = null;
     try {
       // Maintenance push frames require RESP3.
       RedisProtocol protocol = connection.getRedisProtocol();
@@ -79,15 +70,10 @@ class MaintenanceAwareVisitor implements InitVisitor {
         return;
       }
 
-      Set<MaintenanceEventListener> maintenanceEventListeners = connection
-          .getMaintenanceEventListeners();
-      maintenanceEventListeners.add(controller);
-
-      // The server must accept CLIENT MAINT_NOTIFICATIONS ON. Pre-register the consumer so a
-      // push
+      // The server must accept CLIENT MAINT_NOTIFICATIONS ON. Pre-register the consumer so a push
       // frame the server emits immediately on accepting the subscription cannot race ahead.
-      MaintenanceEventConsumer consumer = new MaintenanceEventConsumer(connection,
-          maintenanceEventListeners);
+      consumer = new MaintenanceEventConsumer(connection,
+          connection.getMaintenanceEventListeners());
       connection.addPushConsumer(consumer);
 
       connection.sendCommand(Command.CLIENT, "MAINT_NOTIFICATIONS", "ON", "moving-endpoint-type",
@@ -96,7 +82,6 @@ class MaintenanceAwareVisitor implements InitVisitor {
         connection.getStatusCodeReply();
         keepOverrides = true;
       } catch (JedisDataException e) {
-        connection.removePushConsumer(consumer);
 
         if (strict) {
           throw new JedisConnectionException(
@@ -108,11 +93,10 @@ class MaintenanceAwareVisitor implements InitVisitor {
       }
     } finally {
       if (!keepOverrides) {
-        // Undo the rebind overlay installed before the handshake — this connection does NOT support
-        // maintenance notifications.
-        ChainedTimeoutSource dts = connection.getTimeoutSource();
-        dts.removeOverride(dts.seekBy(controller));
-        dts.removeOverride(dts.seekBy(ExpiringTimeoutSource.class));
+        connection.removePushConsumer(consumer);
+        // Undo the relax overlays installed before the handshake — this connection does NOT
+        // support maintenance notifications.
+        controller.unregister(connection);
       }
     }
   }
@@ -143,22 +127,6 @@ class MaintenanceAwareVisitor implements InitVisitor {
         return "none";
       default:
         throw new JedisException("Unknown endpoint type: " + endpointType);
-    }
-  }
-
-  /** Pool-wide MOVING rebind overlay: active while the controller reports a valid rebind window. */
-  private static final class RebindTimeoutSource extends ChainedTimeoutSource {
-
-    private final MaintenanceEventController controller;
-
-    RebindTimeoutSource(MaintenanceEventController controller) {
-      super(null, controller);
-      this.controller = controller;
-    }
-
-    @Override
-    protected TimeoutInfo getOwnInfo() {
-      return controller.getTimeoutSupplier().get();
     }
   }
 }

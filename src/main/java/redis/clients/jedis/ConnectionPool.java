@@ -20,7 +20,7 @@ public class ConnectionPool extends Pool<Connection> {
   private static final Logger log = LoggerFactory.getLogger(ConnectionPool.class);
 
   private AuthXManager authXManager;
-  private MaintenanceEventController maintenanceController; // null = maintenance off
+  private MaintenanceController maintenanceController; // null = maintenance off
   private final Consumer<Connection> returnHook;
 
   // Primary constructors using factory
@@ -90,16 +90,24 @@ public class ConnectionPool extends Pool<Connection> {
     this(factoryBuilder, poolConfig, controllerFor(maintConfig));
   }
 
+  ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache,
+      GenericObjectPoolConfig<Connection> poolConfig, MaintenanceController controller) {
+    this(ConnectionFactory.builder().hostAndPort(hostAndPort).clientConfig(clientConfig)
+        .cache(clientSideCache), poolConfig, controller);
+  }
+
   private ConnectionPool(ConnectionFactory.Builder factoryBuilder,
-      GenericObjectPoolConfig<Connection> poolConfig, MaintenanceEventController controller) {
+      GenericObjectPoolConfig<Connection> poolConfig, MaintenanceController controller) {
     super(factoryBuilder.maintenanceController(controller).build(), poolConfig);
     this.maintenanceController = controller;
     attachAuthenticationListener(factoryBuilder.getClientConfig().getAuthXManager());
-    if (controller != null) {
+    if (controller instanceof MaintenanceEventController) {
+      // retirement plumbing exists only for the standalone controller; cluster connections are
+      // never retired individually — their Case-2 teardown is pool-level
       setEvictionPolicy(new RebindAwareEvictionPolicy(getEvictionPolicy()));
       // handoff processed: evict the retired idles
-      controller.setHandoffHook(this::evictQuietly);
-       returnHook = c -> {
+      ((MaintenanceEventController) controller).setHandoffHook(this::evictQuietly);
+      returnHook = c -> {
         if (c.isRetired()) {
           super.returnBrokenResource(c);
         } else {
@@ -129,7 +137,7 @@ public class ConnectionPool extends Pool<Connection> {
 
   /** Exposes the pool's maintenance controller ({@code null} when off) for test clock injection. */
   @VisibleForTesting
-  MaintenanceEventController getMaintenanceController() {
+  MaintenanceController getMaintenanceController() {
     return maintenanceController;
   }
 

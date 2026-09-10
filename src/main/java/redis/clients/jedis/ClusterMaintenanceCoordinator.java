@@ -16,7 +16,7 @@ import redis.clients.jedis.TimeoutSource.TimeoutInfo;
  * first delivery of an SMIGRATED is applied as-is, in arrival order; a stale slot left by a
  * reordered closer self-heals through MOVED redirects and the topology refresh.
  */
-final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
+final class ClusterMaintenanceCoordinator {
 
   private static final Logger logger = LoggerFactory.getLogger(ClusterMaintenanceCoordinator.class);
 
@@ -34,15 +34,26 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
   /** Closers already applied, by seq; the broadcast copies from other connections dedup here. */
   private final ConcurrentSkipListMap<Long, SMigratedEvent> seenSMigrated = new ConcurrentSkipListMap<>();
 
+  private final MaintenanceNotificationsConfig config;
+
   ClusterMaintenanceCoordinator(JedisClusterInfoCache cache,
       MaintenanceNotificationsConfig config) {
     this.cache = cache;
+    this.config = config;
     this.maxRelaxedDurationNanos = config.getRelaxedWindowMaxDuration().toNanos();
     TimeoutInfo relaxedTimeoutInfo = new TimeoutInfo(config.getRelaxedTimeout(),
         config.getRelaxedBlockingTimeout());
     this.timeoutSupplier = () -> hasActiveMigration() || cache.hasPendingSlotDeltas()
         ? relaxedTimeoutInfo
         : null;
+  }
+
+  /**
+   * The config this coordinator was built from; drives the cluster connections' MAINT_NOTIFICATIONS
+   * handshake.
+   */
+  MaintenanceNotificationsConfig getConfig() {
+    return config;
   }
 
   /** The client-wide relax gate consulted by every cluster connection's timeout overlay. */
@@ -138,33 +149,4 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
     }
   }
 
-  @Override
-  public void onMoving(MovingEvent e, Connection c) {
-    logger.warn("Standalone maintenance events are not supported by this controller: {} conn={}", e,
-      c);
-  }
-
-  @Override
-  public void onMigrating(MigratingEvent e, Connection c) {
-    logger.warn("Standalone maintenance events are not supported by this controller: {} conn={}", e,
-      c);
-  }
-
-  @Override
-  public void onMigrated(MigratedEvent e, Connection c) {
-    logger.warn("Standalone maintenance events are not supported by this controller: {} conn={}", e,
-      c);
-  }
-
-  @Override
-  public void onFailingOver(FailingOverEvent e, Connection c) {
-    logger.warn("Standalone maintenance events are not supported by this controller: {} conn={}", e,
-      c);
-  }
-
-  @Override
-  public void onFailedOver(FailedOverEvent e, Connection c) {
-    logger.warn("Standalone maintenance events are not supported by this controller: {} conn={}", e,
-      c);
-  }
 }

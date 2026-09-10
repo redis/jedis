@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.MovingOperations.MovingOperation;
 import redis.clients.jedis.TimeoutSource.TimeoutInfo;
+import redis.clients.jedis.annots.VisibleForTesting;
 
 /**
  * Maintenance coordinator: reacts to maintenance events. MOVING deliveries are deduplicated into
@@ -24,7 +25,7 @@ import redis.clients.jedis.TimeoutSource.TimeoutInfo;
  * shared.
  */
 final class MaintenanceEventController
-    implements MaintenanceEventListener, SocketAddressMapper, AutoCloseable {
+    implements MaintenanceController, MaintenanceEventListener, SocketAddressMapper {
 
   private static final Logger logger = LoggerFactory.getLogger(MaintenanceEventController.class);
 
@@ -34,6 +35,7 @@ final class MaintenanceEventController
   /** The owner's reaction to a completed marking pass; see {@link #setHandoffHook}. */
   private volatile Runnable handoffHook = () -> {
   };
+  private final TimeoutInfo relaxedTimeoutInfo;
   private final Supplier<TimeoutInfo> timeoutSupplier;
 
   private final ConnectionRegistry registry = new ConnectionRegistry();
@@ -51,9 +53,33 @@ final class MaintenanceEventController
     this.maxRelaxedDurationNanos = config.getRelaxedWindowMaxDuration().toNanos();
     this.scheduler = scheduler;
 
-    TimeoutInfo relaxedTimeoutInfo = new TimeoutInfo(config.getRelaxedTimeout(),
+    this.relaxedTimeoutInfo = new TimeoutInfo(config.getRelaxedTimeout(),
         config.getRelaxedBlockingTimeout());
     this.timeoutSupplier = () -> movingOperations.hasActive() ? relaxedTimeoutInfo : null;
+  }
+
+  @Override
+  public void register(Connection connection) {
+    // must precede connect(): a connect racing a maintenance operation is then visible/remapped
+    registry.register(connection);
+    ChainedTimeoutSource dts = connection.getTimeoutSource();
+    dts.addOverride(new ManagedTimeoutSource(this.timeoutSupplier));
+    dts.addOverride(new ExpiringTimeoutSource(relaxedTimeoutInfo));
+    connection.addMaintenanceEventListener(this);
+  }
+
+  @Override
+  public void unregister(Connection connection) {
+    connection.removeMaintenanceEventListener(this);
+    ChainedTimeoutSource dts = connection.getTimeoutSource();
+    // remove ManagedTimeoutSource by identity
+    dts.removeOverride(dts.seekBy(this.timeoutSupplier));
+    dts.removeOverride(dts.seekBy(ExpiringTimeoutSource.class));
+  }
+
+  @Override
+  public SocketAddressMapper socketAddressMapper() {
+    return this;
   }
 
   /**
@@ -107,7 +133,8 @@ final class MaintenanceEventController
    * The config this controller was built from; drives the connection's MAINT_NOTIFICATIONS
    * handshake.
    */
-  MaintenanceNotificationsConfig getConfig() {
+  @Override
+  public MaintenanceNotificationsConfig getConfig() {
     return config;
   }
 
@@ -234,16 +261,6 @@ final class MaintenanceEventController
     return registry;
   }
 
-  /**
-   * Retires every registered connection at the given instant and runs the handoff hook — the
-   * cluster Case-2 reaction, invoked by the cluster coordinator when this pool's node no longer
-   * owns any slot. Caller-only access: the pool remains this controller's sole owner.
-   */
-  void retireAll(long retireAtNanos) {
-    registry.forEachLive(conn -> conn.retireAt(retireAtNanos));
-    handoffHook.run();
-  }
-
   @Override
   public void close() {
     synchronized (schedulerLock) {
@@ -254,7 +271,8 @@ final class MaintenanceEventController
     }
   }
 
-  public Supplier<TimeoutInfo> getTimeoutSupplier() {
+  @VisibleForTesting
+  Supplier<TimeoutInfo> getTimeoutSupplier() {
     return timeoutSupplier;
   }
 

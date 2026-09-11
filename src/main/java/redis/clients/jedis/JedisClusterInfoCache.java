@@ -382,10 +382,8 @@ public class JedisClusterInfoCache {
   private ConnectionPool createNodePool(HostAndPort node) {
     GenericObjectPoolConfig<Connection> cfg = poolConfig != null ? poolConfig
         : new GenericObjectPoolConfig<>();
-    // cluster-maintenance-aware pool: handshake visitor + coordinator listener per connection
-    ClusterMaintenanceController controller = maintenanceCoordinator == null ? null
-        : new ClusterMaintenanceController(maintenanceCoordinator);
-    return new ConnectionPool(node, clientConfig, clientSideCache, cfg, controller);
+    return new ConnectionPool(node, clientConfig, clientSideCache, cfg,
+        PoolMaintenance.cluster(maintenanceCoordinator));
   }
 
   public void assignSlotToNode(int slot, HostAndPort targetNode) {

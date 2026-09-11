@@ -142,6 +142,7 @@ final class MaintenanceEventController
   }
 
   /** The currently installed handoff hook. Exposed for tests. */
+  @VisibleForTesting
   Runnable getHandoffHook() {
     return handoffHook;
   }

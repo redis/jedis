@@ -75,7 +75,7 @@ final class ClusterMaintenanceController
     warnUnsupported(e, c);
   }
 
-  private void warnUnsupported(MaintenanceEvent e, Connection c) {
+  private static void warnUnsupported(MaintenanceEvent e, Connection c) {
     logger.warn(
       "Standalone maintenance events are not supported on cluster connections: {} conn={}", e,
       c.toIdentityString());

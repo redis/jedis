@@ -4,12 +4,13 @@ package redis.clients.jedis;
  * Per-pool maintenance controller contract: the connection-facing surface that
  * {@link MaintenanceAwareVisitor} wires identically for both deployment types — the handshake
  * config, the per-connection relax overlays with their stable teardown identities, the event
- * listener to register on the connection, optional connection tracking, and an optional post-DNS
- * address mapper. Deliberately separate from {@link MaintenanceEventListener}: reacting to the
- * events is the implementations' business ({@link MaintenanceEventController} for the
- * standalone/enterprise family, {@link ClusterMaintenanceController} for the cluster family). A
- * controller has exactly one owner (its pool), which creates it and must {@link #close()} it. Never
- * shared.
+ * listener to register on the connection, and optional connection tracking. Deliberately separate
+ * from {@link MaintenanceEventListener}: reacting to the events is the implementations' business
+ * ({@link MaintenanceEventController} for the standalone/enterprise family,
+ * {@link ClusterMaintenanceController} for the cluster family). Anything a family needs from its
+ * pool or connection factory beyond this surface is wired by {@link PoolMaintenance}, not through
+ * this interface. A controller has exactly one owner (its pool's {@link PoolMaintenance}), which
+ * creates it and must {@link #close()} it. Never shared.
  */
 interface MaintenanceController extends AutoCloseable {
 

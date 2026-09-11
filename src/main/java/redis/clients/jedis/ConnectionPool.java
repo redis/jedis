@@ -4,8 +4,6 @@ import java.util.function.Consumer;
 
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import redis.clients.authentication.core.Token;
 import redis.clients.jedis.annots.Experimental;
@@ -17,10 +15,8 @@ import redis.clients.jedis.util.Pool;
 
 public class ConnectionPool extends Pool<Connection> {
 
-  private static final Logger log = LoggerFactory.getLogger(ConnectionPool.class);
-
   private AuthXManager authXManager;
-  private MaintenanceController maintenanceController; // null = maintenance off
+  private PoolMaintenance maintenance = PoolMaintenance.OFF;
   private final Consumer<Connection> returnHook;
 
   // Primary constructors using factory
@@ -74,16 +70,6 @@ public class ConnectionPool extends Pool<Connection> {
         .cache(clientSideCache), poolConfig, maintConfig);
   }
 
-  private static MaintenanceEventController controllerFor(MaintenanceNotificationsConfig config,
-      ConnectionFactory.Builder factoryBuilder) {
-    if (config != null && config.isEnabledOrAuto()) {
-      MaintenanceEventController controller = MaintenanceEventController.from(config);
-      factoryBuilder.socketAddressMapper(controller);
-      return controller;
-    }
-    return null;
-  }
-
   /**
    * Creates the pool from a connection-factory builder with maintenance notifications configured
    * for its connections; {@code null} disables them.
@@ -92,58 +78,39 @@ public class ConnectionPool extends Pool<Connection> {
   @Experimental
   public ConnectionPool(ConnectionFactory.Builder factoryBuilder,
       GenericObjectPoolConfig<Connection> poolConfig, MaintenanceNotificationsConfig maintConfig) {
-    this(factoryBuilder, poolConfig, controllerFor(maintConfig, factoryBuilder));
+    this(factoryBuilder, poolConfig, PoolMaintenance.standalone(maintConfig));
   }
 
   ConnectionPool(HostAndPort hostAndPort, JedisClientConfig clientConfig, Cache clientSideCache,
-      GenericObjectPoolConfig<Connection> poolConfig, MaintenanceController controller) {
+      GenericObjectPoolConfig<Connection> poolConfig, PoolMaintenance maintenance) {
     this(ConnectionFactory.builder().hostAndPort(hostAndPort).clientConfig(clientConfig)
-        .cache(clientSideCache), poolConfig, controller);
+        .cache(clientSideCache), poolConfig, maintenance);
   }
 
   private ConnectionPool(ConnectionFactory.Builder factoryBuilder,
-      GenericObjectPoolConfig<Connection> poolConfig, MaintenanceController controller) {
-    super(factoryBuilder.maintenanceController(controller).build(), poolConfig);
-    this.maintenanceController = controller;
+      GenericObjectPoolConfig<Connection> poolConfig, PoolMaintenance maintenance) {
+    super(maintenance.configure(factoryBuilder).build(), poolConfig);
+    this.maintenance = maintenance;
     attachAuthenticationListener(factoryBuilder.getClientConfig().getAuthXManager());
-    if (controller instanceof MaintenanceEventController) {
-      // retirement plumbing exists only for the standalone controller; cluster connections are
-      // never retired individually — their Case-2 teardown is pool-level
-      setEvictionPolicy(new RebindAwareEvictionPolicy(getEvictionPolicy()));
-      // handoff processed: evict the retired idles
-      ((MaintenanceEventController) controller).setHandoffHook(this::evictQuietly);
-      returnHook = c -> {
+    if (maintenance == PoolMaintenance.OFF) {
+      this.returnHook = super::returnResource;
+    } else {
+      // a retired connection (Connection.isRetired) is destroyed on return instead of reused
+      this.returnHook = c -> {
         if (c.isRetired()) {
           super.returnBrokenResource(c);
         } else {
           super.returnResource(c);
         }
       };
-    } else {
-      returnHook = super::returnResource;
     }
-  }
-
-  /**
-   * Handoff-hook reaction: evict retired idles. Runs on the maintenance scheduler thread or inline
-   * on a notifying thread; must never propagate (a failed pass degrades to lazy recycling on
-   * return).
-   */
-  private void evictQuietly() {
-    if (isClosed()) {
-      return;
-    }
-    try {
-      evict();
-    } catch (Exception e) {
-      log.warn("Maintenance eviction pass failed; retired connections recycle on return", e);
-    }
+    maintenance.attach(this);
   }
 
   /** Exposes the pool's maintenance controller ({@code null} when off) for test clock injection. */
   @VisibleForTesting
   MaintenanceController getMaintenanceController() {
-    return maintenanceController;
+    return maintenance.controller();
   }
 
   @Override
@@ -169,9 +136,7 @@ public class ConnectionPool extends Pool<Connection> {
     try {
       super.destroy();
     } finally {
-      if (maintenanceController != null) {
-        maintenanceController.close();
-      }
+      maintenance.close();
     }
   }
 

@@ -138,6 +138,39 @@ public class JedisURIHelperTest {
   }
 
   @Test
+  public void shouldKeepEncodedColonInUsername() throws URISyntaxException {
+    // a percent-encoded colon in the username must not shift the user/password boundary
+    URI uri = new URI("redis://us%3Aer:pw@host:9000/0");
+    assertEquals("us:er", JedisURIHelper.getUser(uri));
+    assertEquals("pw", JedisURIHelper.getPassword(uri));
+  }
+
+  @Test
+  public void shouldDecodeEncodedColonInPassword() throws URISyntaxException {
+    URI uri = new URI("redis://user:pa%3Ass@host:9000/0");
+    assertEquals("user", JedisURIHelper.getUser(uri));
+    assertEquals("pa:ss", JedisURIHelper.getPassword(uri));
+  }
+
+  @Test
+  public void shouldKeepPlusSignInPassword() throws URISyntaxException {
+    // userinfo is not form data, so '+' must not become a space
+    URI uri = new URI("redis://user:p+w@host:9000/0");
+    assertEquals("p+w", JedisURIHelper.getPassword(uri));
+
+    URI encoded = new URI("redis://user:p%2Bw@host:9000/0");
+    assertEquals("p+w", JedisURIHelper.getPassword(encoded));
+  }
+
+  @Test
+  public void shouldDecodeNonAsciiUserAndPassword() throws URISyntaxException {
+    // percent-encoded UTF-8 octets decode like URI.getUserInfo() would
+    URI uri = new URI("redis://%E4%B8%AD:%E6%96%87@host:9000/0");
+    assertEquals("中", JedisURIHelper.getUser(uri));
+    assertEquals("文", JedisURIHelper.getPassword(uri));
+  }
+
+  @Test
   public void isRedisScheme_shouldBeCaseInsensitive() throws URISyntaxException {
     assertTrue(JedisURIHelper.isRedisScheme(new URI("redis://host:9000")));
     assertTrue(JedisURIHelper.isRedisScheme(new URI("Redis://host:9000")));

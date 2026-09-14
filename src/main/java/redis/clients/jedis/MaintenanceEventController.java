@@ -119,6 +119,7 @@ final class MaintenanceEventController
     this.handoffHook = hook;
   }
 
+  /** The currently installed handoff hook. Exposed for tests. */
   Runnable getHandoffHook() {
     return handoffHook;
   }
@@ -137,8 +138,11 @@ final class MaintenanceEventController
     return new InetSocketAddress(op.endpoint.getHost(), op.endpoint.getPort());
   }
 
-  /** True iff there is an active MOVING rebind window in the pool right now. */
-  public boolean isRebindActive() {
+  /**
+   * Whether a MOVING rebind window is currently open in the pool: timeouts are relaxed and new
+   * connections toward an affected peer are redirected to the operation's endpoint while it is.
+   */
+  boolean isRebindActive() {
     return movingOperations.hasActive();
   }
 
@@ -164,6 +168,11 @@ final class MaintenanceEventController
       long retireAt = getRetirementFor(affectedPeer);
       if (retireAt > NanoClock.INSTANCE.getAsLong()) {
         c.retireAt(retireAt);
+      } else if (logger.isTraceEnabled()) {
+        // stamping a past instant would recycle same-peer connections on every post-deadline
+        // delivery
+        logger.trace("Skipping retirement stamp, retire instant already passed (seq={}) conn={}",
+          e.seq, c.toIdentityString());
       }
       return;
     }

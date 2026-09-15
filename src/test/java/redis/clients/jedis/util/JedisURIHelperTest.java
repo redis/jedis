@@ -27,6 +27,22 @@ public class JedisURIHelperTest {
   }
 
   @Test
+  public void shouldKeepEncodedColonInsideUsername() throws URISyntaxException {
+    // %3A in the username must not move the user:password split point
+    URI uri = new URI("redis://us%3Aer:pw@host:9000/0");
+    assertEquals("us:er", JedisURIHelper.getUser(uri));
+    assertEquals("pw", JedisURIHelper.getPassword(uri));
+  }
+
+  @Test
+  public void shouldDecodeEncodedCredentials() throws URISyntaxException {
+    // percent-encoded specials in the password decode, literal '+' stays literal
+    assertEquals("pa@ss", JedisURIHelper.getPassword(new URI("redis://user:pa%40ss@host:9000/0")));
+    assertEquals("pa:ss", JedisURIHelper.getPassword(new URI("redis://user:pa%3Ass@host:9000/0")));
+    assertEquals("pa+ss", JedisURIHelper.getPassword(new URI("redis://user:pa+ss@host:9000/0")));
+  }
+
+  @Test
   public void shouldReturnNullIfURIDoesNotHaveCredentials() throws URISyntaxException {
     URI uri = new URI("redis://host:9000/0");
     assertNull(JedisURIHelper.getUser(uri));

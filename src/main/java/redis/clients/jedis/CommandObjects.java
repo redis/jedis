@@ -69,9 +69,9 @@ public class CommandObjects {
   }
 
   protected CommandArguments commandArguments(ProtocolCommand command, int expectedArgumentCount) {
-    CommandArguments comArgs = new CommandArguments(command, expectedArgumentCount);
-    if (keyPreProcessor != null) comArgs.setKeyArgumentPreProcessor(keyPreProcessor);
-    return comArgs;
+    // Route through the single-argument factory so subclasses overriding it keep
+    // their custom argument creation for collection-driven commands.
+    return commandArguments(command).expectArguments(expectedArgumentCount);
   }
 
   private final CommandObject<String> PING_COMMAND_OBJECT = new CommandObject<>(commandArguments(PING), BuilderFactory.STRING);
@@ -1145,7 +1145,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> hset(String key, Map<String, String> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET, hash.size() * 2).key(key), hash), BuilderFactory.LONG);
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET, hash.size() * 2 + 1).key(key), hash), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> hsetex(String key, HSetExParams params, String field, String value) {
@@ -1177,7 +1177,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> hmset(String key, Map<String, String> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(HMSET, hash.size() * 2).key(key), hash), BuilderFactory.STRING);
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HMSET, hash.size() * 2 + 1).key(key), hash), BuilderFactory.STRING);
   }
 
   public final CommandObject<List<String>> hmget(String key, String... fields) {
@@ -1189,7 +1189,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> hset(byte[] key, Map<byte[], byte[]> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET, hash.size() * 2).key(key), hash), BuilderFactory.LONG);
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET, hash.size() * 2 + 1).key(key), hash), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> hsetex(byte[] key, HSetExParams params, byte[] field, byte[] value) {
@@ -1221,7 +1221,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> hmset(byte[] key, Map<byte[], byte[]> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(HMSET, hash.size() * 2).key(key), hash), BuilderFactory.STRING);
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HMSET, hash.size() * 2 + 1).key(key), hash), BuilderFactory.STRING);
   }
 
   public final CommandObject<List<byte[]>> hmget(byte[] key, byte[]... fields) {
@@ -4066,7 +4066,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> hsetObject(String key, Map<String, Object> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET, hash.size() * 2).key(key), hash), BuilderFactory.LONG);
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET, hash.size() * 2 + 1).key(key), hash), BuilderFactory.LONG);
   }
 
   private boolean isRoundRobinSearchCommand(SearchCommand sc) {

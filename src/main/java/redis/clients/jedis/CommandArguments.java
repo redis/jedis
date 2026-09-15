@@ -48,6 +48,39 @@ public class CommandArguments implements Iterable<Rawable> {
     cachedHashSlots = null;
   }
 
+  /**
+   * Creates command arguments pre-sized for the command and the number of arguments
+   * expected to follow it, avoiding intermediate {@code ArrayList} growth when
+   * commands are built from large collections (e.g. MSET, HSET, XADD with many members).
+   *
+   * @param command the command to dispatch
+   * @param expectedArgumentCount the number of arguments expected to be added after the
+   *        command itself; values below zero are treated as zero
+   * @since 8.1
+   */
+  public CommandArguments(ProtocolCommand command, int expectedArgumentCount) {
+    args = new ArrayList<>(1 + Math.max(0, expectedArgumentCount));
+    args.add(command);
+
+    keys = new ArrayList<>(DEFAULT_KEYS_CAPACITY);
+    cachedHashSlots = null;
+  }
+
+  /**
+   * Pre-sizes the backing list for the number of arguments expected to follow the
+   * command, avoiding intermediate {@code ArrayList} growth when commands are built
+   * from large collections (e.g. MSET, HSET, XADD with many members).
+   *
+   * @param expectedArgumentCount the number of arguments expected to be added after the
+   *        command itself; values below zero are treated as zero
+   * @return this
+   * @since 8.1
+   */
+  public CommandArguments expectArguments(int expectedArgumentCount) {
+    args.ensureCapacity(1 + Math.max(0, expectedArgumentCount));
+    return this;
+  }
+
   public ProtocolCommand getCommand() {
     return (ProtocolCommand) args.get(0);
   }

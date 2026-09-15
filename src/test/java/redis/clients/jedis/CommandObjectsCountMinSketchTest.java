@@ -14,8 +14,8 @@ import redis.clients.jedis.bloom.RedisBloomProtocol.CountMinSketchCommand;
 import redis.clients.jedis.bloom.RedisBloomProtocol.RedisBloomKeyword;
 
 /**
- * Argument construction and client-side validation of the CMS.INITBYDIM / CMS.INITBYPROB cell
- * size overloads; no server needed.
+ * Argument construction and client-side validation of the CMS.INITBYDIM / CMS.INITBYPROB cell size
+ * overloads; no server needed.
  */
 public class CommandObjectsCountMinSketchTest {
 
@@ -27,9 +27,10 @@ public class CommandObjectsCountMinSketchTest {
     CommandArguments args = commandObjects.cmsInitByDim("cms", 1000L, 5L, cellSize).getArguments();
 
     assertThat(args, hasArgumentCount(6));
-    assertThat(args, hasArguments(CountMinSketchCommand.INITBYDIM, RawableFactory.from("cms"),
-      RawableFactory.from(1000L), RawableFactory.from(5L), RedisBloomKeyword.CELL_SIZE,
-      RawableFactory.from((long) cellSize)));
+    assertThat(args,
+      hasArguments(CountMinSketchCommand.INITBYDIM, RawableFactory.from("cms"),
+        RawableFactory.from(1000L), RawableFactory.from(5L), RedisBloomKeyword.CELL_SIZE,
+        RawableFactory.from((long) cellSize)));
   }
 
   @ParameterizedTest
@@ -39,9 +40,10 @@ public class CommandObjectsCountMinSketchTest {
         .getArguments();
 
     assertThat(args, hasArgumentCount(6));
-    assertThat(args, hasArguments(CountMinSketchCommand.INITBYPROB, RawableFactory.from("cms"),
-      RawableFactory.from(0.001), RawableFactory.from(0.01), RedisBloomKeyword.CELL_SIZE,
-      RawableFactory.from((long) cellSize)));
+    assertThat(args,
+      hasArguments(CountMinSketchCommand.INITBYPROB, RawableFactory.from("cms"),
+        RawableFactory.from(0.001), RawableFactory.from(0.01), RedisBloomKeyword.CELL_SIZE,
+        RawableFactory.from((long) cellSize)));
   }
 
   @ParameterizedTest

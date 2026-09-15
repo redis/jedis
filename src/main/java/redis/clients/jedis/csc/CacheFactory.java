@@ -6,16 +6,31 @@ import java.util.Arrays;
 
 import redis.clients.jedis.exceptions.JedisCacheException;
 
-public final class CacheFactory {
+/**
+ * Factory class for creating cache instances based on the provided configuration.
+ * Subclasses can override the {@link #getNewCache(CacheConfig)} method to supply
+ * custom cache implementations to the relevant client builders.
+ */
+public class CacheFactory {
 
-    public static Cache getCache(CacheConfig config) {
+    /**
+     * Creates a new {@link Cache} from the given configuration.
+     * @param config cache configuration
+     * @return a new cache instance
+     * @since 8.1
+     */
+    public Cache getNewCache(CacheConfig config) {
         if (config.getCacheClass() == null) {
             if (config.getCacheable() == null) {
                 throw new JedisCacheException("Cacheable is required to create the default cache!");
             }
-            return new DefaultCache(config.getMaxSize(), config.getCacheable(), getEvictionPolicy(config));
+            return new DefaultCache(config.getMaxSize(), config.getCacheable(), (config.getEvictionPolicySupplier().get()));
         }
         return instantiateCustomCache(config);
+    }
+
+    public static Cache getCache(CacheConfig config) {
+        return new CacheFactory().getNewCache(config);
     }
 
     private static Cache instantiateCustomCache(CacheConfig config) {
@@ -23,11 +38,12 @@ public final class CacheFactory {
             if (config.getCacheable() != null) {
                 Constructor ctorWithCacheable = findConstructorWithCacheable(config.getCacheClass());
                 if (ctorWithCacheable != null) {
-                    return (Cache) ctorWithCacheable.newInstance(config.getMaxSize(), getEvictionPolicy(config), config.getCacheable());
+                    return (Cache) ctorWithCacheable.newInstance(config.getMaxSize(),
+                            config.getEvictionPolicySupplier().get(), config.getCacheable());
                 }
             }
             Constructor ctor = getConstructor(config.getCacheClass());
-            return (Cache) ctor.newInstance(config.getMaxSize(), getEvictionPolicy(config));
+            return (Cache) ctor.newInstance(config.getMaxSize(), config.getEvictionPolicySupplier().get());
         } catch (InstantiationException | IllegalAccessException | IllegalArgumentException | InvocationTargetException
                 | SecurityException e) {
             throw new JedisCacheException("Failed to insantiate custom cache type!", e);
@@ -51,13 +67,5 @@ public final class CacheFactory {
                         + "\n - %s(int maxSize, EvictionPolicy evictionPolicy)\n - %s(int maxSize, EvictionPolicy evictionPolicy, Cacheable cacheable)",
                 className, className), e);
         }
-    }
-
-    private static EvictionPolicy getEvictionPolicy(CacheConfig config) {
-        if (config.getEvictionPolicy() == null) {
-            // It will be default to LRUEviction, until we have other eviction implementations
-            return new LRUEviction(config.getMaxSize());
-        }
-        return config.getEvictionPolicy();
     }
 }

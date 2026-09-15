@@ -5087,9 +5087,29 @@ public class CommandObjects {
         .add(depth), BuilderFactory.STRING);
   }
 
+  public final CommandObject<String> cmsInitByDim(String key, long width, long depth, int cellSize) {
+    checkCmsCellSize(cellSize);
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.INITBYDIM).key(key).add(width)
+        .add(depth).add(RedisBloomKeyword.CELL_SIZE).add(cellSize), BuilderFactory.STRING);
+  }
+
   public final CommandObject<String> cmsInitByProb(String key, double error, double probability) {
     return new CommandObject<>(commandArguments(CountMinSketchCommand.INITBYPROB).key(key).add(error)
         .add(probability), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> cmsInitByProb(String key, double error, double probability,
+      int cellSize) {
+    checkCmsCellSize(cellSize);
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.INITBYPROB).key(key).add(error)
+        .add(probability).add(RedisBloomKeyword.CELL_SIZE).add(cellSize), BuilderFactory.STRING);
+  }
+
+  // the server would reject it too, but failing before the round trip gives a clearer error
+  private static void checkCmsCellSize(int cellSize) {
+    if (cellSize != 1 && cellSize != 2 && cellSize != 4 && cellSize != 8) {
+      throw new IllegalArgumentException("CMS cell size must be 1, 2, 4 or 8");
+    }
   }
 
   public final CommandObject<List<Long>> cmsIncrBy(String key, Map<String, Long> itemIncrements) {

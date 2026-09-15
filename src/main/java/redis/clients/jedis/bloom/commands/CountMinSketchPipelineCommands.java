@@ -8,7 +8,19 @@ public interface CountMinSketchPipelineCommands {
 
   Response<String> cmsInitByDim(String key, long width, long depth);
 
+  /**
+   * Pipeline variant of {@link CountMinSketchCommands#cmsInitByDim(String, long, long, int)}.
+   * @since 8.1
+   */
+  Response<String> cmsInitByDim(String key, long width, long depth, int cellSize);
+
   Response<String> cmsInitByProb(String key, double error, double probability);
+
+  /**
+   * Pipeline variant of {@link CountMinSketchCommands#cmsInitByProb(String, double, double, int)}.
+   * @since 8.1
+   */
+  Response<String> cmsInitByProb(String key, double error, double probability, int cellSize);
 
   Response<List<Long>> cmsIncrBy(String key, Map<String, Long> itemIncrements);
 

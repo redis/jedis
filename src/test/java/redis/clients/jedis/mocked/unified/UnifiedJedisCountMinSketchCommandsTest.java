@@ -141,4 +141,41 @@ public class UnifiedJedisCountMinSketchCommandsTest extends UnifiedJedisMockedTe
     verify(commandObjects).cmsQuery(key, items);
   }
 
+  @Test
+  public void testCmsInitByDimWithCellSize() {
+    String key = "testCMS";
+    long width = 1000L;
+    long depth = 5L;
+    int cellSize = 2;
+    String expectedResponse = "OK";
+
+    when(commandObjects.cmsInitByDim(key, width, depth, cellSize)).thenReturn(stringCommandObject);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
+
+    String result = jedis.cmsInitByDim(key, width, depth, cellSize);
+
+    assertThat(result, sameInstance(expectedResponse));
+
+    verify(commandExecutor).executeCommand(stringCommandObject);
+    verify(commandObjects).cmsInitByDim(key, width, depth, cellSize);
+  }
+
+  @Test
+  public void testCmsInitByProbWithCellSize() {
+    String key = "testCMS";
+    double error = 0.01;
+    double probability = 0.99;
+    int cellSize = 8;
+    String expectedResponse = "OK";
+
+    when(commandObjects.cmsInitByProb(key, error, probability, cellSize)).thenReturn(stringCommandObject);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
+
+    String result = jedis.cmsInitByProb(key, error, probability, cellSize);
+
+    assertThat(result, sameInstance(expectedResponse));
+
+    verify(commandExecutor).executeCommand(stringCommandObject);
+    verify(commandObjects).cmsInitByProb(key, error, probability, cellSize);
+  }
 }

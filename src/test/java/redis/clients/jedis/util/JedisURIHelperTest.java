@@ -171,6 +171,18 @@ public class JedisURIHelperTest {
   }
 
   @Test
+  public void shouldPreserveLiteralNonAsciiMixedWithEscapes() throws URISyntaxException {
+    // a literal non-ASCII character must survive alongside percent escapes
+    URI uri = new URI("redis://é%20x:pw@host:9000/0");
+    assertEquals("é x", JedisURIHelper.getUser(uri));
+    assertEquals("pw", JedisURIHelper.getPassword(uri));
+
+    URI encodedPassword = new URI("redis://user:pé%20w@host:9000/0");
+    assertEquals("user", JedisURIHelper.getUser(encodedPassword));
+    assertEquals("pé w", JedisURIHelper.getPassword(encodedPassword));
+  }
+
+  @Test
   public void isRedisScheme_shouldBeCaseInsensitive() throws URISyntaxException {
     assertTrue(JedisURIHelper.isRedisScheme(new URI("redis://host:9000")));
     assertTrue(JedisURIHelper.isRedisScheme(new URI("Redis://host:9000")));

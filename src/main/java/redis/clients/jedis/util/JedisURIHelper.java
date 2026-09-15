@@ -50,18 +50,25 @@ public final class JedisURIHelper {
    * Percent-decodes one userinfo component.
    * <p>
    * Unlike {@link java.net.URLDecoder}, this does not translate {@code '+'} to space: userinfo is
-   * not form data. Octet sequences are decoded as UTF-8, matching {@link URI#getUserInfo()}.
+   * not form data. Percent-escaped octet sequences are decoded as UTF-8, matching
+   * {@link URI#getUserInfo()}; unescaped characters are kept as-is (a component may mix literal
+   * non-ASCII characters with escapes).
    * </p>
    */
   private static String decodeUserInfoComponent(String encoded) {
     if (encoded.indexOf('%') < 0) {
       return encoded;
     }
-    ByteArrayOutputStream buffer = new ByteArrayOutputStream(encoded.length());
+    StringBuilder decoded = new StringBuilder(encoded.length());
+    ByteArrayOutputStream escapeOctets = new ByteArrayOutputStream(encoded.length());
     for (int i = 0; i < encoded.length();) {
       char c = encoded.charAt(i);
       if (c != '%') {
-        buffer.write(c);
+        if (escapeOctets.size() > 0) {
+          decoded.append(new String(escapeOctets.toByteArray(), StandardCharsets.UTF_8));
+          escapeOctets.reset();
+        }
+        decoded.append(c);
         i++;
         continue;
       }
@@ -73,10 +80,13 @@ public final class JedisURIHelper {
       if (high < 0 || low < 0) {
         throw new IllegalArgumentException("Invalid percent-encoding in userinfo.");
       }
-      buffer.write((high << 4) | low);
+      escapeOctets.write((high << 4) | low);
       i += 3;
     }
-    return new String(buffer.toByteArray(), StandardCharsets.UTF_8);
+    if (escapeOctets.size() > 0) {
+      decoded.append(new String(escapeOctets.toByteArray(), StandardCharsets.UTF_8));
+    }
+    return decoded.toString();
   }
 
   /**

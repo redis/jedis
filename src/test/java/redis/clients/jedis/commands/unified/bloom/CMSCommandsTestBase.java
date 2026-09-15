@@ -13,9 +13,12 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 
+import io.redis.test.annotations.SinceRedisVersion;
+
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 
 /**
@@ -70,6 +73,73 @@ public abstract class CMSCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertEquals(1000L, info.get("width"));
     assertEquals(5L, info.get("depth"));
     assertEquals(5L, info.get("count"));
+  }
+
+  @Test
+  @SinceRedisVersion("8.11.0")
+  public void testInitByDimWithCellSize() {
+    jedis.cmsInitByDim("cms1", 16L, 4L, 1);
+    Map<String, Object> info = jedis.cmsInfo("cms1");
+    assertEquals(16L, info.get("width"));
+    assertEquals(4L, info.get("depth"));
+    assertEquals(0L, info.get("count"));
+    assertEquals(1L, info.get("cell_size"));
+  }
+
+  @Test
+  @SinceRedisVersion("8.11.0")
+  public void testInitByProbWithCellSize() {
+    jedis.cmsInitByProb("cms2", 0.01, 0.01, 8);
+    Map<String, Object> info = jedis.cmsInfo("cms2");
+    assertEquals(200L, info.get("width"));
+    assertEquals(7L, info.get("depth"));
+    assertEquals(8L, info.get("cell_size"));
+  }
+
+  @Test
+  public void testInitRejectsInvalidCellSize() {
+    IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
+      () -> jedis.cmsInitByDim("cms1", 16L, 4L, 3));
+    assertEquals("CMS cell size must be 1, 2, 4 or 8", thrown.getMessage());
+    assertThrows(IllegalArgumentException.class, () -> jedis.cmsInitByProb("cms2", 0.01, 0.01, 0));
+  }
+
+  @Test
+  @SinceRedisVersion("8.11.0")
+  public void testCellSizeLimitsCounter() {
+    // a 1-byte cell can hold at most 255; exceeding it is an error rather than silent saturation
+    jedis.cmsInitByDim("cms1", 16L, 4L, 1);
+    assertEquals(250L, jedis.cmsIncrBy("cms1", "foo", 250L));
+    JedisDataException thrown = assertThrows(JedisDataException.class,
+      () -> jedis.cmsIncrBy("cms1", "foo", 10L));
+    assertEquals("CMS: INCRBY overflow", thrown.getMessage());
+    assertEquals(250L, jedis.cmsQuery("cms1", "foo").get(0));
+  }
+
+  @Test
+  @SinceRedisVersion("8.11.0")
+  public void testIncrByNegative() {
+    jedis.cmsInitByDim("cms3", 1000L, 5L);
+    assertEquals(5L, jedis.cmsIncrBy("cms3", "foo", 5L));
+    assertEquals(3L, jedis.cmsIncrBy("cms3", "foo", -2L));
+    assertEquals(3L, jedis.cmsQuery("cms3", "foo").get(0));
+    assertEquals(3L, jedis.cmsInfo("cms3").get("count"));
+
+    // decrementing below zero would corrupt the sketch, so the server rejects it
+    JedisDataException thrown = assertThrows(JedisDataException.class,
+      () -> jedis.cmsIncrBy("cms3", "foo", -10L));
+    assertEquals("CMS: INCRBY underflow", thrown.getMessage());
+    assertEquals(3L, jedis.cmsQuery("cms3", "foo").get(0));
+  }
+
+  @Test
+  @SinceRedisVersion("8.11.0")
+  public void testMergeRequiresSameCellSize() {
+    jedis.cmsInitByDim("{key}A", 1000L, 5L, 2);
+    jedis.cmsInitByDim("{key}B", 1000L, 5L, 4);
+    JedisDataException thrown = assertThrows(JedisDataException.class,
+      () -> jedis.cmsMerge("{key}A", "{key}B"));
+    assertEquals("CMS: cell size is not equal", thrown.getMessage());
   }
 
   @Test

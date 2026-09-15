@@ -23,6 +23,24 @@ public interface CountMinSketchCommands {
   String cmsInitByDim(String key, long width, long depth);
 
   /**
+   * CMS.INITBYDIM Initializes a Count-Min Sketch to dimensions specified by user,
+   * with an explicit counter cell size.
+   * 
+   * @param key      The name of the sketch
+   * @param width    Number of counter in each array. Reduces the error size
+   * @param depth    Number of counter-arrays. Reduces the probability for an error
+   *                 of a certain size (percentage of total count
+   * @param cellSize Number of bytes per counter cell: 1, 2, 4 or 8. Smaller cells
+   *                 reduce memory usage but lower the maximum count a cell can
+   *                 hold before {@code CMS.INCRBY} fails with an overflow error.
+   *                 The server default is 4.
+   * @return OK
+   * @throws IllegalArgumentException if cellSize is not 1, 2, 4 or 8
+   * @since 8.1
+   */
+  String cmsInitByDim(String key, long width, long depth, int cellSize);
+
+  /**
    * CMS.INITBYPROB Initializes a Count-Min Sketch to accommodate requested
    * capacity.
    * 
@@ -40,12 +58,34 @@ public interface CountMinSketchCommands {
   String cmsInitByProb(String key, double error, double probability);
 
   /**
-   * CMS.INCRBY Increases the count of item by increment
+   * CMS.INITBYPROB Initializes a Count-Min Sketch to accommodate requested
+   * capacity, with an explicit counter cell size.
+   * 
+   * @param key         The name of the sketch.
+   * @param error       Estimate size of error. The error is a percent of total
+   *                    counted items. This effects the width of the sketch.
+   * @param probability The desired probability for inflated count. This should be
+   *                    a decimal value between 0 and 1. This effects the depth of
+   *                    the sketch.
+   * @param cellSize    Number of bytes per counter cell: 1, 2, 4 or 8. See
+   *                    {@link #cmsInitByDim(String, long, long, int)}.
+   * @return OK
+   * @throws IllegalArgumentException if cellSize is not 1, 2, 4 or 8
+   * @since 8.1
+   */
+  String cmsInitByProb(String key, double error, double probability, int cellSize);
+
+  /**
+   * CMS.INCRBY Changes the count of item by increment. A negative increment
+   * decrements the count; only decrement an item that was previously added by at
+   * least that amount, otherwise the server rejects the call with an underflow
+   * error. An increment that would exceed the capacity of the sketch's cells is
+   * rejected with an overflow error, leaving the sketch unchanged.
    * 
    * @param key       The name of the sketch
-   * @param item      The item which counter to be increased
-   * @param increment Counter to be increased by this integer
-   * @return Count for the item after increment
+   * @param item      The item which counter to be changed
+   * @param increment Counter to be changed by this integer, may be negative
+   * @return Count for the item after the change
    */
   // long cmsIncrBy(String key, String item, long increment);
   default long cmsIncrBy(String key, String item, long increment) {
@@ -53,12 +93,14 @@ public interface CountMinSketchCommands {
   }
 
   /**
-   * CMS.INCRBY Increases the count of one or more item.
+   * CMS.INCRBY Changes the count of one or more items. Increments may be negative;
+   * see {@link #cmsIncrBy(String, String, long)} for the underflow and overflow
+   * rules, which are reported per item.
    * 
    * @param key            The name of the sketch
-   * @param itemIncrements a Map of the items to be increased and their integer
+   * @param itemIncrements a Map of the items to be changed and their integer
    *                       increment
-   * @return Count of each item after increment
+   * @return Count of each item after the change
    */
   List<Long> cmsIncrBy(String key, Map<String, Long> itemIncrements);
 
@@ -74,7 +116,7 @@ public interface CountMinSketchCommands {
 
   /**
    * CMS.MERGE Merges several sketches into one sketch. All sketches must have
-   * identical width and depth.
+   * identical width, depth and cell size.
    * 
    * @param destKey The name of destination sketch. Must be initialized.
    * @param keys    The sketches to be merged
@@ -84,8 +126,8 @@ public interface CountMinSketchCommands {
 
   /**
    * CMS.MERGE Merges several sketches into one sketch. All sketches must have
-   * identical width and depth. Weights can be used to multiply certain sketches.
-   * Default weight is 1.
+   * identical width, depth and cell size. Weights can be used to multiply certain
+   * sketches. Default weight is 1.
    * 
    * @param destKey        The name of destination sketch. Must be initialized.
    * @param keysAndWeights A map of keys and weights used to multiply the sketch.
@@ -94,10 +136,11 @@ public interface CountMinSketchCommands {
   String cmsMerge(String destKey, Map<String, Long> keysAndWeights);
 
   /**
-   * CMS.INFO Returns width, depth and total count of the sketch.
+   * CMS.INFO Returns width, depth, total count and cell size of the sketch.
    * 
    * @param key The name of the sketch
-   * @return A Map with width, depth and total count.
+   * @return A Map with {@code width}, {@code depth}, {@code count} and, on servers
+   *         that support configurable cell sizes, {@code cell_size}.
    */
   Map<String, Object> cmsInfo(String key);
 }

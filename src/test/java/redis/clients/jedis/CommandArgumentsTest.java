@@ -1,10 +1,13 @@
 package redis.clients.jedis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
@@ -56,5 +59,25 @@ public class CommandArgumentsTest {
     args.add("a");
     args.add("b");
     assertEquals(3, asList(args).size()); // command + 2 arguments
+  }
+
+  @Test
+  public void collectionCommandsHonorCommandArgumentsOverride() {
+    List<ProtocolCommand> created = new ArrayList<>();
+    CommandObjects objects = new CommandObjects(RedisProtocol.RESP3) {
+      @Override
+      protected CommandArguments commandArguments(ProtocolCommand command) {
+        created.add(command);
+        return super.commandArguments(command);
+      }
+    };
+    Map<String, String> hash = new HashMap<>();
+    hash.put("field", "value");
+
+    objects.hset("key", hash);
+    objects.hmset("key", hash);
+
+    // the capacity-aware collection path must still go through the overridable factory
+    assertFalse(created.isEmpty());
   }
 }

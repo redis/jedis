@@ -10,6 +10,7 @@ import redis.clients.jedis.executors.DefaultCommandExecutor;
 import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.search.SearchProtocol;
+import redis.clients.jedis.util.JedisAsserts;
 
 /**
  * Abstract base class for Redis client builders that provides common configuration options.
@@ -38,6 +39,12 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
   protected CacheConfig cacheConfig = null;
   protected CommandExecutor commandExecutor = null;
   protected ConnectionProvider connectionProvider = null;
+  /**
+   * Factory used to create the {@link Cache} from {@link #cacheConfig}; see
+   * {@link #cacheFactory(CacheFactory)}.
+   * @since 8.1
+   */
+  protected CacheFactory cacheFactory = new CacheFactory();
 
   /**
    * @deprecated This field is deprecated and should be set on JedisClientConfig instead.
@@ -166,7 +173,11 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
 
     // Create cache from config if provided
     if (this.cacheConfig != null) {
-      this.cache = CacheFactory.getCache(this.cacheConfig);
+      if (cacheFactory != null) {
+        this.cache = cacheFactory.getNewCache(this.cacheConfig);
+      } else {
+        this.cache = CacheFactory.getCache(this.cacheConfig);
+      }
     }
 
     if (this.clientConfig == null) {
@@ -228,6 +239,20 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    */
   public T cacheConfig(CacheConfig cacheConfig) {
     this.cacheConfig = cacheConfig;
+    return self();
+  }
+
+  /**
+   * Sets the factory that creates the {@link Cache} from the {@link #cacheConfig(CacheConfig)}
+   * during build. Override {@link CacheFactory#getNewCache(CacheConfig)} to plug in a custom cache
+   * implementation without the reflective {@code cacheClass} mechanism.
+   * @param cacheFactory the cache factory; must not be null
+   * @return this builder
+   * @since 8.1
+   */
+  public T cacheFactory(CacheFactory cacheFactory) {
+    JedisAsserts.notNull(cacheFactory, "cacheFactory cannot be null");
+    this.cacheFactory = cacheFactory;
     return self();
   }
 

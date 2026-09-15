@@ -26,7 +26,8 @@ The policy is configured through `CacheConfig.Builder`:
   with exclusions or a fallback. For now the custom policy alone decides, preserving pre-8.1
   behavior; a later major release will let the default policy's denials take precedence. Note
   that `CacheConfig.getCacheable()` returns an internal wrapper in this case — do not rely on
-  identity with the instance you supplied.
+  identity with the instance you supplied. With the default policy it returns the internal
+  metadata-derived `Cacheable`, not `DefaultCacheable.INSTANCE`.
 
 `DefaultCacheable` is deprecated; its verdicts now match the default policy.
 

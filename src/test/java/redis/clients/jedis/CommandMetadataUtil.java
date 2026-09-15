@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
@@ -192,7 +193,7 @@ public class CommandMetadataUtil {
 
   private static void collect(List<?> entry, CommandMeta parent, TreeMap<String, CommandMeta> out) {
     CommandMeta m = new CommandMeta();
-    String name = str(entry.get(0)).toUpperCase();
+    String name = str(entry.get(0)).toUpperCase(Locale.ENGLISH);
     // container subcommands report either CHILD or PARENT|CHILD depending on server version
     m.name = (parent != null && name.indexOf('|') < 0) ? parent.name + '|' + name : name;
     if (parent != null) {
@@ -315,7 +316,7 @@ public class CommandMetadataUtil {
     Object rawFlags = raw.get("flags");
     if (rawFlags instanceof List) {
       for (Object f : (List<?>) rawFlags) {
-        flags.add(String.valueOf(f).toLowerCase());
+        flags.add(String.valueOf(f).toLowerCase(Locale.ENGLISH));
       }
     }
     out.put("flags", flags);
@@ -388,7 +389,7 @@ public class CommandMetadataUtil {
     TreeSet<String> out = new TreeSet<>();
     if (o instanceof List) {
       for (Object v : (List<?>) o) {
-        out.add(str(v).toLowerCase());
+        out.add(str(v).toLowerCase(Locale.ENGLISH));
       }
     }
     return out;
@@ -657,7 +658,7 @@ public class CommandMetadataUtil {
     for (ProtocolCommand[] values : MetadataResolver.protocolCommandEnums()) {
       for (ProtocolCommand value : values) {
         Enum<?> constant = (Enum<?>) value;
-        String wire = SafeEncoder.encode(value.getRaw()).toUpperCase();
+        String wire = SafeEncoder.encode(value.getRaw()).toUpperCase(Locale.ENGLISH);
         if (jedisWires.add(wire) && !metas.containsKey(wire)) {
           System.out.println("WARNING: no COMMAND metadata for "
               + constant.getDeclaringClass().getSimpleName() + '.' + constant.name() + " (" + wire

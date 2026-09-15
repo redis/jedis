@@ -107,10 +107,15 @@ public abstract class JedisPubSubBase<T> {
     authenticator.registerForAuthentication(client);
     authenticator.client.setTimeoutInfinite();
     authenticator.client.setActiveSubscription(true);
+    boolean completed = false;
     try {
       subscribe(channels);
       process();
+      completed = true;
     } finally {
+      if (!completed || isSubscribed()) {
+        authenticator.client.setBroken();
+      }
       authenticator.client.setActiveSubscription(false);
       authenticator.client.rollbackTimeout();
     }
@@ -120,10 +125,15 @@ public abstract class JedisPubSubBase<T> {
     authenticator.registerForAuthentication(client);
     authenticator.client.setTimeoutInfinite();
     authenticator.client.setActiveSubscription(true);
+    boolean completed = false;
     try {
       psubscribe(patterns);
       process();
+      completed = true;
     } finally {
+      if (!completed || isSubscribed()) {
+        authenticator.client.setBroken();
+      }
       authenticator.client.setActiveSubscription(false);
       authenticator.client.rollbackTimeout();
     }

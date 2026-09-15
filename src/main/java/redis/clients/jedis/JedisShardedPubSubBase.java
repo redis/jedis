@@ -61,10 +61,15 @@ public abstract class JedisShardedPubSubBase<T> {
     authenticator.registerForAuthentication(client);
     authenticator.client.setTimeoutInfinite();
     authenticator.client.setActiveSubscription(true);
+    boolean completed = false;
     try {
       ssubscribe(channels);
       process();
+      completed = true;
     } finally {
+      if (!completed || isSubscribed()) {
+        authenticator.client.setBroken();
+      }
       authenticator.client.setActiveSubscription(false);
       authenticator.client.rollbackTimeout();
     }

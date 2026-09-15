@@ -21,8 +21,8 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
 
   public StreamEntryID(String id) {
     String[] split = id.split("-");
-    this.time = Long.parseLong(split[0]);
-    this.sequence = Long.parseLong(split[1]);
+    this.time = Long.parseUnsignedLong(split[0]);
+    this.sequence = Long.parseUnsignedLong(split[1]);
   }
 
   public StreamEntryID(long time) {
@@ -36,7 +36,7 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
 
   @Override
   public String toString() {
-    return time + "-" + sequence;
+    return Long.toUnsignedString(time) + "-" + Long.toUnsignedString(sequence);
   }
 
   @Override
@@ -55,14 +55,26 @@ public class StreamEntryID implements Comparable<StreamEntryID>, Serializable {
 
   @Override
   public int compareTo(StreamEntryID other) {
-    int timeCompare = Long.compare(this.time, other.time);
-    return timeCompare != 0 ? timeCompare : Long.compare(this.sequence, other.sequence);
+    int timeCompare = Long.compareUnsigned(this.time, other.time);
+    return timeCompare != 0 ? timeCompare : Long.compareUnsigned(this.sequence, other.sequence);
   }
 
+  /**
+   * Returns the milliseconds part of the ID as the raw bits of an unsigned 64-bit integer. Values
+   * above {@code 2^63-1} appear negative under signed interpretation; use
+   * {@link Long#toUnsignedString(long)}, {@link Long#compareUnsigned(long, long)} and
+   * {@link Long#divideUnsigned(long, long)} for arithmetic covering the full range.
+   */
   public long getTime() {
     return time;
   }
 
+  /**
+   * Returns the sequence part of the ID as the raw bits of an unsigned 64-bit integer. Values above
+   * {@code 2^63-1} appear negative under signed interpretation; use
+   * {@link Long#toUnsignedString(long)}, {@link Long#compareUnsigned(long, long)} and
+   * {@link Long#divideUnsigned(long, long)} for arithmetic covering the full range.
+   */
   public long getSequence() {
     return sequence;
   }

@@ -1,6 +1,8 @@
 package redis.clients.jedis.util;
 
+import java.io.ByteArrayOutputStream;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
@@ -45,7 +47,54 @@ public final class JedisURIHelper {
   }
 
   /**
+   * Percent-decodes one userinfo component.
+   * <p>
+   * Unlike {@link java.net.URLDecoder}, this does not translate {@code '+'} to space: userinfo is
+   * not form data. Percent-escaped octet sequences are decoded as UTF-8, matching
+   * {@link URI#getUserInfo()}; unescaped characters are kept as-is (a component may mix literal
+   * non-ASCII characters with escapes).
+   * </p>
+   */
+  private static String decodeUserInfoComponent(String encoded) {
+    if (encoded.indexOf('%') < 0) {
+      return encoded;
+    }
+    StringBuilder decoded = new StringBuilder(encoded.length());
+    ByteArrayOutputStream escapeOctets = new ByteArrayOutputStream(encoded.length());
+    for (int i = 0; i < encoded.length();) {
+      char c = encoded.charAt(i);
+      if (c != '%') {
+        if (escapeOctets.size() > 0) {
+          decoded.append(new String(escapeOctets.toByteArray(), StandardCharsets.UTF_8));
+          escapeOctets.reset();
+        }
+        decoded.append(c);
+        i++;
+        continue;
+      }
+      if (i + 2 >= encoded.length()) {
+        throw new IllegalArgumentException("Incomplete percent-encoding in userinfo.");
+      }
+      int high = Character.digit(encoded.charAt(i + 1), 16);
+      int low = Character.digit(encoded.charAt(i + 2), 16);
+      if (high < 0 || low < 0) {
+        throw new IllegalArgumentException("Invalid percent-encoding in userinfo.");
+      }
+      escapeOctets.write((high << 4) | low);
+      i += 3;
+    }
+    if (escapeOctets.size() > 0) {
+      decoded.append(new String(escapeOctets.toByteArray(), StandardCharsets.UTF_8));
+    }
+    return decoded.toString();
+  }
+
+  /**
    * Extracts the user from the given URI.
+   * <p>
+   * The user/password separator is located in the raw (still percent-encoded) userinfo, so a
+   * percent-encoded colon inside the username does not shift the boundary.
+   * </p>
    * <p>
    * For details on the URI format and authentication examples, see {@link JedisURIHelper}.
    * </p>
@@ -53,9 +102,9 @@ public final class JedisURIHelper {
    * @return the user as a String, or null if user is empty or {@link URI#getUserInfo()} info is missing
    */
   public static String getUser(URI uri) {
-    String userInfo = uri.getUserInfo();
+    String userInfo = uri.getRawUserInfo();
     if (userInfo != null) {
-      String user = userInfo.split(":", 2)[0];
+      String user = decodeUserInfoComponent(userInfo.split(":", 2)[0]);
       if (user.isEmpty()) {
         user = null; // return null user is not specified
       }
@@ -67,6 +116,10 @@ public final class JedisURIHelper {
   /**
    * Extracts the password from the given URI.
    * <p>
+   * The user/password separator is located in the raw (still percent-encoded) userinfo, so a
+   * percent-encoded colon inside the username does not shift the boundary.
+   * </p>
+   * <p>
    * For details on the URI format and authentication examples, see {@link JedisURIHelper}.
    * </p>
    * @param uri the URI to extract the password from
@@ -75,13 +128,13 @@ public final class JedisURIHelper {
    *           a password
    */
   public static String getPassword(URI uri) {
-    String userInfo = uri.getUserInfo();
+    String userInfo = uri.getRawUserInfo();
     if (userInfo != null) {
       String[] userAndPassword = userInfo.split(":", 2);
       if (userAndPassword.length < 2) {
         throw new IllegalArgumentException("Password not provided in uri.");
       }
-      return userAndPassword[1];
+      return decodeUserInfoComponent(userAndPassword[1]);
     }
     return null;
   }

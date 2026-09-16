@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -21,7 +20,6 @@ import org.junit.jupiter.api.Test;
  * listener callback with the owning connection, SMIGRATED exposes its delta read-only, and
  * {@link SlotMigration} renders as {@code src -> dest [slots]}.
  */
-@Tag("unit")
 public class ClusterMaintenanceEventTest {
 
   private static final HostAndPort SRC = new HostAndPort("10.0.0.1", 7000);

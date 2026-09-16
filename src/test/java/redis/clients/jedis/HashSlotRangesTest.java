@@ -9,7 +9,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 /**
@@ -17,7 +16,6 @@ import org.junit.jupiter.api.Test;
  * ({@code 123,456,789-1000}) of cluster maintenance pushes — parsing, membership, counting,
  * iteration order and rejection of malformed input.
  */
-@Tag("unit")
 public class HashSlotRangesTest {
 
   @Test

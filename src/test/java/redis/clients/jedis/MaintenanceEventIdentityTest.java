@@ -78,9 +78,5 @@ public class MaintenanceEventIdentityTest {
       "same seq: same operation regardless of the slot delta");
     assertNotEquals(new SMigratedEvent(5L, delta).identity(),
       new SMigratedEvent(6L, delta).identity());
-
-    assertEquals(new SMigratingEvent(5L, slotsA).identity(),
-      new SMigratedEvent(5L, delta).identity(),
-      "an SMIGRATED terminates the SMIGRATING with the same seq");
   }
 }

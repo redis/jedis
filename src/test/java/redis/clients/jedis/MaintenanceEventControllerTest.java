@@ -307,7 +307,7 @@ public class MaintenanceEventControllerTest {
   public void clusterEvents_areIgnored() {
     HashSlotRanges slots = HashSlotRanges.parse("0-100");
     controller.onSMigrating(new SMigratingEvent(1L, slots), receiver);
-    controller.onSMigrated(new SMigratedEvent(1L,
+    controller.onSMigrated(new SMigratedEvent(2L,
         Collections.singletonList(new SlotMigration(TARGET_B, TARGET_C, slots))),
       receiver);
 
@@ -322,7 +322,7 @@ public class MaintenanceEventControllerTest {
     assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer));
 
     controller.onSMigrating(new SMigratingEvent(2L, HashSlotRanges.parse("5")), receiver);
-    controller.onSMigrated(new SMigratedEvent(2L, Collections.emptyList()), receiver2);
+    controller.onSMigrated(new SMigratedEvent(3L, Collections.emptyList()), receiver2);
 
     assertEquals(TARGET_B_ADDR, controller.getSocketAddress(receiverPeer),
       "MOVING remap survives cluster events");

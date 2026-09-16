@@ -17,7 +17,7 @@ abstract class ClusterMaintenanceEvent extends MaintenanceEvent {
 
 /**
  * {@code [SMIGRATING, seq, slots-or-ranges]} — a slot migration is starting; relax timeouts until
- * the SMIGRATED with the same seq.
+ * the closing SMIGRATED, which carries its own, higher seq.
  */
 final class SMigratingEvent extends ClusterMaintenanceEvent {
   final HashSlotRanges slots;

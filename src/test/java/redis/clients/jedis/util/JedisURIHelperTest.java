@@ -39,7 +39,8 @@ public class JedisURIHelperTest {
     // percent-encoded specials in the password decode, literal '+' stays literal
     assertEquals("pa@ss", JedisURIHelper.getPassword(new URI("redis://user:pa%40ss@host:9000/0")));
     assertEquals("pa:ss", JedisURIHelper.getPassword(new URI("redis://user:pa%3Ass@host:9000/0")));
-    assertEquals("pa+ss", JedisURIHelper.getPassword(new URI("redis://user:pa+ss@host:9000/0")));
+    assertEquals("pa+ss", JedisURIHelper.getPassword(new URI("redis://user:pa+ss@host:9000/0")));                                                                                              
+    assertEquals("pa+ss", JedisURIHelper.getPassword(new URI("redis://user:pa%2Bss@host:9000/0")));                                                                                            
   }
 
   @Test

@@ -53,7 +53,7 @@ public final class JedisURIHelper {
    * For details on the URI format and authentication examples, see {@link JedisURIHelper}.
    * </p>
    * @param uri the URI to extract the user from
-   * @return the user as a String, or null if user is empty or {@link URI#getUserInfo()} info is missing
+   * @return the user as a String, or null if user is empty or the URI has no userinfo component
    */
   public static String getUser(URI uri) {
     String userInfo = uri.getRawUserInfo();
@@ -73,9 +73,8 @@ public final class JedisURIHelper {
    * For details on the URI format and authentication examples, see {@link JedisURIHelper}.
    * </p>
    * @param uri the URI to extract the password from
-   * @return the password as a String, or null if {@link URI#getUserInfo()} info is missing
-   * @throws IllegalArgumentException if {@link URI#getUserInfo()} is provided but does not contain
-   *           a password
+   * @return the password, or null if the URI has no userinfo component
+   * @throws IllegalArgumentException if the URI has a userinfo component without a password
    */
   public static String getPassword(URI uri) {
     String userInfo = uri.getRawUserInfo();

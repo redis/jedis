@@ -131,76 +131,83 @@ public abstract class JedisPubSubBase<T> {
 
   protected abstract T encode(byte[] raw);
 
-  //  private void process(Client client) {
+  // private void process(Client client) {
   private void process() {
+    boolean completed = false;
+    try {
+      do {
+        Object reply = authenticator.client.getUnflushedObject();
 
-    do {
-      Object reply = authenticator.client.getUnflushedObject();
-
-      if (reply instanceof List) {
-        List<Object> listReply = (List<Object>) reply;
-        final Object firstObj = listReply.get(0);
-        if (!(firstObj instanceof byte[])) {
-          throw new JedisException("Unknown message type: " + firstObj);
-        }
-        final byte[] resp = (byte[]) firstObj;
-        if (Arrays.equals(SUBSCRIBE.getRaw(), resp)) {
-          subscribedChannels = ((Long) listReply.get(2)).intValue();
-          final byte[] bchannel = (byte[]) listReply.get(1);
-          final T enchannel = (bchannel == null) ? null : encode(bchannel);
-          onSubscribe(enchannel, subscribedChannels);
-        } else if (Arrays.equals(UNSUBSCRIBE.getRaw(), resp)) {
-          subscribedChannels = ((Long) listReply.get(2)).intValue();
-          final byte[] bchannel = (byte[]) listReply.get(1);
-          final T enchannel = (bchannel == null) ? null : encode(bchannel);
-          onUnsubscribe(enchannel, subscribedChannels);
-        } else if (Arrays.equals(MESSAGE.getRaw(), resp)) {
-          final byte[] bchannel = (byte[]) listReply.get(1);
-          final Object mesg = listReply.get(2);
-          final T enchannel = (bchannel == null) ? null : encode(bchannel);
-          if (mesg instanceof List) {
-            ((List<byte[]>) mesg).forEach(bmesg -> onMessage(enchannel, encode(bmesg)));
-          } else {
-            onMessage(enchannel, (mesg == null) ? null : encode((byte[]) mesg));
+        if (reply instanceof List) {
+          List<Object> listReply = (List<Object>) reply;
+          final Object firstObj = listReply.get(0);
+          if (!(firstObj instanceof byte[])) {
+            throw new JedisException("Unknown message type: " + firstObj);
           }
-        } else if (Arrays.equals(PMESSAGE.getRaw(), resp)) {
-          final byte[] bpattern = (byte[]) listReply.get(1);
-          final byte[] bchannel = (byte[]) listReply.get(2);
-          final byte[] bmesg = (byte[]) listReply.get(3);
-          final T enpattern = (bpattern == null) ? null : encode(bpattern);
-          final T enchannel = (bchannel == null) ? null : encode(bchannel);
-          final T enmesg = (bmesg == null) ? null : encode(bmesg);
-          onPMessage(enpattern, enchannel, enmesg);
-        } else if (Arrays.equals(PSUBSCRIBE.getRaw(), resp)) {
-          subscribedChannels = ((Long) listReply.get(2)).intValue();
-          final byte[] bpattern = (byte[]) listReply.get(1);
-          final T enpattern = (bpattern == null) ? null : encode(bpattern);
-          onPSubscribe(enpattern, subscribedChannels);
-        } else if (Arrays.equals(PUNSUBSCRIBE.getRaw(), resp)) {
-          subscribedChannels = ((Long) listReply.get(2)).intValue();
-          final byte[] bpattern = (byte[]) listReply.get(1);
-          final T enpattern = (bpattern == null) ? null : encode(bpattern);
-          onPUnsubscribe(enpattern, subscribedChannels);
-        } else if (Arrays.equals(PONG.getRaw(), resp)) {
-          final byte[] bpattern = (byte[]) listReply.get(1);
-          final T enpattern = (bpattern == null) ? null : encode(bpattern);
-          onPong(enpattern);
+          final byte[] resp = (byte[]) firstObj;
+          if (Arrays.equals(SUBSCRIBE.getRaw(), resp)) {
+            subscribedChannels = ((Long) listReply.get(2)).intValue();
+            final byte[] bchannel = (byte[]) listReply.get(1);
+            final T enchannel = (bchannel == null) ? null : encode(bchannel);
+            onSubscribe(enchannel, subscribedChannels);
+          } else if (Arrays.equals(UNSUBSCRIBE.getRaw(), resp)) {
+            subscribedChannels = ((Long) listReply.get(2)).intValue();
+            final byte[] bchannel = (byte[]) listReply.get(1);
+            final T enchannel = (bchannel == null) ? null : encode(bchannel);
+            onUnsubscribe(enchannel, subscribedChannels);
+          } else if (Arrays.equals(MESSAGE.getRaw(), resp)) {
+            final byte[] bchannel = (byte[]) listReply.get(1);
+            final Object mesg = listReply.get(2);
+            final T enchannel = (bchannel == null) ? null : encode(bchannel);
+            if (mesg instanceof List) {
+              ((List<byte[]>) mesg).forEach(bmesg -> onMessage(enchannel, encode(bmesg)));
+            } else {
+              onMessage(enchannel, (mesg == null) ? null : encode((byte[]) mesg));
+            }
+          } else if (Arrays.equals(PMESSAGE.getRaw(), resp)) {
+            final byte[] bpattern = (byte[]) listReply.get(1);
+            final byte[] bchannel = (byte[]) listReply.get(2);
+            final byte[] bmesg = (byte[]) listReply.get(3);
+            final T enpattern = (bpattern == null) ? null : encode(bpattern);
+            final T enchannel = (bchannel == null) ? null : encode(bchannel);
+            final T enmesg = (bmesg == null) ? null : encode(bmesg);
+            onPMessage(enpattern, enchannel, enmesg);
+          } else if (Arrays.equals(PSUBSCRIBE.getRaw(), resp)) {
+            subscribedChannels = ((Long) listReply.get(2)).intValue();
+            final byte[] bpattern = (byte[]) listReply.get(1);
+            final T enpattern = (bpattern == null) ? null : encode(bpattern);
+            onPSubscribe(enpattern, subscribedChannels);
+          } else if (Arrays.equals(PUNSUBSCRIBE.getRaw(), resp)) {
+            subscribedChannels = ((Long) listReply.get(2)).intValue();
+            final byte[] bpattern = (byte[]) listReply.get(1);
+            final T enpattern = (bpattern == null) ? null : encode(bpattern);
+            onPUnsubscribe(enpattern, subscribedChannels);
+          } else if (Arrays.equals(PONG.getRaw(), resp)) {
+            final byte[] bpattern = (byte[]) listReply.get(1);
+            final T enpattern = (bpattern == null) ? null : encode(bpattern);
+            onPong(enpattern);
+          } else {
+            throw new JedisException("Unknown message type: " + firstObj);
+          }
+        } else if (reply instanceof byte[]) {
+          Consumer<Object> resultHandler = authenticator.resultHandler.poll();
+          if (resultHandler == null) {
+            throw new JedisException("Unexpected message : " + SafeEncoder.encode((byte[]) reply));
+          }
+          resultHandler.accept(reply);
         } else {
-          throw new JedisException("Unknown message type: " + firstObj);
+          throw new JedisException("Unknown message type: " + reply);
         }
-      } else if (reply instanceof byte[]) {
-        Consumer<Object> resultHandler = authenticator.resultHandler.poll();
-        if (resultHandler == null) {
-          throw new JedisException("Unexpected message : " + SafeEncoder.encode((byte[]) reply));
-        }
-        resultHandler.accept(reply);
-      } else {
-        throw new JedisException("Unknown message type: " + reply);
+      } while (!Thread.currentThread().isInterrupted() && isSubscribed());
+      completed = true;
+    } finally {
+      if (!completed || isSubscribed()) {
+        authenticator.client.setBroken();
       }
-    } while (!Thread.currentThread().isInterrupted() && isSubscribed());
+    }
 
-    //    /* Invalidate instance since this thread is no longer listening */
-    //    this.client = null;
+    // /* Invalidate instance since this thread is no longer listening */
+    // this.client = null;
   }
 
   private void processPingReply(Object reply) {

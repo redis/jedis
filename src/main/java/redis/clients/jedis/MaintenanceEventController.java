@@ -290,4 +290,16 @@ final class MaintenanceEventController
     }
     c.applyCurrentTimeout();
   }
+
+  @Override
+  public void onSMigrating(SMigratingEvent e, Connection c) {
+    logger.warn("Cluster maintenance events are not supported by this controller: {} conn={}", e,
+      c);
+  }
+
+  @Override
+  public void onSMigrated(SMigratedEvent e, Connection c) {
+    logger.warn("Cluster maintenance events are not supported by this controller: {} conn={}", e,
+      c);
+  }
 }

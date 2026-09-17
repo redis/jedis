@@ -77,6 +77,38 @@ public class MaintenanceEventConsumerTest {
     assertCallback("onFailingOver", push(type("FAILING_OVER"), 3L, 5L, shards));
     assertCallback("onMigrated", push(type("MIGRATED"), 4L, shards));
     assertCallback("onFailedOver", push(type("FAILED_OVER"), 5L, shards));
+    assertCallback("onSMigrating", push(type("SMIGRATING"), 6L, bytes("0-100")));
+    assertCallback("onSMigrated", push(type("SMIGRATED"), 7L, Collections
+        .singletonList(Arrays.asList(bytes("h1:7000"), bytes("h2:7001"), bytes("0-100")))));
+  }
+
+  @Test
+  public void dispatchesClusterEventWithDecodedFields() {
+    RecordingListener l = new RecordingListener();
+    PushConsumerContext ctx = consume(Collections.singleton(l),
+      push(type("SMIGRATED"), 7L, Collections
+          .singletonList(Arrays.asList(bytes("h1:7000"), bytes("h2:7001"), bytes("0-100")))));
+
+    assertTrue(ctx.shouldDrop());
+    assertEquals(1, l.calls.size());
+    SMigratedEvent e = assertInstanceOf(SMigratedEvent.class, l.calls.get(0).event);
+    assertEquals(7L, e.seq);
+    assertEquals(1, e.migrations.size());
+    assertEquals(new HostAndPort("h1", 7000), e.migrations.get(0).src);
+    assertEquals(new HostAndPort("h2", 7001), e.migrations.get(0).dest);
+    assertTrue(e.migrations.get(0).slots.contains(50));
+  }
+
+  @Test
+  public void malformedClusterFrameDropsWithoutDispatch() {
+    RecordingListener l = new RecordingListener();
+    // resolves as SMIGRATING but the slots field is unparseable -> build() throws, consumer
+    // discards
+    PushConsumerContext ctx = consume(Collections.singleton(l),
+      push(type("SMIGRATING"), 6L, bytes("not-slots")));
+
+    assertTrue(ctx.shouldDrop());
+    assertTrue(l.calls.isEmpty());
   }
 
   @Test
@@ -158,6 +190,16 @@ public class MaintenanceEventConsumerTest {
     @Override
     public void onFailedOver(FailedOverEvent e, Connection c) {
       calls.add(new Call("onFailedOver", e, c));
+    }
+
+    @Override
+    public void onSMigrating(SMigratingEvent e, Connection c) {
+      calls.add(new Call("onSMigrating", e, c));
+    }
+
+    @Override
+    public void onSMigrated(SMigratedEvent e, Connection c) {
+      calls.add(new Call("onSMigrated", e, c));
     }
   }
 }

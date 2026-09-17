@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.function.Function;
@@ -7,9 +8,10 @@ import java.util.function.Function;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
- * Decodes RESP3 maintenance push frames into {@link MaintenanceEvent}s — the push transport for
- * maintenance notifications. Token classification ({@link PushType#resolve}) and per-type field
- * extraction ({@link #build}) both live here.
+ * Decodes RESP3 maintenance push frames into {@link MaintenanceEvent}s or
+ * {@link ClusterMaintenanceEvent}s — the push transport for maintenance notifications. Token
+ * classification ({@link PushType#resolve}) and per-type field extraction ({@link #build},
+ * {@link #buildCluster}) both live here.
  */
 final class MaintenancePushCodec {
 
@@ -19,7 +21,9 @@ final class MaintenancePushCodec {
     MIGRATING(PushMessageTypes.MIGRATING_BYTES, MaintenancePushCodec::migrating),
     FAILING_OVER(PushMessageTypes.FAILING_OVER_BYTES, MaintenancePushCodec::failingOver),
     MIGRATED(PushMessageTypes.MIGRATED_BYTES, MaintenancePushCodec::migrated),
-    FAILED_OVER(PushMessageTypes.FAILED_OVER_BYTES, MaintenancePushCodec::failedOver);
+    FAILED_OVER(PushMessageTypes.FAILED_OVER_BYTES, MaintenancePushCodec::failedOver),
+    SMIGRATING(PushMessageTypes.SMIGRATING_BYTES, MaintenancePushCodec::sMigrating),
+    SMIGRATED(PushMessageTypes.SMIGRATED_BYTES, MaintenancePushCodec::sMigrated);
 
     private final byte[] token;
     private final Function<List<Object>, MaintenanceEvent> decoder;
@@ -31,7 +35,8 @@ final class MaintenancePushCodec {
 
     /**
      * Resolves a push type token to its maintenance type, or {@code null} when it is not a
-     * maintenance push. Length-switch fast path: rejects unrelated pushes with one comparison.
+     * maintenance push. Length-switch fast path: rejects unrelated pushes with at most two
+     * comparisons (MIGRATING and SMIGRATED share length 9).
      */
     static PushType resolve(byte[] type) {
       if (type == null) {
@@ -43,7 +48,12 @@ final class MaintenancePushCodec {
         case 8:
           return Arrays.equals(type, MIGRATED.token) ? MIGRATED : null;
         case 9:
-          return Arrays.equals(type, MIGRATING.token) ? MIGRATING : null;
+          if (Arrays.equals(type, MIGRATING.token)) {
+            return MIGRATING;
+          }
+          return Arrays.equals(type, SMIGRATED.token) ? SMIGRATED : null;
+        case 10:
+          return Arrays.equals(type, SMIGRATING.token) ? SMIGRATING : null;
         case 11:
           return Arrays.equals(type, FAILED_OVER.token) ? FAILED_OVER : null;
         case 12:
@@ -104,6 +114,55 @@ final class MaintenancePushCodec {
       throw malformed("FAILED_OVER", c);
     }
     return new FailedOverEvent((Long) c.get(1), shardIds(c, 2));
+  }
+
+  private static ClusterMaintenanceEvent sMigrating(List<Object> c) { // [SMIGRATING, seq, slots]
+    if (c.size() < 3 || !(c.get(1) instanceof Long) || !(c.get(2) instanceof byte[])) {
+      throw malformed("SMIGRATING", c);
+    }
+    return new SMigratingEvent((Long) c.get(1), slotRanges("SMIGRATING", c, (byte[]) c.get(2)));
+  }
+
+  private static ClusterMaintenanceEvent sMigrated(List<Object> c) { // [SMIGRATED, seq,
+                                                                     // [[src, dest, slots]...]]
+    if (c.size() < 3 || !(c.get(1) instanceof Long) || !(c.get(2) instanceof List)) {
+      throw malformed("SMIGRATED", c);
+    }
+    List<?> entries = (List<?>) c.get(2);
+    List<SlotMigration> migrations = new ArrayList<>(entries.size());
+    for (Object entryObj : entries) {
+      if (!(entryObj instanceof List)) {
+        throw malformed("SMIGRATED", c);
+      }
+      List<?> e = (List<?>) entryObj;
+      if (e.size() < 3 || !(e.get(0) instanceof byte[]) || !(e.get(1) instanceof byte[])
+          || !(e.get(2) instanceof byte[])) {
+        throw malformed("SMIGRATED", c);
+      }
+      migrations.add(new SlotMigration(nodeAddress("SMIGRATED", c, (byte[]) e.get(0)),
+          nodeAddress("SMIGRATED", c, (byte[]) e.get(1)),
+          slotRanges("SMIGRATED", c, (byte[]) e.get(2))));
+    }
+    return new SMigratedEvent((Long) c.get(1), migrations);
+  }
+
+  /** Slots-or-ranges field, e.g. {@code 123,456,789-1000}; throws when unparseable. */
+  private static HashSlotRanges slotRanges(String type, List<Object> c, byte[] raw) {
+    try {
+      return HashSlotRanges.parse(SafeEncoder.encode(raw));
+    } catch (IllegalArgumentException e) {
+      throw new MalformedMaintenanceEventException("Unparseable " + type + " slots: " + c, e);
+    }
+  }
+
+  /** Bare {@code host:port} node address (no labels on the wire); throws when unparseable. */
+  private static HostAndPort nodeAddress(String type, List<Object> c, byte[] raw) {
+    try {
+      return HostAndPort.from(SafeEncoder.encode(raw));
+    } catch (Exception e) {
+      throw new MalformedMaintenanceEventException("Unparseable " + type + " node address: " + c,
+          e);
+    }
   }
 
   /** Diagnostic shard-id list (stringified JSON array), logging only; required on the wire. */

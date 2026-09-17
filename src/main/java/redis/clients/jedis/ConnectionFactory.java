@@ -27,7 +27,8 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     private JedisSocketFactory jedisSocketFactory;
     private Cache cache;
     private HostAndPort hostAndPort;
-    private MaintenanceEventController maintenanceController;
+    private MaintenanceController maintenanceController;
+    private SocketAddressMapper socketAddressMapper;
 
     // Fluent API methods (preferred)
     public Builder clientConfig(JedisClientConfig clientConfig) {
@@ -56,12 +57,17 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
     }
 
     /**
-     * Maintenance controller propagated to the default socket factory (as the post-DNS
-     * address mapper for MOVING redirects) and to the default {@link Connection.Builder} (so each
+     * Maintenance controller propagated to the default socket factory (as the controller's post-DNS
+     * address mapper, when it has one) and to the default {@link Connection.Builder} (so each
      * connection forwards push frames to it). {@code null} disables maintenance for this factory.
      */
-    Builder maintenanceController(MaintenanceEventController maintenanceController) {
+    Builder maintenanceController(MaintenanceController maintenanceController) {
       this.maintenanceController = maintenanceController;
+      return this;
+    }
+
+    Builder socketAddressMapper(SocketAddressMapper socketAddressMapper) {
+      this.socketAddressMapper = socketAddressMapper;
       return this;
     }
 
@@ -107,7 +113,7 @@ public class ConnectionFactory implements PooledObjectFactory<Connection> {
       if (hostAndPort == null) {
         throw new IllegalStateException("HostAndPort is required when no socketFactory is provided");
       }
-      return new DefaultJedisSocketFactory(hostAndPort, clientConfig, maintenanceController);
+      return new DefaultJedisSocketFactory(hostAndPort, clientConfig, socketAddressMapper);
     }
 
     private Connection.Builder createDefaultConnectionBuilder() {

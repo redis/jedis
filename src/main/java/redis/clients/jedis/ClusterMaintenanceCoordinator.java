@@ -21,9 +21,11 @@ import redis.clients.jedis.TimeoutSource.TimeoutInfo;
  * stay relaxed while ANY window is open or any slot delta is still pending, and a connection
  * created mid-event relaxes from the moment its overlay is installed) and the last
  * {@value #MAX_COMPLETED_MIGRATIONS} completed SMIGRATED operations, retained to absorb broadcast
- * duplicates. An SMIGRATING older than the last processed seq is ignored; an SMIGRATED older than
- * the newest completed operation folds its delta into that operation and applies the combined
- * result, equivalent to every contribution applied separately in seq order. Deltas go through
+ * duplicates. An SMIGRATING older than the last processed seq is ignored. An SMIGRATED older than
+ * the newest completed operation is merged into it and applied only when the ordering context is
+ * unambiguous — retention reaches down to its seq and no other completed operation lies between the
+ * two; otherwise its delta is dropped and stale routing self-heals (see
+ * late-smigrated-handling-decision.md). Deltas go through
  * {@link JedisClusterInfoCache#applySlotMigration}, which queues and applies atomically against the
  * refresh lifecycle — never blocking or spinning a read thread on a running refresh.
  */
@@ -32,7 +34,7 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
   private static final Logger logger = LoggerFactory.getLogger(ClusterMaintenanceCoordinator.class);
 
   /** Completed SMIGRATED operations retained for duplicate absorption; oldest dropped first. */
-  private static final int MAX_COMPLETED_MIGRATIONS = 20;
+  private static final int MAX_COMPLETED_MIGRATIONS = 128;
 
   private final JedisClusterInfoCache cache;
   /** Backstop for an SMIGRATING whose SMIGRATED is lost. */
@@ -125,22 +127,27 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
 
     List<SlotMigration> toApply;
     // non-null: our own entry was just recorded, and trimming never drains the map below its cap
-    Map.Entry<Long, CompletedMigration> newest = completedMigrations.lastEntry();
-    if (seq >= newest.getKey()) {
+    Map.Entry<Long, CompletedMigration> lastMigration = completedMigrations.lastEntry();
+    long newestSeq = lastMigration.getKey();
+    if (seq >= newestSeq) {
+      // the normal case: this closer is the newest completion
       toApply = e.migrations;
       logger.debug("Slot migration done (seq={}, entries={})", seq, e.migrations.size());
-    } else {
-      // late lower-seq closer: fold its delta into the newest operation and apply the combined
-      // result — equivalent to every contribution applied separately in ascending seq order
-      toApply = newest.getValue().merge(seq, e.migrations);
-      if (toApply == null) {
-        // merged once already, then its map entry was trimmed; recorded again above, never
-        // re-applied
-        onDuplicateSMigrated(seq, c);
-        return;
-      }
+    } else if (isSafeToMergeInto(newestSeq, seq)) {
+      // late closer directly below the newest: fold its delta into the newest and apply the
+      // combined result — equivalent to every contribution applied separately in seq order
+      toApply = lastMigration.getValue().merge(seq, e.migrations);
       logger.debug("Late slot migration (seq={}) merged into seq={}; applying combined delta", seq,
-        newest.getKey());
+        newestSeq);
+    } else {
+      // ambiguous ordering context: drop the delta rather than risk overwriting newer topology.
+      // The seq stays recorded, so re-deliveries are duplicates; stale routing self-heals via
+      // MOVED or the next refresh.
+      logger.info("Dropping late slot migration (seq={}): ordering context is ambiguous "
+          + "(retained range {}..{})",
+        seq, completedMigrations.firstKey(), newestSeq);
+      onDuplicateSMigrated(seq, c);
+      return;
     }
     discardOutdatedMigrationWindows(seq);
     // the cache queues and applies atomically against its refresh lifecycle; a delta racing a
@@ -150,6 +157,17 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
     // queued behind a refresh, hasPendingSlotDeltas() keeps the receiving socket relaxed
     c.applyCurrentTimeout();
     trimCompletedMigrations();
+  }
+
+  /**
+   * A late delta may only be merged when its ordering context is unambiguous: retention still
+   * reaches down to its seq (nothing in between can have been trimmed away unseen) and no other
+   * completed operation lies between it and the newest. Anything else is dropped — see
+   * late-smigrated-handling-decision.md.
+   */
+  private boolean isSafeToMergeInto(long newestSeq, long lateSeq) {
+    return completedMigrations.firstKey() <= lateSeq
+        && completedMigrations.subMap(lateSeq, false, newestSeq, false).isEmpty();
   }
 
   /** A duplicate SMIGRATED delivery: same reactions as always, but no delta application. */
@@ -212,15 +230,15 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
     }
 
     /**
-     * Folds a lower-seq delta in and returns the combined delta, or {@code null} when that seq was
-     * already merged. The combined delta is freshly built: contributions are laid down in ascending
-     * seq order, so a higher seq overrides overlapping slots and the result equals applying each
-     * contribution separately in seq order.
+     * Folds a lower-seq delta in and returns the combined delta, freshly built: contributions are
+     * laid down in ascending seq order, so a higher seq overrides overlapping slots and the result
+     * equals applying each contribution separately in seq order.
      */
     List<SlotMigration> merge(long seq, List<SlotMigration> delta) {
-      if (deltas.putIfAbsent(seq, delta) != null) {
-        return null;
-      }
+      // duplicates never reach here: the coordinator dedups by retained seq, and the retention
+      // floor guard drops anything below the retained range — putIfAbsent merely keeps the first
+      // contribution authoritative
+      deltas.putIfAbsent(seq, delta);
       return combinedDelta();
     }
 

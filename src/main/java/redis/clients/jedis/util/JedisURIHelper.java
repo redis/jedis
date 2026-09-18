@@ -86,6 +86,28 @@ public final class JedisURIHelper {
     return null;
   }
 
+  /**
+   * Checks if the given URI has a database index component.
+   *
+   * @param uri the URI to check
+   * @return true if the URI has a database index component, false otherwise
+   */
+  public static boolean hasDbIndex(URI uri) {
+    if (uri.getPath() == null || uri.getPath().isEmpty()) {
+      return false;
+    }
+
+    String[] pathSplit = uri.getPath().split("/", 2);
+
+    return pathSplit.length > 1 && !pathSplit[1].isEmpty();
+  }
+
+  /**
+   * Returns the database index from the given URI.
+   *
+   * @param uri
+   * @return database index, or default database (0) if not specified
+   */
   public static int getDBIndex(URI uri) {
     String[] pathSplit = uri.getPath().split("/", 2);
     if (pathSplit.length > 1) {
@@ -99,6 +121,12 @@ public final class JedisURIHelper {
     }
   }
 
+  /**
+   * Returns the Redis protocol from the given URI.
+   *
+   * @param uri
+   * @return Redis protocol, or null if not specified
+   */
   public static RedisProtocol getRedisProtocol(URI uri) {
     if (uri.getQuery() == null) return null;
 
@@ -119,12 +147,27 @@ public final class JedisURIHelper {
     return null; // null (default) when not defined
   }
 
+  /**
+   * Validates that the given URI is a valid Redis URI.
+   * <p>
+   * A valid Redis URI must:
+   * <ul>
+   *   <li>Have a scheme of "redis" or "rediss" (case-insensitive)</li>
+   *   <li>Have a non-empty host</li>
+   *   <li>Have a valid port defined</li>
+   * </ul>
+   * <p>
+   *
+   * @param uri the URI to validate
+   * @return true if the URI is valid for Redis connections, false otherwise
+   * @since 8.0.0 (scheme validation added)
+   */
   public static boolean isValid(URI uri) {
-    if (isEmpty(uri.getScheme()) || isEmpty(uri.getHost()) || uri.getPort() == -1) {
+    if (isEmpty(uri.getHost()) || uri.getPort() == -1) {
       return false;
     }
-
-    return true;
+    // Scheme validation is security-critical: only redis:// and rediss:// allowed
+    return isRedisScheme(uri) || isRedisSSLScheme(uri);
   }
 
   private static boolean isEmpty(String value) {
@@ -132,11 +175,11 @@ public final class JedisURIHelper {
   }
 
   public static boolean isRedisScheme(URI uri) {
-    return REDIS.equals(uri.getScheme());
+    return REDIS.equalsIgnoreCase(uri.getScheme());
   }
 
   public static boolean isRedisSSLScheme(URI uri) {
-    return REDISS.equals(uri.getScheme());
+    return REDISS.equalsIgnoreCase(uri.getScheme());
   }
 
 }

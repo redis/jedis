@@ -29,7 +29,7 @@ public class StatusTrackerTest {
   void setUp() {
     MockitoAnnotations.openMocks(this);
     statusTracker = new StatusTracker(mockHealthStatusManager);
-    testEndpoint = new HostAndPort("localhost", 6379);
+    testEndpoint = new HostAndPort("dummy", 6379);
   }
 
   @Test

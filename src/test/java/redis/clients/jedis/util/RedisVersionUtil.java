@@ -47,7 +47,7 @@ public class RedisVersionUtil {
     }
 
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().build())) {
+        endpoint.getClientConfigBuilder().serverDefaultProtocol().build())) {
       return getRedisVersion(jedis);
     }
   }

@@ -19,18 +19,6 @@ public class MultiDbPipeline extends AbstractPipeline implements Closeable {
   private final MultiDbConnectionSupplier failoverProvider;
   private final Queue<KeyValue<CommandArguments, Response<?>>> commands = new LinkedList<>();
 
-  @Deprecated
-  public MultiDbPipeline(MultiDbConnectionProvider pooledProvider) {
-    super(new CommandObjects());
-
-    this.failoverProvider = new MultiDbConnectionSupplier(pooledProvider);
-
-    try (Connection connection = failoverProvider.getConnection()) {
-      RedisProtocol proto = connection.getRedisProtocol();
-      if (proto != null) this.commandObjects.setProtocol(proto);
-    }
-  }
-
   public MultiDbPipeline(MultiDbConnectionProvider pooledProvider, CommandObjects commandObjects) {
     super(commandObjects);
     this.failoverProvider = new MultiDbConnectionSupplier(pooledProvider);

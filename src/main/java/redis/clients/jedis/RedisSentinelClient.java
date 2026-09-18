@@ -1,11 +1,14 @@
 package redis.clients.jedis;
 
+import java.util.Map;
+
 import redis.clients.jedis.builders.SentinelClientBuilder;
 import redis.clients.jedis.csc.Cache;
 
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.SentineledConnectionProvider;
+import redis.clients.jedis.util.Pool;
 
 // @formatter:off
 /**
@@ -37,9 +40,8 @@ import redis.clients.jedis.providers.SentineledConnectionProvider;
  // @formatter:on
 public class RedisSentinelClient extends UnifiedJedis {
   private RedisSentinelClient(CommandExecutor commandExecutor,
-      ConnectionProvider connectionProvider, CommandObjects commandObjects,
-      RedisProtocol redisProtocol, Cache cache) {
-    super(commandExecutor, connectionProvider, commandObjects, redisProtocol, cache);
+      ConnectionProvider connectionProvider, JedisClientConfig clientConfig, Cache cache) {
+    super(commandExecutor, connectionProvider, clientConfig, cache);
   }
 
   /**
@@ -52,8 +54,7 @@ public class RedisSentinelClient extends UnifiedJedis {
 
     @Override
     protected RedisSentinelClient createClient() {
-      return new RedisSentinelClient(commandExecutor, connectionProvider, commandObjects,
-          clientConfig.getRedisProtocol(), cache);
+      return new RedisSentinelClient(commandExecutor, connectionProvider, clientConfig, cache);
     }
   }
 
@@ -67,6 +68,10 @@ public class RedisSentinelClient extends UnifiedJedis {
 
   public HostAndPort getCurrentMaster() {
     return ((SentineledConnectionProvider) provider).getCurrentMaster();
+  }
+
+  public Map<?, Pool<Connection>> getPrimaryNodesConnectionMap() {
+    return ((SentineledConnectionProvider) provider).getPrimaryNodesConnectionMap();
   }
 
   @Override

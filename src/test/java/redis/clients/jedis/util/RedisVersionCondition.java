@@ -42,30 +42,31 @@ public class RedisVersionCondition implements ExecutionCondition {
     if (hostPort == null && endpointSupplier != null) {
       EndpointConfig endpoint = endpointSupplier.get();
       this.hostPort = endpoint.getHostAndPort();
-      this.config = endpoint.getClientConfigBuilder().build();
+      this.config = endpoint.getClientConfigBuilder().serverDefaultProtocol().build();
     }
   }
 
   @Override
   public ConditionEvaluationResult evaluateExecutionCondition(ExtensionContext context) {
+    RedisVersion minRequiredVersion = getMaxRequiredVersion(context);
+    if (minRequiredVersion == null) {
+      return ConditionEvaluationResult.enabled("No version constraint present");
+    }
+
+    if (forcedVersion != null) {
+      logger.info("Using forced Redis server version from environment variable: " + forcedVersion);
+      if (forcedVersion.isLessThan(minRequiredVersion)) {
+        return ConditionEvaluationResult.disabled("Test requires Redis version " + minRequiredVersion + " or later, but found " + forcedVersion);
+      }
+      return ConditionEvaluationResult.enabled("Redis version is sufficient");
+    }
+
     ensureInitialized();
     try (Jedis jedisClient = new Jedis(hostPort, config)) {
-      SinceRedisVersion versionAnnotation = getAnnotation(context);
-      if (versionAnnotation != null) {
-        RedisVersion currentVersion;
-
-        if (forcedVersion != null) {
-          logger.info("Using forced Redis server version from environment variable: " + forcedVersion);
-          currentVersion = forcedVersion;
-        } else {
-          RedisInfo info = RedisInfo.parseInfoServer(jedisClient.info("server"));
-          currentVersion = RedisVersion.of(info.getRedisVersion());
-        }
-
-        RedisVersion minRequiredVersion = RedisVersion.of(versionAnnotation.value());
-        if (currentVersion.isLessThan(minRequiredVersion)) {
-          return ConditionEvaluationResult.disabled("Test requires Redis version " + minRequiredVersion + " or later, but found " + currentVersion);
-        }
+      RedisInfo info = RedisInfo.parseInfoServer(jedisClient.info("server"));
+      RedisVersion currentVersion = RedisVersion.of(info.getRedisVersion());
+      if (currentVersion.isLessThan(minRequiredVersion)) {
+        return ConditionEvaluationResult.disabled("Test requires Redis version " + minRequiredVersion + " or later, but found " + currentVersion);
       }
     } catch (Exception e) {
       return ConditionEvaluationResult.disabled("Failed to check Redis version: " + e.getMessage());
@@ -73,13 +74,20 @@ public class RedisVersionCondition implements ExecutionCondition {
     return ConditionEvaluationResult.enabled("Redis version is sufficient");
   }
 
-  private SinceRedisVersion getAnnotation(ExtensionContext context) {
+  /**
+   * Returns the highest required Redis version from both class-level and method-level
+   * {@link SinceRedisVersion} annotations. This ensures that when a class requires e.g. 8.0.0
+   * and a method requires 7.4.0, the class-level constraint is not bypassed.
+   */
+  private RedisVersion getMaxRequiredVersion(ExtensionContext context) {
     Optional<SinceRedisVersion> methodAnnotation = AnnotationUtils.findAnnotation(context.getTestMethod(), SinceRedisVersion.class);
-    if (methodAnnotation.isPresent()) {
-      return methodAnnotation.get();
-    }
-
     Optional<SinceRedisVersion> classAnnotation = AnnotationUtils.findAnnotation(context.getRequiredTestClass(), SinceRedisVersion.class);
-    return classAnnotation.orElse(null);
+
+    RedisVersion methodVersion = methodAnnotation.map(a -> RedisVersion.of(a.value())).orElse(null);
+    RedisVersion classVersion = classAnnotation.map(a -> RedisVersion.of(a.value())).orElse(null);
+
+    if (methodVersion == null) return classVersion;
+    if (classVersion == null) return methodVersion;
+    return classVersion.isGreaterThan(methodVersion) ? classVersion : methodVersion;
   }
 }

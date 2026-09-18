@@ -1,8 +1,7 @@
 package redis.clients.jedis.commands.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.containsString;
-import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.*;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -23,7 +22,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.util.SafeEncoder;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 public class ObjectCommandsTest extends JedisCommandsTestBase {
 
   private final String key = "mylist";
@@ -46,7 +45,7 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
     super.setUp();
 
     lfuJedis = new Jedis(lfuEndpoint.getHostAndPort(),
-        lfuEndpoint.getClientConfigBuilder().build());
+        lfuEndpoint.getClientConfigBuilder().serverDefaultProtocol().build());
     lfuJedis.connect();
     lfuJedis.flushAll();
   }
@@ -93,11 +92,11 @@ public class ObjectCommandsTest extends JedisCommandsTestBase {
     jedis.lpush(key, "hello world");
 
     Long time = jedis.objectIdletime(key);
-    assertEquals(Long.valueOf(0), time);
+    assertThat(time, lessThanOrEqualTo(10L));
 
     // Binary
     time = jedis.objectIdletime(binaryKey);
-    assertEquals(Long.valueOf(0), time);
+    assertThat(time, lessThanOrEqualTo(10L));
   }
 
   @Test

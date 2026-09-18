@@ -7,8 +7,12 @@ public class RedisVersion implements Comparable<RedisVersion> {
     public static final RedisVersion V7_4 = RedisVersion.of("7.4");
     public static final RedisVersion V8_0_0_PRE = RedisVersion.of("7.9.0");
     public static final RedisVersion V8_0_0 = RedisVersion.of("8.0.0");
-    public static final String V8_4_0_STRING= "8.4.0";
+    public static final String V8_4_0_STRING = "8.4.0";
     public static final RedisVersion V8_4_0 = RedisVersion.of("8.4.0");
+    public static final RedisVersion V8_6_0 = RedisVersion.of("8.6.0");
+    public static final RedisVersion V8_6_1 = RedisVersion.of("8.6.1");
+    public static final String V8_10_0_RC2_STRING = "8.9.241";
+    public static final RedisVersion V8_10_0_RC2 = RedisVersion.of(V8_10_0_RC2_STRING);
 
     private final int major;
     private final int minor;
@@ -70,6 +74,10 @@ public class RedisVersion implements Comparable<RedisVersion> {
             return Integer.compare(this.minor, other.minor);
         }
         return Integer.compare(this.patch, other.patch);
+    }
+
+    public boolean is(RedisVersion other) {
+        return this.compareTo(other) == 0;
     }
 
     public boolean isLessThanOrEqualTo(RedisVersion other) {

@@ -12,6 +12,7 @@ import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.util.*;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
@@ -24,6 +25,7 @@ import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @Tag("integration")
 public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTestBase {
@@ -324,6 +326,23 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   @Test
+  public void zrangeParamsLongMinMax() {
+
+    long min = 0;
+    long max = 1;
+
+    jedis.zadd("foo", 1, "a");
+    jedis.zadd("foo", 2, "b");
+
+    List<String> expected = new ArrayList<String>();
+    expected.add("b");
+    expected.add("a");
+
+    assertEquals(expected, jedis.zrange("foo", ZRangeParams.zrangeParams(min, max).rev()));
+  }
+
+  @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zrangestore() {
     jedis.zadd("foo", 1, "aa");
     jedis.zadd("foo", 2, "c");
@@ -1229,6 +1248,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zunion() {
     jedis.zadd("foo", 1, "a");
     jedis.zadd("foo", 2, "b");
@@ -1267,6 +1287,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zunionstore() {
     jedis.zadd("foo", 1, "a");
     jedis.zadd("foo", 2, "b");
@@ -1295,6 +1316,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zunionstoreParams() {
     jedis.zadd("foo", 1, "a");
     jedis.zadd("foo", 2, "b");
@@ -1331,6 +1353,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zinter() {
     jedis.zadd("foo", 1, "a");
     jedis.zadd("foo", 2, "b");
@@ -1359,6 +1382,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zinterstore() {
     jedis.zadd("foo", 1, "a");
     jedis.zadd("foo", 2, "b");
@@ -1381,6 +1405,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zintertoreParams() {
     jedis.zadd("foo", 1, "a");
     jedis.zadd("foo", 2, "b");
@@ -1411,7 +1436,57 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   @Test
+  @SinceRedisVersion(value = "8.7.225")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void zunionInterAggregateCount() {
+    jedis.zadd("s1", 1, "foo");
+    jedis.zadd("s1", 1, "bar");
+    jedis.zadd("s2", 2, "foo");
+    jedis.zadd("s2", 2, "bar");
+    jedis.zadd("s3", 3, "foo");
+
+    // AGGREGATE COUNT, no WEIGHTS:
+    //  - union score = number of input sets containing the element
+    //  - intersect score = number of input sets (only for elements in all sets)
+    ZParams params = new ZParams().aggregate(ZParams.Aggregate.COUNT);
+
+    assertEquals(2, jedis.zunionstore("dst", params, "s1", "s2", "s3"));
+    List<Tuple> expectedUnion = new ArrayList<>();
+    expectedUnion.add(new Tuple("bar", 2d));
+    expectedUnion.add(new Tuple("foo", 3d));
+    assertEquals(expectedUnion, jedis.zrangeWithScores("dst", 0, -1));
+
+    assertEquals(1, jedis.zinterstore("dst", params, "s1", "s2", "s3"));
+    assertEquals(singletonList(new Tuple("foo", 3d)), jedis.zrangeWithScores("dst", 0, -1));
+
+    // Non-store variants with WITHSCORES.
+    assertEquals(expectedUnion, jedis.zunionWithScores(params, "s1", "s2", "s3"));
+    assertEquals(singletonList(new Tuple("foo", 3d)),
+        jedis.zinterWithScores(params, "s1", "s2", "s3"));
+
+    // AGGREGATE COUNT, with WEIGHTS:
+    //  - union score = sum of weights of containing input sets
+    //  - intersect score = sum of all weights (only for elements in all sets)
+    ZParams paramsW = new ZParams().weights(10, 5, 3).aggregate(ZParams.Aggregate.COUNT);
+
+    assertEquals(2, jedis.zunionstore("dst", paramsW, "s1", "s2", "s3"));
+    List<Tuple> expectedUnionW = new ArrayList<>();
+    expectedUnionW.add(new Tuple("bar", 15d));
+    expectedUnionW.add(new Tuple("foo", 18d));
+    assertEquals(expectedUnionW, jedis.zrangeWithScores("dst", 0, -1));
+
+    assertEquals(1, jedis.zinterstore("dst", paramsW, "s1", "s2", "s3"));
+    assertEquals(singletonList(new Tuple("foo", 18d)), jedis.zrangeWithScores("dst", 0, -1));
+
+    // Non-store variants with WITHSCORES + WEIGHTS.
+    assertEquals(expectedUnionW, jedis.zunionWithScores(paramsW, "s1", "s2", "s3"));
+    assertEquals(singletonList(new Tuple("foo", 18d)),
+        jedis.zinterWithScores(paramsW, "s1", "s2", "s3"));
+  }
+
+  @Test
   @SinceRedisVersion(value="7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zintercard() {
     jedis.zadd("foo", 1, "a");
     jedis.zadd("foo", 2, "b");
@@ -1522,8 +1597,9 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bzpopmax() {
-    assertNull(jedis.bzpopmax(1, "foo", "bar"));
+    assertNull(jedis.bzpopmax(0.1, "foo", "bar"));
 
     jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
@@ -1531,7 +1607,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(new KeyValue<>("foo", new Tuple("b", 10d)), jedis.bzpopmax(0, "foo", "bar"));
 
     // Binary
-    assertNull(jedis.bzpopmax(1, bfoo, bbar));
+    assertNull(jedis.bzpopmax(0.1, bfoo, bbar));
 
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 10d, bb);
@@ -1542,8 +1618,9 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void bzpopmin() {
-    assertNull(jedis.bzpopmin(1, "bar", "foo"));
+    assertNull(jedis.bzpopmin(0.1, "bar", "foo"));
 
     jedis.zadd("foo", 1d, "a", ZAddParams.zAddParams().nx());
     jedis.zadd("foo", 10d, "b", ZAddParams.zAddParams().nx());
@@ -1551,7 +1628,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(new KeyValue<>("bar", new Tuple("c", 0.1)), jedis.bzpopmin(0, "bar", "foo"));
 
     // Binary
-    assertNull(jedis.bzpopmin(1, bbar, bfoo));
+    assertNull(jedis.bzpopmin(0.1, bbar, bfoo));
 
     jedis.zadd(bfoo, 1d, ba);
     jedis.zadd(bfoo, 10d, bb);
@@ -1562,6 +1639,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zdiff() {
     jedis.zadd("foo", 1.0, "a");
     jedis.zadd("foo", 2.0, "b");
@@ -1585,6 +1663,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void zdiffstore() {
     jedis.zadd("foo", 1.0, "a");
     jedis.zadd("foo", 2.0, "b");
@@ -1682,6 +1761,6 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     assertEquals(new Tuple("b", 10d), single.getValue().get(0));
     assertEquals(2, range.getValue().size());
-    assertNull(jedis.bzmpop(1L, SortedSetOption.MAX, "foo"));
+    assertNull(jedis.bzmpop(0.1, SortedSetOption.MAX, "foo"));
   }
 }

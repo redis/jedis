@@ -101,7 +101,7 @@ class ClusterClientBuilderTest {
 
       client.ping();
     }
-    verify(exec, atLeastOnce()).broadcastCommand(cap.capture());
+    verify(exec, atLeastOnce()).executeCommand(cap.capture());
     assertThat(argsToStrings(cap.getValue()).get(0), containsString("PING"));
   }
 
@@ -284,5 +284,17 @@ class ClusterClientBuilderTest {
           "ClusterCommandExecutor should have been constructed once");
       }
     }
+  }
+
+  @Test
+  void refreshClusterTopology() {
+    ClusterConnectionProvider mockProvider = Mockito.mock(ClusterConnectionProvider.class);
+
+    try (RedisClusterClient client = RedisClusterClient.builder().nodes(someNodes())
+        .connectionProvider(mockProvider).build()) {
+      client.refreshClusterTopology();
+    }
+
+    verify(mockProvider).renewSlotCache();
   }
 }

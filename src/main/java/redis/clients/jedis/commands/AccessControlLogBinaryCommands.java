@@ -107,23 +107,6 @@ public interface AccessControlLogBinaryCommands {
   List<byte[]> aclCat(byte[] category);
 
   /**
-   * Shows the recent ACL security events.
-   *
-   * @see <a href="https://redis.io/commands/acl-log">ACL LOG</a>
-   * @return The list of recent security events
-   */
-  List<byte[]> aclLogBinary();
-
-  /**
-   * Shows the recent limit ACL security events.
-   *
-   * @param limit The number of results to return
-   * @see <a href="https://redis.io/commands/acl-log">ACL LOG</a>
-   * @return The list of recent security events
-   */
-  List<byte[]> aclLogBinary(int limit);
-
-  /**
    * Reset the script event log
    *
    * @see <a href="https://redis.io/commands/acl-log">ACL LOG</a>

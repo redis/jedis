@@ -63,6 +63,8 @@ public class DefaultCacheable implements Cacheable {
       add(TimeSeriesCommand.INFO);
       add(TimeSeriesCommand.RANGE);
       add(TimeSeriesCommand.REVRANGE);
+      add(TimeSeriesCommand.NRANGE);
+      add(TimeSeriesCommand.NREVRANGE);
       add(Command.TYPE);
       add(Command.XLEN);
       add(Command.XPENDING);

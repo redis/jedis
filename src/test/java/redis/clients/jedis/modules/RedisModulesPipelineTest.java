@@ -4,8 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static redis.clients.jedis.json.Path.ROOT_PATH;
-import static redis.clients.jedis.modules.json.JsonObjects.Baz;
-import static redis.clients.jedis.modules.json.JsonObjects.IRLObject;
+import static redis.clients.jedis.json.JsonObjects.Baz;
+import static redis.clients.jedis.json.JsonObjects.IRLObject;
 import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 
 import com.google.gson.Gson;
@@ -29,6 +29,7 @@ import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.*;
+import redis.clients.jedis.util.AssertUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -101,7 +102,7 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
   @Test
   public void jsonV1() {
-    assumeFalse(protocol == RedisProtocol.RESP3);
+    assumeFalse(AssertUtil.expectsResp3OnWire(protocol));
 
     Map<String, String> hm1 = new HashMap<>();
     hm1.put("hello", "world");

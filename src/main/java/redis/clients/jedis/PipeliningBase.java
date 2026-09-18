@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import org.json.JSONArray;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.bloom.*;
 import redis.clients.jedis.commands.PipelineBinaryCommands;
@@ -20,8 +21,11 @@ import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.AggregationBuilder;
 import redis.clients.jedis.search.aggr.AggregationResult;
+import redis.clients.jedis.search.hybrid.FTHybridParams;
+import redis.clients.jedis.search.hybrid.HybridResult;
 import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
+import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.util.KeyValue;
 
 public abstract class PipeliningBase
@@ -321,7 +325,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#nx()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   @Override
@@ -331,7 +335,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#ex(long)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   @Override
@@ -341,7 +345,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#set(String, String, redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#px(long)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   @Override
@@ -385,6 +389,21 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<Long>> increx(String key) {
+    return appendCommand(commandObjects.increx(key));
+  }
+
+  @Override
+  public Response<List<Long>> increx(String key, long increment, IncrexParams params) {
+    return appendCommand(commandObjects.increx(key, increment, params));
+  }
+
+  @Override
+  public Response<List<Double>> increx(String key, double increment, IncrexFloatParams params) {
+    return appendCommand(commandObjects.increx(key, increment, params));
+  }
+
+  @Override
   public Response<Long> decr(String key) {
     return appendCommand(commandObjects.decr(key));
   }
@@ -401,7 +420,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#getrange(String, long, long)} instead.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.0.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.0.0.
    */
   @Deprecated
   @Override
@@ -603,7 +622,7 @@ public abstract class PipeliningBase
   /**
    * @deprecated Use {@link PipeliningBase#lmove(String, String, ListDirection, ListDirection)} with
    * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -614,7 +633,7 @@ public abstract class PipeliningBase
   /**
    * @deprecated Use {@link PipeliningBase#blmove(String, String, ListDirection, ListDirection, double)} with
    * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -630,6 +649,26 @@ public abstract class PipeliningBase
   @Override
   public Response<String> blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout) {
     return appendCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public Response<List<String>> lmovem(String srcKey, String dstKey, ListDirection from, ListDirection to) {
+    return appendCommand(commandObjects.lmovem(srcKey, dstKey, from, to));
+  }
+
+  @Override
+  public Response<List<String>> lmovem(String srcKey, String dstKey, ListDirection from, ListDirection to, LMoveMParams params) {
+    return appendCommand(commandObjects.lmovem(srcKey, dstKey, from, to, params));
+  }
+
+  @Override
+  public Response<List<String>> blmovem(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout) {
+    return appendCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public Response<List<String>> blmovem(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout, LMoveMParams params) {
+    return appendCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout, params));
   }
 
   @Override
@@ -740,7 +779,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#hset(String, Map)} instead.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 4.0.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 4.0.0.
    */
   @Deprecated
   @Override
@@ -888,6 +927,25 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.hpersist(key, fields));
   }
 
+  // HIMPORT needs a lazily-injected PREPARE on the same physical connection as the SET. That is only
+  // well-defined on a single-connection pipeline (see Pipeline#himportSet); a transaction (MULTI
+  // would desync EXEC) and a cluster pipeline (keyless PREPARE cannot be routed by slot) reject it.
+  @Override
+  public Response<String> himportSet(String key, HashImport fieldset, String... values) {
+    throw himportUnsupported();
+  }
+
+  @Override
+  public Response<String> himportSet(byte[] key, HashImport fieldset, byte[]... values) {
+    throw himportUnsupported();
+  }
+
+  UnsupportedOperationException himportUnsupported() {
+    return new UnsupportedOperationException(
+        "HIMPORT is not supported on " + getClass().getSimpleName()
+            + "; use a single-connection pipeline or himportSet on the client");
+  }
+
   @Override
   public Response<Long> sadd(String key, String... members) {
     return appendCommand(commandObjects.sadd(key, members));
@@ -954,6 +1012,26 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> sdiffcard(String... keys) {
+    return appendCommand(commandObjects.sdiffcard(keys));
+  }
+
+  @Override
+  public Response<Long> sdiffcard(List<String> keys) {
+    return appendCommand(commandObjects.sdiffcard(keys));
+  }
+
+  @Override
+  public Response<Long> sdiffcard(String key1, String key2, SDiffCardParams params) {
+    return appendCommand(commandObjects.sdiffcard(key1, key2, params));
+  }
+
+  @Override
+  public Response<Long> sdiffcard(List<String> keys, SDiffCardParams params) {
+    return appendCommand(commandObjects.sdiffcard(keys, params));
+  }
+
+  @Override
   public Response<Set<String>> sinter(String... keys) {
     return appendCommand(commandObjects.sinter(keys));
   }
@@ -981,6 +1059,26 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> sunionstore(String dstKey, String... keys) {
     return appendCommand(commandObjects.sunionstore(dstKey, keys));
+  }
+
+  @Override
+  public Response<Long> sunioncard(String... keys) {
+    return appendCommand(commandObjects.sunioncard(keys));
+  }
+
+  @Override
+  public Response<Long> sunioncard(List<String> keys) {
+    return appendCommand(commandObjects.sunioncard(keys));
+  }
+
+  @Override
+  public Response<Long> sunioncard(String key1, String key2, SUnionCardParams params) {
+    return appendCommand(commandObjects.sunioncard(key1, key2, params));
+  }
+
+  @Override
+  public Response<Long> sunioncard(List<String> keys, SUnionCardParams params) {
+    return appendCommand(commandObjects.sunioncard(keys, params));
   }
 
   @Override
@@ -1535,6 +1633,156 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> arcount(String key) {
+    return appendCommand(commandObjects.arcount(key));
+  }
+
+  @Override
+  public Response<Long> ardel(String key, long index) {
+    return appendCommand(commandObjects.ardel(key, index));
+  }
+
+  @Override
+  public Response<Long> ardel(String key, long... indices) {
+    return appendCommand(commandObjects.ardel(key, indices));
+  }
+
+  @Override
+  public Response<Long> ardelrange(String key, LongRange... ranges) {
+    return appendCommand(commandObjects.ardelrange(key, ranges));
+  }
+
+  @Override
+  public Response<Long> ardelrange(String key, long start, long end) {
+    return appendCommand(commandObjects.ardelrange(key, start, end));
+  }
+
+  @Override
+  public Response<String> arget(String key, long index) {
+    return appendCommand(commandObjects.arget(key, index));
+  }
+
+  @Override
+  public Response<List<String>> argetrange(String key, long start, long end) {
+    return appendCommand(commandObjects.argetrange(key, start, end));
+  }
+
+  @Override
+  public Response<List<Long>> argrep(String key, ArgrepParams params) {
+    return appendCommand(commandObjects.argrep(key, params));
+  }
+
+  @Override
+  public Response<List<KeyValue<Long, String>>> argrepWithValues(String key, ArgrepParams params) {
+    return appendCommand(commandObjects.argrepWithValues(key, params));
+  }
+
+  @Override
+  public Response<ArrayInfo> arinfo(String key) {
+    return appendCommand(commandObjects.arinfo(key));
+  }
+
+  @Override
+  public Response<ArrayFullInfo> arinfoFull(String key) {
+    return appendCommand(commandObjects.arinfoFull(key));
+  }
+
+  @Override
+  public Response<Long> arinsert(String key, String... values) {
+    return appendCommand(commandObjects.arinsert(key, values));
+  }
+
+  @Override
+  public Response<Long> arinsert(String key, String value) {
+    return appendCommand(commandObjects.arinsert(key, value));
+  }
+
+  @Override
+  public Response<List<String>> arlastitems(String key, long count) {
+    return appendCommand(commandObjects.arlastitems(key, count));
+  }
+
+  @Override
+  public Response<List<String>> arlastitems(String key, long count, boolean rev) {
+    return appendCommand(commandObjects.arlastitems(key, count, rev));
+  }
+
+  @Override
+  public Response<Long> arlen(String key) {
+    return appendCommand(commandObjects.arlen(key));
+  }
+
+  @Override
+  public Response<List<String>> armget(String key, long... indices) {
+    return appendCommand(commandObjects.armget(key, indices));
+  }
+
+  @Override
+  public Response<Long> armset(String key, Map<Long, String> indexValueMap) {
+    return appendCommand(commandObjects.armset(key, indexValueMap));
+  }
+
+  @Override
+  public Response<Long> arnext(String key) {
+    return appendCommand(commandObjects.arnext(key));
+  }
+
+  @Override
+  public Response<Long> aropBitwise(String key, long start, long end, ArrayBitwise op) {
+    return appendCommand(commandObjects.aropBitwise(key, start, end, op));
+  }
+
+  @Override
+  public Response<String> aropAggregate(String key, long start, long end, ArrayAggregate op) {
+    return appendCommand(commandObjects.aropAggregate(key, start, end, op));
+  }
+
+  @Override
+  public Response<Long> aropCount(String key, long start, long end) {
+    return appendCommand(commandObjects.aropCount(key, start, end));
+  }
+
+  @Override
+  public Response<Long> aropCount(String key, long start, long end, String match) {
+    return appendCommand(commandObjects.aropCount(key, start, end, match));
+  }
+
+  @Override
+  public Response<Long> arring(String key, long size, String... values) {
+    return appendCommand(commandObjects.arring(key, size, values));
+  }
+
+  @Override
+  public Response<Long> arring(String key, long size, String value) {
+    return appendCommand(commandObjects.arring(key, size, value));
+  }
+
+  @Override
+  public Response<List<KeyValue<Long, String>>> arscan(String key, long start, long end) {
+    return appendCommand(commandObjects.arscan(key, start, end));
+  }
+
+  @Override
+  public Response<List<KeyValue<Long, String>>> arscan(String key, long start, long end, long limit) {
+    return appendCommand(commandObjects.arscan(key, start, end, limit));
+  }
+
+  @Override
+  public Response<Long> arseek(String key, long index) {
+    return appendCommand(commandObjects.arseek(key, index));
+  }
+
+  @Override
+  public Response<Long> arset(String key, long index, String... values) {
+    return appendCommand(commandObjects.arset(key, index, values));
+  }
+
+  @Override
+  public Response<Long> arset(String key, long index, String value) {
+    return appendCommand(commandObjects.arset(key, index, value));
+  }
+
+  @Override
   public Response<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash) {
     return appendCommand(commandObjects.xadd(key, id, hash));
   }
@@ -1602,6 +1850,11 @@ public abstract class PipeliningBase
   @Override
   public Response<List<StreamEntryDeletionResult>> xackdel(String key, String group, StreamDeletionPolicy trimMode, StreamEntryID... ids) {
     return appendCommand(commandObjects.xackdel(key, group, trimMode, ids));
+  }
+
+  @Override
+  public Response<Long> xnack(String key, String group, XNackMode mode, StreamEntryID... ids) {
+    return appendCommand(commandObjects.xnack(key, group, mode, ids));
   }
 
   @Override
@@ -1732,6 +1985,11 @@ public abstract class PipeliningBase
   @Override
   public Response<Map<String, List<StreamEntry>>> xreadGroupAsMap(String groupName, String consumer, XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams) {
     return appendCommand(commandObjects.xreadGroupAsMap(groupName, consumer, xReadGroupParams, streams));
+  }
+
+  @Override
+  public Response<String> xcfgset(String key, XCfgSetParams params) {
+    return appendCommand(commandObjects.xcfgset(key, params));
   }
 
   @Override
@@ -2177,7 +2435,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#hset(byte[], Map)} instead.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 4.0.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 4.0.0.
    */
   @Deprecated
   @Override
@@ -2346,6 +2604,156 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> arcount(byte[] key) {
+    return appendCommand(commandObjects.arcount(key));
+  }
+
+  @Override
+  public Response<Long> ardel(byte[] key, long index) {
+    return appendCommand(commandObjects.ardel(key, index));
+  }
+
+  @Override
+  public Response<Long> ardel(byte[] key, long... indices) {
+    return appendCommand(commandObjects.ardel(key, indices));
+  }
+
+  @Override
+  public Response<Long> ardelrange(byte[] key, LongRange... ranges) {
+    return appendCommand(commandObjects.ardelrange(key, ranges));
+  }
+
+  @Override
+  public Response<Long> ardelrange(byte[] key, long start, long end) {
+    return appendCommand(commandObjects.ardelrange(key, start, end));
+  }
+
+  @Override
+  public Response<byte[]> arget(byte[] key, long index) {
+    return appendCommand(commandObjects.arget(key, index));
+  }
+
+  @Override
+  public Response<List<byte[]>> argetrange(byte[] key, long start, long end) {
+    return appendCommand(commandObjects.argetrange(key, start, end));
+  }
+
+  @Override
+  public Response<List<Long>> argrep(byte[] key, ArgrepParams params) {
+    return appendCommand(commandObjects.argrep(key, params));
+  }
+
+  @Override
+  public Response<List<KeyValue<Long, byte[]>>> argrepWithValues(byte[] key, ArgrepParams params) {
+    return appendCommand(commandObjects.argrepWithValues(key, params));
+  }
+
+  @Override
+  public Response<ArrayInfo> arinfo(byte[] key) {
+    return appendCommand(commandObjects.arinfo(key));
+  }
+
+  @Override
+  public Response<ArrayFullInfo> arinfoFull(byte[] key) {
+    return appendCommand(commandObjects.arinfoFull(key));
+  }
+
+  @Override
+  public Response<Long> arinsert(byte[] key, byte[]... values) {
+    return appendCommand(commandObjects.arinsert(key, values));
+  }
+
+  @Override
+  public Response<Long> arinsert(byte[] key, byte[] value) {
+    return appendCommand(commandObjects.arinsert(key, value));
+  }
+
+  @Override
+  public Response<List<byte[]>> arlastitems(byte[] key, long count) {
+    return appendCommand(commandObjects.arlastitems(key, count));
+  }
+
+  @Override
+  public Response<List<byte[]>> arlastitems(byte[] key, long count, boolean rev) {
+    return appendCommand(commandObjects.arlastitems(key, count, rev));
+  }
+
+  @Override
+  public Response<Long> arlen(byte[] key) {
+    return appendCommand(commandObjects.arlen(key));
+  }
+
+  @Override
+  public Response<List<byte[]>> armget(byte[] key, long... indices) {
+    return appendCommand(commandObjects.armget(key, indices));
+  }
+
+  @Override
+  public Response<Long> armset(byte[] key, Map<Long, byte[]> indexValueMap) {
+    return appendCommand(commandObjects.armset(key, indexValueMap));
+  }
+
+  @Override
+  public Response<Long> arnext(byte[] key) {
+    return appendCommand(commandObjects.arnext(key));
+  }
+
+  @Override
+  public Response<Long> aropBitwise(byte[] key, long start, long end, ArrayBitwise op) {
+    return appendCommand(commandObjects.aropBitwise(key, start, end, op));
+  }
+
+  @Override
+  public Response<byte[]> aropAggregate(byte[] key, long start, long end, ArrayAggregate op) {
+    return appendCommand(commandObjects.aropAggregate(key, start, end, op));
+  }
+
+  @Override
+  public Response<Long> aropCount(byte[] key, long start, long end) {
+    return appendCommand(commandObjects.aropCount(key, start, end));
+  }
+
+  @Override
+  public Response<Long> aropCount(byte[] key, long start, long end, byte[] match) {
+    return appendCommand(commandObjects.aropCount(key, start, end, match));
+  }
+
+  @Override
+  public Response<Long> arring(byte[] key, long size, byte[]... values) {
+    return appendCommand(commandObjects.arring(key, size, values));
+  }
+
+  @Override
+  public Response<Long> arring(byte[] key, long size, byte[] value) {
+    return appendCommand(commandObjects.arring(key, size, value));
+  }
+
+  @Override
+  public Response<List<KeyValue<Long, byte[]>>> arscan(byte[] key, long start, long end) {
+    return appendCommand(commandObjects.arscan(key, start, end));
+  }
+
+  @Override
+  public Response<List<KeyValue<Long, byte[]>>> arscan(byte[] key, long start, long end, long limit) {
+    return appendCommand(commandObjects.arscan(key, start, end, limit));
+  }
+
+  @Override
+  public Response<Long> arseek(byte[] key, long index) {
+    return appendCommand(commandObjects.arseek(key, index));
+  }
+
+  @Override
+  public Response<Long> arset(byte[] key, long index, byte[]... values) {
+    return appendCommand(commandObjects.arset(key, index, values));
+  }
+
+  @Override
+  public Response<Long> arset(byte[] key, long index, byte[] value) {
+    return appendCommand(commandObjects.arset(key, index, value));
+  }
+
+  @Override
   public Response<Boolean> exists(byte[] key) {
     return appendCommand(commandObjects.exists(key));
   }
@@ -2473,6 +2881,26 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> del(byte[]... keys) {
     return appendCommand(commandObjects.del(keys));
+  }
+
+  @Override
+  public Response<Long> delex(byte[] key, CompareCondition condition) {
+    return appendCommand(commandObjects.delex(key, condition));
+  }
+
+  @Override
+  public Response<Long> delex(String key, CompareCondition condition) {
+    return appendCommand(commandObjects.delex(key, condition));
+  }
+
+  @Override
+  public Response<byte[]> digestKey(byte[] key) {
+    return appendCommand(commandObjects.digestKey(key));
+  }
+
+  @Override
+  public Response<String> digestKey(String key) {
+    return appendCommand(commandObjects.digestKey(key));
   }
 
   @Override
@@ -2688,7 +3116,7 @@ public abstract class PipeliningBase
   /**
    * @deprecated Use {@link PipeliningBase#lmove(byte[], byte[], ListDirection, ListDirection)} with
    * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2699,7 +3127,7 @@ public abstract class PipeliningBase
   /**
    * @deprecated Use {@link PipeliningBase#blmove(byte[], byte[], ListDirection, ListDirection, double)} with
    * {@link ListDirection#RIGHT} and {@link ListDirection#LEFT}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 6.2.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 6.2.0.
    */
   @Deprecated
   @Override
@@ -2715,6 +3143,26 @@ public abstract class PipeliningBase
   @Override
   public Response<byte[]> blmove(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
     return appendCommand(commandObjects.blmove(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public Response<List<byte[]>> lmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to) {
+    return appendCommand(commandObjects.lmovem(srcKey, dstKey, from, to));
+  }
+
+  @Override
+  public Response<List<byte[]>> lmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, LMoveMParams params) {
+    return appendCommand(commandObjects.lmovem(srcKey, dstKey, from, to, params));
+  }
+
+  @Override
+  public Response<List<byte[]>> blmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout) {
+    return appendCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout));
+  }
+
+  @Override
+  public Response<List<byte[]>> blmovem(byte[] srcKey, byte[] dstKey, ListDirection from, ListDirection to, double timeout, LMoveMParams params) {
+    return appendCommand(commandObjects.blmovem(srcKey, dstKey, from, to, timeout, params));
   }
 
   @Override
@@ -2888,6 +3336,21 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> sdiffcard(byte[]... keys) {
+    return appendCommand(commandObjects.sdiffcard(keys));
+  }
+
+  @Override
+  public Response<Long> sdiffcard(byte[] key1, byte[] key2, SDiffCardParams params) {
+    return appendCommand(commandObjects.sdiffcard(key1, key2, params));
+  }
+
+  @Override
+  public Response<Long> sdiffcard(byte[][] keys, SDiffCardParams params) {
+    return appendCommand(commandObjects.sdiffcard(keys, params));
+  }
+
+  @Override
   public Response<Set<byte[]>> sinter(byte[]... keys) {
     return appendCommand(commandObjects.sinter(keys));
   }
@@ -2915,6 +3378,21 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> sunionstore(byte[] dstkey, byte[]... keys) {
     return appendCommand(commandObjects.sunionstore(dstkey, keys));
+  }
+
+  @Override
+  public Response<Long> sunioncard(byte[]... keys) {
+    return appendCommand(commandObjects.sunioncard(keys));
+  }
+
+  @Override
+  public Response<Long> sunioncard(byte[] key1, byte[] key2, SUnionCardParams params) {
+    return appendCommand(commandObjects.sunioncard(key1, key2, params));
+  }
+
+  @Override
+  public Response<Long> sunioncard(byte[][] keys, SUnionCardParams params) {
+    return appendCommand(commandObjects.sunioncard(keys, params));
   }
 
   @Override
@@ -3354,6 +3832,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> xnack(byte[] key, byte[] group, XNackMode mode, byte[]... ids) {
+    return appendCommand(commandObjects.xnack(key, group, mode, ids));
+  }
+
+  @Override
   public Response<String> xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream) {
     return appendCommand(commandObjects.xgroupCreate(key, groupName, id, makeStream));
   }
@@ -3509,6 +3992,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<byte[]> xcfgset(byte[] key, XCfgSetParams params) {
+    return appendCommand(commandObjects.xcfgset(key, params));
+  }
+
+  @Override
   public Response<String> set(byte[] key, byte[] value) {
     return appendCommand(commandObjects.set(key, value));
   }
@@ -3574,7 +4062,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#nx()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   @Override
@@ -3584,7 +4072,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#ex(long)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   @Override
@@ -3594,7 +4082,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#set(byte[], byte[], redis.clients.jedis.params.SetParams)} with {@link redis.clients.jedis.params.SetParams#px(long)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   @Override
@@ -3638,6 +4126,21 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<Long>> increx(byte[] key) {
+    return appendCommand(commandObjects.increx(key));
+  }
+
+  @Override
+  public Response<List<Long>> increx(byte[] key, long increment, IncrexParams params) {
+    return appendCommand(commandObjects.increx(key, increment, params));
+  }
+
+  @Override
+  public Response<List<Double>> increx(byte[] key, double increment, IncrexFloatParams params) {
+    return appendCommand(commandObjects.increx(key, increment, params));
+  }
+
+  @Override
   public Response<Long> decr(byte[] key) {
     return appendCommand(commandObjects.decr(key));
   }
@@ -3654,7 +4157,7 @@ public abstract class PipeliningBase
 
   /**
    * @deprecated Use {@link PipeliningBase#getrange(byte[], long, long)} instead.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.0.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.0.0.
    */
   @Deprecated
   @Override
@@ -3744,6 +4247,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Set<String>> ftAliasList(String indexName) {
+    return appendCommand(commandObjects.ftAliasList(indexName));
+  }
+
+  @Override
   public Response<String> ftDropIndex(String indexName) {
     return appendCommand(commandObjects.ftDropIndex(indexName));
   }
@@ -3787,6 +4295,12 @@ public abstract class PipeliningBase
   @Override
   public Response<AggregationResult> ftAggregate(String indexName, AggregationBuilder aggr) {
     return appendCommand(commandObjects.ftAggregate(indexName, aggr));
+  }
+
+  @Override
+  @Experimental
+  public Response<HybridResult> ftHybrid(String indexName, FTHybridParams hybridParams) {
+    return appendCommand(commandObjects.ftHybrid(indexName, hybridParams));
   }
 
   @Override
@@ -4081,7 +4595,7 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<Object> jsonNumIncrBy(String key, Path2 path, double value) {
+  public Response<Object> jsonNumIncrBy(String key, Path2 path, Number value) {
     return appendCommand(commandObjects.jsonNumIncrBy(key, path, value));
   }
 
@@ -4313,6 +4827,36 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<TSElement>> tsRead(String key, long timestamp) {
+    return appendCommand(commandObjects.tsRead(key, timestamp));
+  }
+
+  @Override
+  public Response<List<TSElement>> tsRead(String key, TSReadParams readParams) {
+    return appendCommand(commandObjects.tsRead(key, readParams));
+  }
+
+  @Override
+  public Response<List<TSElement>> tsNRange(String[] keys, long fromTimestamp, long toTimestamp) {
+    return appendCommand(commandObjects.tsNRange(keys, fromTimestamp, toTimestamp));
+  }
+
+  @Override
+  public Response<List<TSElement>> tsNRange(String[] keys, TSNRangeParams nrangeParams) {
+    return appendCommand(commandObjects.tsNRange(keys, nrangeParams));
+  }
+
+  @Override
+  public Response<List<TSElement>> tsNRevRange(String[] keys, long fromTimestamp, long toTimestamp) {
+    return appendCommand(commandObjects.tsNRevRange(keys, fromTimestamp, toTimestamp));
+  }
+
+  @Override
+  public Response<List<TSElement>> tsNRevRange(String[] keys, TSNRangeParams nrangeParams) {
+    return appendCommand(commandObjects.tsNRevRange(keys, nrangeParams));
+  }
+
+  @Override
   public Response<Map<String, TSMRangeElements>> tsMRange(long fromTimestamp, long toTimestamp, String... filters) {
     return appendCommand(commandObjects.tsMRange(fromTimestamp, toTimestamp, filters));
   }
@@ -4365,6 +4909,16 @@ public abstract class PipeliningBase
   @Override
   public Response<List<String>> tsQueryIndex(String... filters) {
     return appendCommand(commandObjects.tsQueryIndex(filters));
+  }
+
+  @Override
+  public Response<List<String>> tsQueryLabels(String... filters) {
+    return appendCommand(commandObjects.tsQueryLabels(filters));
+  }
+
+  @Override
+  public Response<List<String>> tsQueryLabelValues(String label, String... filters) {
+    return appendCommand(commandObjects.tsQueryLabelValues(label, filters));
   }
 
   @Override
@@ -4742,6 +5296,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Boolean> vismember(String key, String element) {
+    return appendCommand(commandObjects.vismember(key, element));
+  }
+
+  @Override
   public Response<List<Double>> vemb(String key, String element) {
     return appendCommand(commandObjects.vemb(key, element));
   }
@@ -4863,6 +5422,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Boolean> vismember(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vismember(key, element));
+  }
+
+  @Override
   public Response<List<Double>> vemb(byte[] key, byte[] element) {
     return appendCommand(commandObjects.vemb(key, element));
   }
@@ -4907,6 +5471,24 @@ public abstract class PipeliningBase
     return appendCommand(commandObjects.vsetattr(key, element, attributes));
   }
   // Vector Set pipeline commands end
+
+  // Hotkeys pipeline commands
+  public Response<String> hotkeysStart(HotkeysParams params) {
+    return appendCommand(commandObjects.hotkeysStart(params));
+  }
+
+  public Response<String> hotkeysStop() {
+    return appendCommand(commandObjects.hotkeysStop());
+  }
+
+  public Response<String> hotkeysReset() {
+    return appendCommand(commandObjects.hotkeysReset());
+  }
+
+  public Response<HotkeysInfo> hotkeysGet() {
+    return appendCommand(commandObjects.hotkeysGet());
+  }
+  // Hotkeys pipeline commands end
 
   public Response<Object> sendCommand(ProtocolCommand cmd, String... args) {
     return sendCommand(new CommandArguments(cmd).addObjects((Object[]) args));

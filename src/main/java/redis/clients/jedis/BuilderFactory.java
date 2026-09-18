@@ -36,6 +36,37 @@ public final class BuilderFactory {
     }
   };
 
+  /**
+   * Builder for deprecated raw stream responses that preserves the legacy RESP2-shaped outer list
+   * even when RESP3 returns stream key/value pairs as {@link KeyValue}.
+   */
+  public static final Builder<List<Object>> STREAM_READ_RAW_OBJECT_LIST = new Builder<List<Object>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Object> build(Object data) {
+      if (data == null) return null;
+
+      List<Object> list = (List<Object>) data;
+      if (list.isEmpty() || !(list.get(0) instanceof KeyValue)) {
+        return list;
+      }
+
+      List<Object> result = new ArrayList<>(list.size());
+      for (KeyValue<byte[], Object> kv : (List<KeyValue<byte[], Object>>) (List<?>) list) {
+        List<Object> stream = new ArrayList<>(2);
+        stream.add(BINARY.build(kv.getKey()));
+        stream.add(kv.getValue());
+        result.add(stream);
+      }
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Object>";
+    }
+  };
+
   public static final Builder<Object> ENCODED_OBJECT = new Builder<Object>() {
     @Override
     public Object build(Object data) {
@@ -805,7 +836,7 @@ public final class BuilderFactory {
     @Override
     public ScanResult<String> build(Object data) {
       List<Object> result = (List<Object>) data;
-      String newcursor = new String((byte[]) result.get(0));
+      String newcursor = SafeEncoder.encode((byte[]) result.get(0));
       List<byte[]> rawResults = (List<byte[]>) result.get(1);
       List<String> results = new ArrayList<>(rawResults.size());
       for (byte[] bs : rawResults) {
@@ -820,7 +851,7 @@ public final class BuilderFactory {
     @Override
     public ScanResult<Map.Entry<String, String>> build(Object data) {
       List<Object> result = (List<Object>) data;
-      String newcursor = new String((byte[]) result.get(0));
+      String newcursor = SafeEncoder.encode((byte[]) result.get(0));
       List<byte[]> rawResults = (List<byte[]>) result.get(1);
       List<Map.Entry<String, String>> results = new ArrayList<>(rawResults.size() / 2);
       Iterator<byte[]> iterator = rawResults.iterator();
@@ -836,7 +867,7 @@ public final class BuilderFactory {
     @Override
     public ScanResult<String> build(Object data) {
       List<Object> result = (List<Object>) data;
-      String newcursor = new String((byte[]) result.get(0));
+      String newcursor = SafeEncoder.encode((byte[]) result.get(0));
       List<byte[]> rawResults = (List<byte[]>) result.get(1);
       List<String> results = new ArrayList<>(rawResults.size());
       for (byte[] bs : rawResults) {
@@ -850,7 +881,7 @@ public final class BuilderFactory {
     @Override
     public ScanResult<Tuple> build(Object data) {
       List<Object> result = (List<Object>) data;
-      String newcursor = new String((byte[]) result.get(0));
+      String newcursor = SafeEncoder.encode((byte[]) result.get(0));
       List<byte[]> rawResults = (List<byte[]>) result.get(1);
       List<Tuple> results = new ArrayList<>(rawResults.size() / 2);
       Iterator<byte[]> iterator = rawResults.iterator();
@@ -1373,7 +1404,7 @@ public final class BuilderFactory {
       List<byte[]> hash = (List<byte[]>) objectList.get(1);
 
       Iterator<byte[]> hashIterator = hash.iterator();
-      Map<String, String> map = new HashMap<>(hash.size() / 2, 1f);
+      Map<String, String> map = new LinkedHashMap<>(hash.size() / 2, 1f);
       while (hashIterator.hasNext()) {
         map.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode(hashIterator.next()));
       }
@@ -1413,7 +1444,7 @@ public final class BuilderFactory {
 
         if (hash != null) {
           Iterator<byte[]> hashIterator = hash.iterator();
-          fieldsMap = new HashMap<>(hash.size() / 2, 1f);
+          fieldsMap = new LinkedHashMap<>(hash.size() / 2, 1f);
 
           while (hashIterator.hasNext()) {
             fieldsMap.put(SafeEncoder.encode(hashIterator.next()), SafeEncoder.encode(hashIterator.next()));
@@ -1527,9 +1558,11 @@ public final class BuilderFactory {
 
       if (list.get(0) instanceof KeyValue) {
         return ((List<KeyValue>) list).stream()
-            .collect(Collectors.toMap(kv -> STRING.build(kv.getKey()), kv -> STREAM_ENTRY_LIST.build(kv.getValue())));
+            .collect(Collectors.toMap(kv -> STRING.build(kv.getKey()),
+                kv -> STREAM_ENTRY_LIST.build(kv.getValue()),
+                (v1, v2) -> v1, LinkedHashMap::new));
       } else {
-        Map<String, List<StreamEntry>> result = new HashMap<>(list.size());
+        Map<String, List<StreamEntry>> result = new LinkedHashMap<>(list.size(), 1f);
         for (Object anObj : list) {
           List<Object> streamObj = (List<Object>) anObj;
           String streamKey = STRING.build(streamObj.get(0));
@@ -1588,6 +1621,12 @@ public final class BuilderFactory {
       tempMappingFunctions.put(StreamInfo.RADIX_TREE_NODES, LONG);
       tempMappingFunctions.put(StreamInfo.LAST_ENTRY, STREAM_ENTRY);
       tempMappingFunctions.put(StreamInfo.GROUPS, LONG);
+      tempMappingFunctions.put(StreamInfo.IDMP_DURATION, LONG);
+      tempMappingFunctions.put(StreamInfo.IDMP_MAXSIZE, LONG);
+      tempMappingFunctions.put(StreamInfo.PIDS_TRACKED, LONG);
+      tempMappingFunctions.put(StreamInfo.IIDS_TRACKED, LONG);
+      tempMappingFunctions.put(StreamInfo.IIDS_ADDED, LONG);
+      tempMappingFunctions.put(StreamInfo.IIDS_DUPLICATES, LONG);
 
       return tempMappingFunctions;
     }
@@ -2522,6 +2561,78 @@ public final class BuilderFactory {
       return new SetFromList<>(list);
     }
   }
+
+  public static final Builder<ArrayInfo> ARRAY_INFO = new Builder<ArrayInfo>() {
+    @Override
+    public ArrayInfo build(Object data) {
+      if (data == null) return null;
+      return new ArrayInfo(ENCODED_OBJECT_MAP.build(data));
+    }
+
+    @Override
+    public String toString() {
+      return "ArrayInfo";
+    }
+  };
+
+  public static final Builder<ArrayFullInfo> ARRAY_FULL_INFO = new Builder<ArrayFullInfo>() {
+    @Override
+    public ArrayFullInfo build(Object data) {
+      if (data == null) return null;
+      return new ArrayFullInfo(ENCODED_OBJECT_MAP.build(data));
+    }
+
+    @Override
+    public String toString() {
+      return "ArrayFullInfo";
+    }
+  };
+
+  public static final Builder<List<KeyValue<Long, String>>> STRING_INDEXED_VALUE_LIST
+      = new Builder<List<KeyValue<Long, String>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<KeyValue<Long, String>> build(Object data) {
+      if (data == null) return null;
+      final List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyList();
+
+      final List<KeyValue<Long, String>> result = new ArrayList<>(list.size());
+      for (Object pair : list) {
+        List<Object> entry = (List<Object>) pair;
+        result.add(KeyValue.of(LONG.build(entry.get(0)), STRING.build(entry.get(1))));
+      }
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "List<KeyValue<Long, String>>";
+    }
+  };
+
+  public static final Builder<List<KeyValue<Long, byte[]>>> BINARY_INDEXED_VALUE_LIST
+      = new Builder<List<KeyValue<Long, byte[]>>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<KeyValue<Long, byte[]>> build(Object data) {
+      if (data == null) return null;
+      final List<Object> list = (List<Object>) data;
+      if (list.isEmpty()) return Collections.emptyList();
+
+      final List<KeyValue<Long, byte[]>> result = new ArrayList<>(list.size());
+      for (Object pair : list) {
+        List<Object> entry = (List<Object>) pair;
+        result.add(KeyValue.of(LONG.build(entry.get(0)), BINARY.build(entry.get(1))));
+      }
+      return result;
+    }
+
+    @Override
+    public String toString() {
+      return "List<KeyValue<Long, byte[]>>";
+    }
+  };
 
   private BuilderFactory() {
     throw new InstantiationError("Must not instantiate this class");

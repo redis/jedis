@@ -3,6 +3,7 @@ package redis.clients.jedis.timeseries;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -117,7 +118,7 @@ public class TSInfo {
           value = SafeEncoder.encode((byte[]) value);
           if (DUPLICATE_POLICY_PROPERTY.equals(prop)) {
             try {
-              value = DuplicatePolicy.valueOf(((String) value).toUpperCase());
+              value = DuplicatePolicy.valueOf(((String) value).toUpperCase(Locale.ENGLISH));
             } catch (Exception e) { }
           }
         }
@@ -179,7 +180,7 @@ public class TSInfo {
           value = BuilderFactory.STRING.build(value);
           if (DUPLICATE_POLICY_PROPERTY.equals(prop)) {
             try {
-              value = DuplicatePolicy.valueOf(((String) value).toUpperCase());
+              value = DuplicatePolicy.valueOf(((String) value).toUpperCase(Locale.ENGLISH));
             } catch (Exception e) { }
           }
         }

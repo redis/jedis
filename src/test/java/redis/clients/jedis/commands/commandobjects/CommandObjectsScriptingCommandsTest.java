@@ -19,6 +19,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.utils.RedisVersion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,6 +31,7 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.resps.FunctionStats;
 import redis.clients.jedis.resps.LibraryInfo;
 import redis.clients.jedis.util.RedisVersionUtil;
+import redis.clients.jedis.util.TestEnvUtil;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=scripting">Scripting</a> commands.
@@ -83,6 +85,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testEvalWithScriptKeyCountAndParams() {
     exec(commandObjects.set("key1", "value1"));
     exec(commandObjects.set("key2", "value2"));
@@ -116,6 +119,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testEvalWithScriptKeysAndArgsList() {
     exec(commandObjects.hset("fruits", "apples", "5"));
     exec(commandObjects.hset("fruits", "bananas", "3"));
@@ -162,6 +166,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
 
   @Test
   @SinceRedisVersion(value = "7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testEvalReadonlyWithScriptKeysAndArgsList() {
     exec(commandObjects.set("readonlyKey1", "readonlyValue1"));
     exec(commandObjects.set("readonlyKey2", "readonlyValue2"));
@@ -215,6 +220,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testEvalWithScriptKeyCountAndParamsSha() {
     exec(commandObjects.set("key1", "value1"));
     exec(commandObjects.set("key2", "value2"));
@@ -250,6 +256,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testEvalWithScriptKeysAndArgsListSha() {
     exec(commandObjects.hset("fruits", "apples", "5"));
     exec(commandObjects.hset("fruits", "bananas", "3"));
@@ -299,6 +306,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
 
   @Test
   @SinceRedisVersion(value = "7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testEvalReadonlyWithScriptKeysAndArgsListSha() {
     exec(commandObjects.set("readonlyKey1", "readonlyValue1"));
     exec(commandObjects.set("readonlyKey2", "readonlyValue2"));
@@ -486,6 +494,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
 
   @Test
   @SinceRedisVersion(value = "7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSumValuesFunction() {
     String luaScript = "#!lua name=mylib\n" +
         "redis.register_function('sumValues', function(keys, args)\n" +
@@ -536,6 +545,7 @@ public class CommandObjectsScriptingCommandsTest extends CommandObjectsStandalon
 
   @Test
   @SinceRedisVersion(value = "7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSumValuesFunctionReadonly() {
     String luaScript = "#!lua name=mylib\n" +
         "redis.register_function{function_name='sumValues', callback=function(keys, args)\n" +

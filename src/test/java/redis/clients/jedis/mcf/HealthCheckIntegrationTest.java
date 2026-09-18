@@ -20,6 +20,7 @@ import redis.clients.jedis.MultiDbClient;
 import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.MultiDbConfig.StrategySupplier;
+import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.mcf.ProbingPolicy.BuiltIn;
 import redis.clients.jedis.scenario.RecommendedSettings;
@@ -68,10 +69,11 @@ public class HealthCheckIntegrationTest {
   public void testCustomStrategySupplier() {
     // Create a StrategySupplier that uses the JedisClientConfig when available
     MultiDbConfig.StrategySupplier strategySupplier = (hostAndPort, jedisClientConfig) -> {
-      return new TestHealthCheckStrategy(HealthCheckStrategy.Config.builder().interval(500)
-          .timeout(500).numProbes(1).policy(BuiltIn.ANY_SUCCESS).build(), (endpoint) -> {
+      return new TestHealthCheckStrategy(HealthCheckStrategy.Config.builder().interval(2000)
+          .timeout(2000).numProbes(1).policy(BuiltIn.ANY_SUCCESS).build(), (endpoint) -> {
             // Create connection per health check to avoid resource leak
-            try (UnifiedJedis pinger = new UnifiedJedis(hostAndPort, jedisClientConfig)) {
+            try (UnifiedJedis pinger = RedisClient.builder().hostAndPort(hostAndPort)
+                .clientConfig(jedisClientConfig).build()) {
               String result = pinger.ping();
               return "PONG".equals(result) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
             } catch (Exception e) {
@@ -115,15 +117,17 @@ public class HealthCheckIntegrationTest {
     AtomicInteger attemptCount = new AtomicInteger(0);
 
     StrategySupplier strategySupplier = (hostAndPort, jedisClientConfig) -> {
-      // Fast interval, short timeout, 3 probes, short delay
-      return new TestHealthCheckStrategy(100, 50, 3, BuiltIn.ANY_SUCCESS, 20, (endpoint) -> {
+      // 3 probes with a timeout large enough for a real connect + ping on remote
+      // (high-latency) endpoints; (timeout + delay) * probes stays below the 5s latch below
+      return new TestHealthCheckStrategy(1000, 1000, 3, BuiltIn.ANY_SUCCESS, 100, (endpoint) -> {
         int attempt = attemptCount.incrementAndGet();
         if (attempt <= 2) {
           // First 2 attempts fail
           throw new RuntimeException("Simulated failure on attempt " + attempt);
         }
         // Third attempt succeeds - do actual health check
-        try (UnifiedJedis jedis = new UnifiedJedis(hostAndPort, jedisClientConfig)) {
+        try (UnifiedJedis jedis = RedisClient.builder().hostAndPort(hostAndPort)
+            .clientConfig(jedisClientConfig).build()) {
           String result = jedis.ping();
           return "PONG".equals(result) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
         } catch (Exception e) {

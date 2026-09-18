@@ -7,6 +7,12 @@ import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.search.SearchProtocol;
 import redis.clients.jedis.util.JedisCommandIterationBase;
 
+/**
+ * @deprecated Since Redis 8.0, FT.AGGREGATE automatically retrieves results from all cluster nodes,
+ *             eliminating the need for manual iteration across nodes. Use {@link AggregateIterator}
+ *             instead, which provides better cursor management and connection handling.
+ */
+@Deprecated
 public class FtAggregateIteration extends JedisCommandIterationBase<AggregationResult, Row> {
 
   private final String indexName;

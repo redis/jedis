@@ -60,8 +60,6 @@ public class EnvCondition implements ExecutionCondition {
     if (enabled) {
       // enabled = true: test runs ONLY when environment matches
       if (matches) {
-        logger.debug("Test enabled: current environment '{}' matches one of {}", currentEnv,
-          Arrays.toString(envs));
         return ConditionEvaluationResult
             .enabled("Current environment '" + currentEnv + "' is in the enabled list");
       }
@@ -85,9 +83,6 @@ public class EnvCondition implements ExecutionCondition {
         logger.debug("Test disabled: {}", disabledReason);
         return ConditionEvaluationResult.disabled(disabledReason);
       }
-
-      logger.debug("Test enabled: current environment '{}' is not in disabled list {}", currentEnv,
-        Arrays.toString(envs));
       return ConditionEvaluationResult
           .enabled("Current environment '" + currentEnv + "' is not in the disabled list");
     }

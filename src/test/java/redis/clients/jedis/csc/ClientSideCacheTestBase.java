@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.api.BeforeAll;
 import redis.clients.jedis.*;
+import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.RedisVersionCondition;
 
 @SinceRedisVersion(value = "7.4.0", message = "Jedis client-side caching is only supported with Redis 7.4 or later.")
@@ -26,6 +27,9 @@ public abstract class ClientSideCacheTestBase {
   public RedisVersionCondition versionCondition = new RedisVersionCondition(
       () -> Endpoints.getRedisEndpoint("standalone1"));
 
+  @RegisterExtension
+  public static EnvCondition envCondition = new EnvCondition();
+
   @BeforeAll
   public static void prepareEndpoint() {
     endpoint = Endpoints.getRedisEndpoint("standalone1");
@@ -34,13 +38,17 @@ public abstract class ClientSideCacheTestBase {
 
   @BeforeEach
   public void setUp() throws Exception {
-    control = new Jedis(hnp, endpoint.getClientConfigBuilder().build());
+    control = new Jedis(hnp, endpoint.getClientConfigBuilder().resp2().build());
     control.flushAll();
   }
 
   @AfterEach
   public void tearDown() throws Exception {
-    control.close();
+    try {
+      control.flushAll();
+    } finally {
+      control.close();
+    }
   }
 
   protected static final Supplier<JedisClientConfig> clientConfig = () -> endpoint.getClientConfigBuilder().resp3().build();

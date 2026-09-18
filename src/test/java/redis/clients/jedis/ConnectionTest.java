@@ -6,6 +6,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.hamcrest.Matchers;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -13,7 +14,14 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 @Tag("integration")
 public class ConnectionTest {
 
+  private static EndpointConfig endpoint;
+
   private Connection client;
+
+  @BeforeAll
+  public static void setUp() {
+    endpoint = Endpoints.getRedisEndpoint("standalone0");
+  }
 
   @AfterEach
   public void tearDown() throws Exception {
@@ -36,20 +44,20 @@ public class ConnectionTest {
 
   @Test
   public void connectIfNotConnectedWhenSettingTimeoutInfinite() {
-    client = new Connection("localhost", 6379);
+    client = new Connection(endpoint.getHost(), endpoint.getPort());
     client.setTimeoutInfinite();
   }
 
   @Test
   public void checkCloseable() {
-    client = new Connection("localhost", 6379);
+    client = new Connection(endpoint.getHost(), endpoint.getPort());
     client.connect();
     client.close();
   }
 
   @Test
   public void checkIdentityString() {
-    client = new Connection("localhost", 6379);
+    client = new Connection(endpoint.getHost(), endpoint.getPort());
 
     String idString = "id: 0x" + Integer.toHexString(client.hashCode()).toUpperCase();
 

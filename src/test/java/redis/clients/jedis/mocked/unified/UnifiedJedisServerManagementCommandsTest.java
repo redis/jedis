@@ -5,9 +5,46 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisMockedTestBase {
+
+  @Test
+  public void testConfigGet() {
+    String pattern = "slowlog-max-len";
+    Map<String, String> expected = Collections.singletonMap("slowlog-max-len", "128");
+
+    when(commandObjects.configGet(pattern)).thenReturn(mapStringStringCommandObject);
+    when(commandExecutor.executeCommand(mapStringStringCommandObject)).thenReturn(expected);
+
+    Map<String, String> result = jedis.configGet(pattern);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(mapStringStringCommandObject);
+    verify(commandObjects).configGet(pattern);
+  }
+
+  @Test
+  public void testConfigGetMultiplePatterns() {
+    String[] patterns = new String[] { "slowlog-max-len", "slowlog-log-slower-than" };
+    Map<String, String> expected = new HashMap<>();
+    expected.put("slowlog-max-len", "128");
+    expected.put("slowlog-log-slower-than", "10000");
+
+    when(commandObjects.configGet(patterns)).thenReturn(mapStringStringCommandObject);
+    when(commandExecutor.executeCommand(mapStringStringCommandObject)).thenReturn(expected);
+
+    Map<String, String> result = jedis.configGet(patterns);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(mapStringStringCommandObject);
+    verify(commandObjects).configGet(patterns);
+  }
 
   @Test
   public void testConfigSet() {
@@ -15,14 +52,31 @@ public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisMocked
     String value = "value";
 
     when(commandObjects.configSet(parameter, value)).thenReturn(stringCommandObject);
-    when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn("OK");
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("OK");
 
     String result = jedis.configSet(parameter, value);
 
     assertThat(result, equalTo("OK"));
 
-    verify(commandExecutor).broadcastCommand(stringCommandObject);
+    verify(commandExecutor).executeCommand(stringCommandObject);
     verify(commandObjects).configSet(parameter, value);
+  }
+
+  @Test
+  public void testConfigSetMap() {
+    Map<String, String> parameterValues = new HashMap<>();
+    parameterValues.put("slowlog-max-len", "200");
+    parameterValues.put("slowlog-log-slower-than", "20000");
+
+    when(commandObjects.configSet(parameterValues)).thenReturn(stringCommandObject);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("OK");
+
+    String result = jedis.configSet(parameterValues);
+
+    assertThat(result, equalTo("OK"));
+
+    verify(commandExecutor).executeCommand(stringCommandObject);
+    verify(commandObjects).configSet(parameterValues);
   }
 
   @Test
@@ -43,26 +97,26 @@ public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisMocked
   @Test
   public void testFlushAll() {
     when(commandObjects.flushAll()).thenReturn(stringCommandObject);
-    when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn("OK");
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("OK");
 
     String result = jedis.flushAll();
 
     assertThat(result, equalTo("OK"));
 
-    verify(commandExecutor).broadcastCommand(stringCommandObject);
+    verify(commandExecutor).executeCommand(stringCommandObject);
     verify(commandObjects).flushAll();
   }
 
   @Test
   public void testFlushDB() {
     when(commandObjects.flushDB()).thenReturn(stringCommandObject);
-    when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn("OK");
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("OK");
 
     String result = jedis.flushDB();
 
     assertThat(result, equalTo("OK"));
 
-    verify(commandExecutor).broadcastCommand(stringCommandObject);
+    verify(commandExecutor).executeCommand(stringCommandObject);
     verify(commandObjects).flushDB();
   }
 
@@ -137,12 +191,12 @@ public class UnifiedJedisServerManagementCommandsTest extends UnifiedJedisMocked
     String expectedResponse = "OK";
 
     when(commandObjects.slowlogReset()).thenReturn(stringCommandObject);
-    when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn(expectedResponse);
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn(expectedResponse);
 
     String result = jedis.slowlogReset();
 
     assertThat(result, equalTo(expectedResponse));
-    verify(commandExecutor).broadcastCommand(stringCommandObject);
+    verify(commandExecutor).executeCommand(stringCommandObject);
     verify(commandObjects).slowlogReset();
   }
 

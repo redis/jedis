@@ -1,14 +1,18 @@
 package redis.clients.jedis.commands.unified.pipeline;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static redis.clients.jedis.util.AssertUtil.assertPipelineSyncAll;
 
 import java.util.*;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import redis.clients.jedis.HashImport;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.Response;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -373,5 +377,32 @@ public class HashesPipelineCommandsTest extends PipelineCommandsTestBase {
     assertPipelineSyncAll(
         Arrays.<Object>asList(0L, 1L, 5L, 0L, 1L, 4L),
         pipe.syncAndReturnAll());
+  }
+
+  @Test
+  @EnabledOnCommand("HIMPORT")
+  public void himportSet() {
+    HashImport fs = HashImport.of("name", "age");
+    // Second call on the same fieldset reuses the PREPARE already buffered on this connection.
+    Response<String> r1 = pipe.himportSet("himport:p:1", fs, "alice", "25");
+    Response<String> r2 = pipe.himportSet("himport:p:2", fs, "bob", "30");
+    Response<String> rb = pipe.himportSet(bfoo, HashImport.of(bbar1, bbar2), bcar, bbar3);
+    pipe.sync();
+
+    assertEquals("OK", r1.get());
+    assertEquals("OK", r2.get());
+    assertEquals("OK", rb.get());
+  }
+
+  @Test
+  @EnabledOnCommand("HIMPORT")
+  public void himportSetSyncAndReturnAllExcludesInternalPrepare() {
+    HashImport fs = HashImport.of("f");
+    pipe.himportSet("himport:p:all:1", fs, "v1");
+    pipe.himportSet("himport:p:all:2", fs, "v2");
+    pipe.hget("himport:p:all:1", "f");
+
+    // one result per user command; the internally injected PREPARE is not surfaced
+    assertEquals(Arrays.<Object> asList("OK", "OK", "v1"), pipe.syncAndReturnAll());
   }
 }

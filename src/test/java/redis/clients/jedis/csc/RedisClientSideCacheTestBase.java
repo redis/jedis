@@ -9,6 +9,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ClientKillParams;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public abstract class RedisClientSideCacheTestBase extends UnifiedJedisClientSideCacheTestBase {
 
@@ -47,15 +48,13 @@ public abstract class RedisClientSideCacheTestBase extends UnifiedJedisClientSid
       }
       assertEquals(100, cache.getSize());
 
-      try (Jedis killer = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build())) {
+      try (Jedis killer = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().
+          serverDefaultProtocol().build())) {
         killer.clientKill(ClientKillParams.clientKillParams().type(ClientType.NORMAL).skipMe(ClientKillParams.SkipMe.YES));
       }
 
-      try {
-        jedis.get("foo");
-      } catch (JedisConnectionException jce) {
-        // expected
-      }
+      assertThrows(JedisConnectionException.class, () -> jedis.get("foo"));
+
       assertEquals(0, cache.getSize());
     }
   }

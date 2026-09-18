@@ -2,8 +2,10 @@ package redis.clients.jedis.commands.unified.cluster;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;
@@ -14,17 +16,20 @@ import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.SortedSetCommandsTestBase;
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZParams;
 import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.SafeEncoder;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -158,6 +163,49 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
 
   @Test
   @Override
+  @SinceRedisVersion(value = "8.7.225")
+  public void zunionInterAggregateCount() {
+    jedis.zadd("s1{:}", 1, "foo");
+    jedis.zadd("s1{:}", 1, "bar");
+    jedis.zadd("s2{:}", 2, "foo");
+    jedis.zadd("s2{:}", 2, "bar");
+    jedis.zadd("s3{:}", 3, "foo");
+
+    ZParams params = new ZParams().aggregate(ZParams.Aggregate.COUNT);
+
+    assertEquals(2, jedis.zunionstore("dst{:}", params, "s1{:}", "s2{:}", "s3{:}"));
+    List<Tuple> expectedUnion = new ArrayList<>();
+    expectedUnion.add(new Tuple("bar", 2d));
+    expectedUnion.add(new Tuple("foo", 3d));
+    assertEquals(expectedUnion, jedis.zrangeWithScores("dst{:}", 0, -1));
+
+    assertEquals(1, jedis.zinterstore("dst{:}", params, "s1{:}", "s2{:}", "s3{:}"));
+    assertEquals(Collections.singletonList(new Tuple("foo", 3d)),
+        jedis.zrangeWithScores("dst{:}", 0, -1));
+
+    assertEquals(expectedUnion, jedis.zunionWithScores(params, "s1{:}", "s2{:}", "s3{:}"));
+    assertEquals(Collections.singletonList(new Tuple("foo", 3d)),
+        jedis.zinterWithScores(params, "s1{:}", "s2{:}", "s3{:}"));
+
+    ZParams paramsW = new ZParams().weights(10, 5, 3).aggregate(ZParams.Aggregate.COUNT);
+
+    assertEquals(2, jedis.zunionstore("dst{:}", paramsW, "s1{:}", "s2{:}", "s3{:}"));
+    List<Tuple> expectedUnionW = new ArrayList<>();
+    expectedUnionW.add(new Tuple("bar", 15d));
+    expectedUnionW.add(new Tuple("foo", 18d));
+    assertEquals(expectedUnionW, jedis.zrangeWithScores("dst{:}", 0, -1));
+
+    assertEquals(1, jedis.zinterstore("dst{:}", paramsW, "s1{:}", "s2{:}", "s3{:}"));
+    assertEquals(Collections.singletonList(new Tuple("foo", 18d)),
+        jedis.zrangeWithScores("dst{:}", 0, -1));
+
+    assertEquals(expectedUnionW, jedis.zunionWithScores(paramsW, "s1{:}", "s2{:}", "s3{:}"));
+    assertEquals(Collections.singletonList(new Tuple("foo", 18d)),
+        jedis.zinterWithScores(paramsW, "s1{:}", "s2{:}", "s3{:}"));
+  }
+
+  @Test
+  @Override
   public void bzpopmax() {
     assertNull(jedis.bzpopmax(1, "f{:}oo", "b{:}ar"));
 
@@ -235,6 +283,21 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
     bexpected.add(bb);
     bexpected.add(ba);
     assertByteArrayListEquals(bexpected, brange);
+  }
+
+  @Test
+  public void zrangestoreCrossSlotKeys() {
+    // "bar" (slot 5061) and "foo" (slot 12182); rejected client-side because the source key is
+    // registered for slot computation, not only the destination
+    assertCrossSlotRejected(() -> jedis.zrangestore("bar", "foo",
+        ZRangeParams.zrangeByScoreParams(1, 2)));
+    assertCrossSlotRejected(() -> jedis.zrangestore(SafeEncoder.encode("bar"),
+        SafeEncoder.encode("foo"), ZRangeParams.zrangeByScoreParams(1, 2)));
+  }
+
+  private static void assertCrossSlotRejected(Executable command) {
+    JedisClusterOperationException e = assertThrows(JedisClusterOperationException.class, command);
+    assertThat(e.getMessage(), containsString("multiple hash slots"));
   }
 
   @Test

@@ -10,6 +10,8 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.IncrexFloatParams;
+import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.MSetExParams;
@@ -897,6 +899,100 @@ public class UnifiedJedisStringCommandsTest extends UnifiedJedisMockedTestBase {
 
     verify(commandExecutor).executeCommand(bytesCommandObject);
     verify(commandObjects).substr(key, start, end);
+  }
+
+  @Test
+  public void testIncrex() {
+    String key = "key";
+    List<Long> expected = Arrays.asList(1L, 1L);
+
+    when(commandObjects.increx(key)).thenReturn(increxLongListCommandObject);
+    when(commandExecutor.executeCommand(increxLongListCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.increx(key);
+
+    assertThat(result, equalTo(expected));
+    verify(commandExecutor).executeCommand(increxLongListCommandObject);
+    verify(commandObjects).increx(key);
+  }
+
+  @Test
+  public void testIncrexBinary() {
+    byte[] key = "key".getBytes();
+    List<Long> expected = Arrays.asList(1L, 1L);
+
+    when(commandObjects.increx(key)).thenReturn(increxLongListCommandObject);
+    when(commandExecutor.executeCommand(increxLongListCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.increx(key);
+
+    assertThat(result, equalTo(expected));
+    verify(commandExecutor).executeCommand(increxLongListCommandObject);
+    verify(commandObjects).increx(key);
+  }
+
+  @Test
+  public void testIncrexWithParams() {
+    String key = "key";
+    IncrexParams params = new IncrexParams().ubound(100).ex(60);
+    List<Long> expected = Arrays.asList(5L, 5L);
+
+    when(commandObjects.increx(key, 5, params)).thenReturn(increxLongListCommandObject);
+    when(commandExecutor.executeCommand(increxLongListCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.increx(key, 5, params);
+
+    assertThat(result, equalTo(expected));
+    verify(commandExecutor).executeCommand(increxLongListCommandObject);
+    verify(commandObjects).increx(key, 5, params);
+  }
+
+  @Test
+  public void testIncrexWithParamsBinary() {
+    byte[] key = "key".getBytes();
+    IncrexParams params = new IncrexParams().ubound(100).ex(60);
+    List<Long> expected = Arrays.asList(5L, 5L);
+
+    when(commandObjects.increx(key, 5, params)).thenReturn(increxLongListCommandObject);
+    when(commandExecutor.executeCommand(increxLongListCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.increx(key, 5, params);
+
+    assertThat(result, equalTo(expected));
+    verify(commandExecutor).executeCommand(increxLongListCommandObject);
+    verify(commandObjects).increx(key, 5, params);
+  }
+
+  @Test
+  public void testIncrexFloat() {
+    String key = "key";
+    IncrexFloatParams params = new IncrexFloatParams().ubound(10.0).ex(60);
+    List<Double> expected = Arrays.asList(1.5, 1.5);
+
+    when(commandObjects.increx(key, 1.5, params)).thenReturn(increxDoubleListCommandObject);
+    when(commandExecutor.executeCommand(increxDoubleListCommandObject)).thenReturn(expected);
+
+    List<Double> result = jedis.increx(key, 1.5, params);
+
+    assertThat(result, equalTo(expected));
+    verify(commandExecutor).executeCommand(increxDoubleListCommandObject);
+    verify(commandObjects).increx(key, 1.5, params);
+  }
+
+  @Test
+  public void testIncrexFloatBinary() {
+    byte[] key = "key".getBytes();
+    IncrexFloatParams params = new IncrexFloatParams().ubound(10.0).ex(60);
+    List<Double> expected = Arrays.asList(1.5, 1.5);
+
+    when(commandObjects.increx(key, 1.5, params)).thenReturn(increxDoubleListCommandObject);
+    when(commandExecutor.executeCommand(increxDoubleListCommandObject)).thenReturn(expected);
+
+    List<Double> result = jedis.increx(key, 1.5, params);
+
+    assertThat(result, equalTo(expected));
+    verify(commandExecutor).executeCommand(increxDoubleListCommandObject);
+    verify(commandObjects).increx(key, 1.5, params);
   }
 
 }

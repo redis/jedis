@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.RedisProtocol;
@@ -17,6 +18,7 @@ import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.GeoCoordinateMatcher;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -211,6 +213,7 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void georadiusStore() {
     // prepare datas
     Map<String, GeoCoordinate> coordinateMap = new HashMap<>();
@@ -295,6 +298,7 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void georadiusStoreBinary() {
     // prepare datas
     Map<byte[], GeoCoordinate> bcoordinateMap = new HashMap<>();
@@ -373,6 +377,7 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void georadiusByMemberStore() {
     jedis.geoadd("Sicily", 13.583333, 37.316667, "Agrigento");
     jedis.geoadd("Sicily", 13.361389, 38.115556, "Palermo");
@@ -442,6 +447,7 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void georadiusByMemberStoreBinary() {
     jedis.geoadd(bfoo, 13.583333, 37.316667, bA);
     jedis.geoadd(bfoo, 13.361389, 38.115556, bB);
@@ -571,6 +577,7 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void geosearchstore() {
     jedis.geoadd("barcelona", 2.1909389952632d, 41.433791470673d, "place1");
     jedis.geoadd("barcelona", 2.1873744593677d, 41.406342043777d, "place2");
@@ -605,6 +612,7 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void geosearchstoreWithdist() {
     jedis.geoadd("barcelona", 2.1909389952632d, 41.433791470673d, "place1");
     jedis.geoadd("barcelona", 2.1873744593677d, 41.406342043777d, "place2");

@@ -12,13 +12,13 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
-import static redis.clients.jedis.util.ACLTestUtil.filterBinaryByClientId;
 import static redis.clients.jedis.util.ACLTestUtil.filterByClientId;
 import static redis.clients.jedis.util.RedisVersionUtil.getRedisVersion;
 
 import java.util.Arrays;
 import java.util.List;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
 import org.hamcrest.Matchers;
@@ -41,13 +41,15 @@ import redis.clients.jedis.resps.AccessControlLogEntry;
 import redis.clients.jedis.resps.AccessControlUser;
 import redis.clients.jedis.util.ACLTestUtil;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 /**
  * TODO: properly define and test exceptions
  */
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 @Tag("integration")
+@ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
 public class AccessControlListCommandsTest extends JedisCommandsTestBase {
 
   public static final String USER_NAME = "newuser";
@@ -468,10 +470,6 @@ public class AccessControlListCommandsTest extends JedisCommandsTestBase {
     jedis.auth(endpoint.getUsername(), endpoint.getPassword());
     assertEquals( 3, filterByClientId(jedis.aclLog(), jedis.clientId()).size(), "Number of log messages ");
     assertEquals( 2, jedis.aclLog(2).size(), "Number of log messages ");
-
-    // Binary tests
-    assertEquals( 3, filterBinaryByClientId(jedis.aclLogBinary(), jedis.clientId()).size(), "Number of log messages ");
-    assertEquals( 2, jedis.aclLogBinary(2).size(), "Number of log messages ");
 
     // RESET
     String status = jedis.aclLogReset();

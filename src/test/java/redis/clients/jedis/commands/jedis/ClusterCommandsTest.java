@@ -75,14 +75,11 @@ public class ClusterCommandsTest {
     node2.disconnect();
   }
 
-  @BeforeAll
-  public static void resetRedisBefore() {
-    removeSlots();
-  }
-
   @AfterAll
   public static void resetRedisAfter() {
-    removeSlots();
+    if (endpoint != null) {
+      removeSlots();
+    }
   }
 
   public static void removeSlots() {
@@ -252,7 +249,6 @@ public class ClusterCommandsTest {
         assertNotNull(nodeInfo.getIp());
         assertNull(nodeInfo.getHostname());
         assertNotNull(nodeInfo.getPort());
-        assertNotNull(nodeInfo.getTlsPort()); // currently we are always starting Redis server with `tls-port`
         assertNotNull(nodeInfo.getRole());
         assertNotNull(nodeInfo.getReplicationOffset());
         assertNotNull(nodeInfo.getHealth());

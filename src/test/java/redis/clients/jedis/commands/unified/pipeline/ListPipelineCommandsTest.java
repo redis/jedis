@@ -9,6 +9,7 @@ import static org.hamcrest.Matchers.nullValue;
 
 import java.util.List;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
@@ -25,6 +26,7 @@ import redis.clients.jedis.args.ListPosition;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -404,6 +406,7 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void rpoplpush() {
     pipe.rpush("foo", "a");
     pipe.rpush("foo", "b");
@@ -442,6 +445,7 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void blpop() throws InterruptedException {
     Response<List<String>> result1 = pipe.blpop(1, "foo");
 
@@ -485,6 +489,7 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void blpopDouble() {
     Response<KeyValue<String, String>> result1 = pipe.blpop(0.1, "foo");
 
@@ -554,6 +559,7 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void brpop() {
     Response<List<String>> result1 = pipe.brpop(1, "foo");
 
@@ -597,6 +603,7 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void brpopDouble() {
     Response<KeyValue<String, String>> result1 = pipe.brpop(0.1, "foo");
 
@@ -752,6 +759,7 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void brpoplpush() {
     new Thread(() -> {
       try {
@@ -885,6 +893,7 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void lmove() {
     pipe.rpush("foo", "bar1", "bar2", "bar3");
 
@@ -913,6 +922,7 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void blmove() {
     new Thread(() -> {
       try {
@@ -956,6 +966,7 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
 
   @Test
   @SinceRedisVersion(value="7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void lmpop() {
     String mylist1 = "mylist1";
     String mylist2 = "mylist2";
@@ -985,6 +996,7 @@ public class ListPipelineCommandsTest extends PipelineCommandsTestBase {
 
   @Test
   @SinceRedisVersion(value="7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void blmpopSimple() {
     String mylist1 = "mylist1";
     String mylist2 = "mylist2";

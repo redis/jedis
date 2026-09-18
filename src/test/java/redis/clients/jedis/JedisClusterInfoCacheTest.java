@@ -26,7 +26,7 @@ import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.when;
 import static redis.clients.jedis.JedisClusterInfoCache.getNodeKey;
 import static redis.clients.jedis.Protocol.Command.CLUSTER;
-import static redis.clients.jedis.util.CommandArgumentMatchers.commandWithArgs;
+import static redis.clients.jedis.util.CommandArgumentsMatchers.commandWithArgs;
 
 @Tag("unit")
 @ExtendWith(MockitoExtension.class)
@@ -154,6 +154,33 @@ public class JedisClusterInfoCacheTest {
     assertThat(  cache.getPrimaryNodes(),aMapWithSize(1));
     assertThat(cache.getPrimaryNodes(),
             hasEntry(equalTo(getNodeKey(REPLICA_1_HOST)), equalTo(cache.getNode(REPLICA_1_HOST))));
+  }
+
+  @Test
+  public void getPrimaryNodesAfterMasterReplicaFailoverOnRenew() {
+    JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
+            .readOnlyForRedisClusterReplicas().build();
+
+    Set<HostAndPort> startNodes = new HashSet<>();
+    startNodes.add(MASTER_HOST);
+
+    JedisClusterInfoCache cache = new JedisClusterInfoCache(clientConfig, startNodes);
+
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+            .thenReturn(masterReplicaSlotsResponse(MASTER_HOST, REPLICA_1_HOST))
+            .thenReturn(masterReplicaSlotsResponse(REPLICA_1_HOST, MASTER_HOST));
+
+    cache.discoverClusterNodesAndSlots(mockConnection);
+    assertThat(cache.getPrimaryNodes(),
+            hasEntry(equalTo(getNodeKey(MASTER_HOST)), equalTo(cache.getNode(MASTER_HOST))));
+
+    // Failover picked up through the slot renewal path (MOVED / topology refresh)
+    cache.renewClusterSlots(mockConnection);
+    assertThat(cache.getPrimaryNodes(), aMapWithSize(1));
+    assertThat(cache.getPrimaryNodes(),
+            hasEntry(equalTo(getNodeKey(REPLICA_1_HOST)), equalTo(cache.getNode(REPLICA_1_HOST))));
+    assertThat(cache.getShuffledPrimaryNodesPool(), equalTo(
+            Collections.singletonList(cache.getNode(REPLICA_1_HOST))));
   }
 
   private List<Object> masterReplicaSlotsResponse(HostAndPort masterHost, HostAndPort replicaHost) {

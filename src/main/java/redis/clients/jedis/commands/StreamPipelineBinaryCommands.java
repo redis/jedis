@@ -6,6 +6,7 @@ import java.util.Map;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.StreamDeletionPolicy;
+import redis.clients.jedis.args.XNackMode;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.StreamEntryBinary;
 import redis.clients.jedis.resps.StreamEntryDeletionResult;
@@ -33,6 +34,11 @@ public interface StreamPipelineBinaryCommands {
   Response<List<StreamEntryDeletionResult>> xackdel(byte[] key, byte[] group, byte[]... ids);
 
   Response<List<StreamEntryDeletionResult>> xackdel(byte[] key, byte[] group, StreamDeletionPolicy trimMode, byte[]... ids);
+
+  /**
+   * XNACK key group SILENT|FAIL|FATAL IDS numids id [id ...]
+   */
+  Response<Long> xnack(byte[] key, byte[] group, XNackMode mode, byte[]... ids);
 
   Response<String> xgroupCreate(byte[] key, byte[] groupName, byte[] id, boolean makeStream);
 
@@ -148,5 +154,15 @@ public interface StreamPipelineBinaryCommands {
    */
   Response<Map<byte[], List<StreamEntryBinary>>> xreadGroupBinaryAsMap(byte[] groupName, byte[] consumer,
       XReadGroupParams xReadGroupParams, Map<byte[], StreamEntryID> streams);
+
+  /**
+   * XCFGSET key [IDMP-DURATION duration] [IDMP-MAXSIZE maxsize]
+   * Configure idempotent producer settings for a stream.
+   *
+   * @param key Stream name
+   * @param params Configuration parameters
+   * @return OK if successful
+   */
+  Response<byte[]> xcfgset(byte[] key, XCfgSetParams params);
 
 }

@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
@@ -13,11 +14,17 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
 import java.util.*;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 import org.hamcrest.MatcherAssert;
 import org.hamcrest.Matchers;
 
 import org.junit.jupiter.api.*;
+import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.*;
@@ -32,11 +39,19 @@ import redis.clients.jedis.util.JedisClusterTestUtil;
 import redis.clients.jedis.util.SafeEncoder;
 
 @Tag("integration")
+@ParameterizedClass
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ClusterPipeliningTest {
 
   private static EndpointConfig endpoint;
 
-  private static DefaultJedisClientConfig DEFAULT_CLIENT_CONFIG;
+  private final RedisProtocol protocol;
+  private final DefaultJedisClientConfig clientConfig;
+
+  public ClusterPipeliningTest(RedisProtocol protocol) {
+    this.protocol = protocol;
+    this.clientConfig = endpoint.getClientConfigBuilder().protocol(protocol).build();
+  }
 
   private static Jedis node1;
   private static Jedis node2;
@@ -50,7 +65,6 @@ public class ClusterPipeliningTest {
   @BeforeAll
   public static void setUp() throws InterruptedException {
     endpoint = Endpoints.getRedisEndpoint("cluster-unbound");
-    DEFAULT_CLIENT_CONFIG = endpoint.getClientConfigBuilder().build();
     nodeInfo1 = endpoint.getHostsAndPorts().get(0);
     nodeInfo2 = endpoint.getHostsAndPorts().get(1);
     nodeInfo3 = endpoint.getHostsAndPorts().get(2);
@@ -117,7 +131,7 @@ public class ClusterPipeliningTest {
 
   @Test
   public void constructorClientConfig() {
-    try (ClusterPipeline pipe = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG)) {
+    try (ClusterPipeline pipe = new ClusterPipeline(nodes, clientConfig)) {
       Response<String> r1 = pipe.set("key1", "value1");
       Response<String> r2 = pipe.set("key2", "value2");
       Response<String> r3 = pipe.set("key3", "value3");
@@ -137,7 +151,7 @@ public class ClusterPipeliningTest {
 
   @Test
   public void constructorPoolConfig() {
-    try (ClusterPipeline pipe = new ClusterPipeline(nodes, DEFAULT_CLIENT_CONFIG, new ConnectionPoolConfig())) {
+    try (ClusterPipeline pipe = new ClusterPipeline(nodes, clientConfig, new ConnectionPoolConfig())) {
       Response<String> r1 = pipe.set("key1", "value1");
       Response<String> r2 = pipe.set("key2", "value2");
       Response<String> r3 = pipe.set("key3", "value3");
@@ -157,8 +171,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void constructorConnectionProvider() {
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
-        ClusterPipeline pipeline = new ClusterPipeline(provider)) {
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig);
+        ClusterPipeline pipeline = new ClusterPipeline(provider, protocol)) {
 
       Response<String> r1 = pipeline.set("key1", "value1");
       Response<String> r2 = pipeline.set("key2", "value2");
@@ -179,7 +193,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void clusterPipelined() {
-    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build();
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(
+        clientConfig).build();
         ClusterPipeline pipeline = cluster.pipelined()) {
 
       Response<String> r1 = pipeline.set("key1", "value1");
@@ -202,7 +217,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void intermediateSync() {
-    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build();
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(
+        clientConfig).build();
         ClusterPipeline pipeline = cluster.pipelined()) {
 
       Response<String> r1 = pipeline.set("key1", "value1");
@@ -229,7 +245,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void intermediateSyncs() {
-    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build();
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(
+        clientConfig).build();
         ClusterPipeline pipeline = cluster.pipelined()) {
 
       Response<String> r1 = pipeline.set("key1", "value1");
@@ -256,7 +273,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void pipelineResponse() {
-    try (RedisClusterClient jc = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
+    try (RedisClusterClient jc = RedisClusterClient.builder().nodes(nodes).clientConfig(
+        clientConfig).build()) {
       jc.set("string", "foo");
       jc.lpush("list", "foo");
       jc.hset("hash", "foo", "bar");
@@ -267,8 +285,8 @@ public class ClusterPipeliningTest {
       jc.setrange("setrangebytes".getBytes(), 0, bytesForSetRange);
     }
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
-      ClusterPipeline p = new ClusterPipeline(provider);
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig)) {
+      ClusterPipeline p = new ClusterPipeline(provider, protocol);
 
       Response<String> string = p.get("string");
       Response<String> list = p.lpop("list");
@@ -308,13 +326,14 @@ public class ClusterPipeliningTest {
 
   @Test
   public void pipelineBinarySafeHashCommands() {
-    try (RedisClusterClient jc = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
+    try (RedisClusterClient jc = RedisClusterClient.builder().nodes(nodes).clientConfig(
+        clientConfig).build()) {
       jc.hset("key".getBytes(), "f1".getBytes(), "v111".getBytes());
       jc.hset("key".getBytes(), "f22".getBytes(), "v2222".getBytes());
     }
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
-      ClusterPipeline p = new ClusterPipeline(provider);
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig)) {
+      ClusterPipeline p = new ClusterPipeline(provider, protocol);
       Response<Map<byte[], byte[]>> fmap = p.hgetAll("key".getBytes());
       Response<Set<byte[]>> fkeys = p.hkeys("key".getBytes());
       Response<List<byte[]>> fordered = p.hmget("key".getBytes(), "f22".getBytes(), "f1".getBytes());
@@ -364,8 +383,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void pipelineResponseWithinPipeline() {
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
-      ClusterPipeline p = new ClusterPipeline(provider);
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig)) {
+      ClusterPipeline p = new ClusterPipeline(provider, protocol);
       Response<String> string = p.get("string");
       assertThrows(IllegalStateException.class,string::get);
       p.sync();
@@ -374,8 +393,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void pipelineWithPubSub() {
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
-      ClusterPipeline pipelined = new ClusterPipeline(provider);
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig)) {
+      ClusterPipeline pipelined = new ClusterPipeline(provider, protocol);
       Response<Long> p1 = pipelined.publish("foo", "bar");
       Response<Long> p2 = pipelined.publish("foo".getBytes(), "bar".getBytes());
       pipelined.sync();
@@ -386,8 +405,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void canRetrieveUnsetKey() {
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
-      ClusterPipeline p = new ClusterPipeline(provider);
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig)) {
+      ClusterPipeline p = new ClusterPipeline(provider, protocol);
       Response<String> shouldNotExist = p.get(UUID.randomUUID().toString());
       p.sync();
       assertNull(shouldNotExist.get());
@@ -396,8 +415,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void piplineWithError() {
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
-      ClusterPipeline p = new ClusterPipeline(provider);
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig)) {
+      ClusterPipeline p = new ClusterPipeline(provider, protocol);
       p.set("foo", "bar");
       Response<Set<String>> error = p.smembers("foo");
       Response<String> r = p.get("foo");
@@ -414,8 +433,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void getSetParams() {
-    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
-    ClusterPipeline p = new ClusterPipeline(provider);
+    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig);
+    ClusterPipeline p = new ClusterPipeline(provider, protocol);
 
     Response<String> r1 = p.set("key1", "value1");
     Response<String> r2 = p.set("key2", "value2");
@@ -444,8 +463,8 @@ public class ClusterPipeliningTest {
     sorted.add("4");
     sorted.add("5");
 
-    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
-    ClusterPipeline p = new ClusterPipeline(provider);
+    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig);
+    ClusterPipeline p = new ClusterPipeline(provider, protocol);
 
     Response<Long> r1 = p.rpush("key1", "2", "3", "5", "1", "4");
     Response<List<String>> r2 = p.sort("key1");
@@ -471,8 +490,8 @@ public class ClusterPipeliningTest {
     List<String> vals = new ArrayList<>();
     vals.add("foobar");
 
-    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
-    ClusterPipeline p = new ClusterPipeline(provider);
+    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig);
+    ClusterPipeline p = new ClusterPipeline(provider, protocol);
 
     Response<Long> r1 = p.lpush("my{list}", "hello", "hello", "foo", "foo"); // ["foo", "foo", "hello", "hello"]
     Response<Long> r2 = p.rpush("my{newlist}", "hello", "hello", "foo", "foo");  // ["hello", "hello", "foo", "foo"]
@@ -532,8 +551,8 @@ public class ClusterPipeliningTest {
     inter.add("world");
     inter.add("hello");
 
-    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
-    ClusterPipeline p = new ClusterPipeline(provider);
+    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig);
+    ClusterPipeline p = new ClusterPipeline(provider, protocol);
 
     Response<Long> r1 = p.sadd("my{set}", "hello", "hello", "world", "foo", "bar");
     p.sadd("mynew{set}", "hello", "hello", "world");
@@ -590,8 +609,8 @@ public class ClusterPipeliningTest {
     Tuple max = new Tuple("a3", 3d);
     Tuple min = new Tuple("a1", 1d);
 
-    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
-    ClusterPipeline p = new ClusterPipeline(provider);
+    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig);
+    ClusterPipeline p = new ClusterPipeline(provider, protocol);
 
     Response<Long> r1 = p.zadd("myset", hm);
     Response<Long> r2 = p.zrank("myset", "a3");
@@ -654,8 +673,8 @@ public class ClusterPipeliningTest {
     vals2.add("hello");
     vals2.add(null);
 
-    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
-    ClusterPipeline p = new ClusterPipeline(provider);
+    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig);
+    ClusterPipeline p = new ClusterPipeline(provider, protocol);
 
     Response<Long> r1 = p.hset("myhash", "field1", "hello");
     Response<Long> r2 = p.hsetnx("myhash", "field1", "hello");
@@ -713,8 +732,8 @@ public class ClusterPipeliningTest {
     GeoRadiusParam params2 = new GeoRadiusParam().count(1, true);
     GeoRadiusStoreParam storeParams = new GeoRadiusStoreParam().store("radius{#}");
 
-    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
-    ClusterPipeline p = new ClusterPipeline(provider);
+    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig);
+    ClusterPipeline p = new ClusterPipeline(provider, protocol);
 
     Response<Long> r1 = p.geoadd("barcelona", hm);
     p.geoadd("barcelona{#}", new GeoAddParams().nx(), hm);
@@ -767,8 +786,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void clusterPipelineHyperLogLog() {
-    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
-    ClusterPipeline p = new ClusterPipeline(provider);
+    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig);
+    ClusterPipeline p = new ClusterPipeline(provider, protocol);
 
     Response<Long> r1 = p.pfadd("{hll}_1", "foo", "bar", "zap", "a");
     Response<Long> r2 = p.pfadd("{hll}_2", "foo", "bar", "zap");
@@ -790,8 +809,8 @@ public class ClusterPipeliningTest {
     fieldRes.add(1L);
     fieldRes.add(0L);
 
-    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
-    ClusterPipeline p = new ClusterPipeline(provider);
+    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig);
+    ClusterPipeline p = new ClusterPipeline(provider, protocol);
 
     Response<String> r1 = p.set("{mykey}", "foobar"); // foobar = 66 6f 6f 62 61 72
     p.set("my{otherkey}", "foo");
@@ -835,8 +854,8 @@ public class ClusterPipeliningTest {
     StreamEntryID streamId1 = new StreamEntryID("1638277876711-0");
     StreamEntryID streamId2 = new StreamEntryID("1638277959731-0");
 
-    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG);
-    ClusterPipeline p = new ClusterPipeline(provider);
+    ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig);
+    ClusterPipeline p = new ClusterPipeline(provider, protocol);
 
     Response<StreamEntryID> r1 = p.xadd("mystream", streamId1, hm);
     Response<StreamEntryID> r2 = p.xadd("mystream", new XAddParams().id(new StreamEntryID("1638277959731-0")).maxLen(2).approximateTrimming(), hm);
@@ -869,8 +888,8 @@ public class ClusterPipeliningTest {
   public void testEval() {
     String script = "return 'success!'";
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
-      ClusterPipeline p = new ClusterPipeline(provider);
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig)) {
+      ClusterPipeline p = new ClusterPipeline(provider, protocol);
       Response<Object> result = p.eval(script);
       p.sync();
 
@@ -882,8 +901,8 @@ public class ClusterPipeliningTest {
   public void testEvalWithBinary() {
     String script = "return 'success!'";
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
-      ClusterPipeline p = new ClusterPipeline(provider);
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig)) {
+      ClusterPipeline p = new ClusterPipeline(provider, protocol);
       Response<Object> result = p.eval(SafeEncoder.encode(script));
       p.sync();
 
@@ -897,8 +916,8 @@ public class ClusterPipeliningTest {
     String arg = "3";
     String script = "redis.call('INCRBY', KEYS[1], ARGV[1]) redis.call('INCRBY', KEYS[1], ARGV[1])";
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
-      ClusterPipeline p = new ClusterPipeline(provider);
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig)) {
+      ClusterPipeline p = new ClusterPipeline(provider, protocol);
       p.set(key, "0");
       Response<Object> result0 = p.eval(script, Collections.singletonList(key),
           Collections.singletonList(arg));
@@ -921,8 +940,8 @@ public class ClusterPipeliningTest {
     byte[] bArg = SafeEncoder.encode("3");
     byte[] bScript = SafeEncoder.encode("redis.call('INCRBY', KEYS[1], ARGV[1]) redis.call('INCRBY', KEYS[1], ARGV[1])");
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
-      ClusterPipeline bP = new ClusterPipeline(provider);
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig)) {
+      ClusterPipeline bP = new ClusterPipeline(provider, protocol);
       bP.set(bKey, SafeEncoder.encode("0"));
       Response<Object> bResult0 = bP.eval(bScript, Collections.singletonList(bKey),
           Collections.singletonList(bArg));
@@ -942,8 +961,8 @@ public class ClusterPipeliningTest {
   public void testEvalNestedLists() {
     String script = "return { {KEYS[1]} , {2} }";
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
-      ClusterPipeline p = new ClusterPipeline(provider);
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig)) {
+      ClusterPipeline p = new ClusterPipeline(provider, protocol);
       Response<Object> result = p.eval(script, 1, "key1");
       p.sync();
 
@@ -958,8 +977,8 @@ public class ClusterPipeliningTest {
     byte[] bScript = SafeEncoder.encode("return { {KEYS[1]} , {2} }");
     byte[] bKey = SafeEncoder.encode("key1");
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
-      ClusterPipeline p = new ClusterPipeline(provider);
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig)) {
+      ClusterPipeline p = new ClusterPipeline(provider, protocol);
       Response<Object> result = p.eval(bScript, 1, bKey);
       p.sync();
 
@@ -973,13 +992,14 @@ public class ClusterPipeliningTest {
   public void testEvalsha() {
     String script = "return 'success!'";
     String sha1;
-    try (RedisClusterClient jc = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
+    try (RedisClusterClient jc = RedisClusterClient.builder().nodes(nodes).clientConfig(
+        clientConfig).build()) {
       sha1 = jc.scriptLoad(script, "sampleKey");
       assertTrue(jc.scriptExists(sha1, "sampleKey"));
     }
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
-      ClusterPipeline p = new ClusterPipeline(provider);
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig)) {
+      ClusterPipeline p = new ClusterPipeline(provider, protocol);
       Response<Object> result = p.evalsha(sha1, 1, "sampleKey");
       p.sync();
 
@@ -993,13 +1013,14 @@ public class ClusterPipeliningTest {
     String arg = "3";
     String script = "redis.call('INCRBY', KEYS[1], ARGV[1]) redis.call('INCRBY', KEYS[1], ARGV[1])";
     String sha1;
-    try (RedisClusterClient jc = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
+    try (RedisClusterClient jc = RedisClusterClient.builder().nodes(nodes).clientConfig(
+        clientConfig).build()) {
       sha1 = jc.scriptLoad(script, key);
       assertTrue(jc.scriptExists(sha1, key));
     }
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
-      ClusterPipeline p = new ClusterPipeline(provider);
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig)) {
+      ClusterPipeline p = new ClusterPipeline(provider, protocol);
       p.set(key, "0");
       Response<Object> result0 = p.evalsha(sha1, Arrays.asList(key), Arrays.asList(arg));
       p.incr(key);
@@ -1020,13 +1041,14 @@ public class ClusterPipeliningTest {
     String script = "redis.call('INCRBY', KEYS[1], ARGV[1]) redis.call('INCRBY', KEYS[1], ARGV[1])";
     byte[] bScript = SafeEncoder.encode(script);
     byte[] bSha1;
-    try (RedisClusterClient jc = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
+    try (RedisClusterClient jc = RedisClusterClient.builder().nodes(nodes).clientConfig(
+        clientConfig).build()) {
       bSha1 = jc.scriptLoad(bScript, bKey);
       assertTrue(jc.scriptExists(bSha1, bKey));
     }
 
-    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, DEFAULT_CLIENT_CONFIG)) {
-      ClusterPipeline p = new ClusterPipeline(provider);
+    try (ClusterConnectionProvider provider = new ClusterConnectionProvider(nodes, clientConfig)) {
+      ClusterPipeline p = new ClusterPipeline(provider, protocol);
       p.set(bKey, SafeEncoder.encode("0"));
       Response<Object> result0 = p.evalsha(bSha1, Arrays.asList(bKey), Arrays.asList(bArg));
       p.incr(bKey);
@@ -1042,7 +1064,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void spublishInPipeline() {
-    try (RedisClusterClient jedis = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
+    try (RedisClusterClient jedis = RedisClusterClient.builder().nodes(nodes).clientConfig(
+        clientConfig).build()) {
       ClusterPipeline pipelined = jedis.pipelined();
       Response<Long> p1 = pipelined.publish("foo", "bar");
       Response<Long> p2 = pipelined.publish("foo".getBytes(), "bar".getBytes());
@@ -1054,7 +1077,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void simple() { // TODO: move into 'redis.clients.jedis.commands.unified.cluster' package
-    try (RedisClusterClient jedis = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
+    try (RedisClusterClient jedis = RedisClusterClient.builder().nodes(nodes).clientConfig(
+        clientConfig).build()) {
       final int count = 10;
       int totalCount = 0;
       for (int i = 0; i < count; i++) {
@@ -1087,7 +1111,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void transaction() {
-    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(
+        clientConfig).build()) {
       assertThrows(UnsupportedOperationException.class, () -> cluster.multi());
     }
   }
@@ -1098,7 +1123,8 @@ public class ClusterPipeliningTest {
     final int maxTotal = 100;
     ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
     poolConfig.setMaxTotal(maxTotal);
-    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).maxAttempts(5).poolConfig(poolConfig).build()) {
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(
+        clientConfig).maxAttempts(5).poolConfig(poolConfig).build()) {
       for (int i = 0; i < maxTotal; i++) {
         assertThreadsCount();
         String s = Integer.toString(i);
@@ -1113,7 +1139,8 @@ public class ClusterPipeliningTest {
 
   @Test
   public void testPipelineKeysAtSameNode() {
-    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(DEFAULT_CLIENT_CONFIG).build()) {
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(
+        clientConfig).build()) {
 
       // test simple key
       cluster.set("foo", "bar");
@@ -1171,4 +1198,227 @@ public class ClusterPipeliningTest {
         .count();
     MatcherAssert.assertThat(count, Matchers.lessThanOrEqualTo(20));
   }
+
+  @Test
+  public void testAllShardsCommandRejected() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, clientConfig)) {
+      // KEYS has ALL_SHARDS policy with pattern argument (not a key), should be rejected
+      UnsupportedOperationException ex = assertThrows(
+          UnsupportedOperationException.class,
+          () -> pipeline.keys("*"));
+
+      assertTrue(ex.getMessage().contains("ALL_SHARDS"),
+          "Error message should mention ALL_SHARDS policy");
+      assertTrue(ex.getMessage().contains("KEYS"),
+          "Error message should mention the command name");
+      assertTrue(ex.getMessage().contains("no keys"),
+          "Error message should mention that command has no keys");
+    }
+  }
+
+  @Test
+  public void testAllShardsPolicyWithSampleKeyAllowed() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, clientConfig)) {
+      // SCRIPT EXISTS has ALL_SHARDS policy but with sampleKey it routes to single slot, should work
+      String dummySha1 = "0000000000000000000000000000000000000000";
+      Response<List<Boolean>> existsResponse = pipeline.scriptExists("samplekey", dummySha1);
+      pipeline.sync();
+
+      // The response should be valid (list with one boolean indicating if script exists)
+      assertNotNull(existsResponse.get(), "SCRIPT EXISTS with sampleKey should be allowed in pipeline");
+      assertEquals(1, existsResponse.get().size(), "SCRIPT EXISTS should return list with one element");
+      assertFalse(existsResponse.get().get(0), "Dummy script should not exist");
+    }
+  }
+
+  @Test
+  public void testMultiShardCommandRejected() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, clientConfig)) {
+      // MGET with keys in different slots should be rejected
+      UnsupportedOperationException ex = assertThrows(
+          UnsupportedOperationException.class,
+          () -> pipeline.mget("key1", "key2", "key3"));
+
+      assertTrue(ex.getMessage().contains("MULTI_SHARD"),
+          "Error message should mention MULTI_SHARD policy");
+    }
+  }
+
+  @Test
+  public void testDefaultPolicyCommandAllowed() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, clientConfig)) {
+      // SET with single key - DEFAULT policy, should work
+      Response<String> setResponse = pipeline.set("testkey", "testvalue");
+      Response<String> getResponse = pipeline.get("testkey");
+      pipeline.sync();
+
+      assertEquals("OK", setResponse.get());
+      assertEquals("testvalue", getResponse.get());
+    }
+  }
+
+  @Test
+  public void testMultiShardPolicyWithSingleKeyAllowed() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, clientConfig)) {
+      // EXISTS with single key has MULTI_SHARD policy but routes to single slot, should work
+      pipeline.set("existskey", "value");
+      Response<Boolean> existsResponse = pipeline.exists("existskey");
+      pipeline.sync();
+
+      assertTrue(existsResponse.get(), "EXISTS with single key should be allowed in pipeline");
+    }
+  }
+
+  @Test
+  public void testMultiShardPolicyWithMultipleKeysRejected() {
+    try (ClusterPipeline pipeline = new ClusterPipeline(nodes, clientConfig)) {
+      // EXISTS with multiple keys in different slots has MULTI_SHARD policy, should be rejected
+      UnsupportedOperationException ex = assertThrows(
+          UnsupportedOperationException.class,
+          () -> pipeline.exists("key1", "key2", "key3"));
+
+      assertTrue(ex.getMessage().contains("MULTI_SHARD") || ex.getMessage().contains("multiple slots"),
+          "Error message should mention MULTI_SHARD policy or multiple slots");
+    }
+  }
+
+
+  @Test
+  public void sharedExecutorPipelineDoesNotShutdownSharedExecutor() {
+    ExecutorService executorService = Executors.newFixedThreadPool(3);
+    try ( RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(clientConfig).build()){
+      try (ClusterPipeline pipeline = cluster.pipelined(executorService)) {
+        // multiple keys at different slots, to ensure multi-node pipeline
+        pipeline.set("key1", "value1");
+        pipeline.set("key2", "value2");
+        pipeline.set("key3", "value3");
+        pipeline.sync();
+      }
+    } finally {
+      assertFalse(executorService.isShutdown());
+      executorService.shutdown();
+    }
+  }
+  @Test
+  public void sharedExecutorPipelineKeysAtSameNode() {
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(clientConfig).build()) {
+      ExecutorService executorService = Executors.newFixedThreadPool(3);
+      // test simple key
+      cluster.set("foo", "bar");
+
+      try (ClusterPipeline pipeline = cluster.pipelined(executorService)) {
+        Response<String> foo = pipeline.get("foo");
+        pipeline.sync();
+
+        assertEquals("bar", foo.get());
+      }
+
+      // test multi key but at same node
+      int cnt = 3;
+      String prefix = "{foo}:";
+      for (int i = 0; i < cnt; i++) {
+        String key = prefix + i;
+        cluster.set(key, String.valueOf(i));
+      }
+
+      try (ClusterPipeline pipeline = cluster.pipelined(executorService)) {
+        List<Response<String>> results = new ArrayList<>();
+        for (int i = 0; i < cnt; i++) {
+          String key = prefix + i;
+          results.add(pipeline.get(key));
+        }
+
+        pipeline.sync();
+        int idx = 0;
+        for (Response<String> res : results) {
+          assertEquals(String.valueOf(idx), res.get());
+          idx++;
+        }
+      }
+    }
+  }
+
+  @Test
+  @Timeout(10)
+  public void sharedExecutorConcurrentPipelinesNoDeadlock() throws Exception {
+    // This test verifies that multiple pipelines using the same shared executor
+    // concurrently do not deadlock, even when the executor has fewer threads
+    // than concurrent pipelines
+    final int EXECUTOR_THREADS = 3;
+    final int CONCURRENT_PIPELINES = 10; // More pipelines than executor threads
+    final int OPERATIONS_PER_PIPELINE = 20;
+
+    ExecutorService sharedExecutor = Executors.newFixedThreadPool(EXECUTOR_THREADS);
+    ExecutorService testExecutor = Executors.newFixedThreadPool(CONCURRENT_PIPELINES);
+
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(clientConfig).build()) {
+
+      CountDownLatch startLatch = new CountDownLatch(1);
+      CountDownLatch completionLatch = new CountDownLatch(CONCURRENT_PIPELINES);
+      List<Future<Integer>> futures = new ArrayList<>();
+
+      // Launch multiple pipelines concurrently
+      for (int pipelineId = 0; pipelineId < CONCURRENT_PIPELINES; pipelineId++) {
+        final int id = pipelineId;
+        Future<Integer> future = testExecutor.submit(() -> {
+          try {
+            // Wait for all threads to be ready before starting
+            startLatch.await();
+
+            int successCount = 0;
+            try (ClusterPipeline pipeline = cluster.pipelined(sharedExecutor)) {
+              List<Response<String>> responses = new ArrayList<>();
+
+              // Perform operations on different keys to ensure multi-node pipeline
+              for (int i = 0; i < OPERATIONS_PER_PIPELINE; i++) {
+                String key = "pipeline" + id + "_key" + i;
+                String value = "value" + i;
+                pipeline.set(key, value);
+                responses.add(pipeline.get(key));
+              }
+
+              // This sync() will use the shared executor
+              pipeline.sync();
+
+              // Verify all responses
+              for (int i = 0; i < OPERATIONS_PER_PIPELINE; i++) {
+                String expected = "value" + i;
+                String actual = responses.get(i).get();
+                if (expected.equals(actual)) {
+                  successCount++;
+                }
+              }
+            }
+            return successCount;
+          } finally {
+            completionLatch.countDown();
+          }
+        });
+        futures.add(future);
+      }
+
+      // Release all threads to start concurrently
+      startLatch.countDown();
+
+      boolean completed = completionLatch.await(5, SECONDS);
+      assertTrue(completed, "All concurrent pipelines should complete without deadlock");
+
+      // Verify all operations succeeded
+      for (int i = 0; i < CONCURRENT_PIPELINES; i++) {
+        Integer successCount = futures.get(i).get();
+        assertEquals(OPERATIONS_PER_PIPELINE, successCount.intValue(),
+            "Pipeline " + i + " should have all operations succeed");
+      }
+
+      // Verify shared executor is still active
+      assertFalse(sharedExecutor.isShutdown(), "Shared executor should not be shut down");
+
+    } finally {
+      testExecutor.shutdown();
+      testExecutor.awaitTermination(5, SECONDS);
+      sharedExecutor.shutdown();
+      sharedExecutor.awaitTermination(5, SECONDS);
+    }
+  }
+
 }

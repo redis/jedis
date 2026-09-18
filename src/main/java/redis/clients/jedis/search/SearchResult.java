@@ -30,7 +30,7 @@ public class SearchResult {
   private SearchResult(long totalResults, List<Document> documents, List<String> warnings) {
     this.totalResults = totalResults;
     this.documents = documents;
-    this.warnings = warnings;
+    this.warnings = warnings != null ? warnings : Collections.emptyList();
   }
 
   public long getTotalResults() {
@@ -96,7 +96,7 @@ public class SearchResult {
       for (int i = 1; i < resp.size(); i += step) {
 
         String id = BuilderFactory.STRING.build(resp.get(i));
-        double score = hasScores ? BuilderFactory.DOUBLE.build(resp.get(i + scoreOffset)) : 1.0;
+        double score = hasScores ? BuilderFactory.DOUBLE.build(resp.get(i + scoreOffset)) : 0.0;
         List<byte[]> fields = hasContent ? (List<byte[]>) resp.get(i + contentOffset) : null;
 
         documents.add(Document.load(id, score, fields, decode, isFieldDecode));

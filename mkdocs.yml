@@ -24,14 +24,25 @@ markdown_extensions:
       pygments_lang_class: true
   - pymdownx.inlinehilite
   - pymdownx.snippets
-  - pymdownx.superfences
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
   - admonition
   - pymdownx.details
 
 nav:
   - Home: index.md
   - Jedis Maven: jedis-maven.md
+  - User Guide:
+    - Transactions/Multi: transactions-multi.md
+    - Hash Import (HIMPORT): hash-import.md
+    - Smart Client Handoffs: smart-client-handoffs.md
+  - Release Notes:
+      - 8.1.0: release-notes/8.1.0.md
   - Migrating to newer versions:
+      - Jedis 8: migration-guides/v7-to-v8.md
       - Jedis 7: migration-guides/v6-to-v7.md
       - Jedis 6: migration-guides/v5-to-v6.md
       - Jedis 5: migration-guides/v4-to-v5.md
@@ -50,4 +61,9 @@ nav:
   - Jedis Guide: https://redis.io/docs/latest/develop/connect/clients/java/jedis/
   - Redis Command Reference: https://redis.io/docs/latest/commands/
   - Advanced Usage: advanced-usage.md
+  - Development guide:
+      - Contributing: .github/CONTRIBUTING.md
+      - Integration Testing: integration-testing.md
+      - Redis Client Components Overview: redis-client-components-overview.md
+      - Benchmark results: https://redis.github.io/jedis/benchmarks/
 

@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static redis.clients.jedis.util.RedisVersionUtil.getRedisVersion;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.utils.RedisVersion;
 import java.net.URISyntaxException;
 
@@ -14,6 +15,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
+import redis.clients.jedis.util.TestEnvUtil;
+
 /**
  * This test class is a copy of {@link JedisTest}.
  * <p>
@@ -41,7 +44,7 @@ public class ACLJedisTest extends JedisCommandsTestBase {
 
   @Test
   public void useWithoutConnecting() {
-    try (Jedis j = new Jedis()) {
+    try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       assertEquals("OK", j.auth(endpoint.getUsername(), endpoint.getPassword()));
       j.dbSize();
     }
@@ -49,11 +52,13 @@ public class ACLJedisTest extends JedisCommandsTestBase {
 
   @Test
   public void connectWithConfig() {
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), DefaultJedisClientConfig.builder().build())) {
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
+        DefaultJedisClientConfig.builder().serverDefaultProtocol().build())) {
       jedis.auth(endpoint.getUsername(), endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
     }
-    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build())) {
+    try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().serverDefaultProtocol().build())) {
       assertEquals("PONG", jedis.ping());
     }
   }
@@ -61,6 +66,10 @@ public class ACLJedisTest extends JedisCommandsTestBase {
   @Test
   public void connectWithConfigInterface() {
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(), new JedisClientConfig() {
+      @Override
+      public boolean isAutoNegotiateProtocol() {
+        return false;
+      }
     })) {
       jedis.auth(endpoint.getUsername(), endpoint.getPassword());
       assertEquals("PONG", jedis.ping());
@@ -75,12 +84,18 @@ public class ACLJedisTest extends JedisCommandsTestBase {
       public String getPassword() {
         return endpoint.getPassword();
       }
+
+      @Override
+      public boolean isAutoNegotiateProtocol() {
+        return false;
+      }
     })) {
       assertEquals("PONG", jedis.ping());
     }
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void startWithUrl() {
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       assertEquals("OK", j.auth(endpoint.getUsername(), endpoint.getPassword()));
@@ -95,6 +110,7 @@ public class ACLJedisTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void startWithUri() throws URISyntaxException {
     try (Jedis j = new Jedis(endpoint.getHostAndPort())) {
       assertEquals("OK", j.auth(endpoint.getUsername(), endpoint.getPassword()));

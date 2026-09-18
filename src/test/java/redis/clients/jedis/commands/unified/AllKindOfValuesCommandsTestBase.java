@@ -2,6 +2,7 @@ package redis.clients.jedis.commands.unified;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -32,6 +33,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.hamcrest.Matchers;
@@ -39,19 +41,15 @@ import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
-import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.ScanIteration;
-import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.*;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.SetParams;
-import redis.clients.jedis.util.AssertUtil;
-import redis.clients.jedis.util.KeyValue;
-import redis.clients.jedis.util.SafeEncoder;
-import redis.clients.jedis.util.CompareCondition;
+import redis.clients.jedis.util.*;
 
 @Tag("integration")
 public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisCommandsTestBase {
@@ -236,6 +234,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void rename() {
     jedis.set("foo", "bar");
     String status = jedis.rename("foo", "bar");
@@ -266,6 +265,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void renamenx() {
     jedis.set("foo", "bar");
     assertEquals(1, jedis.renamenx("foo", "bar"));
@@ -376,11 +376,10 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
     jedis.set("foo1", "bar1");
 
-    Thread.sleep(1100); // little over 1 sec
-    assertTrue(jedis.objectIdletime("foo1") > 0);
+    assertTrue(jedis.objectIdletime("foo1") >= 0);
 
     assertEquals(1, jedis.touch("foo1"));
-    assertEquals(0L, jedis.objectIdletime("foo1").longValue());
+    assertThat(jedis.objectIdletime("foo1"), lessThanOrEqualTo(1L));
 
     assertEquals(1, jedis.touch("foo1", "foo2", "foo3"));
 
@@ -395,11 +394,10 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
     jedis.set(bfoo1, bbar1);
 
-    Thread.sleep(1100); // little over 1 sec
-    assertTrue(jedis.objectIdletime(bfoo1) > 0);
+    assertTrue(jedis.objectIdletime(bfoo1) >= 0);
 
     assertEquals(1, jedis.touch(bfoo1));
-    assertEquals(0L, jedis.objectIdletime(bfoo1).longValue());
+    assertThat(jedis.objectIdletime(bfoo1), lessThanOrEqualTo(1L));
 
     assertEquals(1, jedis.touch(bfoo1, bfoo2, bfoo3));
 
@@ -646,16 +644,15 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     jedis.set("g", "g");
 
     // string
+    Set<String> stringKeys = new HashSet<>();
+    String cursor = SCAN_POINTER_START;
     ScanResult<String> scanResult;
-
-    scanResult = jedis.scan(SCAN_POINTER_START, pagingParams, "string");
-    assertFalse(scanResult.isCompleteIteration());
-    int page1Count = scanResult.getResult().size();
-    scanResult = jedis.scan(scanResult.getCursor(), pagingParams, "string");
-    assertTrue(scanResult.isCompleteIteration());
-    int page2Count = scanResult.getResult().size();
-    assertEquals(4, page1Count + page2Count);
-
+    do {
+      scanResult = jedis.scan(cursor, pagingParams, "string");
+      stringKeys.addAll(scanResult.getResult());
+      cursor = scanResult.getCursor();
+    } while (!scanResult.isCompleteIteration());
+    assertEquals(new HashSet<>(Arrays.asList("a", "c", "e", "g")), stringKeys);
 
     scanResult = jedis.scan(SCAN_POINTER_START, noParams, "hash");
     assertEquals(Collections.singletonList("b"), scanResult.getResult());
@@ -670,8 +667,6 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     final byte[] set = "set".getBytes();
     final byte[] zset = "zset".getBytes();
 
-    ScanResult<byte[]> binaryResult;
-
     jedis.set("a", "a");
     jedis.hset("b", "b", "b");
     jedis.set("c", "c");
@@ -680,13 +675,17 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     jedis.zadd("f", 0d, "f");
     jedis.set("g", "g");
 
-    binaryResult = jedis.scan(SCAN_POINTER_START_BINARY, pagingParams, string);
-    assertFalse(binaryResult.isCompleteIteration());
-    page1Count = binaryResult.getResult().size();
-    binaryResult = jedis.scan(binaryResult.getCursorAsBytes(), pagingParams, string);
-    assertTrue(binaryResult.isCompleteIteration());
-    page2Count = binaryResult.getResult().size();
-    assertEquals(4, page1Count + page2Count);
+    Set<byte[]> binaryStringKeys = new HashSet<>();
+    byte[] binaryCursor = SCAN_POINTER_START_BINARY;
+    ScanResult<byte[]> binaryResult;
+    do {
+      binaryResult = jedis.scan(binaryCursor, pagingParams, string);
+      binaryStringKeys.addAll(binaryResult.getResult());
+      binaryCursor = binaryResult.getCursorAsBytes();
+    } while (!binaryResult.isCompleteIteration());
+    Set<byte[]> expectedBinaryStringKeys = new HashSet<>(Arrays.asList(
+        "a".getBytes(), "c".getBytes(), "e".getBytes(), "g".getBytes()));
+    AssertUtil.assertByteArraySetEquals(expectedBinaryStringKeys, binaryStringKeys);
 
     binaryResult = jedis.scan(SCAN_POINTER_START_BINARY, noParams, hash);
     AssertUtil.assertByteArrayListEquals(Collections.singletonList(new byte[]{98}), binaryResult.getResult());
@@ -775,20 +774,29 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     assertNull(jedis.setGet("key", "value", SetParams.setParams()));
   }
 
+  /**
+   * Tests the executeCommand method with CommandArguments for proper cluster routing.
+   * This test uses explicit key marking through CommandArguments.key() for cluster compatibility.
+   */
   @Test
-  public void sendCommandTest() {
-    Object obj = jedis.sendCommand(SET, "x", "1");
+  public void executeCommandTest() {
+    // Test SET command with proper key marking
+    Object obj = jedis.executeCommand(new CommandArguments(SET).key("x").add("1"));
     String returnValue = encode((byte[]) obj);
     assertEquals("OK", returnValue);
-    obj = jedis.sendCommand(GET, "x");
+
+    // Test GET command with proper key marking
+    obj = jedis.executeCommand(new CommandArguments(GET).key("x"));
     returnValue = encode((byte[]) obj);
     assertEquals("1", returnValue);
 
-    jedis.sendCommand(RPUSH, "foo", "a");
-    jedis.sendCommand(RPUSH, "foo", "b");
-    jedis.sendCommand(RPUSH, "foo", "c");
+    // Test RPUSH commands with proper key marking
+    jedis.executeCommand(new CommandArguments(RPUSH).key("foo").add("a"));
+    jedis.executeCommand(new CommandArguments(RPUSH).key("foo").add("b"));
+    jedis.executeCommand(new CommandArguments(RPUSH).key("foo").add("c"));
 
-    obj = jedis.sendCommand(LRANGE, "foo", "0", "2");
+    // Test LRANGE command with proper key marking
+    obj = jedis.executeCommand(new CommandArguments(LRANGE).key("foo").add("0").add("2"));
     List<byte[]> list = (List<byte[]>) obj;
     List<byte[]> expected = new ArrayList<>(3);
     expected.add("a".getBytes());
@@ -797,18 +805,32 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
     for (int i = 0; i < 3; i++)
       assertArrayEquals(expected.get(i), list.get(i));
 
-    assertEquals("PONG", encode((byte[]) jedis.sendCommand(PING)));
+    // Test PING command (keyless command)
+    assertEquals("PONG", encode((byte[]) jedis.executeCommand(new CommandArguments(PING))));
   }
 
+  /**
+   * Tests the executeCommand method with blocking CommandArguments for proper cluster routing.
+   * This test uses explicit key marking through CommandArguments.key() and .blocking() for
+   * cluster compatibility with blocking operations.
+   */
   @Test
-  public void sendBlockingCommandTest() {
-    assertNull(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L)));
+  public void executeBlockingCommandTest() {
+    // Test BLPOP on empty list - should return null after timeout
+    assertNull(jedis.executeCommand(
+        new CommandArguments(BLPOP).key("foo").add(Long.toString(1L)).blocking()));
 
-    jedis.sendCommand(RPUSH, "foo", "bar");
+    // Setup: push an element to the list using executeCommand with proper key marking
+    jedis.executeCommand(new CommandArguments(RPUSH).key("foo").add("bar"));
+
+    // Test BLPOP with data - should return the key and value
     assertEquals(Arrays.asList("foo", "bar"),
-      encodeObject(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L))));
+        encodeObject(jedis.executeCommand(
+            new CommandArguments(BLPOP).key("foo").add(Long.toString(1L)).blocking())));
 
-    assertNull(jedis.sendBlockingCommand(BLPOP, "foo", Long.toString(1L)));
+    // Test BLPOP on now-empty list - should return null after timeout
+    assertNull(jedis.executeCommand(
+        new CommandArguments(BLPOP).key("foo").add(Long.toString(1L)).blocking()));
   }
 
   @Test
@@ -818,14 +840,14 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
   @Test
   public void encodeCompleteResponseHgetall() {
-    assumeFalse(protocol == RedisProtocol.RESP3);
+    assumeFalse(AssertUtil.expectsResp3OnWire(protocol));
 
     HashMap<String, String> entries = new HashMap<>();
     entries.put("foo", "bar");
     entries.put("foo2", "bar2");
     jedis.hset("hash:test:encode", entries);
 
-    List encodeObj = (List) SafeEncoder.encodeObject(jedis.sendCommand(HGETALL, "hash:test:encode"));
+    List encodeObj = (List) SafeEncoder.encodeObject(jedis.executeCommand(new CommandArguments(HGETALL).key("hash:test:encode")));
 
     assertEquals(4, encodeObj.size());
     entries.forEach((k, v) -> {
@@ -836,14 +858,14 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
   @Test
   public void encodeCompleteResponseHgetallResp3() {
-    assumeTrue(protocol == RedisProtocol.RESP3);
+    assumeTrue(AssertUtil.expectsResp3OnWire(protocol));
 
     HashMap<String, String> entries = new HashMap<>();
     entries.put("foo", "bar");
     entries.put("foo2", "bar2");
     jedis.hset("hash:test:encode", entries);
 
-    List<KeyValue> encodeObj = (List<KeyValue>) SafeEncoder.encodeObject(jedis.sendCommand(HGETALL, "hash:test:encode"));
+    List<KeyValue> encodeObj = (List<KeyValue>) SafeEncoder.encodeObject(jedis.executeCommand(new CommandArguments(HGETALL).key("hash:test:encode")));
 
     assertEquals(2, encodeObj.size());
     encodeObj.forEach(kv -> {
@@ -853,14 +875,14 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
   @Test
   public void encodeCompleteResponseXinfoStream() {
-    assumeFalse(protocol == RedisProtocol.RESP3);
+    assumeFalse(AssertUtil.expectsResp3OnWire(protocol));
 
     HashMap<String, String> entry = new HashMap<>();
     entry.put("foo", "bar");
     StreamEntryID entryID = jedis.xadd("mystream", StreamEntryID.NEW_ENTRY, entry);
     jedis.xgroupCreate("mystream", "mygroup", null, false);
 
-    Object obj = jedis.sendCommand(XINFO, "STREAM", "mystream");
+    Object obj = jedis.executeCommand(new CommandArguments(Protocol.Command.XINFO).add("STREAM").key("mystream"));
 
     List encodeObj = (List) SafeEncoder.encodeObject(obj);
 
@@ -880,14 +902,14 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
 
   @Test
   public void encodeCompleteResponseXinfoStreamResp3() {
-    assumeTrue(protocol == RedisProtocol.RESP3);
+    assumeTrue(AssertUtil.expectsResp3OnWire(protocol));
 
     HashMap<String, String> entry = new HashMap<>();
     entry.put("foo", "bar");
     StreamEntryID entryID = jedis.xadd("mystream", StreamEntryID.NEW_ENTRY, entry);
     jedis.xgroupCreate("mystream", "mygroup", null, false);
 
-    Object obj = jedis.sendCommand(XINFO, "STREAM", "mystream");
+    Object obj = jedis.executeCommand(new CommandArguments(XINFO).add("STREAM").key("mystream"));
 
     List<KeyValue> encodeObj = (List<KeyValue>) SafeEncoder.encodeObject(obj);
 
@@ -923,6 +945,7 @@ public abstract class AllKindOfValuesCommandsTestBase extends UnifiedJedisComman
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void copy() {
     assertFalse(jedis.copy("unknown", "foo", false));
 

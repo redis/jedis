@@ -26,12 +26,20 @@ public class ZRangeParams implements IParams {
   }
 
   public ZRangeParams(int min, int max) {
+    this((long) min, (long) max);
+  }
+
+  public ZRangeParams(long min, long max) {
     this.by = null;
     this.min = from(min);
     this.max = from(max);
   }
 
   public static ZRangeParams zrangeParams(int min, int max) {
+    return new ZRangeParams(min, max);
+  }
+
+  public static ZRangeParams zrangeParams(long min, long max) {
     return new ZRangeParams(min, max);
   }
 

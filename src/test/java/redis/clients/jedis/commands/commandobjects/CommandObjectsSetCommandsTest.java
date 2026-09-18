@@ -1,5 +1,6 @@
 package redis.clients.jedis.commands.commandobjects;
 
+import static io.redis.test.utils.RedisVersion.V8_10_0_RC2_STRING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
 import static org.hamcrest.Matchers.contains;
@@ -10,15 +11,20 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.params.SDiffCardParams;
+import redis.clients.jedis.params.SUnionCardParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.util.TestEnvUtil;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=set">Set</a> commands.
@@ -184,6 +190,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSdiff() {
     String key1 = "testSet1";
     String key2 = "testSet2";
@@ -199,6 +206,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSdiffstore() {
     String key1 = "testSet1";
     String key2 = "testSet2";
@@ -215,6 +223,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSdiffstoreBinary() {
     byte[] key1 = "testSet1".getBytes();
     byte[] key2 = "testSet2".getBytes();
@@ -232,6 +241,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
 
   @Test
   @SinceRedisVersion(value = "7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSinterAndSinterCard() {
     String key1 = "testSetInter1";
     String key2 = "testSetInter2";
@@ -259,6 +269,78 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void testSunioncard() {
+    String key1 = "testSetUnionCard1";
+    String key2 = "testSetUnionCard2";
+
+    exec(commandObjects.sadd(key1, "member1", "member2", "member3"));
+    exec(commandObjects.sadd(key2, "member3", "member4"));
+
+    Long unionCard = exec(commandObjects.sunioncard(key1, key2));
+    assertThat(unionCard, equalTo(4L));
+
+    Long unionCardList = exec(commandObjects.sunioncard(Arrays.asList(key1, key2)));
+    assertThat(unionCardList, equalTo(4L));
+
+    Long unionCardLimited = exec(
+      commandObjects.sunioncard(key1, key2, new SUnionCardParams().limit(3)));
+    assertThat(unionCardLimited, equalTo(3L));
+
+    Long unionCardApprox = exec(
+      commandObjects.sunioncard(Arrays.asList(key1, key2), new SUnionCardParams().approx()));
+    assertThat(unionCardApprox, equalTo(4L));
+
+    Long unionCardBinary = exec(commandObjects.sunioncard(key1.getBytes(), key2.getBytes()));
+    assertThat(unionCardBinary, equalTo(4L));
+
+    Long unionCardParamsBinary = exec(commandObjects.sunioncard(key1.getBytes(), key2.getBytes(),
+      new SUnionCardParams().approx().limit(3)));
+    assertThat(unionCardParamsBinary, equalTo(3L));
+
+    Long unionCardArrayBinary = exec(commandObjects.sunioncard(
+      new byte[][] { key1.getBytes(), key2.getBytes() }, new SUnionCardParams().limit(0)));
+    assertThat(unionCardArrayBinary, equalTo(4L));
+  }
+
+  @Test
+  @SinceRedisVersion(V8_10_0_RC2_STRING)
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void testSdiffcard() {
+    String key1 = "testSetDiffCard1";
+    String key2 = "testSetDiffCard2";
+
+    exec(commandObjects.sadd(key1, "member1", "member2", "member3"));
+    exec(commandObjects.sadd(key2, "member3", "member4"));
+
+    Long diffCard = exec(commandObjects.sdiffcard(key1, key2));
+    assertThat(diffCard, equalTo(2L));
+
+    Long diffCardList = exec(commandObjects.sdiffcard(Arrays.asList(key1, key2)));
+    assertThat(diffCardList, equalTo(2L));
+
+    Long diffCardLimited = exec(commandObjects.sdiffcard(key1, key2, new SDiffCardParams().limit(1)));
+    assertThat(diffCardLimited, equalTo(1L));
+
+    Long diffCardNoLimit = exec(
+      commandObjects.sdiffcard(Arrays.asList(key1, key2), new SDiffCardParams().limit(0)));
+    assertThat(diffCardNoLimit, equalTo(2L));
+
+    Long diffCardBinary = exec(commandObjects.sdiffcard(key1.getBytes(), key2.getBytes()));
+    assertThat(diffCardBinary, equalTo(2L));
+
+    Long diffCardParamsBinary = exec(
+      commandObjects.sdiffcard(key1.getBytes(), key2.getBytes(), new SDiffCardParams().limit(1)));
+    assertThat(diffCardParamsBinary, equalTo(1L));
+
+    Long diffCardArrayBinary = exec(commandObjects.sdiffcard(
+      new byte[][] { key1.getBytes(), key2.getBytes() }, new SDiffCardParams().limit(0)));
+    assertThat(diffCardArrayBinary, equalTo(2L));
+  }
+
+  @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSinterstore() {
     String key1 = "testSetInter1";
     String key2 = "testSetInter2";
@@ -275,6 +357,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSinterstoreBinary() {
     byte[] key1 = "testSetInter1B".getBytes();
     byte[] key2 = "testSetInter2B".getBytes();
@@ -291,6 +374,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSunion() {
     String key1 = "testSetUnion1";
     String key2 = "testSetUnion2";
@@ -310,6 +394,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSunionstore() {
     String key1 = "testSetUnion1";
     String key2 = "testSetUnion2";
@@ -329,6 +414,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSunionstoreBinary() {
     byte[] key1 = "testSetUnion1".getBytes();
     byte[] key2 = "testSetUnion2".getBytes();
@@ -346,6 +432,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSmove() {
     String srcKey = "testSetSrc";
     String dstKey = "testSetDst";
@@ -361,6 +448,7 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testSmoveBinary() {
     byte[] srcKey = "testSetSrc".getBytes();
     byte[] dstKey = "testSetDst".getBytes();

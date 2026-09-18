@@ -27,6 +27,12 @@ public class RedisClientCommandsTestHelper {
         .protocol(redisProtocol).build()).build();
   }
 
+  public static RedisClient getClient(RedisProtocol redisProtocol, EndpointConfig endpoint) {
+
+    return RedisClient.builder().hostAndPort(endpoint.getHostAndPort()).clientConfig(endpoint.getClientConfigBuilder()
+        .protocol(redisProtocol).build()).build();
+  }
+
   public static void clearData() {
     EndpointConfig info = getEndpointImpl();
     try (Jedis node = new Jedis(info.getHostAndPort())) {

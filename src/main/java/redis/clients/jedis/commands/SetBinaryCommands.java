@@ -3,6 +3,8 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import java.util.Set;
 
+import redis.clients.jedis.params.SDiffCardParams;
+import redis.clients.jedis.params.SUnionCardParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -38,6 +40,24 @@ public interface SetBinaryCommands {
 
   long sdiffstore(byte[] dstkey, byte[]... keys);
 
+  /**
+   * @see SetCommands#sdiffcard(String...)
+   * @since 8.0
+   */
+  long sdiffcard(byte[]... keys);
+
+  /**
+   * @see SetCommands#sdiffcard(String, String, SDiffCardParams)
+   * @since 8.0
+   */
+  long sdiffcard(byte[] key1, byte[] key2, SDiffCardParams params);
+
+  /**
+   * @see SetCommands#sdiffcard(java.util.List, SDiffCardParams)
+   * @since 8.0
+   */
+  long sdiffcard(byte[][] keys, SDiffCardParams params);
+
   Set<byte[]> sinter(byte[]... keys);
 
   long sinterstore(byte[] dstkey, byte[]... keys);
@@ -67,6 +87,24 @@ public interface SetBinaryCommands {
   Set<byte[]> sunion(byte[]... keys);
 
   long sunionstore(byte[] dstkey, byte[]... keys);
+
+  /**
+   * @see SetCommands#sunioncard(String...)
+   * @since 8.0
+   */
+  long sunioncard(byte[]... keys);
+
+  /**
+   * @see SetCommands#sunioncard(String, String, SUnionCardParams)
+   * @since 8.0
+   */
+  long sunioncard(byte[] key1, byte[] key2, SUnionCardParams params);
+
+  /**
+   * @see SetCommands#sunioncard(java.util.List, SUnionCardParams)
+   * @since 8.0
+   */
+  long sunioncard(byte[][] keys, SUnionCardParams params);
 
   long smove(byte[] srckey, byte[] dstkey, byte[] member);
 

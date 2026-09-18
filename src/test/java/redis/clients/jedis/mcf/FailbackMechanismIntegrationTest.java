@@ -27,6 +27,7 @@ class FailbackMechanismIntegrationTest {
   private HostAndPort endpoint3;
   private JedisClientConfig clientConfig;
   private static Duration FIFTY_MILLISECONDS = Duration.ofMillis(50);
+  private static Duration TEN_MILLISECONDS = Duration.ofMillis(10);
 
   @BeforeEach
   void setUp() {
@@ -202,7 +203,7 @@ class FailbackMechanismIntegrationTest {
         // Wait for failback check
         // Should have failed back to database1 immediately (higher weight, no stability period
         // required)
-        await().atMost(Durations.TWO_HUNDRED_MILLISECONDS).pollInterval(FIFTY_MILLISECONDS)
+        await().atMost(Durations.TWO_HUNDRED_MILLISECONDS).pollInterval(TEN_MILLISECONDS)
             .until(() -> provider.getDatabase(endpoint1) == provider.getDatabase());
       }
     }

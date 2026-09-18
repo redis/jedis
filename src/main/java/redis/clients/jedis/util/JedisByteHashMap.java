@@ -3,15 +3,15 @@ package redis.clients.jedis.util;
 import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.Set;
 
 public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable, Serializable {
   private static final long serialVersionUID = -6971431362627219416L;
-  private final Map<ByteArrayWrapper, byte[]> internalMap = new HashMap<>();
+  private final Map<ByteArrayWrapper, byte[]> internalMap = new LinkedHashMap<>();
 
   @Override
   public void clear() {
@@ -33,7 +33,7 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable, Seriali
   public Set<java.util.Map.Entry<byte[], byte[]>> entrySet() {
     Iterator<java.util.Map.Entry<ByteArrayWrapper, byte[]>> iterator = internalMap.entrySet()
         .iterator();
-    HashSet<Entry<byte[], byte[]>> hashSet = new HashSet<>();
+    LinkedHashSet<Entry<byte[], byte[]>> hashSet = new LinkedHashSet<>();
     while (iterator.hasNext()) {
       Entry<ByteArrayWrapper, byte[]> entry = iterator.next();
       hashSet.add(new JedisByteEntry(entry.getKey().data, entry.getValue()));
@@ -54,7 +54,7 @@ public class JedisByteHashMap implements Map<byte[], byte[]>, Cloneable, Seriali
 
   @Override
   public Set<byte[]> keySet() {
-    Set<byte[]> keySet = new HashSet<>();
+    Set<byte[]> keySet = new LinkedHashSet<>();
     Iterator<ByteArrayWrapper> iterator = internalMap.keySet().iterator();
     while (iterator.hasNext()) {
       keySet.add(iterator.next().data);

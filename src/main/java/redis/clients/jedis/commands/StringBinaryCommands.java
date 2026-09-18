@@ -6,6 +6,8 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.MSetExParams;
 
+import redis.clients.jedis.params.IncrexFloatParams;
+import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
@@ -37,25 +39,35 @@ public interface StringBinaryCommands extends BitBinaryCommands {
 
   /**
    * @deprecated Use {@link StringBinaryCommands#set(byte[], byte[], SetParams)} with {@link SetParams#nx()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   long setnx(byte[] key, byte[] value);
 
   /**
    * @deprecated Use {@link StringBinaryCommands#set(byte[], byte[], SetParams)} with {@link SetParams#ex(long)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   String setex(byte[] key, long seconds, byte[] value);
 
   /**
    * @deprecated Use {@link StringBinaryCommands#set(byte[], byte[], SetParams)} with {@link SetParams#px(long)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   String psetex(byte[] key, long milliseconds, byte[] value);
 
+  /**
+   * Get the values of all the specified keys.
+   * <p>
+   * At least one key must be supplied; otherwise the server returns an error.
+   *
+   * @param keys the keys to get
+   * @return a list of values in the same order as {@code keys};
+   *         entries are {@code null} for keys that do not exist or do not hold a string value
+   * @see StringCommands#mget(String...)
+   */
   List<byte[]> mget(byte[]... keys);
 
   String mset(byte[]... keysvalues);
@@ -90,6 +102,40 @@ public interface StringBinaryCommands extends BitBinaryCommands {
 
   double incrByFloat(byte[] key, double increment);
 
+  /**
+   * Increment the integer number stored at key by 1. If the key does not exist, it is set to 0
+   * before performing the operation.
+   * @param key the key
+   * @return a 2-element list: {@code [newValue, appliedIncrement]}
+   * @see StringCommands#increx(String)
+   * @since 8.0
+   */
+  List<Long> increx(byte[] key);
+
+  /**
+   * Increment the integer number stored at key by {@code increment}, with optional bounds,
+   * saturation, and expiration control.
+   * @param key the key
+   * @param increment the integer amount to increment by (may be negative)
+   * @param params optional bounds, {@code SATURATE} flag, and expiration options
+   * @return a 2-element list: {@code [newValue, appliedIncrement]}
+   * @see StringCommands#increx(String, long, IncrexParams)
+   * @since 8.0
+   */
+  List<Long> increx(byte[] key, long increment, IncrexParams params);
+
+  /**
+   * Increment the floating-point number stored at key by {@code increment}, with optional bounds,
+   * saturation, and expiration control.
+   * @param key the key
+   * @param increment the floating-point amount to increment by (may be negative)
+   * @param params optional bounds, {@code SATURATE} flag, and expiration options
+   * @return a 2-element list: {@code [newValue, appliedIncrement]}
+   * @see StringCommands#increx(String, double, IncrexFloatParams)
+   * @since 8.0
+   */
+  List<Double> increx(byte[] key, double increment, IncrexFloatParams params);
+
   long decr(byte[] key);
 
   long decrBy(byte[] key, long decrement);
@@ -98,7 +144,7 @@ public interface StringBinaryCommands extends BitBinaryCommands {
 
   /**
    * @deprecated Use {@link StringBinaryCommands#getrange(byte[], long, long)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.0.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.0.0.
    */
   @Deprecated
   byte[] substr(byte[] key, int start, int end);

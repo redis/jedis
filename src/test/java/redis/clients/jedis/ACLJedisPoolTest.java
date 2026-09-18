@@ -35,7 +35,7 @@ import redis.clients.jedis.util.TestEnvUtil;
  */
 @SinceRedisVersion("6.0.0")
 @Tag("integration")
-@ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_SOURCE, enabled = false)
+@ConditionalOnEnv(value = TestEnvUtil.ENV_OSS_DOCKER, enabled = true)
 public class ACLJedisPoolTest {
   private static EndpointConfig endpoint;
 
@@ -104,7 +104,7 @@ public class ACLJedisPoolTest {
     config.setMaxTotal(1);
     config.setBlockWhenExhausted(false);
     try (JedisPool pool = new JedisPool(config, endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().clientName("closable-reusable-pool")
+        endpoint.getClientConfigBuilder().serverDefaultProtocol().clientName("closable-reusable-pool")
         .build())) {
 
       Jedis jedis = pool.getResource();

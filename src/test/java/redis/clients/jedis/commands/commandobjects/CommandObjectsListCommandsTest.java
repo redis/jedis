@@ -9,14 +9,19 @@ import static org.hamcrest.Matchers.nullValue;
 
 import java.util.List;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.ListDirection;
+import redis.clients.jedis.args.ListMoveOrder;
 import redis.clients.jedis.args.ListPosition;
+import redis.clients.jedis.params.LMoveMParams;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.TestEnvUtil;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=list">List</a> commands.
@@ -382,6 +387,7 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testBlpop() {
     String key1 = "list1";
     String key2 = "list2";
@@ -414,6 +420,7 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testBlpopBinary() {
     byte[] key1 = "list1".getBytes();
     byte[] key2 = "list2".getBytes();
@@ -447,6 +454,7 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testBrpop() {
     String key1 = "list1";
     String key2 = "list2";
@@ -479,6 +487,7 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testBrpopBinary() {
     byte[] key1 = "list1".getBytes();
     byte[] key2 = "list2".getBytes();
@@ -512,6 +521,7 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testRpoplpushAndBrpoplpush() {
     String srcKey = "sourceList";
     String dstKey = "destinationList";
@@ -539,6 +549,7 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testRpoplpushAndBrpoplpushBinary() {
     byte[] srcKey = "sourceList".getBytes();
     byte[] dstKey = "destinationList".getBytes();
@@ -563,6 +574,7 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testLmoveAndBlmove() {
     String srcKey = "sourceList";
     String dstKey = "destinationList";
@@ -587,6 +599,7 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testLmoveAndBlmoveBinary() {
     byte[] srcKey = "sourceList".getBytes();
     byte[] dstKey = "destinationList".getBytes();
@@ -611,7 +624,58 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
   }
 
   @Test
+  @EnabledOnCommand("LMOVEM")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void testLmovemAndBlmovem() {
+    String srcKey = "sourceList";
+    String dstKey = "destinationList";
+
+    exec(commandObjects.rpush(srcKey, "1", "2", "3", "4"));
+
+    List<String> result = exec(commandObjects.lmovem(srcKey, dstKey,
+        ListDirection.LEFT, ListDirection.LEFT, LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
+    assertThat(result, contains("1", "2"));
+    assertThat(exec(commandObjects.lrange(dstKey, 0, -1)), contains("1", "2"));
+
+    // No count block: single-element list.
+    List<String> single = exec(commandObjects.lmovem(srcKey, dstKey,
+        ListDirection.LEFT, ListDirection.RIGHT));
+    assertThat(single, contains("3"));
+
+    // EXACTLY that cannot be satisfied: null.
+    List<String> none = exec(commandObjects.lmovem(srcKey, dstKey,
+        ListDirection.LEFT, ListDirection.LEFT, LMoveMParams.lMoveMParams().exactly(5, ListMoveOrder.OBO)));
+    assertThat(none, nullValue());
+
+    // Blocking variant returns immediately when the source has data.
+    List<String> bResult = exec(commandObjects.blmovem(srcKey, dstKey,
+        ListDirection.LEFT, ListDirection.RIGHT, 1.0, LMoveMParams.lMoveMParams().count(1, ListMoveOrder.BULK)));
+    assertThat(bResult, contains("4"));
+  }
+
+  @Test
+  @EnabledOnCommand("LMOVEM")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void testLmovemAndBlmovemBinary() {
+    byte[] srcKey = "sourceList".getBytes();
+    byte[] dstKey = "destinationList".getBytes();
+    byte[] value1 = "value1".getBytes();
+    byte[] value2 = "value2".getBytes();
+
+    exec(commandObjects.rpush(srcKey, value1, value2));
+
+    List<byte[]> result = exec(commandObjects.lmovem(srcKey, dstKey,
+        ListDirection.LEFT, ListDirection.LEFT, LMoveMParams.lMoveMParams().count(2, ListMoveOrder.BULK)));
+    assertThat(result, contains(equalTo(value1), equalTo(value2)));
+
+    List<byte[]> none = exec(commandObjects.lmovem(srcKey, dstKey,
+        ListDirection.LEFT, ListDirection.LEFT, LMoveMParams.lMoveMParams().exactly(2, ListMoveOrder.OBO)));
+    assertThat(none, nullValue());
+  }
+
+  @Test
   @SinceRedisVersion(value = "7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testLmpopAndBlmpop() {
     String key1 = "list1";
     String key2 = "list2";
@@ -640,6 +704,7 @@ public class CommandObjectsListCommandsTest extends CommandObjectsStandaloneTest
 
   @Test
   @SinceRedisVersion(value = "7.0.0")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testLmpopAndBlmpopBinary() {
     byte[] key1 = "list1".getBytes();
     byte[] key2 = "list2".getBytes();

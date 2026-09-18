@@ -5,5 +5,5 @@ public interface PipelineBinaryCommands extends KeyPipelineBinaryCommands,
     SetPipelineBinaryCommands, SortedSetPipelineBinaryCommands, GeoPipelineBinaryCommands,
     HyperLogLogPipelineBinaryCommands, StreamPipelineBinaryCommands,
     ScriptingKeyPipelineBinaryCommands, SampleBinaryKeyedPipelineCommands, FunctionPipelineBinaryCommands,
-    VectorSetPipelineBinaryCommands {
+    VectorSetPipelineBinaryCommands, ArrayPipelineBinaryCommands {
 }

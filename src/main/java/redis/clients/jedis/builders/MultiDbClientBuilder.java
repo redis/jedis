@@ -117,7 +117,7 @@ public abstract class MultiDbClientBuilder<C>
     }
 
     // Create the multi-database connection provider
-    MultiDbConnectionProvider provider = new MultiDbConnectionProvider(multiDbConfig);
+    MultiDbConnectionProvider provider = new MultiDbConnectionProvider(multiDbConfig, cache);
 
     // Set database switch listener if provided
     if (this.databaseSwitchListener != null) {

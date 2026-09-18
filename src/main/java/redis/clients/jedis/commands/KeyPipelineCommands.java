@@ -10,6 +10,7 @@ import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.SortingParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.util.CompareCondition;
 
 public interface KeyPipelineCommands {
 
@@ -66,6 +67,10 @@ public interface KeyPipelineCommands {
   Response<List<String>> sortReadonly(String key, SortingParams sortingParams);
 
   Response<Long> del(String key);
+
+  Response<Long> delex(String key, CompareCondition condition);
+
+  Response<String> digestKey(String key);
 
   Response<Long> del(String... keys);
 

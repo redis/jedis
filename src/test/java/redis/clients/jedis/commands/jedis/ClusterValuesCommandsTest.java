@@ -3,7 +3,9 @@ package redis.clients.jedis.commands.jedis;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
@@ -13,6 +15,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import io.redis.test.annotations.ConditionalOnEnv;
+import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.CommandArguments;
@@ -25,6 +29,8 @@ import redis.clients.jedis.args.GeoUnit;
 import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.util.TestEnvUtil;
 
 public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
 
@@ -194,5 +200,106 @@ public class ClusterValuesCommandsTest extends ClusterJedisCommandsTestBase {
     }
 
     assertEquals(allIn, cluster.scanIteration(100, "*").collect(new HashSet<>(26 * 26)));
+  }
+
+  @Test
+  public void dbSizeAggregation() {
+    // Set some keys across the cluster (different hash slots)
+    cluster.set("key1", "value1");
+    cluster.set("key2", "value2");
+    cluster.set("key3", "value3");
+
+    // dbSize should return sum of keys across all shards
+    long dbSize = cluster.dbSize();
+    assertTrue(dbSize >= 3);
+  }
+
+  @Test
+  public void msetCrossShard() {
+    // MSET with keys on different shards (MULTI_SHARD policy)
+    // Using keys without hash tags to distribute across shards
+    assertEquals("OK", cluster.mset("mset_key_a", "value_a", "mset_key_b", "value_b", "mset_key_c", "value_c"));
+
+    // Verify all keys were set
+    assertEquals("value_a", cluster.get("mset_key_a"));
+    assertEquals("value_b", cluster.get("mset_key_b"));
+    assertEquals("value_c", cluster.get("mset_key_c"));
+  }
+
+  @Test
+  public void scriptExistsAggregation() {
+    String script = "return 1";
+    String sampleKey = "testKey";
+
+    // Load a script to get its SHA1
+    String sha1 = cluster.scriptLoad(script, sampleKey);
+
+    // Verify it exists (single SHA1 check - returns Boolean, aggregated via AGG_LOGICAL_AND)
+    assertTrue(cluster.scriptExists(sha1, sampleKey));
+
+    // Test with multiple SHA1s - one exists, one doesn't
+    String unknownSha1 = "0000000000000000000000000000000000000000";
+    List<Boolean> results = cluster.scriptExists(sampleKey, sha1, unknownSha1);
+    assertEquals(2, results.size());
+    assertTrue(results.get(0));  // Known script exists
+    assertFalse(results.get(1)); // Unknown script doesn't exist
+  }
+
+  @Test
+  @SinceRedisVersion(value = "8.2.0", message = "CLUSTER SLOT-STATS requires Redis 8.2 or later")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void clusterSlotStatsAggregation() {
+    // Set some keys across the cluster to ensure slots have data
+    cluster.set("key1", "value1");
+    cluster.set("key2", "value2");
+    cluster.set("key3", "value3");
+
+    // Use broadcastCommand to send to all shards and aggregate with DEFAULT policy
+    // CLUSTER SLOT-STATS SLOTSRANGE returns a list (array) of slot statistics from each shard
+    // Each element is [slot_number, {key-count: N, cpu-usec: N, ...}]
+    // The DEFAULT response policy should concatenate lists from all nodes
+    List<Object> result = cluster.broadcastCommand(
+        new CommandObject<>(
+            new CommandArguments(Protocol.Command.CLUSTER).add("SLOT-STATS").add("SLOTSRANGE").add(0).add(16383),
+            BuilderFactory.RAW_OBJECT_LIST));
+
+    // Verify we got aggregated results from multiple shards
+    assertThat(result, notNullValue());
+
+    // The result should be a concatenated list containing slot statistics from all shards
+    // In a 3-shard cluster, each shard returns stats only for slots it owns
+    // so the merged list should contain entries from all 16384 slots
+    assertFalse(result.isEmpty(), "Should have aggregated slot statistics from cluster nodes");
+
+    // Verify the aggregated list contains entries from all shards
+    assertEquals(16384, result.size(), "Aggregated list should contain slot statistics from multiple shards");
+  }
+
+  @Test
+  @SinceRedisVersion(value = "7.2.0", message = "WAITAOF requires Redis 7.2 or later")
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void waitAOFAggregation() {
+    // Set some keys across the cluster to ensure there's data to sync
+    cluster.set("key1", "value1");
+    cluster.set("key2", "value2");
+    cluster.set("key3", "value3");
+
+    // Use broadcastCommand to send WAITAOF to all shards and aggregate with AGG_MIN policy
+    // WAITAOF returns a KeyValue<Long, Long> where:
+    //   - key = number of local AOF syncs
+    //   - value = number of replica AOF syncs
+    // The AGG_MIN response policy should return the minimum values across all shards
+    KeyValue<Long, Long> result = cluster.broadcastCommand(
+        new CommandObject<>(
+            new CommandArguments(Protocol.Command.WAITAOF).add(0).add(0).add(100),
+            BuilderFactory.LONG_LONG_PAIR));
+
+    // Verify we got aggregated results
+    assertThat(result, notNullValue());
+
+    // With numLocal=0 and numReplicas=0, the command should return immediately
+    // The minimum across all shards should be >= 0 for both values
+    assertTrue(result.getKey() >= 0, "Local AOF sync count should be >= 0");
+    assertTrue(result.getValue() >= 0, "Replica AOF sync count should be >= 0");
   }
 }

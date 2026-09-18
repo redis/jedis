@@ -2,7 +2,7 @@ package redis.clients.jedis.commands.jedis;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -154,9 +154,47 @@ public class ClusterBinaryValuesCommandsTest extends ClusterJedisCommandsTestBas
   }
 
   @Test
-  public void failKeys() {
-    assertThrows(IllegalArgumentException.class, () -> {
-      cluster.keys("*".getBytes());
-    });
+  public void testKeysBroadcastAndAggregation() {
+    // Use keys without hash tags - they will be distributed across different hash slots
+    // These keys intentionally don't use hash tags like {key} to ensure distribution
+    String key1 = "testkey_alpha";
+    String key2 = "testkey_beta";
+    String key3 = "testkey_gamma";
+
+    // Initially, no keys should match the pattern
+    assertEquals(0, cluster.keys("testkey_*").size());
+
+    // Set multiple keys that will be distributed across different hash slots
+    cluster.set(key1, "value1");
+    cluster.set(key2, "value2");
+    cluster.set(key3, "value3");
+
+    // Call keys with a pattern that should match all three keys
+    // This triggers broadcasting to all shards and aggregation of results
+    Set<String> matchedKeys = cluster.keys("testkey_*");
+
+    // Verify all keys are returned, demonstrating proper cross-shard aggregation
+    assertEquals(3, matchedKeys.size());
+    assertTrue(matchedKeys.contains(key1));
+    assertTrue(matchedKeys.contains(key2));
+    assertTrue(matchedKeys.contains(key3));
+
+    // Test with a more specific pattern that matches only some keys
+    Set<String> alphaKeys = cluster.keys("testkey_a*");
+    assertEquals(1, alphaKeys.size());
+    assertTrue(alphaKeys.contains(key1));
+
+    // Test binary version with keys distributed across different slots
+    byte[] bkey1 = "binkey_one".getBytes();
+    byte[] bkey2 = "binkey_two".getBytes();
+    byte[] bkey3 = "binkey_three".getBytes();
+
+    cluster.set(bkey1, "bvalue1".getBytes());
+    cluster.set(bkey2, "bvalue2".getBytes());
+    cluster.set(bkey3, "bvalue3".getBytes());
+
+    // Verify binary KEYS also broadcasts and aggregates correctly
+    Set<byte[]> binaryMatchedKeys = cluster.keys("binkey_*".getBytes());
+    assertEquals(3, binaryMatchedKeys.size());
   }
 }

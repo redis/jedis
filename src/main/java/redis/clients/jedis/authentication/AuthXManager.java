@@ -3,6 +3,7 @@ package redis.clients.jedis.authentication;
 import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -25,13 +26,13 @@ public final class AuthXManager implements Supplier<RedisCredentials> {
 
     private static final Logger log = LoggerFactory.getLogger(AuthXManager.class);
 
-    private TokenManager tokenManager;
-    private List<WeakReference<Connection>> connections = Collections
+    private final TokenManager tokenManager;
+    private final List<WeakReference<Connection>> connections = Collections
             .synchronizedList(new ArrayList<>());
     private Token currentToken;
     private AuthXEventListener listener = AuthXEventListener.NOOP_LISTENER;
-    private List<Consumer<Token>> postAuthenticateHooks = new ArrayList<>();
-    private AtomicReference<CompletableFuture<Void>> uniqueStarterTask = new AtomicReference<>();
+    private final List<Consumer<Token>> postAuthenticateHooks = new ArrayList<>();
+    private final AtomicReference<CompletableFuture<Void>> uniqueStarterTask = new AtomicReference<>();
 
     protected AuthXManager(TokenManager tokenManager) {
         this.tokenManager = tokenManager;
@@ -82,12 +83,15 @@ public final class AuthXManager implements Supplier<RedisCredentials> {
 
     public void authenticateConnections(Token token) {
         RedisCredentials credentialsFromToken = new TokenCredentials(token);
-        for (WeakReference<Connection> connectionRef : connections) {
-            Connection connection = connectionRef.get();
-            if (connection != null) {
-                connection.setCredentials(credentialsFromToken);
-            } else {
-                connections.remove(connectionRef);
+        synchronized (connections) {
+            Iterator<WeakReference<Connection>> iterator = connections.iterator();
+            while (iterator.hasNext()) {
+                Connection connection = iterator.next().get();
+                if (connection != null) {
+                    connection.setCredentials(credentialsFromToken);
+                } else {
+                    iterator.remove();
+                }
             }
         }
         postAuthenticateHooks.forEach(hook -> hook.accept(token));

@@ -6,6 +6,7 @@ import java.util.Map;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.StreamDeletionPolicy;
+import redis.clients.jedis.args.XNackMode;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 
@@ -101,6 +102,11 @@ public interface StreamPipelineCommands {
    * XACKDEL key group [KEEPREF | DELREF | ACKED] IDS numids id [id ...]
    */
   Response<List<StreamEntryDeletionResult>> xackdel(String key, String group, StreamDeletionPolicy trimMode, StreamEntryID... ids);
+
+  /**
+   * XNACK key group SILENT|FAIL|FATAL IDS numids id [id ...]
+   */
+  Response<Long> xnack(String key, String group, XNackMode mode, StreamEntryID... ids);
 
   /**
    * {@code XGROUP CREATE key groupName <id or $>}
@@ -256,27 +262,37 @@ public interface StreamPipelineCommands {
   Response<List<StreamConsumerInfo>> xinfoConsumers2(String key, String group);
 
   /**
-   * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
+   * XREAD [COUNT count] [MAXCOUNT maxcount] [MAXSIZE maxsize] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
    */
   Response<List<Map.Entry<String, List<StreamEntry>>>> xread(XReadParams xReadParams,
       Map<String, StreamEntryID> streams);
 
   /**
-   * XREAD [COUNT count] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
+   * XREAD [COUNT count] [MAXCOUNT maxcount] [MAXSIZE maxsize] [BLOCK milliseconds] STREAMS key [key ...] ID [ID ...]
    */
   Response<Map<String, List<StreamEntry>>> xreadAsMap(XReadParams xReadParams,
       Map<String, StreamEntryID> streams);
 
   /**
-   * XREADGROUP GROUP group consumer [COUNT count] [BLOCK milliseconds] [NOACK] STREAMS key [key ...] id [id ...]
+   * XREADGROUP GROUP group consumer [COUNT count] [MAXCOUNT maxcount] [MAXSIZE maxsize] [BLOCK milliseconds] [NOACK] STREAMS key [key ...] id [id ...]
    */
   Response<List<Map.Entry<String, List<StreamEntry>>>> xreadGroup(String groupName, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);
 
   /**
-   * XREADGROUP GROUP group consumer [COUNT count] [BLOCK milliseconds] [NOACK] STREAMS key [key ...] id [id ...]
+   * XREADGROUP GROUP group consumer [COUNT count] [MAXCOUNT maxcount] [MAXSIZE maxsize] [BLOCK milliseconds] [NOACK] STREAMS key [key ...] id [id ...]
    */
   Response<Map<String, List<StreamEntry>>> xreadGroupAsMap(String groupName, String consumer,
       XReadGroupParams xReadGroupParams, Map<String, StreamEntryID> streams);
+
+  /**
+   * XCFGSET key [IDMP-DURATION duration] [IDMP-MAXSIZE maxsize]
+   * Configure idempotent producer settings for a stream.
+   *
+   * @param key Stream name
+   * @param params Configuration parameters
+   * @return OK if successful
+   */
+  Response<String> xcfgset(String key, XCfgSetParams params);
 
 }

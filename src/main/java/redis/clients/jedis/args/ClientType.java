@@ -1,5 +1,7 @@
 package redis.clients.jedis.args;
 
+import java.util.Locale;
+
 import redis.clients.jedis.util.SafeEncoder;
 
 public enum ClientType implements Rawable {
@@ -9,7 +11,7 @@ public enum ClientType implements Rawable {
   private final byte[] raw;
 
   private ClientType() {
-    raw = SafeEncoder.encode(name().toLowerCase());
+    raw = SafeEncoder.encode(name().toLowerCase(Locale.ENGLISH));
   }
 
   @Override

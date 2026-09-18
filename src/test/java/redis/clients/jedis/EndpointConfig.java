@@ -20,16 +20,16 @@ public class EndpointConfig {
     private final String password;
     private final int bdbId;
     private final List<URI> endpoints;
-    private final String certificatesLocation;
+    private final String tlsCertPath;
 
-    public EndpointConfig(HostAndPort hnp, String username, String password, boolean tls, String certificatesLocation) {
+    public EndpointConfig(HostAndPort hnp, String username, String password, boolean tls, String tlsCertPath) {
         this.tls = tls;
         this.username = username;
         this.password = password;
         this.bdbId = 0;
         this.endpoints = Collections.singletonList(
             URI.create(getURISchema(tls) + hnp.getHost() + ":" + hnp.getPort()));
-        this.certificatesLocation = certificatesLocation;
+        this.tlsCertPath = tlsCertPath;
     }
 
     public HostAndPort getHostAndPort() {
@@ -69,7 +69,7 @@ public class EndpointConfig {
     }
 
     public Path getCertificatesLocation() {
-        return Paths.get(certificatesLocation);
+        return Paths.get(tlsCertPath);
     }
 
     public int getBdbId() { return bdbId; }
@@ -133,8 +133,8 @@ public class EndpointConfig {
       DefaultJedisClientConfig.Builder builder = DefaultJedisClientConfig.builder()
           .password(password).ssl(tls);
 
-        if (tls && certificatesLocation != null) {
-          builder.sslSocketFactory(TlsUtil.sslSocketFactoryForEnv(Paths.get(certificatesLocation)));
+        if (tls && tlsCertPath != null) {
+          builder.sslSocketFactory(TlsUtil.sslSocketFactoryForEnv(Paths.get(tlsCertPath)));
         }
 
         if (username != null) {

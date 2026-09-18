@@ -76,10 +76,12 @@ public class ACLJedisSentinelPoolTest {
       GenericObjectPoolConfig<Jedis> poolConfig = new GenericObjectPoolConfig<>();
 
       JedisClientConfig masterConfig = DefaultJedisClientConfig.builder()
+          .serverDefaultProtocol()
           .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).database(2)
           .user("acljedis").password("fizzbuzz").build();
 
       JedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
+          .serverDefaultProtocol()
           .connectionTimeoutMillis(1000).socketTimeoutMillis(1000)
           .user("sentinel").password("foobared").build();
 
@@ -95,10 +97,12 @@ public class ACLJedisSentinelPoolTest {
     GenericObjectPoolConfig<Jedis> poolConfig = new GenericObjectPoolConfig<>();
 
     JedisClientConfig masterConfig = DefaultJedisClientConfig.builder()
+        .serverDefaultProtocol()
         .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).database(2).user("acljedis")
         .password("fizzbuzz").build();
 
     JedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
+        .serverDefaultProtocol()
         .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).user("default")
         .password("wrongpassword").build();
     assertThrows(JedisConnectionException.class, () -> {
@@ -115,10 +119,12 @@ public class ACLJedisSentinelPoolTest {
     GenericObjectPoolConfig<Jedis> poolConfig = new GenericObjectPoolConfig<>();
 
     JedisClientConfig masterConfig = DefaultJedisClientConfig.builder()
+        .serverDefaultProtocol()
         .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).database(2).user("acljedis")
         .password("fizzbuzz").build();
 
     JedisClientConfig sentinelConfig = DefaultJedisClientConfig.builder()
+        .serverDefaultProtocol()
         .connectionTimeoutMillis(1000).socketTimeoutMillis(1000).user("sentinel")
         .password("foobared").build();
 

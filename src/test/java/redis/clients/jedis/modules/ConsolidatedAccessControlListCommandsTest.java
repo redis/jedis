@@ -3,6 +3,7 @@ package redis.clients.jedis.modules;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import java.util.Locale;
 import java.util.function.Consumer;
@@ -11,6 +12,7 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -26,13 +28,19 @@ import redis.clients.jedis.json.JsonProtocol.JsonCommand;
 import redis.clients.jedis.search.SearchProtocol.SearchCommand;
 import redis.clients.jedis.search.schemafields.TextField;
 import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesCommand;
+import redis.clients.jedis.util.EnvCondition;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @SinceRedisVersion(value = "7.9.0")
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 @Tag("integration")
+@ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
 public class ConsolidatedAccessControlListCommandsTest extends RedisModuleCommandsTestBase {
+
+  @RegisterExtension
+  public static EnvCondition envCondition = new EnvCondition();
 
   public static final String USER_NAME = "moduser";
   public static final String USER_PASSWORD = "secret";

@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.params.SDiffCardParams;
+import redis.clients.jedis.params.SUnionCardParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 
@@ -146,6 +148,122 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
 
     verify(commandExecutor).executeCommand(longCommandObject);
     verify(commandObjects).sdiffstore(dstkey, keys);
+  }
+
+  @Test
+  public void testSdiffcard() {
+    String[] keys = { "setKey1", "setKey2" };
+    long expectedCardinality = 2L;
+
+    when(commandObjects.sdiffcard(keys)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
+
+    long result = jedis.sdiffcard(keys);
+
+    assertThat(result, equalTo(expectedCardinality));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sdiffcard(keys);
+  }
+
+  @Test
+  public void testSdiffcardList() {
+    List<String> keys = Arrays.asList("setKey1", "setKey2");
+    long expectedCardinality = 2L;
+
+    when(commandObjects.sdiffcard(keys)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
+
+    long result = jedis.sdiffcard(keys);
+
+    assertThat(result, equalTo(expectedCardinality));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sdiffcard(keys);
+  }
+
+  @Test
+  public void testSdiffcardTwoKeysWithParams() {
+    SDiffCardParams params = new SDiffCardParams().limit(1);
+    long expectedCardinality = 1L;
+
+    when(commandObjects.sdiffcard("setKey1", "setKey2", params)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
+
+    long result = jedis.sdiffcard("setKey1", "setKey2", params);
+
+    assertThat(result, equalTo(expectedCardinality));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sdiffcard("setKey1", "setKey2", params);
+  }
+
+  @Test
+  public void testSdiffcardListWithParams() {
+    List<String> keys = Arrays.asList("setKey1", "setKey2");
+    SDiffCardParams params = new SDiffCardParams().limit(1);
+    long expectedCardinality = 1L;
+
+    when(commandObjects.sdiffcard(keys, params)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
+
+    long result = jedis.sdiffcard(keys, params);
+
+    assertThat(result, equalTo(expectedCardinality));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sdiffcard(keys, params);
+  }
+
+  @Test
+  public void testSdiffcardBinary() {
+    byte[][] keys = { "setKey1".getBytes(), "setKey2".getBytes() };
+    long expectedCardinality = 2L;
+
+    when(commandObjects.sdiffcard(keys)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
+
+    long result = jedis.sdiffcard(keys);
+
+    assertThat(result, equalTo(expectedCardinality));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sdiffcard(keys);
+  }
+
+  @Test
+  public void testSdiffcardTwoKeysWithParamsBinary() {
+    byte[] key1 = "setKey1".getBytes();
+    byte[] key2 = "setKey2".getBytes();
+    SDiffCardParams params = new SDiffCardParams().limit(1);
+    long expectedCardinality = 1L;
+
+    when(commandObjects.sdiffcard(key1, key2, params)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
+
+    long result = jedis.sdiffcard(key1, key2, params);
+
+    assertThat(result, equalTo(expectedCardinality));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sdiffcard(key1, key2, params);
+  }
+
+  @Test
+  public void testSdiffcardWithParamsBinary() {
+    byte[][] keys = { "setKey1".getBytes(), "setKey2".getBytes() };
+    SDiffCardParams params = new SDiffCardParams().limit(1);
+    long expectedCardinality = 1L;
+
+    when(commandObjects.sdiffcard(keys, params)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
+
+    long result = jedis.sdiffcard(keys, params);
+
+    assertThat(result, equalTo(expectedCardinality));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sdiffcard(keys, params);
   }
 
   @Test
@@ -683,6 +801,122 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
 
     verify(commandExecutor).executeCommand(longCommandObject);
     verify(commandObjects).sunionstore(dstkey, keys);
+  }
+
+  @Test
+  public void testSunioncard() {
+    String[] keys = { "setKey1", "setKey2" };
+    long expectedCardinality = 2L;
+
+    when(commandObjects.sunioncard(keys)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
+
+    long result = jedis.sunioncard(keys);
+
+    assertThat(result, equalTo(expectedCardinality));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sunioncard(keys);
+  }
+
+  @Test
+  public void testSunioncardList() {
+    List<String> keys = Arrays.asList("setKey1", "setKey2");
+    long expectedCardinality = 2L;
+
+    when(commandObjects.sunioncard(keys)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
+
+    long result = jedis.sunioncard(keys);
+
+    assertThat(result, equalTo(expectedCardinality));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sunioncard(keys);
+  }
+
+  @Test
+  public void testSunioncardTwoKeysWithParams() {
+    SUnionCardParams params = new SUnionCardParams().limit(1);
+    long expectedCardinality = 1L;
+
+    when(commandObjects.sunioncard("setKey1", "setKey2", params)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
+
+    long result = jedis.sunioncard("setKey1", "setKey2", params);
+
+    assertThat(result, equalTo(expectedCardinality));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sunioncard("setKey1", "setKey2", params);
+  }
+
+  @Test
+  public void testSunioncardListWithParams() {
+    List<String> keys = Arrays.asList("setKey1", "setKey2");
+    SUnionCardParams params = new SUnionCardParams().limit(1);
+    long expectedCardinality = 1L;
+
+    when(commandObjects.sunioncard(keys, params)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
+
+    long result = jedis.sunioncard(keys, params);
+
+    assertThat(result, equalTo(expectedCardinality));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sunioncard(keys, params);
+  }
+
+  @Test
+  public void testSunioncardBinary() {
+    byte[][] keys = { "setKey1".getBytes(), "setKey2".getBytes() };
+    long expectedCardinality = 2L;
+
+    when(commandObjects.sunioncard(keys)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
+
+    long result = jedis.sunioncard(keys);
+
+    assertThat(result, equalTo(expectedCardinality));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sunioncard(keys);
+  }
+
+  @Test
+  public void testSunioncardTwoKeysWithParamsBinary() {
+    byte[] key1 = "setKey1".getBytes();
+    byte[] key2 = "setKey2".getBytes();
+    SUnionCardParams params = new SUnionCardParams().limit(1);
+    long expectedCardinality = 1L;
+
+    when(commandObjects.sunioncard(key1, key2, params)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
+
+    long result = jedis.sunioncard(key1, key2, params);
+
+    assertThat(result, equalTo(expectedCardinality));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sunioncard(key1, key2, params);
+  }
+
+  @Test
+  public void testSunioncardWithParamsBinary() {
+    byte[][] keys = { "setKey1".getBytes(), "setKey2".getBytes() };
+    SUnionCardParams params = new SUnionCardParams().limit(1);
+    long expectedCardinality = 1L;
+
+    when(commandObjects.sunioncard(keys, params)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expectedCardinality);
+
+    long result = jedis.sunioncard(keys, params);
+
+    assertThat(result, equalTo(expectedCardinality));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sunioncard(keys, params);
   }
 
 }

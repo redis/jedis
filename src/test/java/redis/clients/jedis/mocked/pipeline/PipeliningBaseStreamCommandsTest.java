@@ -13,6 +13,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.args.XNackMode;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XAutoClaimParams;
 import redis.clients.jedis.params.XClaimParams;
@@ -53,6 +54,32 @@ public class PipeliningBaseStreamCommandsTest extends PipeliningBaseMockedTestBa
     when(commandObjects.xack(key, group, id1, id2)).thenReturn(longCommandObject);
 
     Response<Long> response = pipeliningBase.xack(key, group, id1, id2);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testXnack() {
+    StreamEntryID[] ids = { new StreamEntryID("0-0") };
+
+    when(commandObjects.xnack("key", "group", XNackMode.FAIL, ids)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.xnack("key", "group", XNackMode.FAIL, ids);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testXnackBinary() {
+    byte[] key = "stream".getBytes();
+    byte[] group = "group".getBytes();
+    byte[] id1 = "id1".getBytes();
+
+    when(commandObjects.xnack(key, group, XNackMode.SILENT, id1)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.xnack(key, group, XNackMode.SILENT, id1);
 
     assertThat(commands, contains(longCommandObject));
     assertThat(response, is(predefinedResponse));

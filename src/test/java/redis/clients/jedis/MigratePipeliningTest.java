@@ -11,6 +11,7 @@ import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,9 +22,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.commands.jedis.JedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.MigrateParams;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
+@ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
 public class MigratePipeliningTest extends JedisCommandsTestBase {
 
   private static final byte[] bfoo = { 0x01, 0x02, 0x03 };
@@ -67,12 +70,13 @@ public class MigratePipeliningTest extends JedisCommandsTestBase {
   public void setUp() throws Exception {
     super.setUp();
 
-    dest = new Jedis(host, port, 500);
+    dest = new Jedis(new HostAndPort(host, port),
+        DefaultJedisClientConfig.builder().serverDefaultProtocol().timeoutMillis(500).build());
     dest.flushAll();
     dest.select(db);
 
     destAuth = new Jedis(destEndpointWithAuth.getHostAndPort(),
-        destEndpointWithAuth.getClientConfigBuilder().build());
+        destEndpointWithAuth.getClientConfigBuilder().serverDefaultProtocol().build());
     destAuth.flushAll();
     destAuth.select(dbAuth);
   }

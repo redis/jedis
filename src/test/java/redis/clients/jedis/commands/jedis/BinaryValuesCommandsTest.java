@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.stream.Stream;
 
 import io.redis.test.annotations.EnabledOnCommand;
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,12 +30,15 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.GetExParams;
+import redis.clients.jedis.params.IncrexFloatParams;
+import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.MSetExParams;
 
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 public class BinaryValuesCommandsTest extends JedisCommandsTestBase {
   byte[] bfoo = { 0x01, 0x02, 0x03, 0x04 };
   byte[] bbar = { 0x05, 0x06, 0x07, 0x08 };
@@ -239,6 +243,7 @@ public class BinaryValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void msetnx() {
     assertEquals(1, jedis.msetnx(bfoo, binaryValue, bbar, bfoo));
     assertArrayEquals(binaryValue, jedis.get(bfoo));
@@ -326,6 +331,7 @@ public class BinaryValuesCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void substr() {
     jedis.set(bfoo, binaryValue);
 
@@ -424,5 +430,65 @@ public class BinaryValuesCommandsTest extends JedisCommandsTestBase {
     } else {
       assertTrue(ttl > 0L);
     }
+  }
+
+  // ── INCREX (binary) ──────────────────────────────────────────
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxBasicBinary() {
+    List<Long> res = jedis.increx(bfoo);
+    assertEquals(Long.valueOf(1), res.get(0));
+    assertEquals(Long.valueOf(1), res.get(1));
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxByIntWithBoundsAndExpiryBinary() {
+    jedis.set(bfoo, "10".getBytes());
+    IncrexParams params = new IncrexParams().lbound(0).ubound(20).ex(60);
+    List<Long> res = jedis.increx(bfoo, 2, params);
+    assertEquals(Long.valueOf(12), res.get(0));
+    assertEquals(Long.valueOf(2), res.get(1));
+    assertTrue(jedis.ttl(bfoo) > 0);
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxByFloatWithBoundsAndExpiryBinary() {
+    jedis.set(bfoo, "3.25".getBytes());
+    IncrexFloatParams params = new IncrexFloatParams().lbound(-1.5).ubound(9.5).ex(60);
+    List<Double> res = jedis.increx(bfoo, 1.25, params);
+    assertEquals(4.5, res.get(0), 0.0);
+    assertEquals(1.25, res.get(1), 0.0);
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxDefaultRejectSilentBinary() {
+    jedis.set(bfoo, "0".getBytes());
+    IncrexParams params = new IncrexParams().ubound(5);
+    List<Long> res = jedis.increx(bfoo, 10, params);
+    assertEquals(Long.valueOf(0), res.get(0));
+    assertEquals(Long.valueOf(0), res.get(1));
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxSaturateUboundBinary() {
+    jedis.set(bfoo, "0".getBytes());
+    IncrexParams params = new IncrexParams().ubound(5).saturate();
+    List<Long> res = jedis.increx(bfoo, 10, params);
+    assertEquals(Long.valueOf(5), res.get(0));
+    assertEquals(Long.valueOf(5), res.get(1));
+  }
+
+  @Test
+  @EnabledOnCommand("INCREX")
+  public void increxFloatThenIntFailsBinary() {
+    jedis.set(bfoo, "1.5".getBytes());
+    IncrexParams params = new IncrexParams();
+    org.junit.jupiter.api.Assertions.assertThrows(JedisDataException.class,
+      () -> jedis.increx(bfoo, 1, params));
   }
 }

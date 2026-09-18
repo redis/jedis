@@ -6,6 +6,8 @@ import redis.clients.jedis.params.GetExParams;
 import redis.clients.jedis.params.SetParams;
 import redis.clients.jedis.params.MSetExParams;
 
+import redis.clients.jedis.params.IncrexFloatParams;
+import redis.clients.jedis.params.IncrexParams;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
@@ -133,7 +135,7 @@ public interface StringCommands extends BitCommands {
    * @param value
    * @return 1 if the key was set, 0 otherwise
    * @deprecated Use {@link StringCommands#set(String, String, SetParams)} with {@link SetParams#nx()}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   long setnx(String key, String value);
@@ -150,7 +152,7 @@ public interface StringCommands extends BitCommands {
    * @param value
    * @return OK
    * @deprecated Use {@link StringCommands#set(String, String, SetParams)} with {@link SetParams#ex(long)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   String setex(String key, long seconds, String value);
@@ -166,20 +168,22 @@ public interface StringCommands extends BitCommands {
    * @param value
    * @return OK
    * @deprecated Use {@link StringCommands#set(String, String, SetParams)} with {@link SetParams#px(long)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.6.12.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.6.12.
    */
   @Deprecated
   String psetex(String key, long milliseconds, String value);
 
   /**
    * <b><a href="http://redis.io/commands/mget">MGet Command</a></b>
-   * Get the values of all the specified keys. If one or more keys don't exist or is not of type
-   * String, a 'nil' value is returned instead of the value of the specified key, but the operation
-   * never fails.
+   * Get the values of all the specified keys.
+   * <p>
+   * At least one key must be supplied; otherwise the server returns an error.
    * <p>
    * Time complexity: O(1) for every key
-   * @param keys
-   * @return Multi bulk reply
+   *
+   * @param keys the keys to get
+   * @return a list of values in the same order as {@code keys};
+   *         entries are {@code null} for keys that do not exist or do not hold a string value
    */
   List<String> mget(String... keys);
 
@@ -298,6 +302,60 @@ public interface StringCommands extends BitCommands {
   double incrByFloat(String key, double increment);
 
   /**
+   * <b><a href="http://redis.io/commands/increx">INCREX Command</a></b>
+   * Increment the integer number stored at key by 1. If the key does not exist, it is set to 0
+   * before performing the operation.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the key
+   * @return a 2-element list: {@code [newValue, appliedIncrement]}
+   * @since 8.0
+   */
+  List<Long> increx(String key);
+
+  /**
+   * <b><a href="http://redis.io/commands/increx">INCREX Command</a></b>
+   * Increment the integer number stored at key by {@code increment}, with optional lower/upper
+   * bounds, saturation, and expiration control. If the key does not exist, it is initialized to 0.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the key
+   * @param increment the integer amount to increment by (may be negative)
+   * @param params optional bounds ({@code LBOUND}/{@code UBOUND}), {@code SATURATE} flag, and
+   *        expiration ({@code EX}/{@code PX}/{@code EXAT}/{@code PXAT}/{@code PERSIST}/{@code ENX})
+   * @return a 2-element list: {@code [newValue, appliedIncrement]}. The applied increment may
+   *         differ from the requested increment when {@code SATURATE} is active and the result is
+   *         clamped to a bound, and is {@code 0} when the operation is silently rejected for being
+   *         out of bounds without {@code SATURATE}.
+   * @since 8.0
+   */
+  List<Long> increx(String key, long increment, IncrexParams params);
+
+  /**
+   * <b><a href="http://redis.io/commands/increx">INCREX Command</a></b>
+   * Increment the floating-point number stored at key by {@code increment}, with optional
+   * lower/upper bounds, saturation, and expiration control. If the key does not exist, it is
+   * initialized to 0.
+   * <p>
+   * Note: the key value must be a valid floating-point number. Attempting to use this method on a
+   * key holding an integer-only value such as {@code "1"} is valid, but using it on a value like
+   * {@code "1.5"} with the integer variant ({@link #increx(String, long, IncrexParams)}) will
+   * return an error.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the key
+   * @param increment the floating-point amount to increment by (may be negative)
+   * @param params optional bounds ({@code LBOUND}/{@code UBOUND}), {@code SATURATE} flag, and
+   *        expiration ({@code EX}/{@code PX}/{@code EXAT}/{@code PXAT}/{@code PERSIST}/{@code ENX})
+   * @return a 2-element list: {@code [newValue, appliedIncrement]}. The applied increment may
+   *         differ from the requested increment when {@code SATURATE} is active and the result is
+   *         clamped to a bound, and is {@code 0} when the operation is silently rejected for being
+   *         out of bounds without {@code SATURATE}.
+   * @since 8.0
+   */
+  List<Double> increx(String key, double increment, IncrexFloatParams params);
+
+  /**
    * <b><a href="http://redis.io/commands/decr">Decr Command</a></b>
    * Decrement the number stored at key by one. If the key does not exist or contains a value of a
    * wrong type, set the key to the value of "0" before to perform the decrement operation.
@@ -364,7 +422,7 @@ public interface StringCommands extends BitCommands {
    * @param end
    * @return The substring
    * @deprecated Use {@link StringCommands#getrange(String, long, long)}.
-   * Deprecated in Jedis 8.0.0. Mirrors Redis deprecation since 2.0.0.
+   * Deprecated in Jedis 7.3.0. Mirrors Redis deprecation since 2.0.0.
    */
   @Deprecated
   String substr(String key, int start, int end);

@@ -5,10 +5,10 @@ import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -41,20 +41,26 @@ public class JedisPubSubBaseTest  {
         );
 
         when(mockConnection.getUnflushedObject()).
-
                 thenReturn(mockSubscribe, mockResponse);
 
 
-        final CountDownLatch countDownLatch = new CountDownLatch(1);
         // action
+        final AtomicReference<Throwable> workerError = new AtomicReference<>();
         final Thread thread = new Thread(() -> {
             Thread.currentThread().interrupt();
-            pubSub.proceed(mockConnection, "channel");
-
-            countDownLatch.countDown();
-        });
+            try {
+                pubSub.proceed(mockConnection, "channel");
+            } catch (Throwable t) {
+                workerError.set(t);
+            }
+        }, "pubsub-interrupt-test");
         thread.start();
 
-        assertTrue(countDownLatch.await(30, TimeUnit.MILLISECONDS));
+        thread.join(TimeUnit.SECONDS.toMillis(1));
+        assertFalse(thread.isAlive(),
+            "proceed() should return promptly when the calling thread is interrupted");
+        if (workerError.get() != null) {
+            throw new AssertionError("proceed() threw unexpectedly", workerError.get());
+        }
     }
 }

@@ -30,7 +30,7 @@ public class SSLRedisClientSideCacheTest extends RedisClientSideCacheTestBase {
     TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
 
     try (Jedis jedis = new Jedis(endpoint.getHostAndPort(),
-        endpoint.getClientConfigBuilder().build())) {
+        endpoint.getClientConfigBuilder().serverDefaultProtocol().build())) {
       assumeTrue(RedisVersionUtil.getRedisVersion(jedis).isGreaterThanOrEqualTo(RedisVersion.V7_4),
           "Jedis Client side caching is only supported with 'Redis 7.4' or later.");
     }

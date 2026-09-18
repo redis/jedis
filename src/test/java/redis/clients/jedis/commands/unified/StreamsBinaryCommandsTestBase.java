@@ -1,23 +1,28 @@
 package redis.clients.jedis.commands.unified;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.utils.RedisVersion;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.args.StreamDeletionPolicy;
+import redis.clients.jedis.args.XNackMode;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.XAddParams;
+import redis.clients.jedis.params.XCfgSetParams;
 import redis.clients.jedis.params.XReadGroupParams;
 import redis.clients.jedis.params.XReadParams;
 import redis.clients.jedis.params.XTrimParams;
 import redis.clients.jedis.resps.StreamEntryBinary;
 import redis.clients.jedis.resps.StreamEntryDeletionResult;
-import redis.clients.jedis.util.AssertUtil;
+import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -28,20 +33,20 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static redis.clients.jedis.StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY;
-import static redis.clients.jedis.util.ByteArrayMapMatcher.equalToByteArrayMap;
+import static redis.clients.jedis.util.ByteArrayMapMatcher.contentEquals;
 import static redis.clients.jedis.util.StreamEntryBinaryListMatcher.equalsStreamEntries;
 
 @Tag("integration")
 public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommandsTestBase {
-
-  protected static final byte[] STREAM_KEY_1 = "{binary-stream}-1".getBytes();
-  protected static final byte[] STREAM_KEY_2 = "{binary-stream}-2".getBytes();
-  protected static final byte[] GROUP_NAME = "group-1".getBytes();
-  protected static final byte[] CONSUMER_NAME = "consumer-1".getBytes();
+  protected byte[] STREAM_KEY_1;
+  protected byte[] STREAM_KEY_2;
+  protected byte[] GROUP_NAME;
+  protected byte[] CONSUMER_NAME;
 
   protected static final byte[] FIELD_KEY_1 = "binary-field-1".getBytes();
   // Test with invalid UTF-8 characters
@@ -97,7 +102,11 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   }
 
   @BeforeEach
-  public void setUpTestStream() {
+  public void setUp() {
+    STREAM_KEY_1 = keys.bKey("{%test%}:binary-stream-1");
+    STREAM_KEY_2 = keys.bKey("{%test%}:binary-stream-2");
+    GROUP_NAME = SafeEncoder.encode(keys.name("group-1"));
+    CONSUMER_NAME = SafeEncoder.encode(keys.name("consumer-1"));
     setUpTestStream(StreamEntryID.XGROUP_LAST_ENTRY.toString().getBytes());
   }
 
@@ -130,7 +139,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
 
   @Test
   public void xreadBinary() {
-
     stream1Entries.forEach(
         entry -> jedis.xadd(STREAM_KEY_1, new XAddParams().id(entry.getID()), entry.getFields()));
 
@@ -144,12 +152,25 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
 
   @Test
   public void xreadBinaryCount() {
-
     stream1Entries.forEach(
         entry -> jedis.xadd(STREAM_KEY_1, new XAddParams().id(entry.getID()), entry.getFields()));
 
     List<Map.Entry<byte[], List<StreamEntryBinary>>> actualEntries = jedis.xreadBinary(
         XReadParams.xReadParams().count(1), offsets(STREAM_KEY_1, "0-0"));
+
+    assertThat(actualEntries, hasSize(1));
+    assertArrayEquals(STREAM_KEY_1, actualEntries.get(0).getKey());
+    assertThat(actualEntries.get(0).getValue(), equalsStreamEntries(stream1Entries.subList(0, 1)));
+  }
+
+  @Test
+  @SinceRedisVersion(RedisVersion.V8_10_0_RC2_STRING)
+  public void xreadBinaryMaxCountAndMaxSize() {
+    stream1Entries.forEach(
+        entry -> jedis.xadd(STREAM_KEY_1, new XAddParams().id(entry.getID()), entry.getFields()));
+
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> actualEntries = jedis.xreadBinary(
+        XReadParams.xReadParams().maxCount(1).maxSize(65536), offsets(STREAM_KEY_1, "0-0"));
 
     assertThat(actualEntries, hasSize(1));
     assertArrayEquals(STREAM_KEY_1, actualEntries.get(0).getKey());
@@ -166,7 +187,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
 
   @Test
   public void xreadBinaryAsMap() {
-
     stream1Entries.forEach(
         entry -> jedis.xadd(STREAM_KEY_1, new XAddParams().id(entry.getID()), entry.getFields()));
 
@@ -179,7 +199,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
 
   @Test
   public void xreadBinaryAsMapCount() {
-
     stream1Entries.forEach(
         entry -> jedis.xadd(STREAM_KEY_1, new XAddParams().id(entry.getID()), entry.getFields()));
 
@@ -192,7 +211,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
 
   @Test
   public void xreadBinaryAsMapWithMultipleStreams() {
-
     // Add entries to the streams
     stream1Entries.forEach(
         entry -> jedis.xadd(STREAM_KEY_1, new XAddParams().id(entry.getID()), entry.getFields()));
@@ -224,6 +242,21 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     assertArrayEquals(STREAM_KEY_1, actualEntries.get(0).getKey());
 
     assertThat(actualEntries.get(0).getValue(), equalsStreamEntries(stream1Entries));
+  }
+
+  @Test
+  @SinceRedisVersion(RedisVersion.V8_10_0_RC2_STRING)
+  public void xreadGroupBinaryMaxCountAndMaxSize() {
+    stream1Entries.forEach(
+        entry -> jedis.xadd(STREAM_KEY_1, new XAddParams().id(entry.getID()), entry.getFields()));
+
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> actualEntries = jedis.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().maxCount(1).maxSize(65536),
+        offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY));
+
+    assertThat(actualEntries, hasSize(1));
+    assertArrayEquals(STREAM_KEY_1, actualEntries.get(0).getKey());
+    assertThat(actualEntries.get(0).getValue(), equalsStreamEntries(stream1Entries.subList(0, 1)));
   }
 
   @Test
@@ -264,8 +297,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXackdel() {
-    setUpTestStream();
-
     // Add a message to the stream
     byte[] messageId = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     assertNotNull(messageId);
@@ -292,8 +323,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXackdelWithTrimMode() {
-    setUpTestStream();
-
     // Add multiple messages
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
@@ -320,8 +349,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXackdelUnreadMessages() {
-    setUpTestStream();
-
     // Add test entries but don't read them
     byte[] id1 = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
 
@@ -339,8 +366,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXackdelMultipleMessages() {
-    setUpTestStream();
-
     // Add multiple messages
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
@@ -367,13 +392,81 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     assertEquals(1L, jedis.xlen(STREAM_KEY_1));
   }
 
+  // ========== XNACK Command Tests ==========
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackBasicSilent() {
+    // Add and read a message
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
+    Map<byte[], StreamEntryID> streams = offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY);
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> messages = jedis.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(1), streams);
+
+    byte[] readMessageId = messages.get(0).getValue().get(0).getID().toString().getBytes();
+
+    // XNACK with SILENT mode
+    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.SILENT, readMessageId);
+    assertEquals(1L, nacked);
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackBasicFail() {
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
+    Map<byte[], StreamEntryID> streams = offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY);
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> messages = jedis.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(1), streams);
+
+    byte[] readMessageId = messages.get(0).getValue().get(0).getID().toString().getBytes();
+
+    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.FAIL, readMessageId);
+    assertEquals(1L, nacked);
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackBasicFatal() {
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
+    Map<byte[], StreamEntryID> streams = offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY);
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> messages = jedis.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(1), streams);
+
+    byte[] readMessageId = messages.get(0).getValue().get(0).getID().toString().getBytes();
+
+    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.FATAL, readMessageId);
+    assertEquals(1L, nacked);
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackMultipleMessages() {
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
+    Map<byte[], StreamEntryID> streams = offsets(STREAM_KEY_1, XREADGROUP_UNDELIVERED_ENTRY);
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> messages = jedis.xreadGroupBinary(
+        GROUP_NAME, CONSUMER_NAME, XReadGroupParams.xReadGroupParams().count(2), streams);
+
+    byte[] readId1 = messages.get(0).getValue().get(0).getID().toString().getBytes();
+    byte[] readId2 = messages.get(0).getValue().get(1).getID().toString().getBytes();
+
+    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.FAIL, readId1, readId2);
+    assertEquals(2L, nacked);
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackNonExistentMessage() {
+    byte[] nonExistentId = "999-0".getBytes();
+    long nacked = jedis.xnack(STREAM_KEY_1, GROUP_NAME, XNackMode.SILENT, nonExistentId);
+    assertEquals(0L, nacked);
+  }
+
   // ========== XDELEX Command Tests ==========
 
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXdelex() {
-    setUpTestStream();
-
     // Add test entries
     byte[] id1 = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
@@ -391,8 +484,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXdelexWithTrimMode() {
-    setUpTestStream();
-
     // Add test entries
     byte[] id1 = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
@@ -409,8 +500,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXdelexMultipleEntries() {
-    setUpTestStream();
-
     // Add test entries
     byte[] id1 = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
@@ -430,8 +519,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXdelexNonExistentEntries() {
-    setUpTestStream();
-
     // Add one entry
     byte[] id1 = jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     assertEquals(1L, jedis.xlen(STREAM_KEY_1));
@@ -450,8 +537,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXdelexWithConsumerGroups() {
-    setUpTestStream();
-
     // Add test entries
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("1-0"), HASH_1);
     jedis.xadd(STREAM_KEY_1, new XAddParams().id("2-0"), HASH_2);
@@ -483,8 +568,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXdelexEmptyStream() {
-    setUpTestStream();
-
     // Test XDELEX on empty stream
     byte[] nonExistentId = "1-0".getBytes();
     List<StreamEntryDeletionResult> results = jedis.xdelex(STREAM_KEY_1, nonExistentId);
@@ -497,8 +580,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXtrimWithKeepReferences() {
-    setUpTestStream();
-
     // Add test entries
     for (int i = 1; i <= 5; i++) {
       jedis.xadd(STREAM_KEY_1, new XAddParams().id(i + "-0"), HASH_1);
@@ -519,8 +600,6 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
   @Test
   @SinceRedisVersion("8.1.240")
   public void testXtrimWithAcknowledged() {
-    setUpTestStream();
-
     // Add test entries
     for (int i = 1; i <= 5; i++) {
       jedis.xadd(STREAM_KEY_1, new XAddParams().id(i + "-0"), HASH_1);
@@ -602,7 +681,7 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     assertTrue(second.isClaimed());
     assertTrue(first.getMillisElapsedFromDelivery() >= IDLE_TIME_MS);
     assertTrue(second.getMillisElapsedFromDelivery() >= IDLE_TIME_MS);
-    assertThat(first.getFields(), equalToByteArrayMap(HASH_1));
+    assertThat(first.getFields(), contentEquals(HASH_1));
 
     // Fresh entries
     assertFalse(third.isClaimed());
@@ -611,6 +690,188 @@ public abstract class StreamsBinaryCommandsTestBase extends UnifiedJedisCommands
     assertEquals(Long.valueOf(0), fourth.getDeliveredCount());
     assertEquals(Long.valueOf(0), third.getMillisElapsedFromDelivery());
     assertEquals(Long.valueOf(0), fourth.getMillisElapsedFromDelivery());
-    assertThat(fourth.getFields(), equalToByteArrayMap(HASH_1));
+    assertThat(fourth.getFields(), contentEquals(HASH_1));
+  }
+
+  @Test
+  public void xreadGroupPreservesFieldOrder() {
+    byte[] streamKey = "field-order-stream".getBytes();
+    byte[] groupName = "field-order-group".getBytes();
+    byte[] consumerName = "field-order-consumer".getBytes();
+
+    // Use LinkedHashMap to ensure insertion order: a, z, m
+    Map<byte[], byte[]> fields = new LinkedHashMap<>();
+    fields.put("a".getBytes(), "1".getBytes());
+    fields.put("z".getBytes(), "4".getBytes());
+    fields.put("m".getBytes(), "2".getBytes());
+
+    jedis.xadd(streamKey, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), fields);
+    jedis.xgroupCreate(streamKey, groupName, "0-0".getBytes(), false);
+
+    Map<byte[], StreamEntryID> streamQuery = singletonMap(streamKey, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    List<Map.Entry<byte[], List<StreamEntryBinary>>> result = jedis.xreadGroupBinary(groupName, consumerName,
+        XReadGroupParams.xReadGroupParams().count(1), streamQuery);
+
+    assertEquals(1, result.size());
+    assertEquals(1, result.get(0).getValue().size());
+
+    StreamEntryBinary entry = result.get(0).getValue().get(0);
+    Map<byte[], byte[]> returnedFields = entry.getFields();
+
+    // Verify field order is preserved - this will fail with HashMap, pass with LinkedHashMap
+    byte[][] expectedOrder = {"a".getBytes(), "z".getBytes(), "m".getBytes()};
+    byte[][] actualOrder = returnedFields.keySet().toArray(new byte[0][]);
+
+    assertEquals(expectedOrder.length, actualOrder.length, "Field count should match");
+    for (int i = 0; i < expectedOrder.length; i++) {
+      assertArrayEquals(expectedOrder[i], actualOrder[i],
+          String.format("Field order mismatch at position %d: expected '%s' but got '%s'. " +
+              "Full order: expected [a, z, m], actual %s",
+              i, new String(expectedOrder[i]), new String(actualOrder[i]),
+              java.util.Arrays.toString(java.util.Arrays.stream(actualOrder).map(String::new).toArray())));
+    }
+  }
+
+  @Test
+  public void xreadBinaryAsMapPreservesStreamOrder() {
+    // Test that xreadBinaryAsMap preserves the order of streams when reading from multiple streams
+    byte[] streamKey1 = "{stream-order}-test-1".getBytes();
+    byte[] streamKey2 = "{stream-order}-test-2".getBytes();
+    byte[] streamKey3 = "{stream-order}-test-3".getBytes();
+
+    // Add entries to streams in specific order
+    Map<byte[], byte[]> fields = new LinkedHashMap<>();
+    fields.put("field".getBytes(), "value1".getBytes());
+    jedis.xadd(streamKey1, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), fields);
+
+    fields.put("field".getBytes(), "value2".getBytes());
+    jedis.xadd(streamKey2, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), fields);
+
+    fields.put("field".getBytes(), "value3".getBytes());
+    jedis.xadd(streamKey3, XAddParams.xAddParams().id(StreamEntryID.NEW_ENTRY), fields);
+
+    // Read from multiple streams in specific order
+    Map<byte[], StreamEntryID> streams = new LinkedHashMap<>();
+    streams.put(streamKey1, new StreamEntryID("0-0"));
+    streams.put(streamKey2, new StreamEntryID("0-0"));
+    streams.put(streamKey3, new StreamEntryID("0-0"));
+
+    Map<byte[], List<StreamEntryBinary>> result = jedis.xreadBinaryAsMap(
+        XReadParams.xReadParams().count(10), streams);
+
+    assertNotNull(result);
+    assertEquals(3, result.size());
+
+    // Verify that the order of streams in the result matches the order in the request
+    byte[][] expectedOrder = {streamKey1, streamKey2, streamKey3};
+    byte[][] actualOrder = result.keySet().toArray(new byte[0][]);
+
+    assertEquals(expectedOrder.length, actualOrder.length, "Stream count should match");
+    for (int i = 0; i < expectedOrder.length; i++) {
+      assertArrayEquals(expectedOrder[i], actualOrder[i],
+          String.format("Stream order mismatch at position %d: expected '%s' but got '%s'",
+              i, new String(expectedOrder[i]), new String(actualOrder[i])));
+    }
+  }
+
+  // ========== Idempotent Producer Tests ==========
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXaddIdmpAuto() {
+    // Add entry with IDMPAUTO
+    Map<byte[], byte[]> message = new HashMap<>();
+    message.put("order".getBytes(), "12345".getBytes());
+    message.put("amount".getBytes(), "100.00".getBytes());
+
+    byte[] id1 = jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().idmpAuto("producer-1".getBytes()),
+        message);
+    assertNotNull(id1);
+    assertEquals(1L, jedis.xlen(STREAM_KEY_1));
+
+    // Add same message again with same producer - should return same ID (duplicate detected)
+    byte[] id2 = jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().idmpAuto("producer-1".getBytes()),
+        message);
+    assertArrayEquals(id1, id2); // Duplicate returns same ID
+    assertEquals(1L, jedis.xlen(STREAM_KEY_1)); // Stream length unchanged
+
+    // Add same message with different producer - should succeed
+    byte[] id3 = jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().idmpAuto("producer-2".getBytes()),
+        message);
+    assertNotNull(id3);
+    assertEquals(2L, jedis.xlen(STREAM_KEY_1));
+
+    // Add different message with same producer - should succeed
+    Map<byte[], byte[]> message2 = new HashMap<>();
+    message2.put("order".getBytes(), "67890".getBytes());
+    message2.put("amount".getBytes(), "200.00".getBytes());
+
+    byte[] id4 = jedis.xadd(STREAM_KEY_1, XAddParams.xAddParams().idmpAuto("producer-1".getBytes()),
+        message2);
+    assertNotNull(id4);
+    assertEquals(3L, jedis.xlen(STREAM_KEY_1));
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXaddIdmp() {
+    // Add entry with explicit idempotent ID
+    byte[] id1 = jedis.xadd(STREAM_KEY_1,
+        XAddParams.xAddParams().idmp("producer-1".getBytes(), "iid-001".getBytes()), HASH_1);
+    assertNotNull(id1);
+    assertEquals(1L, jedis.xlen(STREAM_KEY_1));
+
+    // Add with same producer and idempotent ID - should return same ID (duplicate detected)
+    byte[] id2 = jedis.xadd(STREAM_KEY_1,
+        XAddParams.xAddParams().idmp("producer-1".getBytes(), "iid-001".getBytes()), HASH_2);
+    assertArrayEquals(id1, id2); // Duplicate returns same ID
+    assertEquals(1L, jedis.xlen(STREAM_KEY_1));
+
+    // Add with same producer but different idempotent ID - should succeed
+    byte[] id3 = jedis.xadd(STREAM_KEY_1,
+        XAddParams.xAddParams().idmp("producer-1".getBytes(), "iid-002".getBytes()), HASH_1);
+    assertNotNull(id3);
+    assertEquals(2L, jedis.xlen(STREAM_KEY_1));
+
+    // Add with different producer but same idempotent ID - should succeed
+    byte[] id4 = jedis.xadd(STREAM_KEY_1,
+        XAddParams.xAddParams().idmp("producer-2".getBytes(), "iid-001".getBytes()), HASH_1);
+    assertNotNull(id4);
+    assertEquals(3L, jedis.xlen(STREAM_KEY_1));
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXcfgset() {
+    // Add an entry to create the stream
+    jedis.xadd(STREAM_KEY_1, new XAddParams().id(StreamEntryID.NEW_ENTRY), HASH_1);
+
+    // Configure idempotent producer settings
+    byte[] result = jedis.xcfgset(STREAM_KEY_1,
+        XCfgSetParams.xCfgSetParams().idmpDuration(1000).idmpMaxsize(500));
+    assertArrayEquals("OK".getBytes(), result);
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXaddIdmpWithTrimming() {
+    // Add first entry with IDMPAUTO and trimming
+    byte[] id1 = jedis.xadd(STREAM_KEY_1,
+        XAddParams.xAddParams().idmpAuto("producer-1".getBytes()).maxLen(2), HASH_1);
+    assertNotNull(id1);
+    assertEquals(1, jedis.xlen(STREAM_KEY_1));
+
+    // Add duplicate - should return same ID and not add new entry
+    byte[] id2 = jedis.xadd(STREAM_KEY_1,
+        XAddParams.xAddParams().idmpAuto("producer-1".getBytes()).maxLen(2), HASH_1);
+    assertArrayEquals(id1, id2); // Duplicate returns same ID
+    assertEquals(1, jedis.xlen(STREAM_KEY_1)); // Still 1 entry
+
+    // Add different message - should add new entry
+    byte[] id3 = jedis.xadd(STREAM_KEY_1,
+        XAddParams.xAddParams().idmpAuto("producer-1".getBytes()).maxLen(2), HASH_2);
+    assertNotNull(id3);
+    assertNotEquals(new String(id1), new String(id3)); // Different IDs
+    assertEquals(2, jedis.xlen(STREAM_KEY_1)); // Now 2 entries
   }
 }

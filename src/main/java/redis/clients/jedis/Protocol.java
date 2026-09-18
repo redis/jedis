@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -13,7 +12,6 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.exceptions.*;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
@@ -50,8 +48,8 @@ public final class Protocol {
   public static final byte[] BYTES_EQUAL = SafeEncoder.encode("=");
   public static final byte[] BYTES_ASTERISK = SafeEncoder.encode("*");
 
-  public static final byte[] POSITIVE_INFINITY_BYTES = "+inf".getBytes();
-  public static final byte[] NEGATIVE_INFINITY_BYTES = "-inf".getBytes();
+  public static final byte[] POSITIVE_INFINITY_BYTES = SafeEncoder.encode("+inf");
+  public static final byte[] NEGATIVE_INFINITY_BYTES = SafeEncoder.encode("-inf");
 
   static final List<KeyValue> PROTOCOL_EMPTY_MAP = Collections.unmodifiableList(new ArrayList<>(0));
 
@@ -63,6 +61,7 @@ public final class Protocol {
   private static final String NOAUTH_PREFIX = "NOAUTH";
   private static final String WRONGPASS_PREFIX = "WRONGPASS";
   private static final String NOPERM_PREFIX = "NOPERM";
+  private static final String NOPROTO_PREFIX = "NOPROTO";
 
   private static final byte[] INVALIDATE_BYTES = SafeEncoder.encode("invalidate");
 
@@ -106,6 +105,8 @@ public final class Protocol {
         || message.startsWith(WRONGPASS_PREFIX)
         || message.startsWith(NOPERM_PREFIX)) {
       throw new JedisAccessControlException(message);
+    } else if (message.startsWith(NOPROTO_PREFIX)) {
+      throw new JedisProtocolNotSupportedException(message);
     }
     throw new JedisDataException(message);
   }
@@ -127,52 +128,88 @@ public final class Protocol {
     return response;
   }
 
-  private static Object process(final RedisInputStream is) {
-    final byte b = is.readByte();
-    // System.out.println("BYTE: " + (char) b);
-    switch (b) {
-      case PLUS_BYTE:
-        return is.readLineBytes();
-      case DOLLAR_BYTE:
-      case EQUAL_BYTE:
-        return processBulkReply(is);
-      case ASTERISK_BYTE:
-        return processMultiBulkReply(is);
-      case UNDERSCORE_BYTE:
-        return is.readNullCrLf();
-      case HASH_BYTE:
-        return is.readBooleanCrLf();
-      case COLON_BYTE:
-        return is.readLongCrLf();
-      case COMMA_BYTE:
-        return is.readDoubleCrLf();
-      case LEFT_BRACE_BYTE:
-        return is.readBigIntegerCrLf();
-      case PERCENT_BYTE: // TODO: currently just to start working with HELLO
-        return processMapKeyValueReply(is);
-      case TILDE_BYTE: // TODO:
-        return processMultiBulkReply(is);
-      case GREATER_THAN_BYTE:
-        return processMultiBulkReply(is);
-      case MINUS_BYTE:
-        processError(is);
-        return null;
-      // TODO: Blob error '!'
-      default:
-        throw new JedisConnectionException("Unknown reply: " + (char) b);
-    }
+  private static Object process(final RedisInputStream is, PushConsumerChain pushConsumer) {
+    do {
+      final byte b = is.readByte();
+      // System.out.println("BYTE: " + (char) b);
+      switch (b) {
+        case PLUS_BYTE:
+          return is.readLineBytes();
+        case DOLLAR_BYTE:
+          return processBulkReply(is);
+        case EQUAL_BYTE:
+          return processVerbatimStringReply(is);
+        case ASTERISK_BYTE:
+          return processMultiBulkReply(is);
+        case UNDERSCORE_BYTE:
+          return is.readNullCrLf();
+        case HASH_BYTE:
+          return is.readBooleanCrLf();
+        case COLON_BYTE:
+          return is.readLongCrLf();
+        case COMMA_BYTE:
+          return is.readDoubleCrLf();
+        case LEFT_BRACE_BYTE:
+          return is.readBigIntegerCrLf();
+        case PERCENT_BYTE: // TODO: currently just to start working with HELLO
+          return processMapKeyValueReply(is);
+        case TILDE_BYTE: // TODO:
+          return processMultiBulkReply(is);
+        case GREATER_THAN_BYTE:
+          // Process push message through the consumer chain
+          PushMessage message = processPush(is, pushConsumer);
+          if (message != null) {
+            // Message not consumed by PushConsumers - propagate to application
+            // This preserves backward compatibility by allowing applications to handle
+            // push messages that aren't consumed by internal consumers
+            return message.getContent();
+          } else {
+            // Message was consumed by PushConsumers - continue reading next
+            break;
+          }
+        case MINUS_BYTE:
+          processError(is);
+          return null;
+        // TODO: Blob error '!'
+        default:
+          throw new JedisConnectionException("Unknown reply: " + (char) b);
+      }
+    } while (true);
+
   }
 
   private static byte[] processBulkReply(final RedisInputStream is) {
+    return processBulkReply(is, 0);
+  }
+
+  /**
+   * Process a bulk reply, optionally skipping a prefix.
+   * @param is the input stream
+   * @param skipBytes number of bytes to skip at the beginning (used for verbatim strings)
+   * @return the bulk reply data (excluding skipped bytes), or null if length is -1
+   */
+  private static byte[] processBulkReply(final RedisInputStream is, final int skipBytes) {
     final int len = is.readIntCrLf();
     if (len == -1) {
       return null;
     }
 
-    final byte[] read = new byte[len];
+    if (len < skipBytes) {
+      throw new JedisConnectionException(
+          "Bulk reply length " + len + " is less than expected " + skipBytes);
+    }
+
+    // Skip the prefix bytes
+    for (int i = 0; i < skipBytes; i++) {
+      is.readByte();
+    }
+
+    // Read the remaining data
+    final int dataLen = len - skipBytes;
+    final byte[] read = new byte[dataLen];
     int offset = 0;
-    while (offset < len) {
-      final int size = is.read(read, offset, (len - offset));
+    while (offset < dataLen) {
+      final int size = is.read(read, offset, (dataLen - offset));
       if (size == -1) {
         throw new JedisConnectionException("It seems like server has closed the connection.");
       }
@@ -186,6 +223,18 @@ public final class Protocol {
     return read;
   }
 
+  /**
+   * Process a RESP3 verbatim string reply.
+   * Verbatim strings have format: =&lt;length&gt;\r\n&lt;format&gt;:&lt;data&gt;\r\n
+   * where &lt;format&gt; is a 3-character encoding hint (e.g., "txt" or "mkd").
+   * This method strips the 4-byte prefix (&lt;format&gt;:) and returns only the actual data.
+   */
+  private static byte[] processVerbatimStringReply(final RedisInputStream is) {
+    // Verbatim strings have a 4-byte prefix: 3 chars for format + 1 char for ':'
+    // e.g., "txt:" or "mkd:"
+    return processBulkReply(is, 4);
+  }
+
   private static List<Object> processMultiBulkReply(final RedisInputStream is) {
     final int num = is.readIntCrLf();
     if (num == -1)
@@ -193,7 +242,7 @@ public final class Protocol {
     final List<Object> ret = new ArrayList<>(num);
     for (int i = 0; i < num; i++) {
       try {
-        ret.add(process(is));
+        ret.add(process(is, null));
       } catch (JedisDataException e) {
         ret.add(e);
       }
@@ -211,52 +260,65 @@ public final class Protocol {
       default:
         final List<KeyValue> ret = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
-          ret.add(new KeyValue(process(is), process(is)));
+          ret.add(new KeyValue(process(is, null), process(is,null)));
         }
         return ret;
     }
   }
 
+  /**
+   * Read a reply from the server.
+   *<p>
+   *  This method blocks until a reply is received.
+   *  Received RESP3 push message are considered as regular replies and  propagated to the caller.
+   *  Deprecated in favor of {@link #read(RedisInputStream, PushConsumerChain)}
+   *</p>
+   *
+   * @deprecated Use {@link #read(RedisInputStream, PushConsumerChain)} instead.
+   * @param is The input stream to read from
+   * @return The reply read from the server
+   */
   public static Object read(final RedisInputStream is) {
-    return process(is);
+    // for backward compatibility propagate all push events to application
+    return read(is, PushConsumerChainImpl.PROPAGATE_ALL_CONSUMER_CHAIN);
+  }
+
+  /**
+   * Read a reply from the server.
+   * <p>
+   * This method blocks until a reply is received. RESP3 Push messages are processed by the provided {@link PushConsumerChain}
+   * and either returned to the caller or consumed and reading continues with the next reply.
+   * </p>
+   * @param is The input stream to read from
+   * @param pushConsumer The chain of push consumers to process push messages
+   * @return The reply read from the server
+   */
+  @Experimental
+  public static Object read(final RedisInputStream is, PushConsumerChain pushConsumer) {
+    return process(is, pushConsumer);
   }
 
   @Experimental
-  public static Object read(final RedisInputStream is, final Cache cache) {
-    Object unhandledPush = readPushes(is, cache, false);
-    return unhandledPush == null ? process(is) : unhandledPush;
-  }
-
-  @Experimental
-  public static Object readPushes(final RedisInputStream is, final Cache cache,
-      boolean onlyPendingBuffer) {
+  public static Object readPushes(final RedisInputStream is, final PushConsumerChain pushConsumer) {
     Object unhandledPush = null;
-    if (onlyPendingBuffer) {
       try {
         while (unhandledPush == null && is.available() > 0 && is.peek(GREATER_THAN_BYTE)) {
-          unhandledPush = processPush(is, cache);
+          is.readByte();
+          PushMessage message = processPush(is, pushConsumer);
+          if (message != null) {
+            unhandledPush = message.getContent();
+          }
+
         }
       } catch (IOException e) {
         throw new JedisConnectionException("Failed to read pending buffer for push messages!", e);
       }
-    } else {
-      while (unhandledPush == null && is.peek(GREATER_THAN_BYTE)) {
-        unhandledPush = processPush(is, cache);
-      }
-    }
     return unhandledPush;
   }
 
-  private static Object processPush(final RedisInputStream is, Cache cache) {
-    is.readByte();
+  private static PushMessage processPush(final RedisInputStream is, PushConsumerChain consumer) {
     List<Object> list = processMultiBulkReply(is);
-    if (list.size() == 2 && list.get(0) instanceof byte[]
-        && Arrays.equals(INVALIDATE_BYTES, (byte[]) list.get(0))) {
-      cache.deleteByRedisKeys((List) list.get(1));
-      return null;
-    } else {
-      return list;
-    }
+    return consumer.process(new PushMessage(list));
   }
 
   public static final byte[] toByteArray(final boolean value) {
@@ -287,16 +349,16 @@ public final class Protocol {
     KEYS, RANDOMKEY, RENAME, RENAMENX, DUMP, RESTORE, DBSIZE, SELECT, SWAPDB, MIGRATE, ECHO, //
     EXPIRE, EXPIREAT, EXPIRETIME, PEXPIRE, PEXPIREAT, PEXPIRETIME, TTL, PTTL, // <-- key expiration
     MULTI, DISCARD, EXEC, WATCH, UNWATCH, SORT, SORT_RO, INFO, SHUTDOWN, MONITOR, CONFIG, LCS, //
-    GETSET, MGET, SETNX, SETEX, PSETEX, MSETEX, MSET, MSETNX, DECR, DECRBY, INCR, INCRBY, INCRBYFLOAT,
+    GETSET, MGET, SETNX, SETEX, PSETEX, MSETEX, MSET, MSETNX, DECR, DECRBY, INCR, INCRBY, INCRBYFLOAT, INCREX,
     STRLEN, APPEND, SUBSTR, // <-- string
     SETBIT, GETBIT, BITPOS, SETRANGE, GETRANGE, BITCOUNT, BITOP, BITFIELD, BITFIELD_RO, // <-- bit (string)
     HSET, HGET, HSETNX, HMSET, HMGET, HINCRBY, HEXISTS, HDEL, HLEN, HKEYS, HVALS, HGETALL, HSTRLEN,
     HEXPIRE, HPEXPIRE, HEXPIREAT, HPEXPIREAT, HTTL, HPTTL, HEXPIRETIME, HPEXPIRETIME, HPERSIST,
-    HRANDFIELD, HINCRBYFLOAT, HSETEX, HGETEX, HGETDEL, // <-- hash
+    HRANDFIELD, HINCRBYFLOAT, HSETEX, HGETEX, HGETDEL, HIMPORT, // <-- hash
     RPUSH, LPUSH, LLEN, LRANGE, LTRIM, LINDEX, LSET, LREM, LPOP, RPOP, BLPOP, BRPOP, LINSERT, LPOS,
-    RPOPLPUSH, BRPOPLPUSH, BLMOVE, LMOVE, LMPOP, BLMPOP, LPUSHX, RPUSHX, // <-- list
+    RPOPLPUSH, BRPOPLPUSH, BLMOVE, LMOVE, LMOVEM, BLMOVEM, LMPOP, BLMPOP, LPUSHX, RPUSHX, // <-- list
     SADD, SMEMBERS, SREM, SPOP, SMOVE, SCARD, SRANDMEMBER, SINTER, SINTERSTORE, SUNION, SUNIONSTORE,
-    SDIFF, SDIFFSTORE, SISMEMBER, SMISMEMBER, SINTERCARD, // <-- set
+    SDIFF, SDIFFSTORE, SISMEMBER, SMISMEMBER, SINTERCARD, SUNIONCARD, SDIFFCARD, // <-- set
     ZADD, ZDIFF, ZDIFFSTORE, ZRANGE, ZREM, ZINCRBY, ZRANK, ZREVRANK, ZREVRANGE, ZRANDMEMBER, ZCARD,
     ZSCORE, ZPOPMAX, ZPOPMIN, ZCOUNT, ZUNION, ZUNIONSTORE, ZINTER, ZINTERSTORE, ZRANGEBYSCORE,
     ZREVRANGEBYSCORE, ZREMRANGEBYRANK, ZREMRANGEBYSCORE, ZLEXCOUNT, ZRANGEBYLEX, ZREVRANGEBYLEX,
@@ -305,14 +367,16 @@ public final class Protocol {
     GEORADIUSBYMEMBER, GEORADIUSBYMEMBER_RO, // <-- geo
     PFADD, PFCOUNT, PFMERGE, // <-- hyper log log
     XADD, XLEN, XDEL, XTRIM, XRANGE, XREVRANGE, XREAD, XACK, XGROUP, XREADGROUP, XPENDING, XCLAIM,
-    XAUTOCLAIM, XINFO, XDELEX, XACKDEL, // <-- stream
+    XAUTOCLAIM, XINFO, XDELEX, XACKDEL, XCFGSET, XNACK, // <-- stream
     EVAL, EVALSHA, SCRIPT, EVAL_RO, EVALSHA_RO, FUNCTION, FCALL, FCALL_RO, // <-- program
     SUBSCRIBE, UNSUBSCRIBE, PSUBSCRIBE, PUNSUBSCRIBE, PUBLISH, PUBSUB,
     SSUBSCRIBE, SUNSUBSCRIBE, SPUBLISH, // <-- pub sub
     SAVE, BGSAVE, BGREWRITEAOF, LASTSAVE, PERSIST, ROLE, FAILOVER, SLOWLOG, OBJECT, CLIENT, TIME,
     SCAN, HSCAN, SSCAN, ZSCAN, WAIT, CLUSTER, ASKING, READONLY, READWRITE, SLAVEOF, REPLICAOF, COPY,
-    SENTINEL, MODULE, ACL, TOUCH, MEMORY, LOLWUT, COMMAND, RESET, LATENCY, WAITAOF,
-    VADD, VSIM, VDIM, VCARD, VEMB, VREM, VLINKS, VRANDMEMBER, VGETATTR, VSETATTR, VINFO; // <-- vector set
+    SENTINEL, MODULE, ACL, TOUCH, MEMORY, LOLWUT, COMMAND, RESET, LATENCY, WAITAOF, HOTKEYS,
+    VADD, VSIM, VDIM, VCARD, VISMEMBER, VEMB, VREM, VLINKS, VRANDMEMBER, VGETATTR, VSETATTR, VINFO, // <-- vector set
+    ARCOUNT, ARDEL, ARDELRANGE, ARGET, ARGETRANGE, ARGREP, ARINFO, ARINSERT, ARLASTITEMS, ARLEN,
+    ARMGET, ARMSET, ARNEXT, AROP, ARRING, ARSCAN, ARSEEK, ARSET; // <-- array
 
     private final byte[] raw;
 
@@ -333,6 +397,7 @@ public final class Protocol {
     REFCOUNT, ENCODING, IDLETIME, FREQ, REPLACE, GETNAME, SETNAME, SETINFO, LIST, ID, KILL, PERSIST,
     STREAMS, CREATE, MKSTREAM, SETID, DESTROY, DELCONSUMER, MAXLEN, GROUP, IDLE, TIME, BLOCK, NOACK, CLAIM,
     RETRYCOUNT, STREAM, GROUPS, CONSUMERS, JUSTID, WITHVALUES, NOMKSTREAM, MINID, CREATECONSUMER,
+    IDMPAUTO, IDMP, DURATION, MAXSIZE, MAXCOUNT,
     SETUSER, GETUSER, DELUSER, WHOAMI, USERS, CAT, GENPASS, LOG, SAVE, DRYRUN, COPY, AUTH, AUTH2,
     NX, XX, IFEQ, IFNE, IFDEQ, IFDNE, EX, PX, EXAT, PXAT, ABSTTL, KEEPTTL, INCR, LT, GT, CH, INFO, PAUSE, UNPAUSE, UNBLOCK,
     REV, WITHCOORD, WITHDIST, WITHHASH, ANY, FROMMEMBER, FROMLONLAT, BYRADIUS, BYBOX, BYLEX, BYSCORE,
@@ -342,7 +407,21 @@ public final class Protocol {
     ARGS, RANK, NOW, VERSION, ADDR, SKIPME, USER, LADDR, FIELDS,
     CHANNELS, NUMPAT, NUMSUB, SHARDCHANNELS, SHARDNUMSUB, NOVALUES, MAXAGE, FXX, FNX,
     // Vector set keywords
-    REDUCE, CAS, NOQUANT, Q8, BIN, EF, SETATTR, M, VALUES, FP32, ELE, FILTER, FILTER_EF, TRUTH, NOTHREAD, RAW, EPSILON, WITHATTRIBS;
+    REDUCE, CAS, NOQUANT, Q8, BIN, EF, SETATTR, M, VALUES, FP32, ELE, FILTER, FILTER_EF, TRUTH, NOTHREAD, RAW, EPSILON, WITHATTRIBS,
+    // Hotkeys keywords
+    METRICS, SAMPLE, SLOTS, START, STOP, CPU, NET,
+    // Array keywords
+    EXACT, GLOB, RE, AND, OR, NOCASE, USED,
+    // JSON keywords
+    FPHA,
+    // INCREX keywords
+    BYFLOAT, BYINT, ENX, LBOUND, SATURATE, UBOUND,
+    // LMOVEM keywords
+    EXACTLY,
+    // SUNIONCARD keywords
+    APPROX,
+    // HIMPORT keywords (SET reuses the existing SET keyword above)
+    PREPARE, DISCARD;
 
     private final byte[] raw;
 

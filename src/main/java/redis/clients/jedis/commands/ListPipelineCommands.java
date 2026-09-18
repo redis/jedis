@@ -5,6 +5,7 @@ import java.util.List;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.ListDirection;
 import redis.clients.jedis.args.ListPosition;
+import redis.clients.jedis.params.LMoveMParams;
 import redis.clients.jedis.params.LPosParams;
 import redis.clients.jedis.util.KeyValue;
 
@@ -69,6 +70,36 @@ public interface ListPipelineCommands {
   Response<String> lmove(String srcKey, String dstKey, ListDirection from, ListDirection to);
 
   Response<String> blmove(String srcKey, String dstKey, ListDirection from, ListDirection to, double timeout);
+
+  /**
+   * Pipeline variant of {@link ListCommands#lmovem(String, String, ListDirection, ListDirection)}.
+   * @since 8.0
+   */
+  Response<List<String>> lmovem(String srcKey, String dstKey, ListDirection from, ListDirection to);
+
+  /**
+   * Pipeline variant of
+   * {@link ListCommands#lmovem(String, String, ListDirection, ListDirection, LMoveMParams)}.
+   * @since 8.0
+   */
+  Response<List<String>> lmovem(String srcKey, String dstKey, ListDirection from, ListDirection to,
+      LMoveMParams params);
+
+  /**
+   * Pipeline variant of
+   * {@link ListCommands#blmovem(String, String, ListDirection, ListDirection, double)}.
+   * @since 8.0
+   */
+  Response<List<String>> blmovem(String srcKey, String dstKey, ListDirection from, ListDirection to,
+      double timeout);
+
+  /**
+   * Pipeline variant of
+   * {@link ListCommands#blmovem(String, String, ListDirection, ListDirection, double, LMoveMParams)}.
+   * @since 8.0
+   */
+  Response<List<String>> blmovem(String srcKey, String dstKey, ListDirection from, ListDirection to,
+      double timeout, LMoveMParams params);
 
   Response<KeyValue<String, List<String>>> lmpop(ListDirection direction, String... keys);
 

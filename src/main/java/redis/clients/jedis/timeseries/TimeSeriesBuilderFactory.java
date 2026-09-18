@@ -24,10 +24,39 @@ public final class TimeSeriesBuilderFactory {
   public static final Builder<List<TSElement>> TIMESERIES_ELEMENT_LIST = new Builder<List<TSElement>>() {
     @Override
     public List<TSElement> build(Object data) {
-      return ((List<Object>) data).stream().map((pairObject) -> (List<Object>) pairObject)
-          .map((pairList) -> new TSElement(BuilderFactory.LONG.build(pairList.get(0)),
-              BuilderFactory.DOUBLE.build(pairList.get(1))))
-          .collect(Collectors.toList());
+      return ((List<Object>) data).stream().map((sampleObject) -> (List<Object>) sampleObject)
+          .map((sampleList) -> {
+            long timestamp = BuilderFactory.LONG.build(sampleList.get(0));
+            if (sampleList.size() == 2) {
+              return new TSElement(timestamp, BuilderFactory.DOUBLE.build(sampleList.get(1)));
+            }
+            List<Double> values = sampleList.subList(1, sampleList.size()).stream()
+                .map(BuilderFactory.DOUBLE::build).collect(Collectors.toList());
+            return new TSElement.MultiValueTSElement(timestamp, values);
+          }).collect(Collectors.toList());
+    }
+  };
+
+  /**
+   * Parses the pivoted reply of {@code TS.NRANGE} / {@code TS.NREVRANGE}, whose rows have the shape
+   * {@code [timestamp, [value_0, value_1, ...]]} where the value array holds one cell per key (or
+   * per aggregator when multiple aggregators are requested). Missing cells arrive as {@code NaN}.
+   * The same builder serves RESP2 and RESP3; server-returned row order is preserved.
+   */
+  public static final Builder<List<TSElement>> TIMESERIES_PIVOT_ELEMENT_LIST = new Builder<List<TSElement>>() {
+    @Override
+    public List<TSElement> build(Object data) {
+      return ((List<Object>) data).stream().map((rowObject) -> (List<Object>) rowObject)
+          .map((row) -> {
+            long timestamp = BuilderFactory.LONG.build(row.get(0));
+            List<Object> rawValues = (List<Object>) row.get(1);
+            if (rawValues.size() == 1) {
+              return new TSElement(timestamp, BuilderFactory.DOUBLE.build(rawValues.get(0)));
+            }
+            List<Double> values = rawValues.stream().map(BuilderFactory.DOUBLE::build)
+                .collect(Collectors.toList());
+            return new TSElement.MultiValueTSElement(timestamp, values);
+          }).collect(Collectors.toList());
     }
   };
 

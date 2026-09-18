@@ -94,11 +94,32 @@ public class TlsUtil {
     }
 
     private static Path envCa(Path certLocation) {
+        if (certLocation.isAbsolute()) {
+            return certLocation.resolve(TEST_CA_CERT);
+        }
         return Paths.get(TEST_WORK_FOLDER, certLocation.toString(), TEST_CA_CERT);
     }
 
     private static Path envServerCert(Path certLocation) {
+        if (certLocation.isAbsolute()) {
+          return certLocation.resolve(TEST_SERVER_CERT);
+        }
         return Paths.get(TEST_WORK_FOLDER, certLocation.toString(), TEST_SERVER_CERT);
+    }
+
+    /**
+     * Resolves the path to a pre-generated PKCS12 keystore for mTLS client authentication.
+     * The Docker container generates .p12 files for each TLS_CLIENT_CNS entry.
+     *
+     * @param certLocation the certificate location from EndpointConfig
+     * @param clientName the name of the client certificate (without extension)
+     * @return the absolute path to the .p12 keystore file
+     */
+    public static Path clientKeystorePath(Path certLocation, String clientName) {
+        if (certLocation.isAbsolute()) {
+            return certLocation.resolve(clientName + ".p12");
+        }
+        return Paths.get(TEST_WORK_FOLDER, certLocation.toString(), clientName + ".p12");
     }
 
     public static Path testTruststorePath(String name) {
@@ -285,16 +306,6 @@ public class TlsUtil {
                 }
             }
             throw new IllegalArgumentException("The certificate has no common name.");
-        }
-    }
-
-    public static class LocalhostVerifier extends BasicHostnameVerifier {
-        @Override
-        public boolean verify(String hostname, SSLSession session) {
-            if (hostname.equals("127.0.0.1")) {
-                hostname = "localhost";
-            }
-            return super.verify(hostname, session);
         }
     }
 }

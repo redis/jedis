@@ -14,6 +14,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.RedisProtocol;
@@ -23,6 +24,7 @@ import redis.clients.jedis.params.GeoRadiusParam;
 import redis.clients.jedis.params.GeoRadiusStoreParam;
 import redis.clients.jedis.params.GeoSearchParam;
 import redis.clients.jedis.resps.GeoRadiusResponse;
+import redis.clients.jedis.util.TestEnvUtil;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=geo">Geospatial</a> commands.
@@ -420,6 +422,7 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testGeoradiusStore() {
     String key = "locations";
     byte[] binaryKey = key.getBytes();
@@ -450,6 +453,7 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testGeoradiusByMemberStore() {
     String key = "locations";
     byte[] binaryKey = key.getBytes();
@@ -564,6 +568,7 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testGeosearchStore() {
     String srcKey = "locations";
     String destKey = "locationsStore";
@@ -617,6 +622,7 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testGeosearchStoreBinary() {
     byte[] srcKey = "locations".getBytes();
     byte[] destKey = "locationsStore".getBytes();
@@ -670,6 +676,7 @@ public class CommandObjectsGeospatialCommandsTest extends CommandObjectsStandalo
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void testGeosearchStoreStoreDist() {
     String srcKey = "locations";
     byte[] srcKeyBytes = srcKey.getBytes();

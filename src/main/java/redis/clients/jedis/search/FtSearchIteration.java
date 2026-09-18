@@ -9,6 +9,18 @@ import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.search.SearchResult.SearchResultBuilder;
 import redis.clients.jedis.util.JedisCommandIterationBase;
 
+/**
+ * Iterator for paginating through FT.SEARCH results in batches.
+ * <p>
+ * This class provides an iteration mechanism over {@link Document} results from a RediSearch
+ * FT.SEARCH command, automatically handling pagination through the result set.
+ *
+ * @see SearchResult
+ * @see Document
+ * @deprecated Use {@link redis.clients.jedis.UnifiedJedis#ftSearch(String, String, FTSearchParams)} directly.
+ *             This class will be removed in a future release.
+ */
+@Deprecated
 public class FtSearchIteration extends JedisCommandIterationBase<SearchResult, Document> {
 
   private int batchStart;

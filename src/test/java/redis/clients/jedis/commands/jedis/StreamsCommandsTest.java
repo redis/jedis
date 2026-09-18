@@ -6,6 +6,7 @@ import static java.util.Collections.singletonMap;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -19,7 +20,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
+import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.utils.RedisVersion;
 import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
@@ -39,11 +42,13 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.args.StreamDeletionPolicy;
+import redis.clients.jedis.args.XNackMode;
 import redis.clients.jedis.util.RedisVersionUtil;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
-@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
+@MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
 @Tag("integration")
 public class StreamsCommandsTest extends JedisCommandsTestBase {
 
@@ -592,6 +597,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void xreadWithParams() {
 
     final String key1 = "xread-stream1";
@@ -628,6 +634,33 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @SinceRedisVersion(RedisVersion.V8_10_0_RC2_STRING)
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
+  public void xreadWithMaxCountAndMaxSize() {
+
+    final String key1 = "xread-maxcount-stream1";
+    final String key2 = "xread-maxcount-stream2";
+
+    Map<String, String> map = singletonMap("f1", "v1");
+    for (int i = 1; i <= 3; i++) {
+      jedis.xadd(key1, new StreamEntryID(i), map);
+      jedis.xadd(key2, new StreamEntryID(i), map);
+    }
+
+    Map<String, StreamEntryID> streamQuery = new LinkedHashMap<>();
+    streamQuery.put(key1, new StreamEntryID());
+    streamQuery.put(key2, new StreamEntryID());
+
+    // MAXCOUNT caps the cumulative reply across both streams
+    List<Entry<String, List<StreamEntry>>> streams = jedis
+        .xread(XReadParams.xReadParams().count(3).maxCount(4).maxSize(65536), streamQuery);
+    assertEquals(2, streams.size());
+    assertEquals(3, streams.get(0).getValue().size());
+    assertEquals(1, streams.get(1).getValue().size());
+  }
+
+  @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void xreadAsMap() {
 
     final String stream1 = "xread-stream1";
@@ -825,6 +858,7 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void xreadGroupWithParams() {
 
     // Simple xreadGroup with NOACK
@@ -945,6 +979,99 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     assertEquals(1L,
       jedis.xack("xack-stream", "xack-group", range.get(0).getValue().get(0).getID()));
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnack() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    jedis.xadd("xnack-stream", (StreamEntryID) null, map);
+
+    jedis.xgroupCreate("xnack-stream", "xnack-group", null, false);
+
+    Map<String, StreamEntryID> streamQuery = singletonMap("xnack-stream", StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xnack-group", "xnack-consumer",
+        XReadGroupParams.xReadGroupParams().count(1).block(1), streamQuery);
+    assertEquals(1, range.size());
+
+    assertEquals(1L,
+      jedis.xnack("xnack-stream", "xnack-group", XNackMode.FAIL, range.get(0).getValue().get(0).getID()));
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackSilent() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    jedis.xadd("xnack-silent-stream", (StreamEntryID) null, map);
+
+    jedis.xgroupCreate("xnack-silent-stream", "xnack-group", null, false);
+
+    Map<String, StreamEntryID> streamQuery = singletonMap("xnack-silent-stream",
+        StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xnack-group", "xnack-consumer",
+        XReadGroupParams.xReadGroupParams().count(1).block(1), streamQuery);
+    assertEquals(1, range.size());
+
+    assertEquals(1L,
+      jedis.xnack("xnack-silent-stream", "xnack-group", XNackMode.SILENT, range.get(0).getValue().get(0).getID()));
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackFatal() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    jedis.xadd("xnack-fatal-stream", (StreamEntryID) null, map);
+
+    jedis.xgroupCreate("xnack-fatal-stream", "xnack-group", null, false);
+
+    Map<String, StreamEntryID> streamQuery = singletonMap("xnack-fatal-stream",
+        StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xnack-group", "xnack-consumer",
+        XReadGroupParams.xReadGroupParams().count(1).block(1), streamQuery);
+    assertEquals(1, range.size());
+
+    assertEquals(1L,
+      jedis.xnack("xnack-fatal-stream", "xnack-group", XNackMode.FATAL, range.get(0).getValue().get(0).getID()));
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackMultipleMessages() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    jedis.xadd("xnack-multi-stream", (StreamEntryID) null, map);
+    jedis.xadd("xnack-multi-stream", (StreamEntryID) null, map);
+
+    jedis.xgroupCreate("xnack-multi-stream", "xnack-group", null, false);
+
+    Map<String, StreamEntryID> streamQuery = singletonMap("xnack-multi-stream",
+        StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    List<Entry<String, List<StreamEntry>>> range = jedis.xreadGroup("xnack-group", "xnack-consumer",
+        XReadGroupParams.xReadGroupParams().count(2).block(1), streamQuery);
+    assertEquals(1, range.size());
+    assertEquals(2, range.get(0).getValue().size());
+
+    StreamEntryID id1 = range.get(0).getValue().get(0).getID();
+    StreamEntryID id2 = range.get(0).getValue().get(1).getID();
+
+    assertEquals(2L,
+      jedis.xnack("xnack-multi-stream", "xnack-group", XNackMode.FAIL, id1, id2));
+  }
+
+  @Test
+  @SinceRedisVersion("8.7.225")
+  public void xnackNonExistentMessage() {
+    Map<String, String> map = new HashMap<>();
+    map.put("f1", "v1");
+    jedis.xadd("xnack-missing-stream", (StreamEntryID) null, map);
+
+    jedis.xgroupCreate("xnack-missing-stream", "xnack-group", null, false);
+
+    assertEquals(0L,
+      jedis.xnack("xnack-missing-stream", "xnack-group", XNackMode.SILENT, new StreamEntryID("999-0")));
   }
 
   @Test
@@ -1254,8 +1381,9 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Stream info test
     assertEquals(2L, streamInfo.getStreamInfo().get(StreamInfo.LENGTH));
-    assertEquals(1L, streamInfo.getStreamInfo().get(StreamInfo.RADIX_TREE_KEYS));
-    assertEquals(2L, streamInfo.getStreamInfo().get(StreamInfo.RADIX_TREE_NODES));
+    // radix-tree-* are internal debugging fields; only assert they are parsed, not their values
+    assertThat((Long) streamInfo.getStreamInfo().get(StreamInfo.RADIX_TREE_KEYS), Matchers.any(Long.class));
+    assertThat((Long) streamInfo.getStreamInfo().get(StreamInfo.RADIX_TREE_NODES), Matchers.any(Long.class));
     assertEquals(0L, streamInfo.getStreamInfo().get(StreamInfo.GROUPS));
     assertEquals(V1, ((StreamEntry) streamInfo.getStreamInfo().get(StreamInfo.FIRST_ENTRY)).getFields().get(F1));
     assertEquals(V2, ((StreamEntry) streamInfo.getStreamInfo().get(StreamInfo.LAST_ENTRY)).getFields().get(F1));
@@ -1263,8 +1391,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
 
     // Using getters
     assertEquals(2, streamInfo.getLength());
-    assertEquals(1, streamInfo.getRadixTreeKeys());
-    assertEquals(2, streamInfo.getRadixTreeNodes());
+    assertThat(streamInfo.getRadixTreeKeys(), Matchers.any(Long.class));
+    assertThat(streamInfo.getRadixTreeNodes(), Matchers.any(Long.class));
     assertEquals(0, streamInfo.getGroups());
     assertEquals(V1, streamInfo.getFirstEntry().getFields().get(F1));
     assertEquals(V2, streamInfo.getLastEntry().getFields().get(F1));
@@ -1332,8 +1460,8 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     assertEquals(2, streamInfoFull.getEntries().size());
     assertEquals(2, streamInfoFull.getGroups().size());
     assertEquals(2, streamInfoFull.getLength());
-    assertEquals(1, streamInfoFull.getRadixTreeKeys());
-    assertEquals(2, streamInfoFull.getRadixTreeNodes());
+    assertThat(streamInfoFull.getRadixTreeKeys(), Matchers.any(Long.class));
+    assertThat(streamInfoFull.getRadixTreeNodes(), Matchers.any(Long.class));
     assertEquals(0, streamInfo.getGroups());
     assertEquals(G1, streamInfoFull.getGroups().get(0).getName());
     assertEquals(G2, streamInfoFull.getGroups().get(1).getName());
@@ -1588,5 +1716,247 @@ public class StreamsCommandsTest extends JedisCommandsTestBase {
     // Claimed entries are now owned by consumer-2
     assertEquals(0L, afterNoack.getConsumerMessageCount().getOrDefault(CONSUMER_1, 0L).longValue());
     assertEquals(2L, afterNoack.getConsumerMessageCount().getOrDefault(CONSUMER_2, 0L).longValue());
+  }
+
+  @Test
+  public void xreadGroupPreservesFieldOrder() {
+    String streamKey = "field-order-stream";
+    String groupName = "field-order-group";
+    String consumerName = "field-order-consumer";
+
+    // Use LinkedHashMap to ensure insertion order: a, z, m
+    Map<String, String> fields = new LinkedHashMap<>();
+    fields.put("a", "1");
+    fields.put("z", "4");
+    fields.put("m", "2");
+
+    jedis.xadd(streamKey, StreamEntryID.NEW_ENTRY, fields);
+    jedis.xgroupCreate(streamKey, groupName, new StreamEntryID("0-0"), false);
+
+    Map<String, StreamEntryID> streamQuery = singletonMap(streamKey, StreamEntryID.XREADGROUP_UNDELIVERED_ENTRY);
+    List<Entry<String, List<StreamEntry>>> result = jedis.xreadGroup(groupName, consumerName,
+        XReadGroupParams.xReadGroupParams().count(1), streamQuery);
+
+    assertEquals(1, result.size());
+    assertEquals(1, result.get(0).getValue().size());
+
+    StreamEntry entry = result.get(0).getValue().get(0);
+    Map<String, String> returnedFields = entry.getFields();
+
+    // Verify field order is preserved - this will fail with HashMap, pass with LinkedHashMap
+    String[] expectedOrder = {"a", "z", "m"};
+    String[] actualOrder = returnedFields.keySet().toArray(new String[0]);
+
+    assertEquals(expectedOrder.length, actualOrder.length, "Field count should match");
+    for (int i = 0; i < expectedOrder.length; i++) {
+      assertEquals(expectedOrder[i], actualOrder[i],
+          String.format("Field order mismatch at position %d: expected '%s' but got '%s'. " +
+              "Full order: expected [a, z, m], actual %s",
+              i, expectedOrder[i], actualOrder[i], java.util.Arrays.toString(actualOrder)));
+    }
+  }
+
+  @Test
+  public void xreadAsMapPreservesStreamOrder() {
+    // Test that xreadAsMap preserves the order of streams when reading from multiple streams
+    String streamKey1 = "{stream-order}-test-1";
+    String streamKey2 = "{stream-order}-test-2";
+    String streamKey3 = "{stream-order}-test-3";
+
+    // Add entries to streams in specific order
+    Map<String, String> fields = new LinkedHashMap<>();
+    fields.put("field", "value1");
+    jedis.xadd(streamKey1, StreamEntryID.NEW_ENTRY, fields);
+
+    fields.put("field", "value2");
+    jedis.xadd(streamKey2, StreamEntryID.NEW_ENTRY, fields);
+
+    fields.put("field", "value3");
+    jedis.xadd(streamKey3, StreamEntryID.NEW_ENTRY, fields);
+
+    // Read from multiple streams in specific order
+    Map<String, StreamEntryID> streams = new LinkedHashMap<>();
+    streams.put(streamKey1, new StreamEntryID("0-0"));
+    streams.put(streamKey2, new StreamEntryID("0-0"));
+    streams.put(streamKey3, new StreamEntryID("0-0"));
+
+    Map<String, List<StreamEntry>> result = jedis.xreadAsMap(
+        XReadParams.xReadParams().count(10), streams);
+
+    assertNotNull(result);
+    assertEquals(3, result.size());
+
+    // Verify that the order of streams in the result matches the order in the request
+    String[] expectedOrder = {streamKey1, streamKey2, streamKey3};
+    String[] actualOrder = result.keySet().toArray(new String[0]);
+
+    assertEquals(expectedOrder.length, actualOrder.length, "Stream count should match");
+    for (int i = 0; i < expectedOrder.length; i++) {
+      assertEquals(expectedOrder[i], actualOrder[i],
+          String.format("Stream order mismatch at position %d: expected '%s' but got '%s'",
+              i, expectedOrder[i], actualOrder[i]));
+    }
+  }
+
+  // ========== Idempotent Producer Tests ==========
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXaddIdmpAuto() {
+    // Add entry with IDMPAUTO
+    Map<String, String> message = new HashMap<>();
+    message.put("order", "12345");
+    message.put("amount", "100.00");
+
+    StreamEntryID id1 = jedis.xadd(STREAM_KEY, XAddParams.xAddParams().idmpAuto("producer-1"),
+            message);
+    assertNotNull(id1);
+    assertEquals(1L, jedis.xlen(STREAM_KEY));
+
+    // Add same message again with same producer - should return same ID (duplicate detected)
+    StreamEntryID id2 = jedis.xadd(STREAM_KEY, XAddParams.xAddParams().idmpAuto("producer-1"),
+            message);
+    assertEquals(id1, id2); // Duplicate returns same entry ID as before
+    assertEquals(1L, jedis.xlen(STREAM_KEY)); // Stream length unchanged
+
+    // Add same message with different producer - should succeed
+    StreamEntryID id3 = jedis.xadd(STREAM_KEY, XAddParams.xAddParams().idmpAuto("producer-2"),
+            message);
+    assertNotNull(id3);
+    assertEquals(2L, jedis.xlen(STREAM_KEY));
+
+    // Add different message with same producer - should succeed
+    Map<String, String> message2 = new HashMap<>();
+    message2.put("order", "67890");
+    message2.put("amount", "200.00");
+
+    StreamEntryID id4 = jedis.xadd(STREAM_KEY, XAddParams.xAddParams().idmpAuto("producer-1"),
+            message2);
+    assertNotNull(id4);
+    assertEquals(3L, jedis.xlen(STREAM_KEY));
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXaddIdmp() {
+    Map<String, String> hash1 = singletonMap("field1", "value1");
+    Map<String, String> hash2 = singletonMap("field2", "value2");
+
+    // Add entry with explicit idempotent ID
+    StreamEntryID id1 = jedis.xadd(STREAM_KEY,
+            XAddParams.xAddParams().idmp("producer-1", "iid-001"), hash1);
+    assertNotNull(id1);
+    assertEquals(1L, jedis.xlen(STREAM_KEY));
+
+    // Add with same producer and idempotent ID - should return same ID (duplicate detected)
+    StreamEntryID id2 = jedis.xadd(STREAM_KEY,
+            XAddParams.xAddParams().idmp("producer-1", "iid-001"), hash2);
+    assertEquals(id1, id2); // Duplicate returns same entry ID as before
+    assertEquals(1L, jedis.xlen(STREAM_KEY)); // Stream length unchanged
+
+    // Add with same producer but different idempotent ID - should succeed
+    StreamEntryID id3 = jedis.xadd(STREAM_KEY,
+            XAddParams.xAddParams().idmp("producer-1", "iid-002"), hash1);
+    assertNotNull(id3);
+    assertEquals(2L, jedis.xlen(STREAM_KEY));
+
+    // Add with different producer but same idempotent ID - should succeed
+    StreamEntryID id4 = jedis.xadd(STREAM_KEY,
+            XAddParams.xAddParams().idmp("producer-2", "iid-001"), hash1);
+    assertNotNull(id4);
+    assertEquals(3L, jedis.xlen(STREAM_KEY));
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXcfgset() {
+    // Add an entry to create the stream
+    jedis.xadd(STREAM_KEY, StreamEntryID.NEW_ENTRY, singletonMap("field", "value"));
+
+    // Configure idempotent producer settings
+    String result = jedis.xcfgset(STREAM_KEY,
+            XCfgSetParams.xCfgSetParams().idmpDuration(1000).idmpMaxsize(500));
+    assertEquals("OK", result);
+
+    // Verify settings via XINFO STREAM
+    StreamInfo info = jedis.xinfoStream(STREAM_KEY);
+    assertEquals(Long.valueOf(1000), info.getIdmpDuration());
+    assertEquals(Long.valueOf(500), info.getIdmpMaxsize());
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXinfoStreamIdempotentFields() {
+    Map<String, String> hash1 = singletonMap("field1", "value1");
+    Map<String, String> hash2 = singletonMap("field2", "value2");
+
+    // Add an entry to create the stream
+    jedis.xadd(STREAM_KEY, StreamEntryID.NEW_ENTRY, hash1);
+
+    // Configure idempotent settings
+    jedis.xcfgset(STREAM_KEY,
+            XCfgSetParams.xCfgSetParams().idmpDuration(100).idmpMaxsize(100));
+
+    // Add some entries with idempotent IDs
+    jedis.xadd(STREAM_KEY, XAddParams.xAddParams().idmp("producer-1", "iid-001"), hash1);
+    jedis.xadd(STREAM_KEY, XAddParams.xAddParams().idmp("producer-1", "iid-002"), hash2);
+    jedis.xadd(STREAM_KEY, XAddParams.xAddParams().idmp("producer-2", "iid-001"), hash1);
+
+    // Try to add a duplicate
+    jedis.xadd(STREAM_KEY, XAddParams.xAddParams().idmp("producer-1", "iid-001"), hash2);
+
+    // Check XINFO STREAM response
+    StreamInfo info = jedis.xinfoStream(STREAM_KEY);
+
+    // Verify idempotent configuration fields
+    assertEquals(Long.valueOf(100), info.getIdmpDuration());
+    assertEquals(Long.valueOf(100), info.getIdmpMaxsize());
+
+    // Verify idempotent statistics fields
+    assertEquals(Long.valueOf(2), info.getPidsTracked()); // 2 producers
+    assertEquals(Long.valueOf(3), info.getIidsTracked()); // 3 unique IDs
+    assertEquals(Long.valueOf(3), info.getIidsAdded()); // 3 entries added
+    assertEquals(Long.valueOf(1), info.getIidsDuplicates()); // 1 duplicate rejected
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXaddIdmpWithTrimming() {
+    // Add first entry with IDMPAUTO and trimming
+    StreamEntryID id1 = jedis.xadd(STREAM_KEY,
+            XAddParams.xAddParams().idmpAuto("producer1").maxLen(2), singletonMap("field", "value1"));
+    assertNotNull(id1);
+    assertEquals(1, jedis.xlen(STREAM_KEY));
+
+    // Add duplicate - should return same ID
+    StreamEntryID id2 = jedis.xadd(STREAM_KEY,
+            XAddParams.xAddParams().idmpAuto("producer1").maxLen(2), singletonMap("field", "value1"));
+    assertEquals(id1, id2);
+    assertEquals(1, jedis.xlen(STREAM_KEY)); // Still 1 entry
+
+    // Add different message - should add new entry and trim
+    StreamEntryID id3 = jedis.xadd(STREAM_KEY,
+            XAddParams.xAddParams().idmpAuto("producer1").maxLen(2), singletonMap("field", "value2"));
+    assertNotNull(id3);
+    assertNotEquals(id1, id3); // Different IDs
+    assertEquals(2, jedis.xlen(STREAM_KEY)); // Now 2 entries
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void testXcfgsetDefaults() {
+    jedis.xadd(STREAM_KEY, StreamEntryID.NEW_ENTRY, singletonMap("init", "value"));
+
+    // Verify default values
+    StreamInfo info = jedis.xinfoStream(STREAM_KEY);
+    assertEquals(Long.valueOf(100), info.getIdmpDuration());
+    assertEquals(Long.valueOf(100), info.getIdmpMaxsize());
+
+    assertEquals("OK", jedis.xcfgset(STREAM_KEY,
+            XCfgSetParams.xCfgSetParams().idmpDuration(200).idmpMaxsize(200)));
+
+    StreamInfo infoAfter = jedis.xinfoStream(STREAM_KEY);
+    assertEquals(Long.valueOf(200), infoAfter.getIdmpDuration());
+    assertEquals(Long.valueOf(200), infoAfter.getIdmpMaxsize());
   }
 }

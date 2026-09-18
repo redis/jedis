@@ -12,14 +12,14 @@ public class UnifiedJedisConnectionManagementCommandsTest extends UnifiedJedisMo
   @Test
   public void testPing() {
     when(commandObjects.ping()).thenReturn(stringCommandObject);
-    when(commandExecutor.broadcastCommand(stringCommandObject)).thenReturn("foo");
+    when(commandExecutor.executeCommand(stringCommandObject)).thenReturn("foo");
 
     String result = jedis.ping();
 
     assertThat(result, equalTo("foo"));
 
-    verify(commandExecutor).broadcastCommand(stringCommandObject);
     verify(commandObjects).ping();
+    verify(commandExecutor).executeCommand(stringCommandObject);
   }
 
 }

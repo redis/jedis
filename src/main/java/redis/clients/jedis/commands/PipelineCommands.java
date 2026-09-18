@@ -4,5 +4,5 @@ public interface PipelineCommands extends KeyPipelineCommands, StringPipelineCom
     ListPipelineCommands, HashPipelineCommands, SetPipelineCommands, SortedSetPipelineCommands,
     GeoPipelineCommands, HyperLogLogPipelineCommands, StreamPipelineCommands,
     ScriptingKeyPipelineCommands, SampleKeyedPipelineCommands, FunctionPipelineCommands,
-    VectorSetPipelineCommands {
+    VectorSetPipelineCommands, ArrayPipelineCommands {
 }

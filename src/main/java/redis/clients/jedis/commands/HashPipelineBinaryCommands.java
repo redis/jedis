@@ -4,7 +4,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import redis.clients.jedis.HashImport;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.HGetExParams;
 import redis.clients.jedis.params.HSetExParams;
@@ -94,4 +96,25 @@ public interface HashPipelineBinaryCommands {
   Response<List<Long>> hpttl(byte[] key, byte[]... fields);
 
   Response<List<Long>> hpersist(byte[] key, byte[]... fields);
+
+  /**
+   * Binary variant of {@link HashPipelineCommands#himportSet(String, HashImport, String...)}
+   * ({@code HIMPORT SET}, Redis 8.10). Supported only on a single-connection pipeline; a
+   * transaction ({@code MULTI}) or a cluster pipeline throws
+   * {@link UnsupportedOperationException}.
+   *
+   * @param key the key of the hash to create; any existing hash at this key is replaced
+   * @param fieldset the field-set template describing the ordered field names shared by imported
+   *          hashes
+   * @param values the field values for this hash, matched positionally against the template's
+   *          fields (same count)
+   * @return the {@code SET} response ({@code OK})
+   * @throws IllegalArgumentException if the number of values differs from the template's field
+   *           count
+   * @throws IllegalStateException if the template has been {@linkplain HashImport#close() closed}
+   * @see HashImport
+   * @since 8.0
+   */
+  @Experimental
+  Response<String> himportSet(byte[] key, HashImport fieldset, byte[]... values);
 }

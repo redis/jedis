@@ -60,7 +60,7 @@ public abstract class JedisPubSubBase<T> {
   }
 
   private void checkConnectionSuitableForPubSub() {
-    if (authenticator.client.protocol != RedisProtocol.RESP3
+    if (authenticator.client.getRedisProtocol() != RedisProtocol.RESP3
         && authenticator.client.isTokenBasedAuthenticationEnabled()) {
       throw new JedisException(
           "Blocking pub/sub operations are not supported on token-based authentication enabled connections with RESP2 protocol!");
@@ -106,10 +106,12 @@ public abstract class JedisPubSubBase<T> {
   public final void proceed(Connection client, T... channels) {
     authenticator.registerForAuthentication(client);
     authenticator.client.setTimeoutInfinite();
+    authenticator.client.setActiveSubscription(true);
     try {
       subscribe(channels);
       process();
     } finally {
+      authenticator.client.setActiveSubscription(false);
       authenticator.client.rollbackTimeout();
     }
   }
@@ -117,10 +119,12 @@ public abstract class JedisPubSubBase<T> {
   public final void proceedWithPatterns(Connection client, T... patterns) {
     authenticator.registerForAuthentication(client);
     authenticator.client.setTimeoutInfinite();
+    authenticator.client.setActiveSubscription(true);
     try {
       psubscribe(patterns);
       process();
     } finally {
+      authenticator.client.setActiveSubscription(false);
       authenticator.client.rollbackTimeout();
     }
   }

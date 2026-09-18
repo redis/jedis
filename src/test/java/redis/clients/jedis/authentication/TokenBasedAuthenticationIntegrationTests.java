@@ -18,12 +18,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.mockito.AdditionalAnswers;
 import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,7 +108,7 @@ public class TokenBasedAuthenticationIntegrationTests {
 
     AuthXManager authXManager = new AuthXManager(tokenAuthConfig);
     authXManager = spy(authXManager);
-    List<Connection> connections = new ArrayList<>();
+    List<Connection> connections = new CopyOnWriteArrayList<>();
     doAnswer(invocation -> {
       Connection connection = spy((Connection) invocation.getArgument(0));
       invocation.getArguments()[0] = connection;
@@ -193,7 +195,11 @@ public class TokenBasedAuthenticationIntegrationTests {
     authXManager = spy(authXManager);
     List<Connection> connections = new ArrayList<>();
     doAnswer(invocation -> {
-      Connection connection = spy((Connection) invocation.getArgument(0));
+      // A delegating mock records invocations for verify(...) but forwards every call to
+      // the one real Connection, unlike spy() which works on a shallow field-copy and
+      // would fork the connection's state from its push consumer chain.
+      Connection original = invocation.getArgument(0);
+      Connection connection = mock(Connection.class, AdditionalAnswers.delegatesTo(original));
       invocation.getArguments()[0] = connection;
       connections.add(connection);
       Object result = invocation.callRealMethod();
@@ -250,8 +256,9 @@ public class TokenBasedAuthenticationIntegrationTests {
         .identityProviderConfig(idProviderConfig).expirationRefreshRatio(0.8F)
         .lowerRefreshBoundMillis(10000).tokenRequestExecTimeoutInMs(1000).build();
 
+    // Explicitly use RESP2 protocol to test the RESP2-specific error for token-based auth with pub/sub
     JedisClientConfig clientConfig = DefaultJedisClientConfig.builder()
-        .authXManager(new AuthXManager(tokenAuthConfig)).build();
+        .authXManager(new AuthXManager(tokenAuthConfig)).protocol(RedisProtocol.RESP2).build();
 
     try (RedisClient jedis = RedisClient.builder()
         .hostAndPort(endpointConfig.getHostAndPort())

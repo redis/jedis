@@ -20,7 +20,7 @@ public abstract class ClusterClientBuilder<C>
 
   // Cluster-specific configuration fields
   private Set<HostAndPort> nodes = null;
-  private int maxAttempts = JedisCluster.DEFAULT_MAX_ATTEMPTS;
+  private int maxAttempts = RedisClusterClient.DEFAULT_MAX_ATTEMPTS;
   private Duration maxTotalRetriesDuration;
   private Duration topologyRefreshPeriod = null;
   private CommandFlagsRegistry commandFlags = null;
@@ -88,6 +88,17 @@ public abstract class ClusterClientBuilder<C>
     return this;
   }
 
+  /**
+   * Gets the command flags registry, initializing it if necessary.
+   * @return the command flags registry
+   */
+  protected CommandFlagsRegistry getCommandFlags() {
+    if (this.commandFlags == null) {
+      this.commandFlags = createDefaultCommandFlagsRegistry();
+    }
+    return this.commandFlags;
+  }
+
   @Override
   protected ClusterClientBuilder<C> self() {
     return this;
@@ -119,11 +130,6 @@ public abstract class ClusterClientBuilder<C>
 
     return new ClusterCommandExecutor((ClusterConnectionProvider) this.connectionProvider,
         this.maxAttempts, effectiveMaxTotalRetriesDuration, this.commandFlags);
-  }
-
-  @Override
-  protected CommandObjects createDefaultCommandObjects() {
-    return new ClusterCommandObjects();
   }
 
   @Override

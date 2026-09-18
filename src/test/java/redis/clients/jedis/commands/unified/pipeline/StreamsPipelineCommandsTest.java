@@ -27,6 +27,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+import io.redis.test.annotations.ConditionalOnEnv;
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.utils.RedisVersion;
 import org.junit.jupiter.api.Test;
@@ -43,6 +45,7 @@ import redis.clients.jedis.StreamEntryID;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.XAddParams;
 import redis.clients.jedis.params.XAutoClaimParams;
+import redis.clients.jedis.params.XCfgSetParams;
 import redis.clients.jedis.params.XClaimParams;
 import redis.clients.jedis.params.XPendingParams;
 import redis.clients.jedis.params.XReadGroupParams;
@@ -58,6 +61,7 @@ import redis.clients.jedis.resps.StreamGroupInfo;
 import redis.clients.jedis.resps.StreamInfo;
 import redis.clients.jedis.resps.StreamPendingEntry;
 import redis.clients.jedis.util.SafeEncoder;
+import redis.clients.jedis.util.TestEnvUtil;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -402,6 +406,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void xreadWithParams() {
 
     final String stream1 = "xread-stream1";
@@ -648,6 +653,7 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   @Test
+  @ConditionalOnEnv(value = TestEnvUtil.ENV_REDIS_ENTERPRISE, enabled = false)
   public void xreadGroupWithParams() {
     // Simple xreadGroup with NOACK
     Map<String, String> map1 = singletonMap("f1", "v1");
@@ -1171,8 +1177,9 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     StreamInfo streamInfo = streamInfoResponse.get();
 
     assertEquals(2L, streamInfo.getStreamInfo().get(StreamInfo.LENGTH));
-    assertEquals(1L, streamInfo.getStreamInfo().get(StreamInfo.RADIX_TREE_KEYS));
-    assertEquals(2L, streamInfo.getStreamInfo().get(StreamInfo.RADIX_TREE_NODES));
+    // radix-tree-* are internal debugging fields; only assert they are parsed, not their values
+    assertThat((Long) streamInfo.getStreamInfo().get(StreamInfo.RADIX_TREE_KEYS), Matchers.any(Long.class));
+    assertThat((Long) streamInfo.getStreamInfo().get(StreamInfo.RADIX_TREE_NODES), Matchers.any(Long.class));
     assertEquals(0L, streamInfo.getStreamInfo().get(StreamInfo.GROUPS));
     assertEquals(V1, ((StreamEntry) streamInfo.getStreamInfo().get(StreamInfo.FIRST_ENTRY)).getFields().get(F1));
     assertEquals(V2, ((StreamEntry) streamInfo.getStreamInfo().get(StreamInfo.LAST_ENTRY)).getFields().get(F1));
@@ -1180,8 +1187,8 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
 
     // Using getters
     assertEquals(2, streamInfo.getLength());
-    assertEquals(1, streamInfo.getRadixTreeKeys());
-    assertEquals(2, streamInfo.getRadixTreeNodes());
+    assertThat(streamInfo.getRadixTreeKeys(), Matchers.any(Long.class));
+    assertThat(streamInfo.getRadixTreeNodes(), Matchers.any(Long.class));
     assertEquals(0, streamInfo.getGroups());
     assertEquals(V1, streamInfo.getFirstEntry().getFields().get(F1));
     assertEquals(V2, streamInfo.getLastEntry().getFields().get(F1));
@@ -1262,8 +1269,8 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     assertEquals(2, streamInfoFull.getEntries().size());
     assertEquals(2, streamInfoFull.getGroups().size());
     assertEquals(2, streamInfoFull.getLength());
-    assertEquals(1, streamInfoFull.getRadixTreeKeys());
-    assertEquals(2, streamInfoFull.getRadixTreeNodes());
+    assertThat(streamInfoFull.getRadixTreeKeys(), Matchers.any(Long.class));
+    assertThat(streamInfoFull.getRadixTreeNodes(), Matchers.any(Long.class));
     assertEquals(0, streamInfo.getGroups());
     assertEquals(G1, streamInfoFull.getGroups().get(0).getName());
     assertEquals(G2, streamInfoFull.getGroups().get(1).getName());
@@ -1322,5 +1329,25 @@ public class StreamsPipelineCommandsTest extends PipelineCommandsTestBase {
     assertEquals(1, consumer.getPending().size());
     List<Object> consumerPendingEntry = consumer.getPending().get(0);
     assertEquals(id1, consumerPendingEntry.get(0));
+  }
+
+  @Test
+  @EnabledOnCommand("XCFGSET")
+  public void xcfgset() {
+    // Add an entry to create the stream
+    client.xadd("xcfgset-stream", StreamEntryID.NEW_ENTRY, singletonMap("field", "value"));
+
+    // Configure idempotent producer settings via pipeline
+    Response<String> response = pipe.xcfgset("xcfgset-stream",
+        XCfgSetParams.xCfgSetParams().idmpDuration(1000).idmpMaxsize(500));
+
+    pipe.sync();
+
+    assertEquals("OK", response.get());
+
+    // Verify settings via XINFO STREAM
+    StreamInfo info = client.xinfoStream("xcfgset-stream");
+    assertEquals(Long.valueOf(1000), info.getIdmpDuration());
+    assertEquals(Long.valueOf(500), info.getIdmpMaxsize());
   }
 }

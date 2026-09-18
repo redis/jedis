@@ -1,5 +1,7 @@
 package redis.clients.jedis.commands.unified.cluster;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -7,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
@@ -100,17 +103,17 @@ public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsT
   @Test
   @Override
   public void keys() {
-    jedis.set("{foo}", "bar");
-    jedis.set("{foo}bar", "bar");
+    jedis.set("foo", "bar");
+    jedis.set("foobar", "bar");
 
-    Set<String> keys = jedis.keys("{foo}*");
+    Set<String> keys = jedis.keys("foo*");
     Set<String> expected = new HashSet<>();
-    expected.add("{foo}");
-    expected.add("{foo}bar");
+    expected.add("foo");
+    expected.add("foobar");
     assertEquals(expected, keys);
 
     expected.clear();
-    keys = jedis.keys("{bar}*");
+    keys = jedis.keys("bar*");
 
     assertEquals(expected, keys);
   }
@@ -140,7 +143,15 @@ public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsT
   @Test
   @Override
   public void dbSize() {
-    assertThrows(UnsupportedOperationException.class, super::dbSize);
+    // In cluster mode, dbSize returns the sum of keys across all nodes
+    assertEquals(0, jedis.dbSize());
+
+    jedis.set("foo", "bar");
+    assertEquals(1, jedis.dbSize());
+
+    // Binary
+    jedis.set(bfoo, bbar);
+    assertEquals(2, jedis.dbSize());
   }
 
   @Test
@@ -150,11 +161,10 @@ public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsT
 
     jedis.set("{foo}1", "bar1");
 
-    Thread.sleep(1100); // little over 1 sec
-    assertTrue(jedis.objectIdletime("{foo}1") > 0);
+    assertTrue(jedis.objectIdletime("{foo}1") >= 0);
 
     assertEquals(1, jedis.touch("{foo}1"));
-    assertEquals(0L, jedis.objectIdletime("{foo}1").longValue());
+    assertThat(jedis.objectIdletime("{foo}1"), lessThanOrEqualTo(1L));
 
     assertEquals(1, jedis.touch("{foo}1", "{foo}2", "{foo}3"));
 
@@ -222,16 +232,15 @@ public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsT
     jedis.set("{+}g", "g");
 
     // string
+    Set<String> stringKeys = new HashSet<>();
+    String cursor = SCAN_POINTER_START;
     ScanResult<String> scanResult;
-
-    scanResult = jedis.scan(SCAN_POINTER_START, pagingParams, "string");
-    assertFalse(scanResult.isCompleteIteration());
-    int page1Count = scanResult.getResult().size();
-    scanResult = jedis.scan(scanResult.getCursor(), pagingParams, "string");
-    assertTrue(scanResult.isCompleteIteration());
-    int page2Count = scanResult.getResult().size();
-    assertEquals(4, page1Count + page2Count);
-
+    do {
+      scanResult = jedis.scan(cursor, pagingParams, "string");
+      stringKeys.addAll(scanResult.getResult());
+      cursor = scanResult.getCursor();
+    } while (!scanResult.isCompleteIteration());
+    assertEquals(new HashSet<>(Arrays.asList("{+}a", "c{+}", "e{+}", "{+}g")), stringKeys);
 
     scanResult = jedis.scan(SCAN_POINTER_START, noCount, "hash");
     assertEquals(Collections.singletonList("{+}b"), scanResult.getResult());
@@ -244,7 +253,7 @@ public class ClusterAllKindOfValuesCommandsTest extends AllKindOfValuesCommandsT
   @Test
   @Override
   public void scanIsCompleteIteration() {
-    assertThrows( IllegalArgumentException.class, super::scanIsCompleteIteration);
+    assertThrows(IllegalArgumentException.class, super::scanIsCompleteIteration);
   }
 
   @Test

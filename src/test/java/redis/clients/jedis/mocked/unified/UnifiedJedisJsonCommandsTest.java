@@ -360,6 +360,40 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisMockedTestBase {
   }
 
   @Test
+  public void testJsonArrPopRaw() {
+    String key = "testKey";
+    List<String> expectedResponse = Collections.singletonList("5");
+
+    when(commandObjects.jsonArrPopRaw(key)).thenReturn(listStringCommandObject);
+    when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
+
+    List<String> result = jedis.jsonArrPopRaw(key);
+
+    assertEquals(expectedResponse, result);
+
+    verify(commandExecutor).executeCommand(listStringCommandObject);
+    verify(commandObjects).jsonArrPopRaw(key);
+  }
+
+  @Test
+  public void testJsonArrPopRawWithPath2AndIndex() {
+    String key = "testKey";
+    Path2 path = Path2.of(".path.to.array");
+    int index = 1;
+    List<String> expectedResponse = Collections.singletonList("\"poppedValueAtIndex\"");
+
+    when(commandObjects.jsonArrPopRaw(key, path, index)).thenReturn(listStringCommandObject);
+    when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
+
+    List<String> result = jedis.jsonArrPopRaw(key, path, index);
+
+    assertEquals(expectedResponse, result);
+
+    verify(commandExecutor).executeCommand(listStringCommandObject);
+    verify(commandObjects).jsonArrPopRaw(key, path, index);
+  }
+
+  @Test
   public void testJsonArrPopWithClass() {
     String key = "testKey";
     Class<String> clazz = String.class;
@@ -771,6 +805,24 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisMockedTestBase {
 
     verify(commandExecutor).executeCommand(objectCommandObject);
     verify(commandObjects).jsonNumIncrBy(key, path, value);
+  }
+
+  @Test
+  public void testJsonNumIncrByNumber() {
+    String key = "testKey";
+    Path2 path = Path2.of("$..a");
+    Number value = 2;
+    List<Number> expectedResponse = Arrays.asList(null, 4L, 7.5d, null);
+
+    when(commandObjects.jsonNumIncrByNumber(key, path, value)).thenReturn(listNumberCommandObject);
+    when(commandExecutor.executeCommand(listNumberCommandObject)).thenReturn(expectedResponse);
+
+    List<Number> result = jedis.jsonNumIncrByNumber(key, path, value);
+
+    assertEquals(expectedResponse, result);
+
+    verify(commandExecutor).executeCommand(listNumberCommandObject);
+    verify(commandObjects).jsonNumIncrByNumber(key, path, value);
   }
 
   @Test

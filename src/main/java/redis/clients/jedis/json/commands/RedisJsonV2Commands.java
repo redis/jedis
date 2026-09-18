@@ -61,6 +61,8 @@ public interface RedisJsonV2Commands {
 
   Object jsonNumIncrBy(String key, Path2 path, Number value);
 
+  List<Number> jsonNumIncrByNumber(String key, Path2 path, Number value);
+
   List<Long> jsonArrAppend(String key, Path2 path, Object... objects);
 
   List<Long> jsonArrAppendWithEscape(String key, Path2 path, Object... objects);
@@ -76,6 +78,10 @@ public interface RedisJsonV2Commands {
   List<Object> jsonArrPop(String key, Path2 path);
 
   List<Object> jsonArrPop(String key, Path2 path, int index);
+
+  List<String> jsonArrPopRaw(String key);
+
+  List<String> jsonArrPopRaw(String key, Path2 path, int index);
 
   List<Long> jsonArrLen(String key, Path2 path);
 

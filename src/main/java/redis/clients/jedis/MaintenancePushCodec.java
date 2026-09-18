@@ -8,10 +8,9 @@ import java.util.function.Function;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
- * Decodes RESP3 maintenance push frames into {@link MaintenanceEvent}s or
- * {@link ClusterMaintenanceEvent}s — the push transport for maintenance notifications. Token
- * classification ({@link PushType#resolve}) and per-type field extraction ({@link #build},
- * {@link #buildCluster}) both live here.
+ * Decodes RESP3 maintenance push frames into {@link MaintenanceEvent}s — the push transport for
+ * maintenance notifications, cluster events included. Token classification
+ * ({@link PushType#resolve}) and per-type field extraction ({@link #build}) both live here.
  */
 final class MaintenancePushCodec {
 

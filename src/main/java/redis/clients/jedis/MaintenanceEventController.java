@@ -234,6 +234,16 @@ final class MaintenanceEventController
     return registry;
   }
 
+  /**
+   * Retires every registered connection at the given instant and runs the handoff hook — the
+   * cluster Case-2 reaction, invoked by the cluster coordinator when this pool's node no longer
+   * owns any slot. Caller-only access: the pool remains this controller's sole owner.
+   */
+  void retireAll(long retireAtNanos) {
+    registry.forEachLive(conn -> conn.retireAt(retireAtNanos));
+    handoffHook.run();
+  }
+
   @Override
   public void close() {
     synchronized (schedulerLock) {

@@ -4176,6 +4176,16 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<String>> jsonArrPopRaw(String key) {
+    return appendCommand(commandObjects.jsonArrPopRaw(key));
+  }
+
+  @Override
+  public Response<List<String>> jsonArrPopRaw(String key, Path2 path, int index) {
+    return appendCommand(commandObjects.jsonArrPopRaw(key, path, index));
+  }
+
+  @Override
   public Response<Long> jsonArrLen(String key) {
     return appendCommand(commandObjects.jsonArrLen(key));
   }

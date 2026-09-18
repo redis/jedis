@@ -4099,6 +4099,14 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), new JsonObjectBuilder<>(clazz));
   }
 
+  public final CommandObject<List<String>> jsonArrPopRaw(String key) {
+    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key), BuilderFactory.STRING_LIST);
+  }
+
+  public final CommandObject<List<String>> jsonArrPopRaw(String key, Path2 path, int index) {
+    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), BuilderFactory.STRING_LIST);
+  }
+
   @Deprecated
   public final CommandObject<Long> jsonArrLen(String key) {
     return new CommandObject<>(commandArguments(JsonCommand.ARRLEN).key(key), BuilderFactory.LONG);

@@ -78,6 +78,10 @@ public interface RedisJsonV2PipelineCommands {
 
   Response<List<Object>> jsonArrPop(String key, Path2 path, int index);
 
+  Response<List<String>> jsonArrPopRaw(String key);
+
+  Response<List<String>> jsonArrPopRaw(String key, Path2 path, int index);
+
   Response<List<Long>> jsonArrLen(String key, Path2 path);
 
   Response<List<Long>> jsonArrTrim(String key, Path2 path, int start, int stop);

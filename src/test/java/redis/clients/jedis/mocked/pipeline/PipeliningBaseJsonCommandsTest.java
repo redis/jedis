@@ -255,6 +255,28 @@ public class PipeliningBaseJsonCommandsTest extends PipeliningBaseMockedTestBase
   }
 
   @Test
+  public void testJsonArrPopRaw() {
+    when(commandObjects.jsonArrPopRaw("myJson")).thenReturn(listStringCommandObject);
+
+    Response<List<String>> response = pipeliningBase.jsonArrPopRaw("myJson");
+
+    assertThat(commands, contains(listStringCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testJsonArrPopRawWithPath2AndIndex() {
+    Path2 path = Path2.of("$.array");
+
+    when(commandObjects.jsonArrPopRaw("myJson", path, 1)).thenReturn(listStringCommandObject);
+
+    Response<List<String>> response = pipeliningBase.jsonArrPopRaw("myJson", path, 1);
+
+    assertThat(commands, contains(listStringCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
   public void testJsonArrPopWithClass() {
     when(commandObjects.jsonArrPop("myJson", MyBean.class)).thenReturn(myBeanCommandObject);
 

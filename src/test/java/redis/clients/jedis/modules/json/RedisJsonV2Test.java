@@ -433,6 +433,25 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void arrPopRaw() {
+    jsonV2.jsonSet("arr", ROOT_PATH, new JSONArray(new int[]{0, 1, 2, 3, 4}));
+    // Raw variant returns the server's JSON text untouched, so integers are not widened to doubles.
+    assertEquals(singletonList("4"), jsonV2.jsonArrPopRaw("arr"));
+    assertEquals(singletonList("3"), jsonV2.jsonArrPopRaw("arr", ROOT_PATH, -1));
+    assertEquals(singletonList("0"), jsonV2.jsonArrPopRaw("arr", ROOT_PATH, 0));
+
+    jsonV2.jsonSet("mixed", ROOT_PATH, new JSONArray("[\"str\", true, null, {\"k\": 1}, [1, 2]]"));
+    assertEquals(singletonList("[1,2]"), jsonV2.jsonArrPopRaw("mixed", ROOT_PATH, -1));
+    assertEquals(singletonList("{\"k\":1}"), jsonV2.jsonArrPopRaw("mixed", ROOT_PATH, -1));
+    assertEquals(singletonList("null"), jsonV2.jsonArrPopRaw("mixed", ROOT_PATH, -1));
+    assertEquals(singletonList("true"), jsonV2.jsonArrPopRaw("mixed", ROOT_PATH, -1));
+    assertEquals(singletonList("\"str\""), jsonV2.jsonArrPopRaw("mixed", ROOT_PATH, -1));
+
+    // Popping an empty array yields a null element.
+    assertEquals(singletonList(null), jsonV2.jsonArrPopRaw("mixed", ROOT_PATH, -1));
+  }
+
+  @Test
   public void arrTrim() {
 //    jsonClient.jsonSet("arr", ROOT_PATH, new int[]{0, 1, 2, 3, 4});
     jsonV2.jsonSet("arr", ROOT_PATH, new JSONArray(new int[]{0, 1, 2, 3, 4}));

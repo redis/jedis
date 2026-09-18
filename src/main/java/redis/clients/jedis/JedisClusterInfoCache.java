@@ -15,6 +15,7 @@ import java.util.Set;
 
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -59,6 +60,9 @@ public class JedisClusterInfoCache {
   private final ReentrantLock slotDeltaLock = new ReentrantLock();
 
   private final ConcurrentLinkedQueue<PendingSlotDelta> pendingSlotDelta = new ConcurrentLinkedQueue<>();
+
+  /** Deltas enqueued but not yet fully applied; drives {@link #hasPendingSlotDeltas()}. */
+  private final AtomicInteger inFlightSlotDeltas = new AtomicInteger();
 
   private final GenericObjectPoolConfig<Connection> poolConfig;
   private final JedisClientConfig clientConfig;
@@ -402,8 +406,20 @@ public class JedisClusterInfoCache {
    * dedup of the broadcast is the caller's job.
    */
   void applySlotMigration(List<SlotMigration> migrations) {
+    // incremented before the enqueue and decremented only after application completes, so
+    // hasPendingSlotDeltas() covers the delta's whole enqueue->applied lifecycle
+    inFlightSlotDeltas.incrementAndGet();
     pendingSlotDelta.add(new PendingSlotDelta(migrations));
     drainSlotDeltas();
+  }
+
+  /**
+   * True while any slot delta is enqueued or mid-application — the topology has not settled yet.
+   * Lock-free; consulted by the cluster coordinator's relax gate so timeouts stay relaxed until
+   * every pending delta is processed and completed.
+   */
+  boolean hasPendingSlotDeltas() {
+    return inFlightSlotDeltas.get() > 0;
   }
 
   /**
@@ -424,7 +440,11 @@ public class JedisClusterInfoCache {
       try {
         PendingSlotDelta delta;
         while ((delta = pendingSlotDelta.poll()) != null) {
-          processSlotDelta(delta.migrations);
+          try {
+            processSlotDelta(delta.migrations);
+          } finally {
+            inFlightSlotDeltas.decrementAndGet();
+          }
         }
       } finally {
         slotDeltaLock.unlock();
@@ -460,10 +480,6 @@ public class JedisClusterInfoCache {
         migration.slots.forEachSlot(slot -> {
           slots[slot] = destPool;
           slotNodes[slot] = migration.dest;
-          if (replicaSlots != null) {
-            // the delta carries no replica placement; drop stale entries until the next refresh
-            replicaSlots[slot] = null;
-          }
         });
       }
 

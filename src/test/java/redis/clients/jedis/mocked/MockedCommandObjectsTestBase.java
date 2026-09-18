@@ -67,6 +67,7 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<List<List<Object>>> listListObjectCommandObject;
   @Mock protected CommandObject<List<List<String>>> listListStringCommandObject;
   @Mock protected CommandObject<List<Long>> listLongCommandObject;
+  @Mock protected CommandObject<List<Number>> listNumberCommandObject;
   @Mock protected CommandObject<List<Map.Entry<String, List<StreamEntry>>>> listEntryStringListStreamEntryCommandObject;
   @Mock protected CommandObject<List<Map.Entry<String, String>>> listEntryStringStringCommandObject;
   @Mock protected CommandObject<List<Map.Entry<byte[], byte[]>>> listEntryBytesBytesCommandObject;

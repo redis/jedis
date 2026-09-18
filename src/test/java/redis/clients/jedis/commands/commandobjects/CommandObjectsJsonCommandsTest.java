@@ -4,11 +4,11 @@ import static net.javacrumbs.jsonunit.JsonMatchers.jsonEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -689,6 +689,54 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
     JSONObject expected = new JSONObject();
     expected.put("balance", 150.0);
     assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
+  }
+
+  @Test
+  public void testJsonNumIncrByNumber() {
+    String key = "json";
+
+    JSONObject item = new JSONObject()
+        .put("a", "b")
+        .put("b", new JSONArray()
+            .put(new JSONObject().put("a", 2))
+            .put(new JSONObject().put("a", 5.5))
+            .put(new JSONObject().put("a", "c")));
+
+    exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, item));
+
+    // Integral results come back as Long, fractional results as Double and non-numeric matches as
+    // null. The result is the same under RESP2 and RESP3.
+    List<Number> incr = exec(commandObjects.jsonNumIncrByNumber(key, Path2.of("$..a"), 2));
+    assertThat(incr, contains(nullValue(), equalTo(4L), equalTo(7.5d), nullValue()));
+
+    // A fractional increment turns an integral value into a Double.
+    List<Number> incrFractional = exec(commandObjects.jsonNumIncrByNumber(key, Path2.of("$.b[0].a"), 0.5));
+    assertThat(incrFractional, contains(equalTo(4.5d)));
+
+    // A path matching nothing yields an empty list.
+    List<Number> none = exec(commandObjects.jsonNumIncrByNumber(key, Path2.of("$..c"), 1));
+    assertThat(none, empty());
+
+    Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
+
+    JSONObject expected = new JSONObject()
+        .put("a", "b")
+        .put("b", new JSONArray()
+            .put(new JSONObject().put("a", 4.5))
+            .put(new JSONObject().put("a", 7.5))
+            .put(new JSONObject().put("a", "c")));
+    assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
+  }
+
+  @Test
+  public void testJsonNumIncrByNumberPreservesLargeIntegerPrecision() {
+    String key = "json";
+
+    // 2^53 + 1 cannot be represented exactly as a double.
+    exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, new JSONObject().put("n", 9007199254740993L)));
+
+    List<Number> incr = exec(commandObjects.jsonNumIncrByNumber(key, Path2.of("$.n"), 1L));
+    assertThat(incr, contains(equalTo(9007199254740994L)));
   }
 
   @Test

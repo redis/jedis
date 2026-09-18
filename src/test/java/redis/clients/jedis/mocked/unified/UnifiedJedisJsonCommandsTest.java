@@ -808,6 +808,24 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisMockedTestBase {
   }
 
   @Test
+  public void testJsonNumIncrByNumber() {
+    String key = "testKey";
+    Path2 path = Path2.of("$..a");
+    Number value = 2;
+    List<Number> expectedResponse = Arrays.asList(null, 4L, 7.5d, null);
+
+    when(commandObjects.jsonNumIncrByNumber(key, path, value)).thenReturn(listNumberCommandObject);
+    when(commandExecutor.executeCommand(listNumberCommandObject)).thenReturn(expectedResponse);
+
+    List<Number> result = jedis.jsonNumIncrByNumber(key, path, value);
+
+    assertEquals(expectedResponse, result);
+
+    verify(commandExecutor).executeCommand(listNumberCommandObject);
+    verify(commandObjects).jsonNumIncrByNumber(key, path, value);
+  }
+
+  @Test
   public void testJsonSetWithPath() {
     String key = "testKey";
     Path path = Path.of(".path.to.element");

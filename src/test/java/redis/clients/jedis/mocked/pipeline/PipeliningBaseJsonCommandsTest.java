@@ -509,6 +509,18 @@ public class PipeliningBaseJsonCommandsTest extends PipeliningBaseMockedTestBase
   }
 
   @Test
+  public void testJsonNumIncrByNumber() {
+    Path2 path = Path2.of("$.number");
+
+    when(commandObjects.jsonNumIncrByNumber("myJson", path, 42)).thenReturn(listNumberCommandObject);
+
+    Response<List<Number>> response = pipeliningBase.jsonNumIncrByNumber("myJson", path, 42);
+
+    assertThat(commands, contains(listNumberCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
   public void testJsonSetWithPath() {
     Path path = Path.of("$.field");
     Object object = new JsonObject();

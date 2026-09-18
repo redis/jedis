@@ -2,6 +2,7 @@ package redis.clients.jedis.json;
 
 import static redis.clients.jedis.BuilderFactory.STRING;
 
+import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,6 +12,7 @@ import org.json.JSONObject;
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.BuilderFactory;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.SafeEncoder;
 
 public final class JsonBuilderFactory {
 
@@ -126,6 +128,43 @@ public final class JsonBuilderFactory {
       return JSON_ARRAY.build(data);
     }
   };
+
+  public static final Builder<List<Number>> NUMBER_LIST = new Builder<List<Number>>() {
+    @Override
+    public List<Number> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+      if (data instanceof byte[]) {
+        JSONArray arr = new JSONArray(SafeEncoder.encode((byte[]) data));
+        List<Number> out = new ArrayList<>(arr.length());
+        for (int i = 0; i < arr.length(); i++) {
+          out.add(arr.isNull(i) ? null : toLongOrDouble(arr.getNumber(i)));
+        }
+        return out;
+      }
+      if (data instanceof List<?>) {
+        return ((List<?>) data).stream()
+                .map(o -> o == null ? null : toLongOrDouble((Number) o))
+                .collect(Collectors.toList());
+      }
+      throw new JedisException("Unsupported type: " + data.getClass());
+    }
+  };
+
+  private static Number toLongOrDouble(Number n) {
+    if (n instanceof Long || n instanceof Double) {
+      return n;
+    }
+    if (n instanceof Integer || n instanceof Short || n instanceof Byte) {
+      return n.longValue();
+    }
+    if (n instanceof BigInteger) {
+      BigInteger bi = (BigInteger) n;
+      return bi.bitLength() < Long.SIZE ? (Number) bi.longValue() : (Number) bi.doubleValue();
+    }
+    return n.doubleValue();
+  }
 
   public static final Builder<List<JSONArray>> JSON_ARRAY_LIST = new Builder<List<JSONArray>>() {
     @Override

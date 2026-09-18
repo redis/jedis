@@ -3988,6 +3988,11 @@ public class CommandObjects {
         JsonBuilderFactory.JSON_ARRAY_OR_DOUBLE_LIST);
   }
 
+  public final CommandObject<List<Number>> jsonNumIncrByNumber(String key, Path2 path, Number value) {
+    return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value),
+            JsonBuilderFactory.NUMBER_LIST);
+  }
+
   @Deprecated
   public final CommandObject<Double> jsonNumIncrBy(String key, Path path, double value) {
     return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), BuilderFactory.DOUBLE);

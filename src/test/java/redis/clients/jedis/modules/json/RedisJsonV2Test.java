@@ -495,6 +495,22 @@ public class RedisJsonV2Test extends RedisModuleCommandsTestBase {
   }
 
   @Test
+  public void numIncrByNumber() {
+    jsonV2.jsonSet("doc", "{\"a\":\"b\",\"b\":[{\"a\":2}, {\"a\":5.5}, {\"a\":\"c\"}]}");
+    // Same result under RESP2 and RESP3: integral values are Long, fractional values are Double.
+    assertEquals(singletonList(null), jsonV2.jsonNumIncrByNumber("doc", Path2.of(".a"), 1));
+    assertEquals(Arrays.asList(null, 4L, 7.5d, null), jsonV2.jsonNumIncrByNumber("doc", Path2.of("..a"), 2));
+    assertEquals(singletonList(null), jsonV2.jsonNumIncrByNumber("doc", Path2.of("..b"), 0));
+    assertEquals(Collections.emptyList(), jsonV2.jsonNumIncrByNumber("doc", Path2.of("..c"), 0));
+    // A fractional increment turns an integral value into a Double.
+    assertEquals(singletonList(4.5d), jsonV2.jsonNumIncrByNumber("doc", Path2.of(".b[0].a"), 0.5));
+
+    // Integers beyond double precision (2^53 + 1) are preserved exactly.
+    jsonV2.jsonSet("big", ROOT_PATH, new JSONObject().put("n", 9007199254740993L));
+    assertEquals(singletonList(9007199254740994L), jsonV2.jsonNumIncrByNumber("big", Path2.of(".n"), 1));
+  }
+
+  @Test
   public void obj() {
     String json = "{\"a\":[3], \"nested\": {\"a\": {\"b\":2, \"c\": 1}}}";
     jsonV2.jsonSet("doc", ROOT_PATH, json);

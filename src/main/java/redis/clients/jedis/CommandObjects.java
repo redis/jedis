@@ -1154,7 +1154,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> hsetex(String key, HSetExParams params, Map<String, String> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(HSETEX, hash.size() * 2 + 4).key(key)
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSETEX, hash.size() * 2 + 7).key(key)
       .addParams(params).add(FIELDS).add(hash.size()), hash), BuilderFactory.LONG);
   }
 
@@ -1198,7 +1198,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> hsetex(byte[] key, HSetExParams params, Map<byte[], byte[]> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(HSETEX, hash.size() * 2 + 4).key(key)
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSETEX, hash.size() * 2 + 7).key(key)
       .addParams(params).add(FIELDS).add(hash.size()), hash), BuilderFactory.LONG);
   }
 
@@ -3091,7 +3091,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<StreamEntryID> xadd(String key, XAddParams params, Map<String, String> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(XADD, hash.size() * 2 + 4).key(key).addParams(params), hash),
+    return new CommandObject<>(addFlatMapArgs(commandArguments(XADD, hash.size() * 2 + 10).key(key).addParams(params), hash),
         BuilderFactory.STREAM_ENTRY_ID);
   }
 
@@ -3100,7 +3100,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<byte[]> xadd(byte[] key, XAddParams params, Map<byte[], byte[]> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(XADD, hash.size() * 2 + 4).key(key).addParams(params), hash),
+    return new CommandObject<>(addFlatMapArgs(commandArguments(XADD, hash.size() * 2 + 10).key(key).addParams(params), hash),
         BuilderFactory.BINARY);
   }
 

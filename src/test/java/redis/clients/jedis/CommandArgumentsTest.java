@@ -1,7 +1,7 @@
 package redis.clients.jedis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -74,10 +74,14 @@ public class CommandArgumentsTest {
     Map<String, String> hash = new HashMap<>();
     hash.put("field", "value");
 
+    // CommandObjects field initialization (cached PING/FLUSHALL/INFO) already invoked
+    // the overridden factory; only assert on invocations from the collection commands.
+    created.clear();
     objects.hset("key", hash);
     objects.hmset("key", hash);
 
     // the capacity-aware collection path must still go through the overridable factory
-    assertFalse(created.isEmpty());
+    assertTrue(created.contains(Protocol.Command.HSET));
+    assertTrue(created.contains(Protocol.Command.HMSET));
   }
 }

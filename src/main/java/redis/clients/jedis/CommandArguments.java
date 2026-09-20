@@ -155,6 +155,11 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   public CommandArguments addObjects(Collection args) {
+    // Pre-size from the known collection size so bulk commands built from
+    // collections (e.g. SADD/ZADD with many members) avoid intermediate
+    // ArrayList growth copies, as already done for the collection-driven
+    // command builders via the capacity hint.
+    this.args.ensureCapacity(1 + args.size());
     args.forEach(arg -> add(arg));
     return this;
   }

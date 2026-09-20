@@ -84,4 +84,18 @@ public class CommandArgumentsTest {
     assertTrue(created.contains(Protocol.Command.HSET));
     assertTrue(created.contains(Protocol.Command.HMSET));
   }
+
+  @Test
+  public void addObjectsFromCollectionPreservesAllArguments() {
+    CommandArguments args = new CommandArguments(TestCommand.MSET);
+    List<String> values = new ArrayList<>();
+    for (int i = 0; i < 50; i++) {
+      values.add("value" + i);
+    }
+
+    args.addObjects(values);
+
+    assertEquals(51, asList(args).size()); // command + 50 arguments
+  }
+
 }

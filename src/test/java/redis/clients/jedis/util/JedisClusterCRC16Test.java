@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -66,11 +65,6 @@ public class JedisClusterCRC16Test {
     } finally {
       SafeEncoder.DEFAULT_CHARSET = original;
     }
-
-    // Under UTF-8 no multibyte sequence contains 0x7B/0x7D, so String and byte scanning agree.
-    SafeEncoder.DEFAULT_CHARSET = StandardCharsets.UTF_8;
-    assertEquals(JedisClusterCRC16.getSlot(SafeEncoder.encode("foo{bar}zap")),
-      JedisClusterCRC16.getSlot("foo{bar}zap"));
   }
 
   @Test

@@ -1,0 +1,136 @@
+name: Nightly test metrics
+
+# Once a day, run the full jedis test suite (master, unit + integration)
+# against the newest unstable client-libs-test Redis image, and report
+# per-test durations to Grafana for performance regression tracking.
+
+on:
+  schedule:
+    - cron: '30 3 * * *' # nightly, staggered from the 01:00 CI runs
+  workflow_dispatch:
+
+concurrency:
+  group: nightly-metrics
+  cancel-in-progress: false
+
+permissions:
+  contents: read # to fetch code (actions/checkout)
+
+jobs:
+  nightly-metrics:
+    name: Redis unstable; test metrics
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      REDIS_ENV_WORK_DIR: ${{ github.workspace }}/redis-env-work
+      REDIS_ENV_CONF_DIR: ${{ github.workspace }}/src/test/resources/env
+    steps:
+      # Secrets can't be used in `if:` conditions, so a first step checks
+      # the token and later steps are gated on its output. Without the
+      # secret the job prints a warning and skips everything.
+      - name: Check for the metrics token
+        id: gate
+        env:
+          OTEL_TOKEN: ${{ secrets.OTEL_CI_VISIBILITY_TOKEN }}
+        run: |
+          if [ -z "$OTEL_TOKEN" ]; then
+            echo "::warning::The OTEL_CI_VISIBILITY_TOKEN secret is not set; skipping the nightly metrics run."
+            echo "run=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "run=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - uses: actions/checkout@v6
+        if: steps.gate.outputs.run == 'true'
+
+      - name: Resolve latest unstable Redis image
+        id: unstable-image
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          set -euo pipefail
+          # Pick the newest tag client-side instead of relying on the API's
+          # ordering parameter.
+          tag=$(curl -sf "https://hub.docker.com/v2/repositories/redislabs/client-libs-test/tags?page_size=100&name=unstable-" \
+            | jq -r '.results | max_by(.last_updated) | .name // empty')
+          if [ -z "$tag" ]; then
+            echo "::error::Could not resolve an unstable client-libs-test image tag from Docker Hub"
+            exit 1
+          fi
+          echo "Using image tag: $tag"
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+
+      - name: Set up Java
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/setup-java@v5
+        with:
+          java-version: '8'
+          distribution: 'temurin'
+
+      - name: System setup
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          sudo apt update
+          sudo apt install -y make
+          make compile-module
+
+      - name: Cache dependencies
+        if: steps.gate.outputs.run == 'true'
+        uses: actions/cache@v5
+        with:
+          path: |
+            ~/.m2/repository
+            /var/cache/apt
+          key: jedis-${{hashFiles('**/pom.xml')}}
+
+      - name: Maven offline
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          mvn -q dependency:go-offline
+
+      - name: Set up Docker Compose environment
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          mkdir -m 777 "$REDIS_ENV_WORK_DIR"
+          make start CLIENT_LIBS_TEST_IMAGE_TAG=${{ steps.unstable-image.outputs.tag }}
+
+      - name: Run all tests (unit + integration)
+        if: steps.gate.outputs.run == 'true'
+        run: |
+          export TEST_ENV_PROVIDER=oss-docker
+          export TEST_WORK_FOLDER=$REDIS_ENV_WORK_DIR
+          # Unlike the per-PR docker matrix (which skips unit tests because
+          # unit-tests.yml already runs them), this run keeps them in: one
+          # `mvn verify` covers both suites, so every test ships a duration.
+          mvn -B -Dwith-param-names=true -Dmaven.javadoc.skip=true clean verify
+        env:
+          JVM_OPTS: -Xmx3200m
+
+      - name: Collect JUnit XML
+        # Surefire (unit) and failsafe (integration) write to two folders;
+        # the metrics action reads exactly one. Prefix the copies so a class
+        # that ever runs in both suites (method-level @Tag("integration"))
+        # can't overwrite its unit results with its integration results.
+        if: ${{ !cancelled() && steps.gate.outputs.run == 'true' }}
+        run: |
+          # nullglob: a suite that never ran leaves no report dir; skip it
+          # instead of passing the unexpanded glob to cp.
+          shopt -s nullglob
+          mkdir junit-reports
+          for f in target/surefire-reports/*.xml; do cp "$f" "junit-reports/unit-$(basename "$f")"; done
+          for f in target/failsafe-reports/*.xml; do cp "$f" "junit-reports/it-$(basename "$f")"; done
+          echo "$(ls junit-reports | wc -l) report files collected"
+
+      - name: Report test metrics
+        # Report even when tests fail, but not when the run was cancelled.
+        if: ${{ !cancelled() && steps.gate.outputs.run == 'true' }}
+        uses: redis-developer/cae-otel-ci-visibility@v4
+        with:
+          junit-xml-folder: 'junit-reports'
+          otlp-endpoint: 'https://otlp-gateway-prod-us-central-0.grafana.net/otlp/v1/metrics'
+          otlp-headers: 'Authorization=Basic ${{ secrets.OTEL_CI_VISIBILITY_TOKEN }}'
+          server-version: 'unstable'
+
+      - name: Tear down Docker Compose environment
+        if: ${{ always() && steps.gate.outputs.run == 'true' }}
+        run: |
+          make stop

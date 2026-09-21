@@ -5489,7 +5489,7 @@ public class CommandObjects {
     CommandArguments args = commandArguments(Command.VADD).key(key);
     args.add(Keyword.REDUCE).add(reduceDim);
     args.add(Keyword.FP32).add(vectorBlob).add(element);
-    args.addParams(params);
+    addOptionalParams(params, args);
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 

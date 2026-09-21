@@ -108,4 +108,53 @@ public final class PushMessageTypes {
    */
   public static final String SUNSUBSCRIBE = "sunsubscribe";
   public static final byte[] SUNSUBSCRIBE_BYTES = SafeEncoder.encode(SUNSUBSCRIBE);
+
+  // ==================== Maintenance Events ====================
+
+  /**
+   * Endpoint handoff notification — connections to this endpoint must move to the new target within
+   * the grace period, after which the old endpoint hard-disconnects.
+   * <p>
+   * Format: ["MOVING", seq, graceSeconds, "host:port"] — the target is null for the "none" endpoint
+   * type: reconnect to the configured endpoint instead.
+   * @since 8.1
+   */
+  public static final String MOVING = "MOVING";
+  public static final byte[] MOVING_BYTES = SafeEncoder.encode(MOVING);
+
+  /**
+   * Shard migration starts within the lead time — relax client timeouts until MIGRATED.
+   * <p>
+   * Format: ["MIGRATING", seq, startsInSeconds, shard-ids]
+   * @since 8.1
+   */
+  public static final String MIGRATING = "MIGRATING";
+  public static final byte[] MIGRATING_BYTES = SafeEncoder.encode(MIGRATING);
+
+  /**
+   * Shard migration complete — restore client timeouts.
+   * <p>
+   * Format: ["MIGRATED", seq, shard-ids]
+   * @since 8.1
+   */
+  public static final String MIGRATED = "MIGRATED";
+  public static final byte[] MIGRATED_BYTES = SafeEncoder.encode(MIGRATED);
+
+  /**
+   * Shard failover starts within the lead time — relax client timeouts until FAILED_OVER.
+   * <p>
+   * Format: ["FAILING_OVER", seq, startsInSeconds, shard-ids]
+   * @since 8.1
+   */
+  public static final String FAILING_OVER = "FAILING_OVER";
+  public static final byte[] FAILING_OVER_BYTES = SafeEncoder.encode(FAILING_OVER);
+
+  /**
+   * Shard failover complete — restore client timeouts.
+   * <p>
+   * Format: ["FAILED_OVER", seq, shard-ids]
+   * @since 8.1
+   */
+  public static final String FAILED_OVER = "FAILED_OVER";
+  public static final byte[] FAILED_OVER_BYTES = SafeEncoder.encode(FAILED_OVER);
 }

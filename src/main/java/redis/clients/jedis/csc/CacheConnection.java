@@ -111,6 +111,7 @@ public class CacheConnection extends Connection {
     cache.flush();
   }
 
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   @Override
   public <T> T executeCommand(final CommandObject<T> commandObject) {
     final CacheKey cacheKey = new CacheKey(commandObject);
@@ -164,6 +165,7 @@ public class CacheConnection extends Connection {
     }
   }
 
+  @SuppressWarnings("rawtypes")
   private CacheEntry validateEntry(CacheEntry cacheEntry) {
     CacheConnection cacheOwner = cacheEntry.getConnection();
     if (cacheOwner == null || cacheOwner.isBroken() || !cacheOwner.isConnected()) {

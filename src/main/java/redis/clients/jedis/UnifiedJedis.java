@@ -5420,11 +5420,6 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<String> jsonArrPopRaw(String key) {
-    return executeCommand(commandObjects.jsonArrPopRaw(key));
-  }
-
-  @Override
   public List<String> jsonArrPopRaw(String key, Path2 path, int index) {
     return executeCommand(commandObjects.jsonArrPopRaw(key, path, index));
   }

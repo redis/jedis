@@ -360,22 +360,6 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisMockedTestBase {
   }
 
   @Test
-  public void testJsonArrPopRaw() {
-    String key = "testKey";
-    List<String> expectedResponse = Collections.singletonList("5");
-
-    when(commandObjects.jsonArrPopRaw(key)).thenReturn(listStringCommandObject);
-    when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
-
-    List<String> result = jedis.jsonArrPopRaw(key);
-
-    assertEquals(expectedResponse, result);
-
-    verify(commandExecutor).executeCommand(listStringCommandObject);
-    verify(commandObjects).jsonArrPopRaw(key);
-  }
-
-  @Test
   public void testJsonArrPopRawWithPath2AndIndex() {
     String key = "testKey";
     Path2 path = Path2.of(".path.to.array");

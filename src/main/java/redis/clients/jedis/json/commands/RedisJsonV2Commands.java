@@ -79,8 +79,6 @@ public interface RedisJsonV2Commands {
 
   List<Object> jsonArrPop(String key, Path2 path, int index);
 
-  List<String> jsonArrPopRaw(String key);
-
   List<String> jsonArrPopRaw(String key, Path2 path, int index);
 
   List<Long> jsonArrLen(String key, Path2 path);

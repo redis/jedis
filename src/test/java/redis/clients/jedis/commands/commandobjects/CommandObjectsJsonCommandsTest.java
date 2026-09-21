@@ -1291,24 +1291,6 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   }
 
   @Test
-  public void testJsonArrPopRawRoot() {
-    String key = "json";
-
-    JSONArray data = new JSONArray()
-        .put(1)
-        .put(2)
-        .put(3);
-
-    exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
-
-    List<String> arrPop = exec(commandObjects.jsonArrPopRaw(key));
-    assertThat(arrPop, contains("3"));
-
-    Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
-    assertThat(postCheck, jsonEquals(new JSONArray().put(new JSONArray().put(1).put(2))));
-  }
-
-  @Test
   public void testJsonArrPopRawWithPathAndIndexPreservesIntegerText() {
     String key = "json";
 

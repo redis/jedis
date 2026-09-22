@@ -310,7 +310,7 @@ public final class MultiDbConfig {
      * <p>
      * <strong>Default:</strong> {@value #CIRCUIT_BREAKER_SLIDING_WINDOW_SIZE_DEFAULT}
      * </p>
-     * @return sliding window size (calls or seconds depending on window type)
+     * @return sliding window size in seconds
      */
     public int getSlidingWindowSize() {
       return slidingWindowSize;

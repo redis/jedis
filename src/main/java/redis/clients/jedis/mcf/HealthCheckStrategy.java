@@ -127,7 +127,7 @@ public interface HealthCheckStrategy extends Closeable {
 
       /**
        * Set the interval between health checks in milliseconds.
-       * @param interval the interval in milliseconds (default: 1000)
+       * @param interval the interval in milliseconds (default: 5000)
        * @return this builder
        */
       @SuppressWarnings("unchecked")
@@ -171,7 +171,7 @@ public interface HealthCheckStrategy extends Closeable {
 
       /**
        * Set the delay between each probe of health checks in milliseconds.
-       * @param delayInBetweenProbes the delay in milliseconds (default: 100)
+       * @param delayInBetweenProbes the delay in milliseconds (default: 500)
        * @return this builder
        */
       @SuppressWarnings("unchecked")

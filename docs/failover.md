@@ -22,10 +22,11 @@ When this occurs, Jedis will fail back to the original deployment after a config
 The remainder of this guide describes:
 
 * A basic failover and health check configuration
-* Supported retry and circuit breaker settings
+* Supported retry, circuit breaker, failover and failback settings
+* Initialization policies that decide when the client is ready (since 7.3.0)
 * Failback and the database selection API
-* Dynamic database management for adding and removing databases at runtime
 * Dynamic weight management for runtime priority adjustments (since 7.4.0)
+* Dynamic database management for adding and removing databases at runtime
 
 We recommend that you read this guide carefully and understand the configuration settings before enabling Jedis failover
 in production.
@@ -123,6 +124,15 @@ MultiDbConfig.Builder multiConfig = MultiDbConfig.builder()
 
 The configuration above represents your two Redis deployments: `redis-east` and `redis-west`.
 
+If you do not need a custom pool configuration or health check strategy, the shorter
+`database(endpoint, weight, clientConfig)` overload builds the `DatabaseConfig` for you:
+
+```java
+MultiDbConfig.Builder multiConfig = MultiDbConfig.builder()
+        .database(east, 1.0f, config)
+        .database(west, 0.5f, config);
+```
+
 Continue using the `MultiDbConfig.Builder` builder to set your preferred retry and failover configuration.
 Then build a `MultiDbClient`:
 
@@ -130,32 +140,35 @@ Then build a `MultiDbClient`:
 // Configure circuit breaker for failure detection
 multiConfig
         .failureDetector(MultiDbConfig.CircuitBreakerConfig.builder()
-                .slidingWindowSize(1000)        // Sliding window size in number of calls
-                .failureRateThreshold(50.0f)    // percentage of failures to trigger circuit breaker
-                .minNumOfFailures(500)          // Minimum number of failures before circuit breaker is tripped
+                .slidingWindowSize(10)          // Time-based sliding window, in seconds
+                .failureRateThreshold(50.0f)    // Percentage of failed calls within the window
+                .minNumOfFailures(100)          // Minimum number of failed calls within the window
                 .build())
-        .failbackSupported(true)                // Enable failback
-        .failbackCheckInterval(1000)            // Check every second the unhealthy database to see if it has recovered
-        .gracePeriod(10000)                     // Keep database disabled for 10 seconds after it becomes unhealthy
+        .failbackSupported(true)                // Enable automatic failback (default: true)
+        .failbackCheckInterval(1000)            // Check every second whether a higher-weight database has recovered
+        .gracePeriod(10000)                     // Keep a database disabled for 10 seconds after it becomes unhealthy
         // Optional: configure retry settings
         .commandRetry(MultiDbConfig.RetryConfig.builder()
-                .maxAttempts(3)                  // Maximum number of retry attempts (including the initial call)
+                .maxAttempts(3)                  // Maximum number of attempts (including the initial call)
                 .waitDuration(500)               // Number of milliseconds to wait between retry attempts
                 .exponentialBackoffMultiplier(2) // Exponential backoff factor multiplied against wait duration between retries
                 .build())
         // Optional: configure fast failover
-        .fastFailover(true)                       // Force closing connections to unhealthy database on failover
-        .retryOnFailover(false);                  // Do not retry failed commands during failover
+        .fastFailover(true)                       // Force closing connections to the unhealthy database on failover
+        .retryOnFailover(false);                  // Do not re-run commands that failed during a failover on the new database
 
 MultiDbClient multiDbClient = MultiDbClient.builder()
         .multiDbConfig(multiConfig.build())
         .build();
 ```
 
-In the configuration here, we've set a sliding window size of 1000 and a failure rate threshold of 50%.
-This means that a failover will be triggered only if both 500 out of any 1000 calls to Redis fail (i.e., the failure rate threshold is reached) and the minimum number of failures is also met.
+In the configuration here, we've set a sliding window of 10 seconds, a failure rate threshold of 50% and a minimum of 100 failures.
+This means that a failover will be triggered only when, within the last 10 seconds, at least 100 calls to Redis have failed
+**and** the failed calls make up at least 50% of all calls in that window. Both conditions must be met.
 
 You can now use this `MultiDbClient` instance in your application to execute Redis commands.
+`MultiDbClient` also provides failover-aware pipelines and transactions through `pipelined()` and `multi()`;
+see the [Transactions](transactions-multi.md#notes-on-multidbtransaction) page for the `MultiDbTransaction` specifics.
 
 ## Configuration options
 
@@ -164,29 +177,30 @@ a fault-tolerance library that implements [retry](https://resilience4j.readme.io
 
 Once you configure a `MultiDbClient`, each call to Redis is decorated with a resilience4j retry and circuit breaker.
 
-By default, any call that throws a `JedisConnectionException` will be retried up to 3 times.
-If the call fail then the circuit breaker will record a failure.
+By default, any call that throws a `JedisConnectionException` will be attempted up to 3 times (the initial call plus 2 retries).
+If all attempts fail, the circuit breaker records a failure.
 
-The circuit breaker maintains a record of failures in a sliding window data structure.
-If the failure rate reaches a configured threshold (e.g., when 50% of the last 1000 calls have failed),
-then the circuit breaker's state transitions from `CLOSED` to `OPEN`.
-When this occurs, Jedis will attempt to connect to the next Redis database with the highest weight in its client configuration list.
+The circuit breaker keeps the outcome of recent calls in a time-based sliding window.
+Jedis evaluates two thresholds against that window: a minimum number of failed calls and a failure rate.
+When both are reached (e.g., at least 1000 calls failed within the last 2 seconds, and they make up at least 10% of all calls in that window),
+the circuit breaker transitions from `CLOSED` to `OPEN`.
+When this occurs, Jedis will switch to the healthy Redis database with the highest weight in its configuration.
 
-The supported retry and circuit breaker settings, and their default values, are described below.
+The supported settings, and their default values, are described below.
 You can configure any of these settings using the `MultiDbConfig.Builder` builder.
 Refer the basic usage above for an example of this.
 
 ### Retry configuration
-Configuration for command retry behavior is encapsulated in `MultiDbConfig.RetryConfig`.
+Configuration for command retry behavior is encapsulated in `MultiDbConfig.RetryConfig` and provided using `MultiDbConfig.Builder.commandRetry()`.
 Jedis uses the following retry settings:
 
-| Setting                          | Default value              | Description                                                                                                                                                                                                     |
-|----------------------------------|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Max retry attempts               | 3                          | Maximum number of retry attempts (including the initial call)                                                                                                                                                   |
-| Retry wait duration              | 500 ms                     | Number of milliseconds to wait between retry attempts                                                                                                                                                           |
-| Wait duration backoff multiplier | 2                          | Exponential backoff factor multiplied against wait duration between retries. For example, with a wait duration of 1 second and a multiplier of 2, the retries would occur after 1s, 2s, 4s, 8s, 16s, and so on. |
-| Retry included exception list    | [JedisConnectionException] | A list of Throwable classes that count as failures and should be retried.                                                                                                                                       |
-| Retry ignored exception list     | null                       | A list of Throwable classes to explicitly ignore for the purposes of retry.                                                                                                                                     |
+| Setting                          | Builder method                 | Default value              | Description                                                                                                                                                                                                     |
+|----------------------------------|--------------------------------|----------------------------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Max attempts                     | `maxAttempts`                  | 3                          | Maximum number of attempts, including the initial call                                                                                                                                                          |
+| Retry wait duration              | `waitDuration`                 | 500 ms                     | Number of milliseconds to wait between retry attempts                                                                                                                                                           |
+| Wait duration backoff multiplier | `exponentialBackoffMultiplier` | 2                          | Exponential backoff factor multiplied against wait duration between retries. For example, with a wait duration of 1 second and a multiplier of 2, the retries would occur after 1s, 2s, 4s, 8s, 16s, and so on. |
+| Retry included exception list    | `includedExceptionList`        | [JedisConnectionException] | A list of Throwable classes that count as failures and should be retried.                                                                                                                                       |
+| Retry ignored exception list     | `ignoreExceptionList`          | null                       | A list of Throwable classes to explicitly ignore for the purposes of retry.                                                                                                                                     |
 
 To disable retry, set `maxAttempts` to 1.
 
@@ -195,13 +209,76 @@ For failover, Jedis uses a circuit breaker to detect when a Redis database has f
 Failover configuration is encapsulated in `MultiDbConfig.CircuitBreakerConfig` and can be provided using the `MultiDbConfig.Builder.failureDetector()`.
 Jedis uses the following circuit breaker settings:
 
-| Setting                                 | Default value              | Description                                                                                                              |
-|-----------------------------------------|----------------------------|--------------------------------------------------------------------------------------------------------------------------|
-| Sliding window size                     | 2                          | The size of the sliding window. Units depend on sliding window type. The size represents seconds.                        |
-| Threshold min number of failures        | 1000                       | Minimum number of failures before circuit breaker is tripped.                                                            |
-| Failure rate threshold                  | `10.0f`                    | Percentage of calls within the sliding window that must fail before the circuit breaker transitions to the `OPEN` state. |
-| Circuit breaker included exception list | [JedisConnectionException] | A list of Throwable classes that count as failures and add to the failure rate.                                          |
-| Circuit breaker ignored exception list  | null                       | A list of Throwable classes to explicitly ignore for failure rate calculations.                                          |                                                                                                               |
+| Setting                                 | Builder method          | Default value              | Description                                                                                                                                                              |
+|-----------------------------------------|-------------------------|----------------------------|--------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Sliding window size                     | `slidingWindowSize`     | 2                          | Size of the time-based sliding window, in **seconds**, over which call outcomes are recorded.                                                                            |
+| Threshold min number of failures        | `minNumOfFailures`      | 1000                       | Minimum number of failed calls within the sliding window before the circuit breaker can trip. `0` disables this check so that only the failure rate is considered.       |
+| Failure rate threshold                  | `failureRateThreshold`  | `10.0f`                    | Percentage of calls within the sliding window that must fail before the circuit breaker transitions to the `OPEN` state. `0.0f` disables this check so that only the minimum number of failures is considered. |
+| Circuit breaker included exception list | `includedExceptionList` | [JedisConnectionException] | A list of Throwable classes that count as failures and add to the failure rate.                                                                                          |
+| Circuit breaker ignored exception list  | `ignoreExceptionList`   | null                       | A list of Throwable classes to explicitly ignore for failure rate calculations.                                                                                          |
+
+The circuit breaker opens only when **both** the minimum number of failures and the failure rate threshold are reached within the sliding window.
+Once a failover has been triggered, the failed database's circuit breaker is kept open for the configured grace period
+(see [Failover and failback configuration](#failover-and-failback-configuration)) so that traffic does not return to it prematurely.
+
+### Failover and failback configuration
+
+The following settings on `MultiDbConfig.Builder` control what happens once a failure has been detected,
+and how Jedis returns to a preferred database once it recovers:
+
+| Setting                              | Builder method                   | Default value        | Description                                                                                                                                                                                                                                              |
+|--------------------------------------|----------------------------------|----------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| Failback supported                   | `failbackSupported`              | `true`               | Enables the periodic check that switches back to a healthy database with a higher weight than the active one.                                                                                                                                             |
+| Failback check interval              | `failbackCheckInterval`          | 120000 ms (2 min)    | How often the periodic failback check runs.                                                                                                                                                                                                              |
+| Grace period                         | `gracePeriod`                    | 60000 ms (1 min)     | How long a database stays disabled after it is marked unhealthy or its circuit breaker trips. During this period it is not considered for failover or failback, even if health checks report it healthy.                                                  |
+| Fast failover                        | `fastFailover`                   | `false`              | When enabled, all open connections to the previously active database are forcefully closed on a switch, so in-flight operations fail immediately instead of waiting for their socket timeouts.                                                            |
+| Retry on failover                    | `retryOnFailover`                | `false`              | When enabled, a command that fails on a database that has just been switched away from is re-executed on the new active database instead of surfacing the failure to the caller.                                                                        |
+| Max number of failover attempts      | `maxNumFailoverAttempts`         | 10                   | How many times Jedis reports the "no healthy database" condition as temporary before it is treated as permanent. See [When no database is available](#when-no-database-is-available).                                                                     |
+| Delay in between failover attempts   | `delayInBetweenFailoverAttempts` | 12000 ms             | Minimum time between two counted failover attempts while no healthy database is available.                                                                                                                                                              |
+| Initialization policy                | `initializationPolicy`           | `MAJORITY_AVAILABLE` | Decides when `MultiDbClient.builder().build()` may return based on the initial health check results. See [Initialization policy](#initialization-policy).                                                                                                 |
+
+### Initialization policy
+
+> Introduced in version 7.3.0
+
+When a `MultiDbClient` is created, health checks are started for every database that has them enabled,
+and the client waits for their first results before selecting the initial active database.
+The `InitializationPolicy` decides how many databases must be reachable before the client is considered ready,
+and when initialization should fail instead. The built-in policies live in `InitializationPolicy.BuiltIn`:
+
+| Policy               | Client is ready when...                        | Initialization fails when...                                  |
+|----------------------|------------------------------------------------|---------------------------------------------------------------|
+| `ALL_AVAILABLE`      | every database passed its initial health check | any database fails its initial health check                   |
+| `MAJORITY_AVAILABLE` | more than half of the databases are healthy    | a majority can no longer be reached (default)                 |
+| `ONE_AVAILABLE`      | at least one database is healthy               | every database failed its initial health check                |
+
+Databases with health checks disabled are counted as available.
+If the policy fails, `build()` throws a `JedisConnectionException`.
+
+```java
+MultiDbConfig config = MultiDbConfig.builder()
+        .database(east, 1.0f, clientConfig)
+        .database(west, 0.5f, clientConfig)
+        .initializationPolicy(InitializationPolicy.BuiltIn.ONE_AVAILABLE) // start as soon as one database is reachable
+        .build();
+```
+
+You can also implement `InitializationPolicy` yourself. The `evaluate` method receives the number of available,
+failed and pending databases and returns `CONTINUE`, `SUCCESS` or `FAIL`.
+
+### When no database is available
+
+If a failover is triggered but no other healthy database exists, the command fails with one of two
+`JedisConnectionException` subclasses from the `redis.clients.jedis.mcf` package:
+
+- `JedisFailoverException.JedisTemporarilyNotAvailableException` while the number of counted failover attempts is
+  at or below `maxNumFailoverAttempts`. Attempts are counted at most once per `delayInBetweenFailoverAttempts`,
+  so with the defaults the condition is reported as temporary for roughly two minutes.
+- `JedisFailoverException.JedisPermanentlyNotAvailableException` once that limit has been exceeded.
+
+The attempt counter resets as soon as a switch to a healthy database succeeds.
+Applications can catch the temporary variant to back off and retry, and treat the permanent variant as a signal
+to alert or shut down.
 
 ### Health Check Configuration and Customization
 
@@ -209,28 +286,70 @@ The `MultiDbClient` includes a comprehensive health check system that continuous
 
 The health check system serves several critical purposes in the failover architecture:
 
-1. **Proactive Monitoring**: Continuously monitors passive databases that aren't currently receiving traffic
+1. **Proactive Monitoring**: Continuously monitors all databases, including passive ones that aren't currently receiving traffic
 2. **Failback Detection**: Determines when a previously failed database has recovered and is ready to accept traffic
 3. **Circuit Breaker Integration**: Works with the circuit breaker pattern to manage database state transitions
 4. **Customizable Strategies**: Supports pluggable health check implementations for different deployment scenarios
 
 The health check system operates independently of your application traffic, running background checks at configurable intervals to assess database health without impacting performance.
 
+#### How a health check run works
+
+Every `HealthCheckStrategy` exposes a small set of parameters that drive the background check:
+
+| Parameter               | Accessor                  | `HealthCheckStrategy.Config` default | Description                                                                                            |
+|-------------------------|---------------------------|--------------------------------------|--------------------------------------------------------------------------------------------------------|
+| Interval                | `getInterval()`           | 5000 ms                              | Time between two health check runs                                                                     |
+| Timeout                 | `getTimeout()`            | 1000 ms                              | Maximum time a single probe may take; a timed out probe counts as a failure                            |
+| Number of probes        | `getNumProbes()`          | 3                                    | How many times `doHealthCheck` is invoked (at most) within one run                                     |
+| Delay in between probes | `getDelayInBetweenProbes()` | 500 ms                             | Pause between two probes of the same run                                                               |
+| Probing policy          | `getPolicy()`             | `ProbingPolicy.BuiltIn.ALL_SUCCESS`  | Decides how the individual probe results are combined into one `HEALTHY` / `UNHEALTHY` result          |
+
+The built-in probing policies in `ProbingPolicy.BuiltIn` are:
+
+- `ALL_SUCCESS` — every probe must succeed; the run stops at the first failed probe.
+- `ANY_SUCCESS` — one successful probe is enough; the run stops at the first successful probe.
+- `MAJORITY_SUCCESS` — more than half of the probes must succeed; the run stops as soon as the outcome is decided.
+
+The result of a run becomes the database's health status. When the active database turns unhealthy, Jedis puts it into
+the grace period and switches to the healthy database with the highest weight.
+
 #### Available Health Check Types
 
 ##### 1. PingStrategy (Default)
 
-The `PingStrategy` is the default health check implementation that uses Redis's `PING` command to verify both connectivity and write capability.
+The `PingStrategy` is the default health check implementation. It keeps a small dedicated connection pool to the database
+and sends the Redis `PING` command to verify connectivity and that the server is responding.
 
 **Use Cases:**
 - General-purpose health checking for most Redis deployments
-- Verifying both read and write operations
 - Simple connectivity validation
 
 **How it works:**
-- Sends `PING` command to the Redis server
-- Expects exact response `"PONG"` to consider the server healthy
-- Any exception or unexpected response marks the server as unhealthy
+- Sends `PING` command to the Redis server using the database's `JedisClientConfig` (so the same credentials, TLS settings, and timeouts apply)
+- Expects exact response `"PONG"` to consider the probe successful
+- Any exception, timeout, or unexpected response marks the probe as failed
+- Probe results are combined according to the `HealthCheckStrategy.Config` shown above (defaults: 3 probes, all must succeed)
+
+`PingStrategy.DEFAULT` is used when no strategy supplier is configured. To tune its interval, timeout, or probing behavior,
+pass a `HealthCheckStrategy.Config` through your own supplier:
+
+```java
+HealthCheckStrategy.Config pingConfig = HealthCheckStrategy.Config.builder()
+        .interval(2000)                                   // Check every 2 seconds
+        .timeout(500)                                     // 500ms timeout per probe
+        .numProbes(2)
+        .policy(ProbingPolicy.BuiltIn.ANY_SUCCESS)
+        .build();
+
+MultiDbConfig.StrategySupplier pingSupplier =
+        (hostAndPort, jedisClientConfig) -> new PingStrategy(hostAndPort, jedisClientConfig, pingConfig);
+
+MultiDbConfig.DatabaseConfig dbConfig =
+        MultiDbConfig.DatabaseConfig.builder(east, config)
+                .healthCheckStrategySupplier(pingSupplier)
+                .build();
+```
 
 ##### 2. LagAwareStrategy [PREVIEW] (Redis Enterprise)
 
@@ -243,35 +362,35 @@ The `LagAwareStrategy` is designed specifically for Redis Enterprise Active-Acti
 
 **How it works:**
 - Queries Redis Enterprise REST API for database availability
-- Optionally validates replication lag against configurable thresholds
-- Automatically discovers database IDs based on endpoint hostnames
+- Optionally validates replication lag against a configurable tolerance (`extendedCheckEnabled`, default `true`; `availabilityLagTolerance`, default 5 seconds)
+- Automatically discovers the database ID by matching the database endpoint's hostname against the databases exposed by the REST API
 
 **Example Configuration:**
 ```java
-BiFunction<HostAndPort, Supplier<RedisCredentials>, MultiDbConfig.StrategySupplier> healthCheckStrategySupplier =
-        (HostAndPort dbHostPort, Supplier<RedisCredentials> credentialsSupplier) -> {
-            LagAwareStrategy.Config lagConfig = LagAwareStrategy.Config.builder(dbHostPort, credentialsSupplier)
-                    .interval(5000)                                          // Check every 5 seconds
-                    .timeout(3000)                                           // 3 second timeout
-                    .extendedCheckEnabled(true)
-                    .build();
-
-            return (hostAndPort, jedisClientConfig) -> new LagAwareStrategy(lagConfig);
-        };
-
-// Configure REST API endpoint and credentials
-HostAndPort restEndpoint = new HostAndPort("redis-enterprise-db-fqdn", 9443);
-Supplier<RedisCredentials> credentialsSupplier = () ->
+// REST API endpoint and credentials of the Redis Enterprise cluster
+HostAndPort restEndpoint = new HostAndPort("redis-enterprise-cluster-fqdn", 9443);
+Supplier<RedisCredentials> restCredentials = () ->
         new DefaultRedisCredentials("rest-api-user", "pwd");
 
-MultiDbConfig.StrategySupplier lagawareStrategySupplier = healthCheckStrategySupplier.apply(
-        restEndpoint, credentialsSupplier);
+LagAwareStrategy.Config lagConfig = LagAwareStrategy.Config.builder(restEndpoint, restCredentials)
+        .interval(5000)                                  // Check every 5 seconds
+        .timeout(3000)                                   // 3 second timeout per REST call
+        .extendedCheckEnabled(true)                      // Also validate replication lag
+        .availabilityLagTolerance(Duration.ofSeconds(2)) // Tolerate up to 2 seconds of lag
+        // .sslOptions(sslOptions)                       // Optional: custom truststore for the HTTPS REST API
+        .build();
+
+MultiDbConfig.StrategySupplier lagAwareSupplier =
+        (hostAndPort, jedisClientConfig) -> new LagAwareStrategy(lagConfig);
 
 MultiDbConfig.DatabaseConfig dbConfig =
-        MultiDbConfig.DatabaseConfig.builder(hostAndPort, clientConfig)
-                .healthCheckStrategySupplier(lagawareStrategySupplier)
+        MultiDbConfig.DatabaseConfig.builder(east, config)
+                .healthCheckStrategySupplier(lagAwareSupplier)
                 .build();
 ```
+
+`LagAwareStrategy.Config` also offers the shortcuts `databaseAvailability(...)` (availability only, no lag check),
+`lagAware(...)` (default tolerance) and `lagAwareWithTolerance(...)` for the common configurations.
 
 ##### 3. Custom Health Check Strategies
 
@@ -282,7 +401,8 @@ You can implement custom health check strategies by implementing the `HealthChec
 - Integration with external monitoring systems
 - Custom performance or latency-based health checks
 
-Use the `healthCheckStrategySupplier()` method to provide a custom health check implementation:
+Use the `healthCheckStrategySupplier()` method to provide a custom health check implementation.
+The supplier receives the database's `HostAndPort` and `JedisClientConfig`, so one supplier can serve several databases:
 
 ```java
 // Custom strategy supplier
@@ -293,68 +413,73 @@ MultiDbConfig.StrategySupplier customStrategy =
         };
 
 MultiDbConfig.DatabaseConfig dbConfig =
-        MultiDbConfig.DatabaseConfig.builder(hostAndPort, clientConfig)
+        MultiDbConfig.DatabaseConfig.builder(east, config)
                 .healthCheckStrategySupplier(customStrategy)
                 .weight(1.0f)
                 .build();
 ```
 
-You can implement custom health check strategies by implementing the `HealthCheckStrategy` interface:
+If you already have a configured strategy instance, `healthCheckStrategy(HealthCheckStrategy)` wraps it in a supplier for you.
+The same instance is then reused for every database that shares that `DatabaseConfig`, so make sure it is thread-safe.
+
+A minimal `HealthCheckStrategy` looks like this. Note that `doHealthCheck` receives the `Endpoint` being checked,
+and that `close()` is called when the database is removed or the client is closed, so resources should be created once
+and released there rather than per probe:
 
 ```java
-MultiDbConfig.StrategySupplier pingStrategy = (hostAndPort, jedisClientConfig) -> {
-    return new HealthCheckStrategy() {
-        @Override
-        public int getInterval() {
-            return 1000; // Check every second
-        }
+public class MyCustomHealthCheckStrategy implements HealthCheckStrategy {
 
-        @Override
-        public int getTimeout() {
-            return 500; // 500ms timeout
-        }
+    private final RedisClient client;
 
+    public MyCustomHealthCheckStrategy(HostAndPort hostAndPort, JedisClientConfig jedisClientConfig) {
+        this.client = RedisClient.builder().hostAndPort(hostAndPort).clientConfig(jedisClientConfig).build();
+    }
 
-        @Override
-        public int getNumProbes() {
-            return 1;
-        }
+    @Override
+    public int getInterval() {
+        return 1000; // Check every second
+    }
 
-        @Override
-        public ProbingPolicy getPolicy() {
-            return ProbingPolicy.BuiltIn.ANY_SUCCESS;
-        }
+    @Override
+    public int getTimeout() {
+        return 500; // 500ms timeout per probe
+    }
 
-        @Override
-        public int getDelayInBetweenProbes() {
-            return 100;
-        }
-        @Override
-        public HealthStatus doHealthCheck(Endpoint endpoint) {
-            try (UnifiedJedis jedis = new UnifiedJedis(hostAndPort, jedisClientConfig)) {
-                String result = jedis.ping();
-                return "PONG".equals(result) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
-            } catch (Exception e) {
-                return HealthStatus.UNHEALTHY;
-            }
-        }
+    @Override
+    public int getNumProbes() {
+        return 1;
+    }
 
-        @Override
-        public void close() {
-            // Cleanup resources if needed
-        }
-    };
-};
+    @Override
+    public ProbingPolicy getPolicy() {
+        return ProbingPolicy.BuiltIn.ANY_SUCCESS;
+    }
 
-MultiDbConfig.DatabaseConfig dbConfig =
-        MultiDbConfig.DatabaseConfig.builder(hostAndPort, clientConfig)
-                .healthCheckStrategySupplier(pingStrategy)
-                .build();
+    @Override
+    public int getDelayInBetweenProbes() {
+        return 100;
+    }
+
+    @Override
+    public HealthStatus doHealthCheck(Endpoint endpoint) {
+        try {
+            String result = client.ping();
+            return "PONG".equals(result) ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY;
+        } catch (Exception e) {
+            return HealthStatus.UNHEALTHY;
+        }
+    }
+
+    @Override
+    public void close() {
+        client.close();
+    }
+}
 ```
 
 #### Disabling Health Checks
 
-Use the `healthCheckEnabled(false)` method to completely disable health checks:
+Use the `healthCheckEnabled(false)` method to completely disable health checks for a database:
 
 ```java
 MultiDbConfig.DatabaseConfig dbConfig = MultiDbConfig.DatabaseConfig.builder(east, config)
@@ -362,22 +487,32 @@ MultiDbConfig.DatabaseConfig dbConfig = MultiDbConfig.DatabaseConfig.builder(eas
     .build();
 ```
 
+A database without health checks is always assumed healthy, so it is only taken out of rotation by its circuit breaker
+(for the duration of the grace period). Failures are then detected exclusively through the commands your application executes,
+and the database is considered available again as soon as the grace period ends.
+
 ### Fallback configuration
 
+Fallback is what makes a command that hits an open circuit breaker, or that fails while a failover is in progress,
+switch to the next database and run there instead of surfacing the error.
 Jedis uses the following fallback settings:
 
-| Setting                 | Default value                                         | Description                                        |
-|-------------------------|-------------------------------------------------------|----------------------------------------------------|
-| Fallback exception list | [CallNotPermittedException, JedisConnectionException] | A list of Throwable classes that trigger fallback. |
+| Setting                 | Builder method          | Default value                                          | Description                                        |
+|-------------------------|-------------------------|--------------------------------------------------------|----------------------------------------------------|
+| Fallback exception list | `fallbackExceptionList` | [CallNotPermittedException, ConnectionFailoverException] | A list of Throwable classes that trigger fallback. |
+
+`CallNotPermittedException` is thrown by resilience4j when the circuit breaker is open.
+`ConnectionFailoverException` wraps a command failure that happened on a database which is no longer active,
+and is only produced when `retryOnFailover` is enabled.
 
 ### Failover callbacks
 
 In the event that Jedis fails over, you may wish to take some action. This might include logging a warning, recording
 a metric, or externally persisting the database connection state, to name just a few examples. For this reason,
 `MultiDbClient` lets you register a custom callback that will be called whenever Jedis
-fails over to a new database.
+switches to a new database.
 
-To use this feature, you'll need to design a class that implements `java.util.function.Consumer`.
+To use this feature, you'll need to design a class that implements `java.util.function.Consumer<DatabaseSwitchEvent>`.
 This class must implement the `accept` method, as you can see below.
 
 ```java
@@ -385,33 +520,43 @@ public class FailoverReporter implements Consumer<DatabaseSwitchEvent> {
     
     @Override
     public void accept(DatabaseSwitchEvent e) {
-        System.out.println("Jedis failover to database: " + e.getDatabaseName() + " due to " + e.getReason());
+        System.out.println("Jedis switched to database: " + e.getDatabaseName() + " due to " + e.getReason());
     }
 }
 ```
 
-DatabaseSwitchEvent consumer can be registered as follows:
+The `DatabaseSwitchEvent` consumer is registered on the client builder, next to the `MultiDbConfig`:
 
 ```java
 FailoverReporter reporter = new FailoverReporter();
 MultiDbClient client = MultiDbClient.builder()
+        .multiDbConfig(multiConfig)
         .databaseSwitchListener(reporter)
         .build();
 ```
-The provider will call your `accept` whenever a failover occurs.
-or directly using lambda expression:
+The client will call your `accept` whenever the active database changes.
+You can also use a lambda expression:
 ```java
 MultiDbClient client = MultiDbClient.builder()
+        .multiDbConfig(multiConfig)
         .databaseSwitchListener(event -> System.out.println("Switched to: " + event.getEndpoint()))
         .build();
 ```
 
+`DatabaseSwitchEvent.getReason()` returns a `SwitchReason` telling you why the switch happened:
+
+| `SwitchReason`    | Triggered by                                                                                   |
+|-------------------|------------------------------------------------------------------------------------------------|
+| `CIRCUIT_BREAKER` | The active database's circuit breaker tripped                                                  |
+| `HEALTH_CHECK`    | A health check reported the active database as unhealthy                                       |
+| `FAILBACK`        | The periodic failback check found a healthy database with a higher weight                      |
+| `FORCED`          | `setActiveDatabase()`, `forceActiveDatabase()`, or removal of the active database via `removeDatabase()` |
 
 ## Failing back
 
 Jedis supports automatic failback based on health checks or manual failback using the database selection API.
 
-## Failback scenario
+### Failback scenario
 
 When a failover is triggered, Jedis will attempt to connect to the next Redis server based on the weights of server configurations
 you provide at setup.
@@ -429,23 +574,43 @@ When health checks are enabled, Jedis automatically monitors the health of all c
 The automatic failback process works as follows:
 
 1. **Continuous Monitoring**: Health checks run continuously for all databases, regardless of their current active status
-2. **Recovery Detection**: When a previously failed database passes the required number of consecutive health checks, it's marked as healthy
-3. **Weight-Based Failback**: If automatic failback is enabled and a recovered database has a higher weight than the currently active database, Jedis will automatically switch to the recovered database
-4. **Grace Period Respect**: Failback only occurs after the configured grace period has elapsed since the database was marked as unhealthy
+2. **Recovery Detection**: When a health check run on a previously failed database succeeds (according to the strategy's probing policy), the database is marked as healthy
+3. **Grace Period Respect**: A database is not eligible for failback until the configured grace period (`gracePeriod`, default 1 minute) has elapsed since it was marked unhealthy
+4. **Weight-Based Failback**: Every `failbackCheckInterval` (default 2 minutes), if `failbackSupported` is enabled and a healthy, eligible database has a higher weight than the currently active database, Jedis switches to it and emits a `FAILBACK` switch event
 
-## Manual Failback using the database selection API
+With the default settings, failback can therefore take up to a few minutes after the database recovers.
+Lower `failbackCheckInterval` and `gracePeriod` if you need a faster failback, keeping in mind that a short grace period
+increases the risk of oscillating between databases during intermittent failures.
+
+### Manual Failback using the database selection API
 
 Once you've determined that it's safe to fail back to a previously-unavailable database,
 you need to decide how to trigger the failback. There are two ways to accomplish this:
 
-`MultiDbClient` exposes a method that you can use to manually select which database Jedis should use.
-To select a different database to use, pass the database's `HostAndPort` to `setActiveDatabase()`:
-```
-        Endpoint endpoint =  new HostAndPort("redis-east.example.com", 14000);
-        client.setActiveDatabase(endpoint);
+**`setActiveDatabase(endpoint)`** switches to the given database right away.
+Jedis first validates the target by opening a connection and sending `PING`; if that fails, a `JedisValidationException`
+is thrown and the active database is left unchanged. On success a `FORCED` switch event is emitted.
+
+```java
+Endpoint endpoint = new HostAndPort("redis-east.example.com", 14000);
+client.setActiveDatabase(endpoint);
 ```
 
-This method is thread-safe.
+Note that automatic failback keeps running: if a healthy database with a higher weight exists, the next periodic failback
+check may switch away from the database you selected. Use `forceActiveDatabase` if you want the choice to stick.
+
+**`forceActiveDatabase(endpoint, forcedActiveDurationMs)`** switches to the given database and puts every other database
+into a grace period for the given duration, so neither failover nor failback will move traffic away from it during that time.
+Because the other databases are in their grace period, commands fail with the exceptions described in
+[When no database is available](#when-no-database-is-available) if the pinned database itself goes down.
+The target must be healthy, otherwise a `JedisValidationException` is thrown.
+
+```java
+// Pin redis-east as the active database for the next 10 minutes
+client.forceActiveDatabase(endpoint, Duration.ofMinutes(10).toMillis());
+```
+
+Both methods are thread-safe.
 
 If you decide to implement manual failback, you will need a way for external systems to trigger this method in your
 application. For example, if your application exposes a REST API, you might consider creating a REST endpoint
@@ -612,14 +777,14 @@ When adding or removing databases, the following behavior applies:
 
 #### Adding Databases
 
-- **Immediate Availability**: The new endpoint becomes available for failover operations immediately after being added
+- **Immediate Availability**: The new endpoint becomes available for failover operations immediately after being added and, if health checks are enabled, after its first health check run succeeds
 - **Health Check Integration**: If health checks are configured, the new database will be monitored according to the configured health check strategy
 - **Duplicate Prevention**: Attempting to add an endpoint that already exists will throw a `JedisValidationException`
-- **Weight-Based Selection**: The new database participates in weight-based active database selection according to its configured weight
+- **Weight-Based Selection**: The new database participates in weight-based active database selection according to its configured weight. Adding a database does not switch the active database by itself; if the new database has the highest weight, the next periodic failback check will switch to it
 
 #### Removing Databases
 
-- **Automatic Failover**: If the removed endpoint is currently the active database, Jedis will automatically failover to the next available healthy endpoint based on weight priority
+- **Automatic Failover**: If the removed endpoint is currently the active database, Jedis will automatically switch to the healthy endpoint with the highest weight and emit a `FORCED` switch event. If no other healthy endpoint exists, the removal is rejected with a `JedisException`
 - **Last Database Protection**: You cannot remove the last remaining endpoint - attempting to do so will throw a `JedisValidationException`
 - **Non-Existent Endpoint**: Attempting to remove an endpoint that doesn't exist will throw a `JedisValidationException`
 - **Resource Cleanup**: The removed database's connections and resources are properly closed and cleaned up
@@ -627,12 +792,22 @@ When adding or removing databases, the following behavior applies:
 
 ### Querying Configured Databases
 
-You can retrieve the set of all currently configured database endpoints:
+You can retrieve the set of all currently configured database endpoints, inspect their health, and find out which one is active:
 
 ```java
 Set<Endpoint> endpoints = client.getDatabaseEndpoints();
 System.out.println("Configured databases: " + endpoints);
+
+Endpoint active = client.getActiveDatabaseEndpoint();
+System.out.println("Active database: " + active);
+
+for (Endpoint endpoint : endpoints) {
+    System.out.println(endpoint + " healthy: " + client.isHealthy(endpoint));
+}
 ```
+
+`isHealthy(endpoint)` reflects the same view Jedis uses for failover decisions: the database's health check status,
+whether its circuit breaker is open, and whether it is currently in a grace period.
 
 ### Complete Example: Dynamic Database Management
 
@@ -692,14 +867,18 @@ Both `addDatabase()` and `removeDatabase()` methods are thread-safe and can be c
 
 **Common causes:**
 - Timeout too aggressive for network conditions
-- Authentication issues with Redis server
+- Authentication issues with Redis server (the health check uses the database's `JedisClientConfig`)
 - Network connectivity problems
 
 **Solutions:**
 ```java
 // Increase timeout values
-HealthCheckStrategy.Config config = HealthCheckStrategy.Config.builder()
+HealthCheckStrategy.Config hcConfig = HealthCheckStrategy.Config.builder()
     .timeout(3000)  // Increase from default 1000ms
+    .build();
+
+DatabaseConfig dbConfig = DatabaseConfig.builder(east, config)
+    .healthCheckStrategySupplier((hostAndPort, clientConfig) -> new PingStrategy(hostAndPort, clientConfig, hcConfig))
     .build();
 ```
 
@@ -707,25 +886,33 @@ HealthCheckStrategy.Config config = HealthCheckStrategy.Config.builder()
 
 **Solutions:**
 ```java
-// Require more consecutive successes for stability
-HealthCheckStrategy.Config config = HealthCheckStrategy.Config.builder()
-    .interval(5000)                 // Less frequent checks
-    .timeout(2000)                  // More generous timeout
+// Tolerate a single failed probe instead of requiring all probes to succeed
+HealthCheckStrategy.Config hcConfig = HealthCheckStrategy.Config.builder()
+    .interval(5000)                                  // Less frequent checks
+    .timeout(2000)                                   // More generous timeout
+    .numProbes(3)
+    .policy(ProbingPolicy.BuiltIn.MAJORITY_SUCCESS)  // 2 out of 3 probes must succeed
     .build();
 ```
 
 #### Slow Failback After Recovery
 
+With the defaults, a recovered database is picked up again only after its 1 minute grace period has passed
+**and** the next failback check runs, which happens every 2 minutes.
+
 **Solutions:**
 ```java
-// Faster recovery configuration
-HealthCheckStrategy.Config config = HealthCheckStrategy.Config.builder()
+// Faster recovery detection
+HealthCheckStrategy.Config hcConfig = HealthCheckStrategy.Config.builder()
     .interval(1000)                    // More frequent checks
     .build();
 
 // Adjust failback timing
 MultiDbConfig multiConfig = MultiDbConfig.builder()
-        .gracePeriod(5000)                 // Shorter grace period
+        .database(east, 1.0f, config)
+        .database(west, 0.5f, config)
+        .failbackCheckInterval(5000)       // Look for a better database every 5 seconds
+        .gracePeriod(10000)                // Shorter grace period
         .build();
 ```
 

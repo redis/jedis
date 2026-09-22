@@ -58,7 +58,7 @@ import redis.clients.jedis.mcf.InitializationPolicy;
  *       .healthCheckEnabled(true).build();
  *
  *   // Build multi-database configuration
- *   MultiDbConfig config = MultiDbConfig.builder(primary, secondary)
+ *   MultiDbConfig config = MultiDbConfig.builder().database(primary).database(secondary)
  *       .failureDetector(CircuitBreakerConfig.builder().failureRateThreshold(10.0f).build())
  *       .commandRetry(RetryConfig.builder().maxAttempts(3).build()).failbackSupported(true)
  *       .gracePeriod(10000).build();
@@ -579,7 +579,7 @@ public final class MultiDbConfig {
    * monitoring overhead.
    * </p>
    * <p>
-   * <strong>Default:</strong> {@value #FAILBACK_CHECK_INTERVAL_DEFAULT} milliseconds (5 seconds)
+   * <strong>Default:</strong> {@value #FAILBACK_CHECK_INTERVAL_DEFAULT} milliseconds (2 minutes)
    * </p>
    * @see #getFailbackCheckInterval()
    * @see #isFailbackSupported
@@ -595,7 +595,7 @@ public final class MultiDbConfig {
    * between databases during intermittent failures.
    * </p>
    * <p>
-   * <strong>Default:</strong> {@value #GRACE_PERIOD_DEFAULT} milliseconds (10 seconds)
+   * <strong>Default:</strong> {@value #GRACE_PERIOD_DEFAULT} milliseconds (1 minute)
    * </p>
    * @see #getGracePeriod()
    * @see #isFailbackSupported

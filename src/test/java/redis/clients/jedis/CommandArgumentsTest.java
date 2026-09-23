@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.nio.charset.StandardCharsets;
@@ -32,21 +33,29 @@ public class CommandArgumentsTest {
   }
 
   @Test
-  public void preSizedConstructorMatchesDefaultBehavior() {
+  public void ensureCapacityMatchesDefaultBehavior() {
     CommandArguments expected = new CommandArguments(TestCommand.MSET);
-    CommandArguments preSized = new CommandArguments(TestCommand.MSET, 8);
+    CommandArguments hinted = new CommandArguments(TestCommand.MSET).ensureCapacity(9);
     for (int i = 0; i < 8; i++) {
       String value = "value" + i;
       expected.add(value);
-      preSized.add(value);
+      hinted.add(value);
     }
-    assertEquals(asList(expected), asList(preSized));
-    assertEquals(expected.getCommand(), preSized.getCommand());
+    assertEquals(asList(expected), asList(hinted));
+    assertEquals(expected.getCommand(), hinted.getCommand());
   }
 
   @Test
-  public void preSizedConstructorGrowsBeyondExpectation() {
-    CommandArguments args = new CommandArguments(TestCommand.HSET, 1);
+  public void ensureCapacityIsChainableMidBuild() {
+    CommandArguments args = new CommandArguments(TestCommand.HSET).key("key");
+    assertSame(args, args.ensureCapacity(args.size() + 4));
+    args.add("f1").add("v1").add("f2").add("v2");
+    assertEquals(6, args.size()); // command + key + 4 arguments
+  }
+
+  @Test
+  public void underEstimatedCapacityGrowsBeyondExpectation() {
+    CommandArguments args = new CommandArguments(TestCommand.HSET).ensureCapacity(2);
     for (int i = 0; i < 100; i++) {
       args.add("value" + i);
     }
@@ -54,8 +63,8 @@ public class CommandArgumentsTest {
   }
 
   @Test
-  public void expectationBelowZeroIsTreatedAsZero() {
-    CommandArguments args = new CommandArguments(TestCommand.MSET, -5);
+  public void nonPositiveCapacityHasNoEffect() {
+    CommandArguments args = new CommandArguments(TestCommand.MSET).ensureCapacity(-5);
     args.add("a");
     args.add("b");
     assertEquals(3, asList(args).size()); // command + 2 arguments
@@ -91,6 +100,19 @@ public class CommandArgumentsTest {
     List<String> values = new ArrayList<>();
     for (int i = 0; i < 50; i++) {
       values.add("value" + i);
+    }
+
+    args.addObjects(values);
+
+    assertEquals(51, asList(args).size()); // command + 50 arguments
+  }
+
+  @Test
+  public void addObjectsVarargsPreservesAllArguments() {
+    CommandArguments args = new CommandArguments(TestCommand.MSET);
+    Object[] values = new Object[50];
+    for (int i = 0; i < 50; i++) {
+      values[i] = "value" + i;
     }
 
     args.addObjects(values);

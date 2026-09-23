@@ -68,12 +68,6 @@ public class CommandObjects {
     return comArgs;
   }
 
-  protected CommandArguments commandArguments(ProtocolCommand command, int expectedArgumentCount) {
-    // Route through the single-argument factory so subclasses overriding it keep
-    // their custom argument creation for collection-driven commands.
-    return commandArguments(command).expectArguments(expectedArgumentCount);
-  }
-
   private final CommandObject<String> PING_COMMAND_OBJECT = new CommandObject<>(commandArguments(PING), BuilderFactory.STRING);
 
   public final CommandObject<String> ping() {
@@ -623,11 +617,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> mset(String... keysvalues) {
-    return new CommandObject<>(addFlatKeyValueArgs(commandArguments(MSET, keysvalues.length), keysvalues), BuilderFactory.STRING);
+    return new CommandObject<>(addFlatKeyValueArgs(commandArguments(MSET), keysvalues), BuilderFactory.STRING);
   }
 
   public final CommandObject<Long> msetnx(String... keysvalues) {
-    return new CommandObject<>(addFlatKeyValueArgs(commandArguments(MSETNX, keysvalues.length), keysvalues), BuilderFactory.LONG);
+    return new CommandObject<>(addFlatKeyValueArgs(commandArguments(MSETNX), keysvalues), BuilderFactory.LONG);
   }
 
   public final CommandObject<Boolean> msetex(MSetExParams params, String... keysvalues) {
@@ -645,11 +639,11 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> mset(byte[]... keysvalues) {
-    return new CommandObject<>(addFlatKeyValueArgs(commandArguments(MSET, keysvalues.length), keysvalues), BuilderFactory.STRING);
+    return new CommandObject<>(addFlatKeyValueArgs(commandArguments(MSET), keysvalues), BuilderFactory.STRING);
   }
 
   public final CommandObject<Long> msetnx(byte[]... keysvalues) {
-    return new CommandObject<>(addFlatKeyValueArgs(commandArguments(MSETNX, keysvalues.length), keysvalues), BuilderFactory.LONG);
+    return new CommandObject<>(addFlatKeyValueArgs(commandArguments(MSETNX), keysvalues), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> incr(String key) {
@@ -1145,7 +1139,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> hset(String key, Map<String, String> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET, hash.size() * 2 + 1).key(key), hash), BuilderFactory.LONG);
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET).key(key), hash), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> hsetex(String key, HSetExParams params, String field, String value) {
@@ -1154,7 +1148,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> hsetex(String key, HSetExParams params, Map<String, String> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(HSETEX, hash.size() * 2 + 7).key(key)
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSETEX).key(key)
       .addParams(params).add(FIELDS).add(hash.size()), hash), BuilderFactory.LONG);
   }
 
@@ -1177,7 +1171,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> hmset(String key, Map<String, String> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(HMSET, hash.size() * 2 + 1).key(key), hash), BuilderFactory.STRING);
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HMSET).key(key), hash), BuilderFactory.STRING);
   }
 
   public final CommandObject<List<String>> hmget(String key, String... fields) {
@@ -1189,7 +1183,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> hset(byte[] key, Map<byte[], byte[]> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET, hash.size() * 2 + 1).key(key), hash), BuilderFactory.LONG);
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET).key(key), hash), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> hsetex(byte[] key, HSetExParams params, byte[] field, byte[] value) {
@@ -1198,7 +1192,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> hsetex(byte[] key, HSetExParams params, Map<byte[], byte[]> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(HSETEX, hash.size() * 2 + 7).key(key)
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSETEX).key(key)
       .addParams(params).add(FIELDS).add(hash.size()), hash), BuilderFactory.LONG);
   }
 
@@ -1221,7 +1215,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<String> hmset(byte[] key, Map<byte[], byte[]> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(HMSET, hash.size() * 2 + 1).key(key), hash), BuilderFactory.STRING);
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HMSET).key(key), hash), BuilderFactory.STRING);
   }
 
   public final CommandObject<List<byte[]>> hmget(byte[] key, byte[]... fields) {
@@ -3086,12 +3080,12 @@ public class CommandObjects {
 
   // Stream commands
   public final CommandObject<StreamEntryID> xadd(String key, StreamEntryID id, Map<String, String> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(XADD, hash.size() * 2 + 2).key(key).add(id == null ? StreamEntryID.NEW_ENTRY : id), hash),
+    return new CommandObject<>(addFlatMapArgs(commandArguments(XADD).key(key).add(id == null ? StreamEntryID.NEW_ENTRY : id), hash),
         BuilderFactory.STREAM_ENTRY_ID);
   }
 
   public final CommandObject<StreamEntryID> xadd(String key, XAddParams params, Map<String, String> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(XADD, hash.size() * 2 + 10).key(key).addParams(params), hash),
+    return new CommandObject<>(addFlatMapArgs(commandArguments(XADD).key(key).addParams(params), hash),
         BuilderFactory.STREAM_ENTRY_ID);
   }
 
@@ -3100,7 +3094,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<byte[]> xadd(byte[] key, XAddParams params, Map<byte[], byte[]> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(XADD, hash.size() * 2 + 10).key(key).addParams(params), hash),
+    return new CommandObject<>(addFlatMapArgs(commandArguments(XADD).key(key).addParams(params), hash),
         BuilderFactory.BINARY);
   }
 
@@ -4066,7 +4060,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Long> hsetObject(String key, Map<String, Object> hash) {
-    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET, hash.size() * 2 + 1).key(key), hash), BuilderFactory.LONG);
+    return new CommandObject<>(addFlatMapArgs(commandArguments(HSET).key(key), hash), BuilderFactory.LONG);
   }
 
   private boolean isRoundRobinSearchCommand(SearchCommand sc) {
@@ -5394,7 +5388,11 @@ public class CommandObjects {
     return args;
   }
 
+  // The flat-args helpers pre-size from the known collection size so bulk commands
+  // (MSET, HSET, ZADD, GEOADD, XADD with many members) avoid intermediate ArrayList
+  // growth copies.
   private CommandArguments addFlatKeyValueArgs(CommandArguments args, String... keyvalues) {
+    args.ensureCapacity(args.size() + keyvalues.length);
     for (int i = 0; i < keyvalues.length; i += 2) {
       args.key(keyvalues[i]).add(keyvalues[i + 1]);
     }
@@ -5402,6 +5400,7 @@ public class CommandObjects {
   }
 
   private CommandArguments addFlatKeyValueArgs(CommandArguments args, byte[]... keyvalues) {
+    args.ensureCapacity(args.size() + keyvalues.length);
     for (int i = 0; i < keyvalues.length; i += 2) {
       args.key(keyvalues[i]).add(keyvalues[i + 1]);
     }
@@ -5409,6 +5408,7 @@ public class CommandObjects {
   }
 
   private CommandArguments addFlatMapArgs(CommandArguments args, Map<?, ?> map) {
+    args.ensureCapacity(args.size() + 2 * map.size());
     for (Map.Entry<? extends Object, ? extends Object> entry : map.entrySet()) {
       args.add(entry.getKey());
       args.add(entry.getValue());
@@ -5417,6 +5417,7 @@ public class CommandObjects {
   }
 
   private CommandArguments addSortedSetFlatMapArgs(CommandArguments args, Map<?, Double> map) {
+    args.ensureCapacity(args.size() + 2 * map.size());
     for (Map.Entry<? extends Object, Double> entry : map.entrySet()) {
       args.add(entry.getValue());
       args.add(entry.getKey());
@@ -5425,6 +5426,7 @@ public class CommandObjects {
   }
 
   private CommandArguments addGeoCoordinateFlatMapArgs(CommandArguments args, Map<?, GeoCoordinate> map) {
+    args.ensureCapacity(args.size() + 3 * map.size());
     for (Map.Entry<? extends Object, GeoCoordinate> entry : map.entrySet()) {
       GeoCoordinate ord = entry.getValue();
       args.add(ord.getLongitude());

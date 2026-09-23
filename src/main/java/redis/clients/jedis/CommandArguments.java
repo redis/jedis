@@ -49,35 +49,20 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   /**
-   * Creates command arguments pre-sized for the command and the number of arguments
-   * expected to follow it, avoiding intermediate {@code ArrayList} growth when
-   * commands are built from large collections (e.g. MSET, HSET, XADD with many members).
+   * Pre-sizes the backing list for the expected total number of arguments, command token
+   * included — i.e. the RESP array length of the final command, which is also what
+   * {@link #size()} returns once fully built. Avoids intermediate {@code ArrayList} growth
+   * when commands are built from large collections. Under-estimating is safe: the list
+   * falls back to normal growth. Values not above the current capacity have no effect.
+   * <p>
+   * Example: ZADD with a key and N member/score pairs expects {@code 2 + 2 * N} arguments.
    *
-   * @param command the command to dispatch
-   * @param expectedArgumentCount the number of arguments expected to be added after the
-   *        command itself; values below zero are treated as zero
-   * @since 8.1
-   */
-  public CommandArguments(ProtocolCommand command, int expectedArgumentCount) {
-    args = new ArrayList<>(1 + Math.max(0, expectedArgumentCount));
-    args.add(command);
-
-    keys = new ArrayList<>(DEFAULT_KEYS_CAPACITY);
-    cachedHashSlots = null;
-  }
-
-  /**
-   * Pre-sizes the backing list for the number of arguments expected to follow the
-   * command, avoiding intermediate {@code ArrayList} growth when commands are built
-   * from large collections (e.g. MSET, HSET, XADD with many members).
-   *
-   * @param expectedArgumentCount the number of arguments expected to be added after the
-   *        command itself; values below zero are treated as zero
+   * @param expectedTotalArguments the expected total argument count, command included
    * @return this
    * @since 8.1
    */
-  public CommandArguments expectArguments(int expectedArgumentCount) {
-    args.ensureCapacity(1 + Math.max(0, expectedArgumentCount));
+  public CommandArguments ensureCapacity(int expectedTotalArguments) {
+    args.ensureCapacity(expectedTotalArguments);
     return this;
   }
 
@@ -148,6 +133,9 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   public CommandArguments addObjects(Object... args) {
+    // Pre-size from the known array length so bulk commands avoid intermediate
+    // ArrayList growth copies.
+    this.args.ensureCapacity(this.args.size() + args.length);
     for (Object arg : args) {
       add(arg);
     }
@@ -157,9 +145,8 @@ public class CommandArguments implements Iterable<Rawable> {
   public CommandArguments addObjects(Collection args) {
     // Pre-size from the known collection size so bulk commands built from
     // collections (e.g. SADD/ZADD with many members) avoid intermediate
-    // ArrayList growth copies, as already done for the collection-driven
-    // command builders via the capacity hint.
-    this.args.ensureCapacity(1 + args.size());
+    // ArrayList growth copies.
+    this.args.ensureCapacity(this.args.size() + args.size());
     args.forEach(arg -> add(arg));
     return this;
   }

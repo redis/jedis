@@ -66,6 +66,16 @@ public class CommandArguments implements Iterable<Rawable> {
     return this;
   }
 
+  /**
+   * Pre-sizes the key-tracking list for the expected total number of keys, mirroring the
+   * {@link #ensureCapacity(int)} semantics. Package-private: key counts are only known to
+   * the command builders.
+   */
+  CommandArguments ensureKeyCapacity(int expectedTotalKeys) {
+    keys.ensureCapacity(expectedTotalKeys);
+    return this;
+  }
+
   public ProtocolCommand getCommand() {
     return (ProtocolCommand) args.get(0);
   }
@@ -191,11 +201,16 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   public final CommandArguments keys(Object... keys) {
+    // Pre-size both lists for multi-key commands (DEL, MGET, SINTER, ...) with many keys.
+    args.ensureCapacity(args.size() + keys.length);
+    ensureKeyCapacity(this.keys.size() + keys.length);
     Arrays.stream(keys).forEach(this::key);
     return this;
   }
 
   public final CommandArguments keys(Collection keys) {
+    args.ensureCapacity(args.size() + keys.size());
+    ensureKeyCapacity(this.keys.size() + keys.size());
     keys.forEach(this::key);
     return this;
   }

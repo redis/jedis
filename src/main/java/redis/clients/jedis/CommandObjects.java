@@ -5392,7 +5392,8 @@ public class CommandObjects {
   // (MSET, HSET, ZADD, GEOADD, XADD with many members) avoid intermediate ArrayList
   // growth copies.
   private CommandArguments addFlatKeyValueArgs(CommandArguments args, String... keyvalues) {
-    args.ensureCapacity(args.size() + keyvalues.length);
+    args.ensureCapacity(args.size() + keyvalues.length)
+        .ensureKeyCapacity(args.getKeys().size() + keyvalues.length / 2);
     for (int i = 0; i < keyvalues.length; i += 2) {
       args.key(keyvalues[i]).add(keyvalues[i + 1]);
     }
@@ -5400,7 +5401,8 @@ public class CommandObjects {
   }
 
   private CommandArguments addFlatKeyValueArgs(CommandArguments args, byte[]... keyvalues) {
-    args.ensureCapacity(args.size() + keyvalues.length);
+    args.ensureCapacity(args.size() + keyvalues.length)
+        .ensureKeyCapacity(args.getKeys().size() + keyvalues.length / 2);
     for (int i = 0; i < keyvalues.length; i += 2) {
       args.key(keyvalues[i]).add(keyvalues[i + 1]);
     }

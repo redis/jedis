@@ -108,6 +108,32 @@ public class CommandArgumentsTest {
   }
 
   @Test
+  public void keysVarargsPreservesAllKeysAndArguments() {
+    Object[] keys = new Object[50];
+    for (int i = 0; i < 50; i++) {
+      keys[i] = "key" + i;
+    }
+
+    CommandArguments args = new CommandArguments(TestCommand.MSET).keys(keys);
+
+    assertEquals(51, args.size()); // command + 50 keys
+    assertEquals(50, args.getKeys().size());
+  }
+
+  @Test
+  public void keysCollectionPreservesAllKeysAndArguments() {
+    List<String> keys = new ArrayList<>();
+    for (int i = 0; i < 50; i++) {
+      keys.add("key" + i);
+    }
+
+    CommandArguments args = new CommandArguments(TestCommand.MSET).keys(keys);
+
+    assertEquals(51, args.size()); // command + 50 keys
+    assertEquals(50, args.getKeys().size());
+  }
+
+  @Test
   public void addObjectsVarargsPreservesAllArguments() {
     CommandArguments args = new CommandArguments(TestCommand.MSET);
     Object[] values = new Object[50];

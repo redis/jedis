@@ -88,10 +88,6 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
     long deadline = NanoClock.INSTANCE.getAsLong() + maxRelaxedDurationNanos;
     migratingWindows.computeIfAbsent(e.seq, k -> new MigratingWindow(e.seq, deadline));
     lastProcessedSeq.accumulateAndGet(e.seq, Math::max);
-    if (e.seq < lastProcessedSeq.get()) {
-      migratingWindows.remove(e.seq);
-      return;
-    }
     c.applyCurrentTimeout();
   }
 

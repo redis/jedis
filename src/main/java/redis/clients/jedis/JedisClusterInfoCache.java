@@ -254,15 +254,17 @@ public class JedisClusterInfoCache {
         }
 
       } finally {
+        // unlock slotDeltaLock just before {drainSlotDeltas}, it will apply its own.
+        // This is required otherwise another {applySlotMigration} attempt would leave/skip the new
+        // delta without draining it
+        slotDeltaLock.unlock();
         try {
-          // releaser re-check: runs on every exit path, incl. success returns
           drainSlotDeltas();
         } catch (RuntimeException e) {
           // never mask an in-flight discovery exception; queued deltas would re-drain on the next
           // delta or refresh
           logger.warn("Applying queued slot deltas after refresh failed", e);
         } finally {
-          slotDeltaLock.unlock();
           rediscoverLock.unlock();
         }
       }

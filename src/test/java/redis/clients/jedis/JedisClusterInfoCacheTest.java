@@ -14,6 +14,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -27,6 +29,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -235,6 +238,36 @@ public class JedisClusterInfoCacheTest {
 
     assertEquals(REPLICA_1_HOST, cache.getSlotNode(0));
     verify(mockClientSideCache, times(2)).flush(); // and so does the delta
+  }
+
+  @Test
+  public void slotDeltaQueuedDuringRefreshAppliesAfterIt() throws Exception {
+    JedisClusterInfoCache cache = new JedisClusterInfoCache(DefaultJedisClientConfig.builder().build(),
+        new HashSet<>(Collections.singletonList(MASTER_HOST)));
+    CountDownLatch querying = new CountDownLatch(1);
+    CountDownLatch release = new CountDownLatch(1);
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS")))).thenAnswer(inv -> {
+      querying.countDown();
+      release.await(5, TimeUnit.SECONDS); // refresh blocked mid-query, holding both locks
+      return masterOnlySlotsResponse();
+    });
+    Thread refresh = new Thread(() -> cache.renewClusterSlots(mockConnection));
+    refresh.start();
+    assertTrue(querying.await(5, TimeUnit.SECONDS));
+
+    // the read thread must not block behind the refresh: the delta is queued and left behind
+    cache.applySlotMigration(Collections.singletonList(
+      new SlotMigration(MASTER_HOST, REPLICA_1_HOST, HashSlotRanges.parse("0-100"))));
+    assertTrue(cache.hasPendingSlotDeltas());
+    assertNull(cache.getSlotNode(0));
+
+    release.countDown();
+    refresh.join(5000);
+    assertFalse(refresh.isAlive());
+    // the refreshing thread drained the queue after applying the topology: delta ordered last
+    assertEquals(REPLICA_1_HOST, cache.getSlotNode(0));
+    assertEquals(MASTER_HOST, cache.getSlotNode(101));
+    assertFalse(cache.hasPendingSlotDeltas());
   }
 
   private List<Object> masterReplicaSlotsResponse(HostAndPort masterHost, HostAndPort replicaHost) {

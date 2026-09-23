@@ -6,6 +6,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import redis.clients.jedis.csc.Cache;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -19,10 +21,15 @@ import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasKey;
+import static org.hamcrest.Matchers.not;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.ArgumentMatchers.argThat;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static redis.clients.jedis.JedisClusterInfoCache.getNodeKey;
 import static redis.clients.jedis.Protocol.Command.CLUSTER;
@@ -39,6 +46,8 @@ public class JedisClusterInfoCacheTest {
 
   @Mock
   private Connection mockConnection;
+  @Mock
+  private Cache mockClientSideCache;
 
   @Test
   public void testReplicaNodeRemovalAndRediscovery() {
@@ -181,6 +190,51 @@ public class JedisClusterInfoCacheTest {
             hasEntry(equalTo(getNodeKey(REPLICA_1_HOST)), equalTo(cache.getNode(REPLICA_1_HOST))));
     assertThat(cache.getShuffledPrimaryNodesPool(), equalTo(
             Collections.singletonList(cache.getNode(REPLICA_1_HOST))));
+  }
+
+  @Test
+  public void applySlotMigrationDropsEverySlotlessPrimaryNotJustTheDeltaSources() {
+    HostAndPort masterA = MASTER_HOST;
+    HostAndPort masterB = REPLICA_1_HOST;
+    HostAndPort masterC = REPLICA_2_HOST;
+    JedisClusterInfoCache cache = new JedisClusterInfoCache(DefaultJedisClientConfig.builder().build(),
+        new HashSet<>(Collections.singletonList(masterA)));
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(createClusterSlotsResponse(
+          new SlotRange.Builder(0, 8191).master(masterA, "a").build(),
+          new SlotRange.Builder(8192, 16383).master(masterB, "b").build()));
+    cache.discoverClusterNodesAndSlots(mockConnection);
+    assertThat(cache.getPrimaryNodes(), aMapWithSize(2));
+
+    // a merged delta names only the final contribution's source (C), yet A is the one left without
+    // slots: the slotless sweep must not depend on the delta's sources
+    cache.applySlotMigration(Collections.singletonList(
+      new SlotMigration(masterC, masterB, HashSlotRanges.parse("0-8191"))));
+
+    assertEquals(masterB, cache.getSlotNode(0));
+    assertEquals(cache.getNode(masterB), cache.getSlotPool(0));
+    assertThat(cache.getPrimaryNodes(), aMapWithSize(1));
+    assertThat(cache.getPrimaryNodes(), hasKey(getNodeKey(masterB)));
+    assertThat(cache.getPrimaryNodes(), not(hasKey(getNodeKey(masterA))));
+    // the pool itself stays; removal belongs to the full-refresh cleanup
+    assertNotNull(cache.getNode(masterA));
+    assertFalse(cache.hasPendingSlotDeltas());
+  }
+
+  @Test
+  public void applySlotMigrationFlushesClientSideCache() {
+    JedisClusterInfoCache cache = new JedisClusterInfoCache(DefaultJedisClientConfig.builder().build(),
+        mockClientSideCache, new HashSet<>(Collections.singletonList(MASTER_HOST)));
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(masterOnlySlotsResponse());
+    cache.renewClusterSlots(mockConnection);
+    verify(mockClientSideCache, times(1)).flush(); // the full refresh flushes
+
+    cache.applySlotMigration(Collections.singletonList(
+      new SlotMigration(MASTER_HOST, REPLICA_1_HOST, HashSlotRanges.parse("0-100"))));
+
+    assertEquals(REPLICA_1_HOST, cache.getSlotNode(0));
+    verify(mockClientSideCache, times(2)).flush(); // and so does the delta
   }
 
   private List<Object> masterReplicaSlotsResponse(HostAndPort masterHost, HostAndPort replicaHost) {

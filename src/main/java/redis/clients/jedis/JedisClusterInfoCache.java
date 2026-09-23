@@ -254,8 +254,6 @@ public class JedisClusterInfoCache {
         }
 
       } finally {
-        slotDeltaLock.unlock();
-        rediscoverLock.unlock();
         try {
           // releaser re-check: runs on every exit path, incl. success returns
           drainSlotDeltas();
@@ -263,6 +261,9 @@ public class JedisClusterInfoCache {
           // never mask an in-flight discovery exception; queued deltas would re-drain on the next
           // delta or refresh
           logger.warn("Applying queued slot deltas after refresh failed", e);
+        } finally {
+          slotDeltaLock.unlock();
+          rediscoverLock.unlock();
         }
       }
     }
@@ -462,14 +463,18 @@ public class JedisClusterInfoCache {
   }
 
   /**
-   * Applies a slot migration delta atomically and reports which source nodes are left serving no
+   * Applies a slot migration delta atomically and reports which primaries are left serving no
    * slots. Under a SINGLE write-lock hold: provisions each destination node's pool
-   * ({@link #setupNodeIfNotExist}) and reassigns the entry's slots, then scans residual ownership
-   * for every distinct source. The single hold is a correctness requirement — applying and scanning
-   * in separate acquisitions leaves an interleaving window against {@link #renewClusterSlots}. Only
-   * ever called under {@link #slotDeltaLock} (see {@link #drainSlotDeltas}).
-   * @return the source nodes that no longer own any slot (candidates for connection retirement);
-   *         their pools stay in place — removal belongs to the full-refresh dead-pool cleanup
+   * ({@link #setupNodeIfNotExist}) and reassigns the entry's slots, flushes the client-side cache
+   * (parity with {@link #discoverClusterSlots}: the moved keys may still be cached locally), then
+   * sweeps every known primary for residual ownership. The sweep is independent of the delta's
+   * sources on purpose: in a merged delta a source whose contribution was overridden by a newer one
+   * never appears, yet it may have been left slotless all the same. The single hold is a
+   * correctness requirement — applying and scanning in separate acquisitions leaves an interleaving
+   * window against {@link #renewClusterSlots}. Only ever called under {@link #slotDeltaLock} (see
+   * {@link #drainSlotDeltas}).
+   * @return the primaries that no longer own any slot (candidates for connection retirement); their
+   *         pools stay in place — removal belongs to the full-refresh dead-pool cleanup
    */
   private Set<HostAndPort> processSlotDelta(List<SlotMigration> migrations) {
     w.lock();
@@ -482,19 +487,24 @@ public class JedisClusterInfoCache {
           slotNodes[slot] = migration.dest;
         });
       }
+      if (clientSideCache != null) {
+        clientSideCache.flush();
+      }
 
-      Set<HostAndPort> slotless = new HashSet<>();
-      for (SlotMigration migration : migrations) {
-        slotless.add(migration.src);
+      Set<String> owningNodeKeys = new HashSet<>();
+      for (HostAndPort owner : slotNodes) {
+        owningNodeKeys.add(getNodeKey(owner));
       }
-      for (int slot = 0; slot < slotNodes.length && !slotless.isEmpty(); slot++) {
-        if (slotNodes[slot] != null) {
-          slotless.remove(slotNodes[slot]);
-        }
-      }
+
       // a slotless node is no longer a primary: keep broadcast/random selection off it
-      for (HostAndPort node : slotless) {
-        primaryNodesCache.remove(getNodeKey(node));
+      Set<HostAndPort> slotless = new HashSet<>();
+      Iterator<String> primaries = primaryNodesCache.keySet().iterator();
+      while (primaries.hasNext()) {
+        String nodeKey = primaries.next();
+        if (!owningNodeKeys.contains(nodeKey)) {
+          primaries.remove();
+          slotless.add(HostAndPort.from(nodeKey)); // node keys are HostAndPort#toString()
+        }
       }
       return slotless;
     } finally {

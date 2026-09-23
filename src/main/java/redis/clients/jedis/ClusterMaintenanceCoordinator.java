@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.Supplier;
 
 import org.slf4j.Logger;
@@ -15,44 +15,28 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.TimeoutSource.TimeoutInfo;
 
 /**
- * Cluster maintenance coordinator — one per cluster client, the single dedup/apply point for the
- * per-node SMIGRATING/SMIGRATED broadcast. Seq ids are ordered, and the coordinator keeps them in
- * two lock-free structures: open SMIGRATING windows (they drive the shared relax gate — timeouts
- * stay relaxed while ANY window is open or any slot delta is still pending, and a connection
- * created mid-event relaxes from the moment its overlay is installed) and the last
- * {@value #MAX_COMPLETED_MIGRATIONS} completed SMIGRATED operations, retained to absorb broadcast
- * duplicates. An SMIGRATING older than the last processed seq is ignored. An SMIGRATED older than
- * the newest completed operation is merged into it and applied only when the ordering context is
- * unambiguous — retention reaches down to its seq and no other completed operation lies between the
- * two; otherwise its delta is dropped and stale routing self-heals (see
- * late-smigrated-handling-decision.md). Deltas go through
- * {@link JedisClusterInfoCache#applySlotMigration}, which queues and applies atomically against the
- * refresh lifecycle — never blocking or spinning a read thread on a running refresh.
+ * Per-client dedup and apply point for the SMIGRATING/SMIGRATED cluster maintenance broadcast. Seq
+ * ids are ordered and unique per message: an SMIGRATED never shares its SMIGRATING's seq. See
+ * late-smigrated-handling-decision.md for the late-closer rule.
  */
 final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
 
   private static final Logger logger = LoggerFactory.getLogger(ClusterMaintenanceCoordinator.class);
 
-  /** Completed SMIGRATED operations retained for duplicate absorption; oldest dropped first. */
   private static final int MAX_COMPLETED_MIGRATIONS = 128;
 
   private final JedisClusterInfoCache cache;
-  /** Backstop for an SMIGRATING whose SMIGRATED is lost. */
   private final long maxRelaxedDurationNanos;
   private final Supplier<TimeoutInfo> timeoutSupplier;
 
-  /** Highest seq processed so far (either event type); gates stale SMIGRATING deliveries. */
   private final AtomicLong lastProcessedSeq = new AtomicLong(Long.MIN_VALUE);
 
-  /**
-   * Open SMIGRATING windows by seq; they hold the relax gate until closed, discarded or expired.
-   */
-  private final ConcurrentHashMap<Long, MigratingWindow> migratingWindows = new ConcurrentHashMap<>();
+  private final ConcurrentSkipListMap<Long, MigratingWindow> migratingWindows = new ConcurrentSkipListMap<>();
 
-  /**
-   * Completed SMIGRATED operations by seq, ascending; the newest entry is the merge target for late
-   * lower-seq closers.
-   */
+  private final ConcurrentSkipListMap<Long, SMigratedEvent> pendingSMigrated = new ConcurrentSkipListMap<>();
+
+  private final ReentrantLock smigratedLock = new ReentrantLock();
+
   private final ConcurrentSkipListMap<Long, CompletedMigration> completedMigrations = new ConcurrentSkipListMap<>();
 
   ClusterMaintenanceCoordinator(JedisClusterInfoCache cache,
@@ -61,8 +45,6 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
     this.maxRelaxedDurationNanos = config.getRelaxedWindowMaxDuration().toNanos();
     TimeoutInfo relaxedTimeoutInfo = new TimeoutInfo(config.getRelaxedTimeout(),
         config.getRelaxedBlockingTimeout());
-    // relaxed while any migration window is open OR any slot delta is still enqueued/mid-apply:
-    // once an SMIGRATING is received, timeouts stay relaxed until the topology has settled
     this.timeoutSupplier = () -> hasActiveMigration() || cache.hasPendingSlotDeltas()
         ? relaxedTimeoutInfo
         : null;
@@ -92,7 +74,7 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
 
   @Override
   public void onSMigrating(SMigratingEvent e, Connection c) {
-    if (e.seq < lastProcessedSeq.get()) { // lock-free stale gate
+    if (e.seq < lastProcessedSeq.get()) {
       if (logger.isDebugEnabled()) {
         logger.debug("Ignoring stale SMIGRATING (seq={} < last processed seq={})", e.seq,
           lastProcessedSeq.get());
@@ -107,73 +89,66 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
     migratingWindows.computeIfAbsent(e.seq, k -> new MigratingWindow(e.seq, deadline));
     lastProcessedSeq.accumulateAndGet(e.seq, Math::max);
     if (e.seq < lastProcessedSeq.get()) {
-      // a newer event was processed between the gate and the insert; this window is stale
       migratingWindows.remove(e.seq);
       return;
     }
-    c.applyCurrentTimeout(); // the gate just opened; push the relax to the receiving socket now
+    c.applyCurrentTimeout();
   }
 
   @Override
   public void onSMigrated(SMigratedEvent e, Connection c) {
-    long seq = e.seq;
-    // every processed seq is recorded here, merged ones included: the known-check is one lookup
-    if (completedMigrations.containsKey(seq) || completedMigrations.putIfAbsent(seq,
-      new CompletedMigration(seq, e.migrations)) != null) {
-      onDuplicateSMigrated(seq, c); // known/processed seq: absorbed, delta never re-applied
+    pendingSMigrated.putIfAbsent(e.seq, e);
+    smigratedLock.lock();
+    try {
+      Map.Entry<Long, SMigratedEvent> next;
+      while ((next = pendingSMigrated.pollFirstEntry()) != null) {
+        processSMigrated(next.getValue());
+      }
+    } finally {
+      smigratedLock.unlock();
+    }
+    c.applyCurrentTimeout();
+  }
+
+  /**
+   * Runs under {@link #smigratedLock}: one closer at a time, so record → merge → apply is atomic.
+   */
+  private void processSMigrated(SMigratedEvent e) {
+    if (completedMigrations.putIfAbsent(e.seq,
+      new CompletedMigration(e.seq, e.migrations)) != null) {
       return;
     }
-    lastProcessedSeq.accumulateAndGet(seq, Math::max);
+    lastProcessedSeq.accumulateAndGet(e.seq, Math::max);
 
     List<SlotMigration> toApply;
-    // non-null: our own entry was just recorded, and trimming never drains the map below its cap
     Map.Entry<Long, CompletedMigration> lastMigration = completedMigrations.lastEntry();
     long newestSeq = lastMigration.getKey();
-    if (seq >= newestSeq) {
-      // the normal case: this closer is the newest completion
+    if (e.seq >= newestSeq) {
       toApply = e.migrations;
-      logger.debug("Slot migration done (seq={}, entries={})", seq, e.migrations.size());
-    } else if (isSafeToMergeInto(newestSeq, seq)) {
-      // late closer directly below the newest: fold its delta into the newest and apply the
-      // combined result — equivalent to every contribution applied separately in seq order
-      toApply = lastMigration.getValue().merge(seq, e.migrations);
-      logger.debug("Late slot migration (seq={}) merged into seq={}; applying combined delta", seq,
-        newestSeq);
+      logger.debug("Slot migration done (seq={}, entries={})", e.seq, e.migrations.size());
+    } else if (isSafeToMergeInto(newestSeq, e.seq)) {
+      toApply = lastMigration.getValue().merge(e.seq, e.migrations);
+      logger.debug("Late slot migration (seq={}) merged into seq={}; applying combined delta",
+        e.seq, newestSeq);
     } else {
-      // ambiguous ordering context: drop the delta rather than risk overwriting newer topology.
-      // The seq stays recorded, so re-deliveries are duplicates; stale routing self-heals via
-      // MOVED or the next refresh.
-      logger.info("Dropping late slot migration (seq={}): ordering context is ambiguous "
-          + "(retained range {}..{})",
-        seq, completedMigrations.firstKey(), newestSeq);
-      onDuplicateSMigrated(seq, c);
+      logger.info(
+        "Dropping late slot migration (seq={}): ordering context is ambiguous to merge to (seq={})",
+        e.seq, newestSeq);
+      closeMigrationWindow(e.seq);
       return;
     }
-    discardOutdatedMigrationWindows(seq);
-    // the cache queues and applies atomically against its refresh lifecycle; a delta racing a
-    // refresh may be applied later, on the refreshing/draining thread
+    closeMigrationWindow(e.seq);
     cache.applySlotMigration(toApply);
-    // unrelax only takes effect once the gate is really shut: with the delta still enqueued or
-    // queued behind a refresh, hasPendingSlotDeltas() keeps the receiving socket relaxed
-    c.applyCurrentTimeout();
     trimCompletedMigrations();
   }
 
   /**
-   * A late delta may only be merged when its ordering context is unambiguous: retention still
-   * reaches down to its seq (nothing in between can have been trimmed away unseen) and no other
-   * completed operation lies between it and the newest. Anything else is dropped — see
+   * A late delta may only be merged when its ordering context is unambiguous: no other completed
+   * operation lies between it and the newest. Anything else is dropped — see
    * late-smigrated-handling-decision.md.
    */
   private boolean isSafeToMergeInto(long newestSeq, long lateSeq) {
-    return completedMigrations.firstKey() <= lateSeq
-        && completedMigrations.subMap(lateSeq, false, newestSeq, false).isEmpty();
-  }
-
-  /** A duplicate SMIGRATED delivery: same reactions as always, but no delta application. */
-  private void onDuplicateSMigrated(long seq, Connection c) {
-    discardOutdatedMigrationWindows(seq);
-    c.applyCurrentTimeout();
+    return completedMigrations.subMap(lateSeq, false, newestSeq, false).isEmpty();
   }
 
   /** Drops the oldest completed operations beyond the retention cap; lock-free. */
@@ -184,23 +159,25 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
   }
 
   /**
-   * Seq ids are ordered, so a closing SMIGRATED also concludes any window opened under a lower seq
-   * whose own SMIGRATED never arrived (lost or reordered) — the stale opener must not keep the
-   * relax gate held.
+   * Concludes the one window this closer belongs to. Seq ids are unique, so the pair cannot be
+   * matched by seq; since an opener always precedes its closer, the closer concludes the oldest
+   * open window below its own seq. Exactly one window per first delivery: closing every lower
+   * window would unrelax an overlapping migration still in progress, and the relax gate is
+   * client-wide anyway, so which window goes does not matter — only how many stay open. A window
+   * whose closer is lost therefore lingers until the next closer or the TTL backstop.
    */
-  private void discardOutdatedMigrationWindows(long closingSeq) {
-    for (MigratingWindow window : migratingWindows.values()) {
-      if (window.seq < closingSeq) {
-        migratingWindows.remove(window.seq, window);
+  private void closeMigrationWindow(long closingSeq) {
+    Map.Entry<Long, MigratingWindow> oldest = migratingWindows.firstEntry();
+    if (oldest != null && oldest.getKey() < closingSeq) {
+      if (migratingWindows.remove(oldest.getKey(), oldest.getValue())) {
         if (logger.isDebugEnabled()) {
-          logger.debug("Discarding stale migration window (seq={}) on closing seq={}", window.seq,
+          logger.debug("Closing migration window (seq={}) on closing seq={}", oldest.getKey(),
             closingSeq);
         }
       }
     }
   }
 
-  /** One open SMIGRATING window, folded from the per-node broadcast; keyed by seq. */
   private static final class MigratingWindow {
     final long seq;
     final long deadlineNanos;
@@ -215,14 +192,7 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
     }
   }
 
-  /**
-   * One completed SMIGRATED operation carrying its slot delta, plus the deltas of late lower-seq
-   * closers merged into it — each contribution kept isolated under its own seq.
-   */
   private static final class CompletedMigration {
-    /**
-     * Per-seq contributions, ascending; iteration order is the as-if-sequential application order.
-     */
     private final ConcurrentSkipListMap<Long, List<SlotMigration>> deltas = new ConcurrentSkipListMap<>();
 
     CompletedMigration(long seq, List<SlotMigration> delta) {
@@ -235,16 +205,13 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
      * equals applying each contribution separately in seq order.
      */
     List<SlotMigration> merge(long seq, List<SlotMigration> delta) {
-      // duplicates never reach here: the coordinator dedups by retained seq, and the retention
-      // floor guard drops anything below the retained range — putIfAbsent merely keeps the first
-      // contribution authoritative
       deltas.putIfAbsent(seq, delta);
       return combinedDelta();
     }
 
     private List<SlotMigration> combinedDelta() {
       SlotMigration[] ownerBySlot = new SlotMigration[Protocol.CLUSTER_HASHSLOTS];
-      for (List<SlotMigration> contribution : deltas.values()) { // ascending seq: later overrides
+      for (List<SlotMigration> contribution : deltas.values()) {
         for (SlotMigration migration : contribution) {
           migration.slots.forEachSlot(slot -> ownerBySlot[slot] = migration);
         }

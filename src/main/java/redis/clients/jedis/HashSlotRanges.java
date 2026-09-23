@@ -20,14 +20,14 @@ final class HashSlotRanges {
 
   /**
    * Parses the slots-or-ranges wire format.
-   * @throws IllegalArgumentException on an empty string, a non-numeric token, an inverted range, or
-   *           a slot outside {@code [0, 16384)}
+   * @throws IllegalArgumentException on an empty string, an empty or non-numeric token, an inverted
+   *           range, or a slot outside {@code [0, 16384)}
    */
   static HashSlotRanges parse(String s) {
     if (s == null || s.isEmpty()) {
       throw new IllegalArgumentException("Empty slot ranges");
     }
-    String[] tokens = s.split(",");
+    String[] tokens = s.split(",", -1); // keep trailing empties so "1," and "," are rejected
     int[] bounds = new int[tokens.length * 2];
     for (int t = 0; t < tokens.length; t++) {
       String token = tokens[t];

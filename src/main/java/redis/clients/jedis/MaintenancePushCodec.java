@@ -138,9 +138,8 @@ final class MaintenancePushCodec {
           || !(e.get(2) instanceof byte[])) {
         throw malformed("SMIGRATED", c);
       }
-      migrations.add(new SlotMigration(nodeAddress("SMIGRATED", c, (byte[]) e.get(0)),
-          nodeAddress("SMIGRATED", c, (byte[]) e.get(1)),
-          slotRanges("SMIGRATED", c, (byte[]) e.get(2))));
+      migrations.add(new SlotMigration(toNodeAddress(c, (byte[]) e.get(0)),
+          toNodeAddress(c, (byte[]) e.get(1)), slotRanges("SMIGRATED", c, (byte[]) e.get(2))));
     }
     return new SMigratedEvent((Long) c.get(1), migrations);
   }
@@ -155,13 +154,25 @@ final class MaintenancePushCodec {
   }
 
   /** Bare {@code host:port} node address (no labels on the wire); throws when unparseable. */
-  private static HostAndPort nodeAddress(String type, List<Object> c, byte[] raw) {
+  private static HostAndPort toNodeAddress(List<Object> eventMsg, byte[] raw) {
+    return toSafeHostAndPort("SMIGRATED node address", eventMsg, raw);
+  }
+
+  /**
+   * {@code host:port} with a non-empty host and a port in {@code [1, 65535]};
+   * {@link HostAndPort#from} alone accepts an empty host and any int port.
+   */
+  private static HostAndPort toSafeHostAndPort(String type, List<Object> eventMsg, byte[] raw) {
+    HostAndPort hp;
     try {
-      return HostAndPort.from(SafeEncoder.encode(raw));
+      hp = HostAndPort.from(SafeEncoder.encode(raw));
     } catch (Exception e) {
-      throw new MalformedMaintenanceEventException("Unparseable " + type + " node address: " + c,
-          e);
+      throw new MalformedMaintenanceEventException("Unparseable " + type + ": " + eventMsg, e);
     }
+    if (hp.getHost().isEmpty() || hp.getPort() < 1 || hp.getPort() > 65535) {
+      throw new MalformedMaintenanceEventException("Invalid " + type + ": " + eventMsg);
+    }
+    return hp;
   }
 
   /** Diagnostic shard-id list (stringified JSON array), logging only; required on the wire. */
@@ -170,16 +181,12 @@ final class MaintenancePushCodec {
   }
 
   /** MOVING target {@code host:port}; throws when the target is absent or unparseable. */
-  private static HostAndPort parseHostPort(List<Object> c, int i) {
-    if (i >= c.size() || !(c.get(i) instanceof byte[])) {
+  private static HostAndPort parseHostPort(List<Object> movingMsg, int i) {
+    if (i >= movingMsg.size() || !(movingMsg.get(i) instanceof byte[])) {
       throw new MalformedMaintenanceEventException(
-          "MOVING target must be a host:port byte[] at index " + i + ": " + c);
+          "MOVING target must be a host:port byte[] at index " + i + ": " + movingMsg);
     }
-    try {
-      return HostAndPort.from(SafeEncoder.encode((byte[]) c.get(i)));
-    } catch (Exception e) {
-      throw new MalformedMaintenanceEventException("Unparseable MOVING target: " + c, e);
-    }
+    return toSafeHostAndPort("MOVING target", movingMsg, (byte[]) movingMsg.get(i));
   }
 
   private static MalformedMaintenanceEventException malformed(String type, List<Object> c) {

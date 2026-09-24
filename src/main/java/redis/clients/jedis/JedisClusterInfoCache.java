@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -41,10 +42,10 @@ public class JedisClusterInfoCache {
   private static final Logger logger = LoggerFactory.getLogger(JedisClusterInfoCache.class);
 
   private final Map<String, ConnectionPool> nodes = new HashMap<>();
-  private final Map<String, ConnectionPool> primaryNodesCache = new HashMap<>();
-  private final ConnectionPool[] slots = new ConnectionPool[Protocol.CLUSTER_HASHSLOTS];
-  private final HostAndPort[] slotNodes = new HostAndPort[Protocol.CLUSTER_HASHSLOTS];
-  private final List<ConnectionPool>[] replicaSlots;
+  private final Map<String, ConnectionPool> primaryNodes = new HashMap<>();
+  private final ConnectionPool[] nodeBySlot = new ConnectionPool[Protocol.CLUSTER_HASHSLOTS];
+  private final HostAndPort[] addressBySlot = new HostAndPort[Protocol.CLUSTER_HASHSLOTS];
+  private final List<ConnectionPool>[] replicaNodesBySlot;
 
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
   private final Lock r = rwl.readLock();
@@ -132,9 +133,9 @@ public class JedisClusterInfoCache {
         topologyRefreshPeriod.toMillis(), topologyRefreshPeriod.toMillis(), TimeUnit.MILLISECONDS);
     }
     if (clientConfig.isReadOnlyForRedisClusterReplicas()) {
-      replicaSlots = new ArrayList[Protocol.CLUSTER_HASHSLOTS];
+      replicaNodesBySlot = new ArrayList[Protocol.CLUSTER_HASHSLOTS];
     } else {
-      replicaSlots = null;
+      replicaNodesBySlot = null;
     }
   }
 
@@ -195,7 +196,7 @@ public class JedisClusterInfoCache {
           HostAndPort targetNode = generateHostAndPort(hostInfos);
           setupNodeIfNotExist(targetNode);
           if (i == MASTER_NODE_INDEX) {
-            primaryNodesCache.put(getNodeKey(targetNode), getNode(targetNode));
+            primaryNodes.put(getNodeKey(targetNode), getNode(targetNode));
             assignSlotsToNode(slotNums, targetNode);
           } else if (clientConfig.isReadOnlyForRedisClusterReplicas()) {
             assignSlotsToReplicaNode(slotNums, targetNode);
@@ -284,7 +285,7 @@ public class JedisClusterInfoCache {
     w.lock();
     try {
       resetSlots();
-      primaryNodesCache.clear();
+      primaryNodes.clear();
       if (clientSideCache != null) {
         clientSideCache.flush();
       }
@@ -310,7 +311,7 @@ public class JedisClusterInfoCache {
           hostAndPortKeys.add(getNodeKey(targetNode));
           setupNodeIfNotExist(targetNode);
           if (i == MASTER_NODE_INDEX) {
-            primaryNodesCache.put(getNodeKey(targetNode), getNode(targetNode));
+            primaryNodes.put(getNodeKey(targetNode), getNode(targetNode));
             assignSlotsToNode(slotNums, targetNode);
           } else if (clientConfig.isReadOnlyForRedisClusterReplicas()) {
             assignSlotsToReplicaNode(slotNums, targetNode);
@@ -380,8 +381,8 @@ public class JedisClusterInfoCache {
     w.lock();
     try {
       ConnectionPool targetPool = setupNodeIfNotExist(targetNode);
-      slots[slot] = targetPool;
-      slotNodes[slot] = targetNode;
+      nodeBySlot[slot] = targetPool;
+      addressBySlot[slot] = targetNode;
     } finally {
       w.unlock();
     }
@@ -392,8 +393,8 @@ public class JedisClusterInfoCache {
     try {
       ConnectionPool targetPool = setupNodeIfNotExist(targetNode);
       for (Integer slot : targetSlots) {
-        slots[slot] = targetPool;
-        slotNodes[slot] = targetNode;
+        nodeBySlot[slot] = targetPool;
+        addressBySlot[slot] = targetNode;
       }
     } finally {
       w.unlock();
@@ -476,34 +477,31 @@ public class JedisClusterInfoCache {
    * window against {@link #renewClusterSlots}. Only ever called under {@link #slotDeltaLock} (see
    * {@link #drainSlotDeltas}).
    * @return the primaries that no longer own any slot (candidates for connection retirement); their
-   *         pools stay in place — removal belongs to the full-refresh dead-pool cleanup
+   *         pools stay in place — removal belongs to {@link #removeSlotlessNodes()} once the batch
+   *         has settled, or to the full-refresh dead-pool cleanup
    */
   private Set<HostAndPort> processSlotDelta(List<SlotMigration> migrations) {
     w.lock();
     try {
       for (SlotMigration migration : migrations) {
         ConnectionPool destPool = setupNodeIfNotExist(migration.dest);
-        primaryNodesCache.put(getNodeKey(migration.dest), destPool);
+        primaryNodes.put(getNodeKey(migration.dest), destPool);
         migration.slots.forEachSlot(slot -> {
-          slots[slot] = destPool;
-          slotNodes[slot] = migration.dest;
+          nodeBySlot[slot] = destPool;
+          addressBySlot[slot] = migration.dest;
         });
       }
       if (clientSideCache != null) {
         clientSideCache.flush();
       }
 
-      Set<String> owningNodeKeys = new HashSet<>();
-      for (HostAndPort owner : slotNodes) {
-        owningNodeKeys.add(getNodeKey(owner));
-      }
-
+      Set<String> ownerKeys = getOwnerKeys();
       // a slotless node is no longer a primary: keep broadcast/random selection off it
       Set<HostAndPort> slotless = new HashSet<>();
-      Iterator<String> primaries = primaryNodesCache.keySet().iterator();
+      Iterator<String> primaries = primaryNodes.keySet().iterator();
       while (primaries.hasNext()) {
         String nodeKey = primaries.next();
-        if (!owningNodeKeys.contains(nodeKey)) {
+        if (!ownerKeys.contains(nodeKey)) {
           primaries.remove();
           slotless.add(HostAndPort.from(nodeKey)); // node keys are HostAndPort#toString()
         }
@@ -514,15 +512,92 @@ public class JedisClusterInfoCache {
     }
   }
 
+  /**
+   * Removes and destroys every pool whose node owns no primary slot and serves no replica slot —
+   * the settle-point reaction once a whole batch of SMIGRATED deltas has been applied (closing per
+   * delta would be premature: a later delta of the same batch may hand slots back). Skipped while a
+   * refresh holds {@link #slotDeltaLock}; the refresh's own dead-node sweep drops nodes absent from
+   * CLUSTER SLOTS. Pools are destroyed after the locks are released: connections still borrowed
+   * finish their command and are destroyed on return.
+   * @return the removed nodes
+   */
+  Set<HostAndPort> removeSlotlessNodes() {
+    if (!slotDeltaLock.tryLock()) {
+      return Collections.emptySet();
+    }
+    List<ConnectionPool> removedNodes = new ArrayList<>();
+    Set<HostAndPort> removedAddress = new HashSet<>();
+    try {
+      w.lock();
+      try {
+        Set<String> ownerKeys = getOwnerKeys();
+        Set<ConnectionPool> serving = replicaPoolsInUse();
+        Iterator<Entry<String, ConnectionPool>> entryIt = nodes.entrySet().iterator();
+        while (entryIt.hasNext()) {
+          Entry<String, ConnectionPool> entry = entryIt.next();
+          if (!ownerKeys.contains(entry.getKey()) && !serving.contains(entry.getValue())) {
+            entryIt.remove();
+            primaryNodes.remove(entry.getKey());
+            removedAddress.add(HostAndPort.from(entry.getKey()));
+            if (entry.getValue() != null) {
+              removedNodes.add(entry.getValue());
+            }
+          }
+        }
+      } finally {
+        w.unlock();
+      }
+    } finally {
+      slotDeltaLock.unlock();
+    }
+    for (ConnectionPool pool : removedNodes) {
+      try {
+        pool.destroy();
+      } catch (RuntimeException e) {
+        logger.debug("Destroying the pool of a slotless node failed", e);
+      }
+    }
+    if (!removedAddress.isEmpty()) {
+      logger.info("Removed cluster nodes left without slots: {}", removedAddress);
+    }
+    return removedAddress;
+  }
+
+  /** Keys of the nodes owning at least one primary slot; call under {@link #rwl}. */
+  private Set<String> getOwnerKeys() {
+    Set<String> keys = new HashSet<>();
+    HostAndPort previousOwner = null;
+    for (HostAndPort owner : addressBySlot) {
+      if (owner != null && owner != previousOwner) { // ranges repeat the same reference
+        keys.add(getNodeKey(owner));
+        previousOwner = owner;
+      }
+    }
+    return keys;
+  }
+
+  /** Pools serving at least one replica slot (identity set); call under {@link #rwl}. */
+  private Set<ConnectionPool> replicaPoolsInUse() {
+    Set<ConnectionPool> pools = Collections.newSetFromMap(new IdentityHashMap<>());
+    if (replicaNodesBySlot != null) {
+      for (List<ConnectionPool> slotReplicas : replicaNodesBySlot) {
+        if (slotReplicas != null) {
+          pools.addAll(slotReplicas);
+        }
+      }
+    }
+    return pools;
+  }
+
   public void assignSlotsToReplicaNode(List<Integer> targetSlots, HostAndPort targetNode) {
     w.lock();
     try {
       ConnectionPool targetPool = setupNodeIfNotExist(targetNode);
       for (Integer slot : targetSlots) {
-        if (replicaSlots[slot] == null) {
-          replicaSlots[slot] = new ArrayList<>();
+        if (replicaNodesBySlot[slot] == null) {
+          replicaNodesBySlot[slot] = new ArrayList<>();
         }
-        replicaSlots[slot].add(targetPool);
+        replicaNodesBySlot[slot].add(targetPool);
       }
     } finally {
       w.unlock();
@@ -545,7 +620,7 @@ public class JedisClusterInfoCache {
   public ConnectionPool getSlotPool(int slot) {
     r.lock();
     try {
-      return slots[slot];
+      return nodeBySlot[slot];
     } finally {
       r.unlock();
     }
@@ -554,7 +629,7 @@ public class JedisClusterInfoCache {
   public HostAndPort getSlotNode(int slot) {
     r.lock();
     try {
-      return slotNodes[slot];
+      return addressBySlot[slot];
     } finally {
       r.unlock();
     }
@@ -563,7 +638,7 @@ public class JedisClusterInfoCache {
   public List<ConnectionPool> getSlotReplicaPools(int slot) {
     r.lock();
     try {
-      return replicaSlots[slot];
+      return replicaNodesBySlot[slot];
     } finally {
       r.unlock();
     }
@@ -581,7 +656,7 @@ public class JedisClusterInfoCache {
   public Map<String, ConnectionPool> getPrimaryNodes() {
     r.lock();
     try {
-      return new HashMap<>(primaryNodesCache);
+      return new HashMap<>(primaryNodes);
     } finally {
       r.unlock();
     }
@@ -590,7 +665,7 @@ public class JedisClusterInfoCache {
   public List<ConnectionPool> getShuffledPrimaryNodesPool() {
     r.lock();
     try {
-      List<ConnectionPool> pools = new ArrayList<>(primaryNodesCache.values());
+      List<ConnectionPool> pools = new ArrayList<>(primaryNodes.values());
       Collections.shuffle(pools);
       return pools;
     } finally {
@@ -623,18 +698,18 @@ public class JedisClusterInfoCache {
   }
 
   private void resetSlots() {
-    Arrays.fill(slots, null);
-    Arrays.fill(slotNodes, null);
+    Arrays.fill(nodeBySlot, null);
+    Arrays.fill(addressBySlot, null);
     resetReplicaSlots();
   }
 
   private void resetReplicaSlots() {
-    if (replicaSlots == null) {
+    if (replicaNodesBySlot == null) {
       return;
     }
 
-    Arrays.stream(replicaSlots).filter(Objects::nonNull).forEach(List::clear);
-    Arrays.fill(replicaSlots, null);
+    Arrays.stream(replicaNodesBySlot).filter(Objects::nonNull).forEach(List::clear);
+    Arrays.fill(replicaNodesBySlot, null);
   }
 
   private void resetNodes() {
@@ -648,7 +723,7 @@ public class JedisClusterInfoCache {
       }
     }
     nodes.clear();
-    primaryNodesCache.clear();
+    primaryNodes.clear();
   }
 
   public void close() {

@@ -9,6 +9,7 @@ import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
@@ -165,6 +166,26 @@ public class ClusterMaintenanceCoordinatorTest {
     order.verify(cache).applySlotMigration(second.migrations);
     order.verify(cache).applySlotMigration(third.migrations);
     verify(cache, times(3)).applySlotMigration(anyList());
+  }
+
+  @Test
+  public void settledDrainRemovesSlotlessNodesOnce() {
+    coordinator.onSMigrating(migrating(1, "0-100"), conn);
+    SMigratedEvent closer = migrated(2, "0-100");
+    coordinator.onSMigrated(closer, conn);
+    coordinator.onSMigrated(closer, otherConn); // duplicate: nothing applied, nothing to settle
+
+    verify(cache, times(1)).applySlotMigration(closer.migrations);
+    verify(cache, times(1)).removeSlotlessNodes();
+  }
+
+  @Test
+  public void sweepIsDeferredWhileDeltasWaitBehindARefresh() {
+    when(cache.hasPendingSlotDeltas()).thenReturn(true);
+    coordinator.onSMigrated(migrated(2, "0-100"), conn);
+
+    verify(cache, times(1)).applySlotMigration(anyList());
+    verify(cache, never()).removeSlotlessNodes(); // the refresh's own sweep takes over
   }
 
   private static SMigratingEvent migrating(long seq, String slots) {

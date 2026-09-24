@@ -270,6 +270,84 @@ public class JedisClusterInfoCacheTest {
     assertFalse(cache.hasPendingSlotDeltas());
   }
 
+  @Test
+  public void removeSlotlessNodesDestroysOnlyPoolsWithoutSlots() {
+    HostAndPort masterA = MASTER_HOST;
+    HostAndPort masterB = REPLICA_1_HOST;
+    JedisClusterInfoCache cache = new JedisClusterInfoCache(DefaultJedisClientConfig.builder().build(),
+        new HashSet<>(Collections.singletonList(masterA)));
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(createClusterSlotsResponse(
+          new SlotRange.Builder(0, 8191).master(masterA, "a").build(),
+          new SlotRange.Builder(8192, 16383).master(masterB, "b").build()));
+    cache.discoverClusterNodesAndSlots(mockConnection);
+    ConnectionPool poolA = cache.getNode(masterA);
+    ConnectionPool poolB = cache.getNode(masterB);
+
+    cache.applySlotMigration(Collections.singletonList(
+      new SlotMigration(masterA, masterB, HashSlotRanges.parse("0-8191"))));
+    assertFalse(poolA.isClosed(), "the delta alone must not close anything");
+
+    assertEquals(Collections.singleton(masterA), cache.removeSlotlessNodes());
+    assertTrue(poolA.isClosed());
+    assertNull(cache.getNode(masterA));
+    assertThat(cache.getNodes(), aMapWithSize(1));
+    assertThat(cache.getNodes(), hasKey(getNodeKey(masterB)));
+    assertFalse(poolB.isClosed());
+    assertEquals(poolB, cache.getSlotPool(0));
+    // idempotent once settled
+    assertTrue(cache.removeSlotlessNodes().isEmpty());
+  }
+
+  @Test
+  public void removeSlotlessNodesKeepsReplicaOnlyPools() {
+    JedisClusterInfoCache cache = createCacheWithReplicasEnabled();
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(masterReplicaSlotsResponse(MASTER_HOST, REPLICA_1_HOST));
+    cache.discoverClusterNodesAndSlots(mockConnection);
+    ConnectionPool replicaPool = cache.getNode(REPLICA_1_HOST);
+
+    // a replica owns no primary slot but serves reads: it is not slotless
+    assertTrue(cache.removeSlotlessNodes().isEmpty());
+    assertFalse(replicaPool.isClosed());
+    assertEquals(replicaPool, cache.getNode(REPLICA_1_HOST));
+    assertReplicasAvailable(cache, REPLICA_1_HOST);
+  }
+
+  @Test
+  public void removeSlotlessNodesSkipsWhileRefreshIsRunning() throws Exception {
+    HostAndPort masterA = MASTER_HOST;
+    HostAndPort masterB = REPLICA_1_HOST;
+    JedisClusterInfoCache cache = new JedisClusterInfoCache(DefaultJedisClientConfig.builder().build(),
+        new HashSet<>(Collections.singletonList(masterA)));
+    CountDownLatch querying = new CountDownLatch(1);
+    CountDownLatch release = new CountDownLatch(1);
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(createClusterSlotsResponse(
+          new SlotRange.Builder(0, 8191).master(masterA, "a").build(),
+          new SlotRange.Builder(8192, 16383).master(masterB, "b").build()))
+        .thenAnswer(inv -> {
+          querying.countDown();
+          release.await(5, TimeUnit.SECONDS);
+          return masterOnlySlotsResponse();
+        });
+    cache.discoverClusterNodesAndSlots(mockConnection);
+    cache.applySlotMigration(Collections.singletonList(
+      new SlotMigration(masterA, masterB, HashSlotRanges.parse("0-8191"))));
+    ConnectionPool poolA = cache.getNode(masterA);
+
+    Thread refresh = new Thread(() -> cache.renewClusterSlots(mockConnection));
+    refresh.start();
+    assertTrue(querying.await(5, TimeUnit.SECONDS));
+    // the refresh owns the topology now; the sweep must neither block nor destroy
+    assertTrue(cache.removeSlotlessNodes().isEmpty());
+    assertFalse(poolA.isClosed());
+
+    release.countDown();
+    refresh.join(5000);
+    assertFalse(refresh.isAlive());
+  }
+
   private List<Object> masterReplicaSlotsResponse(HostAndPort masterHost, HostAndPort replicaHost) {
     return createClusterSlotsResponse(
             new SlotRange.Builder(0, 16383).master(masterHost, masterHost.toString() + "-id")

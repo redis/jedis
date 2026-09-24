@@ -96,9 +96,13 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
     pendingSMigrated.putIfAbsent(e.seq, e);
     smigratedLock.lock();
     try {
+      boolean applied = false;
       Map.Entry<Long, SMigratedEvent> next;
       while ((next = pendingSMigrated.pollFirstEntry()) != null) {
-        processSMigrated(next.getValue());
+        applied |= processSMigrated(next.getValue());
+      }
+      if (applied && !cache.hasPendingSlotDeltas()) {
+        cache.removeSlotlessNodes();
       }
     } finally {
       smigratedLock.unlock();
@@ -108,11 +112,12 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
 
   /**
    * Runs under {@link #smigratedLock}: one closer at a time, so record → merge → apply is atomic.
+   * @return whether a slot delta was handed to the cache
    */
-  private void processSMigrated(SMigratedEvent e) {
+  private boolean processSMigrated(SMigratedEvent e) {
     if (completedMigrations.putIfAbsent(e.seq,
       new CompletedMigration(e.seq, e.migrations)) != null) {
-      return;
+      return false;
     }
     lastProcessedSeq.accumulateAndGet(e.seq, Math::max);
 
@@ -131,11 +136,12 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
         "Dropping late slot migration (seq={}): ordering context is ambiguous to merge to (seq={})",
         e.seq, newestSeq);
       closeMigrationWindow(e.seq);
-      return;
+      return false;
     }
     closeMigrationWindow(e.seq);
     cache.applySlotMigration(toApply);
     trimCompletedMigrations();
+    return true;
   }
 
   /**

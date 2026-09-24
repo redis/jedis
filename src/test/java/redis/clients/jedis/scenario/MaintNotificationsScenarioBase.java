@@ -152,7 +152,7 @@ abstract class MaintNotificationsScenarioBase {
    * A fresh endpoint's DNS record may not have propagated yet (or a negative lookup may be cached)
    * — wait until the endpoint accepts connections before building the client.
    */
-  private static void awaitEndpointConnectable(URI endpoint) {
+  static void awaitEndpointConnectable(URI endpoint) {
     long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(60);
     IOException last = null;
     while (System.nanoTime() < deadline) {
@@ -169,6 +169,22 @@ abstract class MaintNotificationsScenarioBase {
 
   private static RedisClient buildClient(Map<String, Object> output, EndpointType endpointType,
       SslOptions sslOptions) {
+    MaintenanceNotificationsConfig.Builder maintenance = MaintenanceNotificationsConfig.builder()
+        .mode(MaintenanceNotificationsConfig.Mode.ENABLED).relaxedTimeout(RELAXED_TIMEOUT_MS)
+        .relaxedBlockingTimeout(RELAXED_TIMEOUT_MS);
+    if (endpointType != null) {
+      maintenance.endpointType(endpointType); // null: auto-resolve from connection characteristics
+    }
+    return buildClient(output, maintenance.build(), sslOptions);
+  }
+
+  /**
+   * Builds a client from the create output with an explicit maintenance configuration. Base socket
+   * timeouts stay low so relaxed/restored timeouts remain observable, and the standalone client
+   * runs without retries so those timeouts are not masked.
+   */
+  static RedisClient buildClient(Map<String, Object> output,
+      MaintenanceNotificationsConfig maintenance, SslOptions sslOptions) {
     URI endpoint = URI.create((String) ((List<?>) output.get("endpoints")).get(0));
 
     DefaultJedisClientConfig.Builder config = DefaultJedisClientConfig.builder()
@@ -190,17 +206,9 @@ abstract class MaintNotificationsScenarioBase {
     GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
     poolConfig.setMaxTotal(3);
 
-    MaintenanceNotificationsConfig.Builder maintenance = MaintenanceNotificationsConfig.builder()
-        .mode(MaintenanceNotificationsConfig.Mode.ENABLED).relaxedTimeout(RELAXED_TIMEOUT_MS)
-        .relaxedBlockingTimeout(RELAXED_TIMEOUT_MS);
-    if (endpointType != null) {
-      maintenance.endpointType(endpointType); // null: auto-resolve from connection characteristics
-    }
-
-    // Standalone RedisClient runs commands without retries, so timeouts stay observable.
     return RedisClient.builder().hostAndPort(endpoint.getHost(), endpoint.getPort())
-        .clientConfig(config.build()).poolConfig(poolConfig)
-        .maintenanceNotifications(maintenance.build()).build();
+        .clientConfig(config.build()).poolConfig(poolConfig).maintenanceNotifications(maintenance)
+        .build();
   }
 
   /**

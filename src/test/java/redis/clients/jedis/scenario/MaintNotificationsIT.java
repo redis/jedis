@@ -33,7 +33,6 @@ import com.redis.test.fi.Trigger;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -94,6 +93,10 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
     return movingScenarios().flatMap(scenario -> Stream.of(EndpointType.EXTERNAL_IP,
       EndpointType.INTERNAL_IP, EndpointType.EXTERNAL_FQDN, EndpointType.INTERNAL_FQDN)
         .map(type -> Arguments.of(scenario, type)));
+  }
+
+  static Stream<EndpointType> tlsHandoffEndpointTypes() {
+    return Stream.of(EndpointType.EXTERNAL_FQDN, EndpointType.INTERNAL_FQDN);
   }
 
   /**
@@ -214,17 +217,20 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
   }
 
   /**
-   * connectionHandoffWithStaticExternalNameTest over TLS: the same handoff lifecycle on a rediss
-   * endpoint with the default FULL verification (pinned truststore + hostname verification) —
-   * validates the TLS handshake against the MOVING target (redis/jedis#4708).
+   * T.2.2 TLS Connection Handoff — connectionHandoffWithStaticExternalNameTest and
+   * connectionHandoffWithStaticInternalNameTest over TLS: the same handoff lifecycle on a rediss
+   * endpoint with the default FULL verification (pinned truststore + hostname verification),
+   * validating the TLS handshake against the MOVING target (redis/jedis#4708). The internal FQDN
+   * run is skipped when the internal endpoint is not routable from the test host.
    */
-  @Test
+  @ParameterizedTest(name = "over TLS [{0}]")
+  @MethodSource("tlsHandoffEndpointTypes")
   @Timeout(300)
-  void connectionHandoffOnMovingOverTls() {
+  void connectionHandoffOnMovingOverTls(EndpointType endpointType) {
     Trigger trigger = CATALOG.effect(StandaloneEffect.CONN_DROP).trigger("endpoint_rebind");
     assumeTrue(trigger.offers("single_tls"),
       "single_tls requirement not offered by this FI environment");
-    assertConnectionHandoffLifecycle(trigger.scenario("single_tls"), EndpointType.EXTERNAL_FQDN);
+    assertConnectionHandoffLifecycle(trigger.scenario("single_tls"), endpointType);
   }
 
   private void assertConnectionHandoffLifecycle(Scenario scenario, EndpointType endpointType) {

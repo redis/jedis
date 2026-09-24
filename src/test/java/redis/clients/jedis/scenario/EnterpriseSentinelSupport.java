@@ -142,6 +142,26 @@ final class EnterpriseSentinelSupport {
   }
 
   /**
+   * Node uid the discovery service currently tracks for a master name.
+   * <p>
+   * This is the node that matters when provoking a {@code +switch-master}: Redis Enterprise
+   * publishes the event only when the address it reports changes, and it keeps reporting the same
+   * node for as long as that node remains one of the endpoint's proxies. Draining any other proxy
+   * is silent. The node rladmin lists for the endpoint is not a substitute - an endpoint can have
+   * several proxies, and then the two disagree.
+   * @return the bare node uid rladmin takes, for example {@code 3}, or {@code null} if the reported
+   *         address maps to no known node.
+   */
+  static String trackedNodeUid(HostAndPort sentinel, String masterName,
+      RedisEnterpriseClusterStatus status) {
+    HostAndPort reported = reportedMaster(sentinel, masterName);
+    String node = status.findNodeByAddress(reported.getHost());
+    log.info("Discovery service reports {} at {}, which is node:{}", masterName, reported.getHost(),
+      node);
+    return node;
+  }
+
+  /**
    * Captures {@code +switch-master}, {@code +master} and {@code -master} straight off the discovery
    * service with {@code SUBSCRIBE}, which is what Redis Enterprise supports.
    * <p>

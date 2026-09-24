@@ -67,8 +67,10 @@ import redis.clients.jedis.util.Pool;
  * sends five.
  * <p>
  * A hard-killed run may leave the endpoint excluded from its original node; the next run converges
- * by re-reading the current binding, but a manual
- * {@code rladmin bind endpoint <uid> include <node>} also fixes it.
+ * by collapsing the endpoint back onto a single proxy, but a manual
+ * {@code rladmin bind endpoint <uid> policy single} also fixes it - that form resets both
+ * {@code include_proxies} and {@code exclude_proxies}, where {@code include <node>} clears only the
+ * exclude and leaves the endpoint proxied by two nodes.
  */
 @Tags({ @Tag("scenario") })
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
@@ -95,6 +97,12 @@ public class EnterpriseSentinelEndpointMoveIT {
 
   private static final Duration FAILOVER_TIMEOUT = Duration.ofMinutes(5);
 
+  /**
+   * How long the discovery service may lag CCS before the endpoint it reports has to match the
+   * endpoint's only proxy.
+   */
+  private static final Duration DISCOVERY_AGREEMENT_TIMEOUT = Duration.ofSeconds(30);
+
   private static EndpointConfig endpoint;
 
   private final FaultInjectionClient faultClient = new FaultInjectionClient();
@@ -108,6 +116,12 @@ public class EnterpriseSentinelEndpointMoveIT {
   private String bdbId;
 
   private RedisEnterpriseClusterStatus status;
+
+  /**
+   * Node the discovery service currently reports for the database. Draining this node is what makes
+   * Redis Enterprise publish {@code +switch-master}; draining any other proxy is silent.
+   */
+  private String trackedNodeUid;
 
   private RedisSentinelClient client;
 
@@ -152,13 +166,19 @@ public class EnterpriseSentinelEndpointMoveIT {
       RLADMIN_TIMEOUT);
     assertEquals(masterName, status.getDbName(),
       "The Sentinel master name must be the Redis Enterprise database name");
-    log.info("Database {} (bdb {}): {}", masterName, bdbId, status);
 
     endpointMoved = false;
     graceTimeChanged = false;
     pendingAction = null;
     stopWorkload.set(false);
     commandsExecuted.set(0);
+
+    // Collapse the endpoint onto a single proxy before measuring anything. A previous test may
+    // have left it with two, and with two proxies the node rladmin lists and the node the
+    // discovery service reports can differ.
+    trackedNodeUid = normaliseToSingleProxy();
+    log.info("Database {} (bdb {}): {}, discovery service tracks node:{}", masterName, bdbId,
+      status, trackedNodeUid);
 
     graceTimeChanged = runRladminQuietly(
       "tune cluster endpoint_rebind_propagation_grace_time " + GRACE_TIME_SECONDS);
@@ -198,10 +218,12 @@ public class EnterpriseSentinelEndpointMoveIT {
     }
 
     if (endpointMoved) {
-      // 'include' is the only form that clears the persistent exclude_proxies attribute written by
-      // 'exclude' ('policy single' does not), and it moves the endpoint back in one operation.
-      runRladminQuietly(
-        "bind endpoint " + status.getEndpointUid() + " include " + status.getBoundNodeUid());
+      // 'policy single' resets both overriding constraints - rladmin sends empty include_proxies
+      // and exclude_proxies alongside the policy - and collapses the endpoint back onto one proxy.
+      // 'include <node>' would clear the exclude but leave a two-proxy endpoint behind, which then
+      // makes the next test's 'exclude' a coin flip: draining a proxy the discovery service is not
+      // tracking changes nothing and publishes nothing.
+      runRladminQuietly("bind endpoint " + status.getEndpointUid() + " policy single");
     }
 
     if (graceTimeChanged) {
@@ -230,8 +252,9 @@ public class EnterpriseSentinelEndpointMoveIT {
     client.set(key, "before-move");
     startWorkload();
 
-    String command = "bind endpoint " + status.getEndpointUid() + " exclude "
-        + status.getBoundNodeUid();
+    // Drain the node the discovery service tracks, not whichever proxy rladmin printed first: only
+    // removing the tracked node from proxy_uids forces the reported address to change.
+    String command = "bind endpoint " + status.getEndpointUid() + " exclude " + trackedNodeUid;
     endpointMoved = true;
     // Started, not awaited: the grace-window wait happens inside the action, so blocking here would
     // only start measuring once the window had already closed.
@@ -396,6 +419,46 @@ public class EnterpriseSentinelEndpointMoveIT {
 
     assertTrue(capture.isAlive(), "the discovery-service subscriber stayed connected");
     return after;
+  }
+
+  /**
+   * Collapse the endpoint onto exactly one proxy and return the node uid of that proxy.
+   * <p>
+   * Redis Enterprise publishes {@code +switch-master} only when the address it reports for the
+   * database changes, and it keeps reporting the same node for as long as that node stays in the
+   * endpoint's {@code proxy_uids}. With more than one proxy, draining the node rladmin happens to
+   * print first is therefore not enough: if it is not the node being tracked, the reported address
+   * never changes and nothing is published. Starting from a single proxy removes the ambiguity,
+   * because then rladmin and the discovery service cannot disagree.
+   * @return the bare node uid of the single proxy, which is also the node the discovery service
+   *         reports.
+   */
+  private String normaliseToSingleProxy() throws IOException {
+    if (status.getProxyNodeUids().size() > 1) {
+      log.info("Endpoint {} is proxied by node:{}; collapsing onto one", status.getEndpointUid(),
+        status.getProxyNodeUids());
+      // rladmin exits non-zero when there is nothing to do, so the outcome is checked by re-reading
+      // the endpoint rather than trusted from the command.
+      runRladminQuietly("bind endpoint " + status.getEndpointUid() + " policy single");
+      status = RedisEnterpriseClusterStatus.discover(faultClient, bdbId, RLADMIN_CHECK_INTERVAL,
+        RLADMIN_TIMEOUT);
+    }
+
+    assertEquals(1, status.getProxyNodeUids().size(),
+      "The endpoint must have a single proxy before the move, otherwise which node to drain is "
+          + "ambiguous. Proxies: " + status.getProxyNodeUids());
+    String proxyNodeUid = status.getProxyNodeUids().get(0);
+
+    // A single-proxy endpoint leaves the discovery service no choice but to report that node - but
+    // it watches CCS and can still be a moment behind it. Waiting for the two to agree is what
+    // makes the drain meaningful; without it the test could drain a node that is not the one being
+    // reported, and nothing would be published.
+    await().atMost(DISCOVERY_AGREEMENT_TIMEOUT).pollInterval(Duration.ofSeconds(2))
+        .untilAsserted(() -> assertEquals(proxyNodeUid,
+          EnterpriseSentinelSupport.trackedNodeUid(sentinel, masterName, status),
+          "the discovery service must report the endpoint's only proxy"));
+
+    return proxyNodeUid;
   }
 
   private boolean runRladminQuietly(String command) {

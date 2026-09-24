@@ -655,6 +655,9 @@
 						<include>**/SocketAddress*.java</include>
 						<include>**/sch/*.java</include>
 						<include>**/ConnectionFactoryRebindTest.java</include>
+						<include>**/scenario/EnterpriseSentinelSupport.java</include>
+						<include>**/scenario/RedisEnterpriseClusterStatus.java</include>
+						<include>**/scenario/RedisEnterpriseClusterStatusUnitTests.java</include>
 					</includes>
 				</configuration>
 				<executions>

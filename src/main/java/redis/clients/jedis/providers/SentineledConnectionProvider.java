@@ -317,7 +317,7 @@ public class SentineledConnectionProvider implements ConnectionProvider {
 
     protected final HostAndPort node;
     protected volatile Jedis sentinelJedis;
-    protected AtomicBoolean running = new AtomicBoolean(false);
+    protected AtomicBoolean running = new AtomicBoolean(true);
     protected long subscribeAttempt = 0;
 
     public SentinelListener(HostAndPort node) {
@@ -328,16 +328,14 @@ public class SentineledConnectionProvider implements ConnectionProvider {
     @Override
     public void run() {
 
-      running.set(true);
-
       while (running.get()) {
         try {
-          // double check that it is not being shutdown
+          sentinelJedis = sentinelConnectionFactory.createConnection(node, sentinelClientConfig);
+
+          // Shutdown may have happened before the new connection was published.
           if (!running.get()) {
             break;
           }
-
-          sentinelJedis = sentinelConnectionFactory.createConnection(node, sentinelClientConfig);
 
           // code for active refresh
           List<String> masterAddr = sentinelJedis.sentinelGetMasterAddrByName(masterName);

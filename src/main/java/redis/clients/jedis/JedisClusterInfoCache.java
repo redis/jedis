@@ -65,6 +65,8 @@ public class JedisClusterInfoCache {
   /** Deltas enqueued but not yet fully applied; drives {@link #hasPendingSlotDeltas()}. */
   private final AtomicInteger inFlightSlotDeltas = new AtomicInteger();
 
+  private volatile boolean slotMigrationInProgress = false;
+
   private final GenericObjectPoolConfig<Connection> poolConfig;
   private final JedisClientConfig clientConfig;
   private final Cache clientSideCache;
@@ -261,6 +263,8 @@ public class JedisClusterInfoCache {
         slotDeltaLock.unlock();
         try {
           drainSlotDeltas();
+          // deltas deferred behind this refresh may have emptied a node the snapshot still listed
+          cleanupSlotlessNodes();
         } catch (RuntimeException e) {
           // never mask an in-flight discovery exception; queued deltas would re-drain on the next
           // delta or refresh
@@ -512,21 +516,14 @@ public class JedisClusterInfoCache {
     }
   }
 
-  /**
-   * Removes and destroys every pool whose node owns no primary slot and serves no replica slot —
-   * the settle-point reaction once a whole batch of SMIGRATED deltas has been applied (closing per
-   * delta would be premature: a later delta of the same batch may hand slots back). Skipped while a
-   * refresh holds {@link #slotDeltaLock}; the refresh's own dead-node sweep drops nodes absent from
-   * CLUSTER SLOTS. Pools are destroyed after the locks are released: connections still borrowed
-   * finish their command and are destroyed on return.
-   * @return the removed nodes
-   */
-  Set<HostAndPort> removeSlotlessNodes() {
+  void cleanupSlotlessNodes() {
+    if (slotMigrationInProgress || hasPendingSlotDeltas()) {
+      return;
+    }
     if (!slotDeltaLock.tryLock()) {
-      return Collections.emptySet();
+      return;
     }
     List<ConnectionPool> removedNodes = new ArrayList<>();
-    Set<HostAndPort> removedAddress = new HashSet<>();
     try {
       w.lock();
       try {
@@ -538,7 +535,6 @@ public class JedisClusterInfoCache {
           if (!ownerKeys.contains(entry.getKey()) && !serving.contains(entry.getValue())) {
             entryIt.remove();
             primaryNodes.remove(entry.getKey());
-            removedAddress.add(HostAndPort.from(entry.getKey()));
             if (entry.getValue() != null) {
               removedNodes.add(entry.getValue());
             }
@@ -557,10 +553,6 @@ public class JedisClusterInfoCache {
         logger.debug("Destroying the pool of a slotless node failed", e);
       }
     }
-    if (!removedAddress.isEmpty()) {
-      logger.info("Removed cluster nodes left without slots: {}", removedAddress);
-    }
-    return removedAddress;
   }
 
   /** Keys of the nodes owning at least one primary slot; call under {@link #rwl}. */
@@ -587,6 +579,11 @@ public class JedisClusterInfoCache {
       }
     }
     return pools;
+  }
+
+  /** Coordinator hook: true from the first to the last SMIGRATED of a drained batch. */
+  void setSlotMigrationInProgress(boolean inProgress) {
+    this.slotMigrationInProgress = inProgress;
   }
 
   public void assignSlotsToReplicaNode(List<Integer> targetSlots, HostAndPort targetNode) {

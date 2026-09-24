@@ -97,12 +97,17 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
     smigratedLock.lock();
     try {
       boolean applied = false;
-      Map.Entry<Long, SMigratedEvent> next;
-      while ((next = pendingSMigrated.pollFirstEntry()) != null) {
-        applied |= processSMigrated(next.getValue());
+      cache.setSlotMigrationInProgress(true);
+      try {
+        Map.Entry<Long, SMigratedEvent> next;
+        while ((next = pendingSMigrated.pollFirstEntry()) != null) {
+          applied |= processSMigrated(next.getValue());
+        }
+      } finally {
+        cache.setSlotMigrationInProgress(false);
       }
-      if (applied && !cache.hasPendingSlotDeltas()) {
-        cache.removeSlotlessNodes();
+      if (applied) {
+        cache.cleanupSlotlessNodes();
       }
     } finally {
       smigratedLock.unlock();

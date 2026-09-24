@@ -176,16 +176,30 @@ public class ClusterMaintenanceCoordinatorTest {
     coordinator.onSMigrated(closer, otherConn); // duplicate: nothing applied, nothing to settle
 
     verify(cache, times(1)).applySlotMigration(closer.migrations);
-    verify(cache, times(1)).removeSlotlessNodes();
+    verify(cache, times(1)).cleanupSlotlessNodes();
   }
 
   @Test
-  public void sweepIsDeferredWhileDeltasWaitBehindARefresh() {
-    when(cache.hasPendingSlotDeltas()).thenReturn(true);
+  public void drainFlagsMigrationInProgressAndCleansUpOnlyAfterClearingIt() {
     coordinator.onSMigrated(migrated(2, "0-100"), conn);
 
-    verify(cache, times(1)).applySlotMigration(anyList());
-    verify(cache, never()).removeSlotlessNodes(); // the refresh's own sweep takes over
+    // the cache guards its cleanup with the flag, so it must be lowered before the call
+    InOrder order = inOrder(cache);
+    order.verify(cache).setSlotMigrationInProgress(true);
+    order.verify(cache).applySlotMigration(anyList());
+    order.verify(cache).setSlotMigrationInProgress(false);
+    order.verify(cache).cleanupSlotlessNodes();
+  }
+
+  @Test
+  public void drainWithoutAnyAppliedDeltaLowersTheFlagAndSkipsCleanup() {
+    SMigratedEvent closer = migrated(2, "0-100");
+    coordinator.onSMigrated(closer, conn);
+    coordinator.onSMigrated(closer, otherConn); // duplicate-only drain
+
+    verify(cache, times(2)).setSlotMigrationInProgress(true);
+    verify(cache, times(2)).setSlotMigrationInProgress(false);
+    verify(cache, times(1)).cleanupSlotlessNodes();
   }
 
   private static SMigratingEvent migrating(long seq, String slots) {

@@ -21,6 +21,10 @@ public class EndpointConfig {
     private final int bdbId;
     private final List<URI> endpoints;
     private final String tlsCertPath;
+    private final List<String> discoveryEndpoints;
+
+    /** Port of the Redis Enterprise discovery service; hard-coded and non-configurable in RE. */
+    private static final int DISCOVERY_SERVICE_PORT = 8001;
 
     public EndpointConfig(HostAndPort hnp, String username, String password, boolean tls, String tlsCertPath) {
         this.tls = tls;
@@ -30,6 +34,7 @@ public class EndpointConfig {
         this.endpoints = Collections.singletonList(
             URI.create(getURISchema(tls) + hnp.getHost() + ":" + hnp.getPort()));
         this.tlsCertPath = tlsCertPath;
+        this.discoveryEndpoints = null;
     }
 
     public HostAndPort getHostAndPort() {
@@ -158,5 +163,32 @@ public class EndpointConfig {
             }.getType());
         }
         return configs;
+    }
+
+    /**
+     * Addresses of the Redis Enterprise discovery service (Sentinel-compatible API), as
+     * {@code host:port} strings - one entry per cluster node. Empty when the endpoint configuration
+     * does not advertise them.
+     */
+    public List<String> getDiscoveryEndpoints() {
+        return discoveryEndpoints == null ? Collections.<String> emptyList() : discoveryEndpoints;
+    }
+
+    /**
+     * {@link #getDiscoveryEndpoints()} parsed into {@link HostAndPort}. An entry without a port
+     * defaults to the Redis Enterprise discovery-service port 8001.
+     */
+    public List<HostAndPort> getDiscoveryHostsAndPorts() {
+        List<HostAndPort> result = new ArrayList<>();
+        for (String discoveryEndpoint : getDiscoveryEndpoints()) {
+            int separator = discoveryEndpoint.lastIndexOf(':');
+            if (separator > 0) {
+                result.add(new HostAndPort(discoveryEndpoint.substring(0, separator),
+                    Integer.parseInt(discoveryEndpoint.substring(separator + 1))));
+            } else {
+                result.add(new HostAndPort(discoveryEndpoint, DISCOVERY_SERVICE_PORT));
+            }
+        }
+        return result;
     }
 }

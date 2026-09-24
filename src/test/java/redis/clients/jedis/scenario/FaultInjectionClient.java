@@ -65,13 +65,13 @@ public class FaultInjectionClient {
         return Duration.between(completedAt, Instant.now()).compareTo(delayAfter) >= 0;
       }
 
-      if (firstRequestAt != null && Duration.between(firstRequestAt, Instant.now())
-          .compareTo(timeout) >= 0) {
+      if (firstRequestAt != null
+          && Duration.between(firstRequestAt, Instant.now()).compareTo(timeout) >= 0) {
         throw new RuntimeException("Timeout");
       }
 
-      if (lastRequestTime == null || Duration.between(lastRequestTime, Instant.now())
-          .compareTo(checkInterval) >= 0) {
+      if (lastRequestTime == null
+          || Duration.between(lastRequestTime, Instant.now()).compareTo(checkInterval) >= 0) {
         lastRequestTime = Instant.now();
 
         if (firstRequestAt == null) {
@@ -110,16 +110,14 @@ public class FaultInjectionClient {
         .setConnectionRequestTimeout(CONNECTION_REQUEST_TIMEOUT, TimeUnit.MILLISECONDS)
         .setResponseTimeout(responseTimeoutMillis, TimeUnit.MILLISECONDS).build();
 
-    return HttpClientBuilder.create()
-        .setDefaultRequestConfig(requestConfig).build();
+    return HttpClientBuilder.create().setDefaultRequestConfig(requestConfig).build();
   }
 
   public TriggerActionResponse triggerAction(String actionType, HashMap<String, Object> parameters)
       throws IOException {
     Gson gson = new GsonBuilder()
         .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-        .excludeFieldsWithoutExposeAnnotation()
-        .create();
+        .excludeFieldsWithoutExposeAnnotation().create();
 
     HashMap<String, Object> payload = new HashMap<>();
     payload.put("type", actionType);
@@ -192,7 +190,8 @@ public class FaultInjectionClient {
       return null;
     }
     JsonElement value = object.get(member);
-    // `execute_rladmin_command` reports its captured text under a nested object rather than as a plain member, so a
+    // `execute_rladmin_command` reports its captured text under a nested object rather than as a
+    // plain member, so a
     // non-primitive here is not the string being asked for - the caller looks one level deeper.
     return value.isJsonPrimitive() ? value.getAsString() : null;
   }
@@ -231,7 +230,6 @@ public class FaultInjectionClient {
 
   /**
    * Poll an action to completion, distinguishing a reported failure from "not finished yet".
-   *
    * @return {@code true} on success, {@code false} when the action reported a failure.
    * @throws RuntimeException on timeout.
    */
@@ -267,9 +265,8 @@ public class FaultInjectionClient {
 
   /**
    * Run an rladmin command to completion and return its captured output.
-   *
    * @throws IllegalStateException when the action reported a failure - note rladmin exits non-zero
-   *         for a no-op, so callers doing cleanup should tolerate this.
+   *           for a no-op, so callers doing cleanup should tolerate this.
    */
   public String executeRladminCommandCapturingOutput(String bdbId, String rladminCommand,
       Duration checkInterval, Duration timeout) throws IOException {
@@ -277,8 +274,7 @@ public class FaultInjectionClient {
 
     if (!awaitAction(response.getActionId(), checkInterval, timeout)) {
       ActionStatus status = getActionStatus(response.getActionId());
-      throw new IllegalStateException(
-          "rladmin " + rladminCommand + " failed: " + status);
+      throw new IllegalStateException("rladmin " + rladminCommand + " failed: " + status);
     }
 
     return getActionStatus(response.getActionId()).getOutput();

@@ -23,13 +23,11 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
 
   private static final Logger logger = LoggerFactory.getLogger(ClusterMaintenanceCoordinator.class);
 
-  private static final int MAX_COMPLETED_MIGRATIONS = 128;
+  private static final int MAX_HISTORY_OF_EVENTS = 128;
 
   private final JedisClusterInfoCache cache;
   private final long maxRelaxedDurationNanos;
   private final Supplier<TimeoutInfo> timeoutSupplier;
-
-  private final AtomicLong lastProcessedSeq = new AtomicLong(Long.MIN_VALUE);
 
   private final ConcurrentSkipListMap<Long, MigratingWindow> migratingWindows = new ConcurrentSkipListMap<>();
 
@@ -69,25 +67,21 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
         return true;
       }
     }
+    while (migratingWindows.size() > MAX_HISTORY_OF_EVENTS) {
+      migratingWindows.pollFirstEntry();
+    }
     return false;
   }
 
   @Override
   public void onSMigrating(SMigratingEvent e, Connection c) {
-    if (e.seq < lastProcessedSeq.get()) {
-      if (logger.isDebugEnabled()) {
-        logger.debug("Ignoring stale SMIGRATING (seq={} < last processed seq={})", e.seq,
-          lastProcessedSeq.get());
-      }
-      return;
-    }
-    if (logger.isDebugEnabled()) {
+    long deadline = NanoClock.INSTANCE.getAsLong() + maxRelaxedDurationNanos;
+    MigratingWindow mw = new MigratingWindow(e.seq, deadline);
+    migratingWindows.putIfAbsent(e.seq, mw);
+    if (logger.isDebugEnabled() && migratingWindows.get(e.seq) == mw) {
       logger.debug("Slot migration starting: {} (seq={}) conn={}", e.slots, e.seq,
         c.toIdentityString());
     }
-    long deadline = NanoClock.INSTANCE.getAsLong() + maxRelaxedDurationNanos;
-    migratingWindows.computeIfAbsent(e.seq, k -> new MigratingWindow(e.seq, deadline));
-    lastProcessedSeq.accumulateAndGet(e.seq, Math::max);
     c.applyCurrentTimeout();
   }
 
@@ -124,8 +118,6 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
       new CompletedMigration(e.seq, e.migrations)) != null) {
       return false;
     }
-    lastProcessedSeq.accumulateAndGet(e.seq, Math::max);
-
     List<SlotMigration> toApply;
     Map.Entry<Long, CompletedMigration> lastMigration = completedMigrations.lastEntry();
     long newestSeq = lastMigration.getKey();
@@ -160,7 +152,7 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
 
   /** Drops the oldest completed operations beyond the retention cap; lock-free. */
   private void trimCompletedMigrations() {
-    while (completedMigrations.size() > MAX_COMPLETED_MIGRATIONS) {
+    while (completedMigrations.size() > MAX_HISTORY_OF_EVENTS) {
       completedMigrations.pollFirstEntry();
     }
   }

@@ -177,7 +177,7 @@ abstract class MaintNotificationsScenarioBase {
         // finite (default 0 = infinite would hang blocking probes) and distinct from the
         // non-blocking base, so a probe's failure time identifies the timeout that fired
         .blockingSocketTimeoutMillis(CLIENT_BLOCKING_SOCKET_TIMEOUT_MS)
-        .ssl(Boolean.TRUE.equals(output.get("tls"))).password((String) output.get("password"));
+        .password((String) output.get("password"));
     if (sslOptions != null) {
       config.sslOptions(sslOptions);
     }

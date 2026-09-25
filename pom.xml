@@ -657,6 +657,9 @@
 						<include>**/ConnectionFactoryRebindTest.java</include>
 						<include>**/CommandObjectsCountMinSketchTest.java</include>
 						<include>**/CmsCellSize.java</include>
+						<include>**/scenario/EnterpriseSentinelSupport.java</include>
+						<include>**/scenario/RedisEnterpriseClusterStatus.java</include>
+						<include>**/scenario/RedisEnterpriseClusterStatusUnitTests.java</include>
 					</includes>
 				</configuration>
 				<executions>
@@ -810,7 +813,7 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>build-helper-maven-plugin</artifactId>
-						<version>3.6.1</version>
+						<version>3.6.2</version>
 						<executions>
 							<execution>
 								<id>add-jmh-source</id>
@@ -829,7 +832,7 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
-						<version>3.6.3</version>
+						<version>3.6.4</version>
 						<executions>
 							<execution>
 								<id>run-benchmarks</id>

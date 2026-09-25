@@ -3,6 +3,8 @@ package redis.clients.jedis.bloom.commands;
 import java.util.List;
 import java.util.Map;
 
+import redis.clients.jedis.bloom.CmsCellSize;
+
 /**
  * Interface for RedisBloom Count-Min Sketch Commands
  * 
@@ -30,15 +32,14 @@ public interface CountMinSketchCommands {
    * @param width    Number of counter in each array. Reduces the error size
    * @param depth    Number of counter-arrays. Reduces the probability for an error
    *                 of a certain size (percentage of total count
-   * @param cellSize Number of bytes per counter cell: 1, 2, 4 or 8. Smaller cells
-   *                 reduce memory usage but lower the maximum count a cell can
-   *                 hold before {@code CMS.INCRBY} fails with an overflow error.
-   *                 The server default is 4.
+   * @param cellSize Bytes per counter cell. Smaller cells reduce memory usage but
+   *                 lower the maximum count a cell can hold before
+   *                 {@code CMS.INCRBY} fails with an overflow error. The server
+   *                 default is {@link CmsCellSize#FOUR_BYTES}.
    * @return OK
-   * @throws IllegalArgumentException if cellSize is not 1, 2, 4 or 8
    * @since 8.1
    */
-  String cmsInitByDim(String key, long width, long depth, int cellSize);
+  String cmsInitByDim(String key, long width, long depth, CmsCellSize cellSize);
 
   /**
    * CMS.INITBYPROB Initializes a Count-Min Sketch to accommodate requested
@@ -67,13 +68,12 @@ public interface CountMinSketchCommands {
    * @param probability The desired probability for inflated count. This should be
    *                    a decimal value between 0 and 1. This effects the depth of
    *                    the sketch.
-   * @param cellSize    Number of bytes per counter cell: 1, 2, 4 or 8. See
-   *                    {@link #cmsInitByDim(String, long, long, int)}.
+   * @param cellSize    Bytes per counter cell. See
+   *                    {@link #cmsInitByDim(String, long, long, CmsCellSize)}.
    * @return OK
-   * @throws IllegalArgumentException if cellSize is not 1, 2, 4 or 8
    * @since 8.1
    */
-  String cmsInitByProb(String key, double error, double probability, int cellSize);
+  String cmsInitByProb(String key, double error, double probability, CmsCellSize cellSize);
 
   /**
    * CMS.INCRBY Changes the count of item by increment. A negative increment

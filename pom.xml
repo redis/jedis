@@ -656,6 +656,7 @@
 						<include>**/sch/*.java</include>
 						<include>**/ConnectionFactoryRebindTest.java</include>
 						<include>**/CommandObjectsCountMinSketchTest.java</include>
+						<include>**/CmsCellSize.java</include>
 					</includes>
 				</configuration>
 				<executions>

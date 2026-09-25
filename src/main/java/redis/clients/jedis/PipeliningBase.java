@@ -5059,7 +5059,8 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<String> cmsInitByDim(String key, long width, long depth, int cellSize) {
+  public Response<String> cmsInitByDim(String key, long width, long depth,
+      CmsCellSize cellSize) {
     return appendCommand(commandObjects.cmsInitByDim(key, width, depth, cellSize));
   }
 
@@ -5070,7 +5071,7 @@ public abstract class PipeliningBase
 
   @Override
   public Response<String> cmsInitByProb(String key, double error, double probability,
-      int cellSize) {
+      CmsCellSize cellSize) {
     return appendCommand(commandObjects.cmsInitByProb(key, error, probability, cellSize));
   }
 

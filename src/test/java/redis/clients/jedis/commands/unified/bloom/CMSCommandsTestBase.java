@@ -17,6 +17,7 @@ import io.redis.test.annotations.SinceRedisVersion;
 
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.bloom.CmsCellSize;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -78,7 +79,7 @@ public abstract class CMSCommandsTestBase extends UnifiedJedisCommandsTestBase {
   @Test
   @SinceRedisVersion("8.11.0")
   public void testInitByDimWithCellSize() {
-    jedis.cmsInitByDim("cms1", 16L, 4L, 1);
+    jedis.cmsInitByDim("cms1", 16L, 4L, CmsCellSize.ONE_BYTE);
     Map<String, Object> info = jedis.cmsInfo("cms1");
     assertEquals(16L, info.get("width"));
     assertEquals(4L, info.get("depth"));
@@ -89,7 +90,7 @@ public abstract class CMSCommandsTestBase extends UnifiedJedisCommandsTestBase {
   @Test
   @SinceRedisVersion("8.11.0")
   public void testInitByProbWithCellSize() {
-    jedis.cmsInitByProb("cms2", 0.01, 0.01, 8);
+    jedis.cmsInitByProb("cms2", 0.01, 0.01, CmsCellSize.EIGHT_BYTES);
     Map<String, Object> info = jedis.cmsInfo("cms2");
     assertEquals(200L, info.get("width"));
     assertEquals(7L, info.get("depth"));
@@ -97,18 +98,10 @@ public abstract class CMSCommandsTestBase extends UnifiedJedisCommandsTestBase {
   }
 
   @Test
-  public void testInitRejectsInvalidCellSize() {
-    IllegalArgumentException thrown = assertThrows(IllegalArgumentException.class,
-      () -> jedis.cmsInitByDim("cms1", 16L, 4L, 3));
-    assertEquals("CMS cell size must be 1, 2, 4 or 8", thrown.getMessage());
-    assertThrows(IllegalArgumentException.class, () -> jedis.cmsInitByProb("cms2", 0.01, 0.01, 0));
-  }
-
-  @Test
   @SinceRedisVersion("8.11.0")
   public void testCellSizeLimitsCounter() {
     // a 1-byte cell can hold at most 255; exceeding it is an error rather than silent saturation
-    jedis.cmsInitByDim("cms1", 16L, 4L, 1);
+    jedis.cmsInitByDim("cms1", 16L, 4L, CmsCellSize.ONE_BYTE);
     assertEquals(250L, jedis.cmsIncrBy("cms1", "foo", 250L));
     JedisDataException thrown = assertThrows(JedisDataException.class,
       () -> jedis.cmsIncrBy("cms1", "foo", 10L));
@@ -135,8 +128,8 @@ public abstract class CMSCommandsTestBase extends UnifiedJedisCommandsTestBase {
   @Test
   @SinceRedisVersion("8.11.0")
   public void testMergeRequiresSameCellSize() {
-    jedis.cmsInitByDim("{key}A", 1000L, 5L, 2);
-    jedis.cmsInitByDim("{key}B", 1000L, 5L, 4);
+    jedis.cmsInitByDim("{key}A", 1000L, 5L, CmsCellSize.TWO_BYTES);
+    jedis.cmsInitByDim("{key}B", 1000L, 5L, CmsCellSize.FOUR_BYTES);
     JedisDataException thrown = assertThrows(JedisDataException.class,
       () -> jedis.cmsMerge("{key}A", "{key}B"));
     assertEquals("CMS: cell size is not equal", thrown.getMessage());

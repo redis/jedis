@@ -12,6 +12,8 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
+import redis.clients.jedis.bloom.CmsCellSize;
+
 public class UnifiedJedisCountMinSketchCommandsTest extends UnifiedJedisMockedTestBase {
 
   @Test
@@ -146,7 +148,7 @@ public class UnifiedJedisCountMinSketchCommandsTest extends UnifiedJedisMockedTe
     String key = "testCMS";
     long width = 1000L;
     long depth = 5L;
-    int cellSize = 2;
+    CmsCellSize cellSize = CmsCellSize.TWO_BYTES;
     String expectedResponse = "OK";
 
     when(commandObjects.cmsInitByDim(key, width, depth, cellSize)).thenReturn(stringCommandObject);
@@ -165,7 +167,7 @@ public class UnifiedJedisCountMinSketchCommandsTest extends UnifiedJedisMockedTe
     String key = "testCMS";
     double error = 0.01;
     double probability = 0.99;
-    int cellSize = 8;
+    CmsCellSize cellSize = CmsCellSize.EIGHT_BYTES;
     String expectedResponse = "OK";
 
     when(commandObjects.cmsInitByProb(key, error, probability, cellSize)).thenReturn(stringCommandObject);

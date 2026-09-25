@@ -5087,9 +5087,21 @@ public class CommandObjects {
         .add(depth), BuilderFactory.STRING);
   }
 
+  public final CommandObject<String> cmsInitByDim(String key, long width, long depth,
+      CmsCellSize cellSize) {
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.INITBYDIM).key(key).add(width)
+        .add(depth).add(RedisBloomKeyword.CELL_SIZE).add(cellSize), BuilderFactory.STRING);
+  }
+
   public final CommandObject<String> cmsInitByProb(String key, double error, double probability) {
     return new CommandObject<>(commandArguments(CountMinSketchCommand.INITBYPROB).key(key).add(error)
         .add(probability), BuilderFactory.STRING);
+  }
+
+  public final CommandObject<String> cmsInitByProb(String key, double error, double probability,
+      CmsCellSize cellSize) {
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.INITBYPROB).key(key).add(error)
+        .add(probability).add(RedisBloomKeyword.CELL_SIZE).add(cellSize), BuilderFactory.STRING);
   }
 
   public final CommandObject<List<Long>> cmsIncrBy(String key, Map<String, Long> itemIncrements) {

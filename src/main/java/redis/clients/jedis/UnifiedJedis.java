@@ -5839,8 +5839,19 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public String cmsInitByDim(String key, long width, long depth, CmsCellSize cellSize) {
+    return executeCommand(commandObjects.cmsInitByDim(key, width, depth, cellSize));
+  }
+
+  @Override
   public String cmsInitByProb(String key, double error, double probability) {
     return executeCommand(commandObjects.cmsInitByProb(key, error, probability));
+  }
+
+  @Override
+  public String cmsInitByProb(String key, double error, double probability,
+      CmsCellSize cellSize) {
+    return executeCommand(commandObjects.cmsInitByProb(key, error, probability, cellSize));
   }
 
   @Override

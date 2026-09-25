@@ -2,6 +2,7 @@ package redis.clients.jedis.commands.unified;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 
@@ -39,6 +40,22 @@ public abstract class GeoCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
   public GeoCommandsTestBase(RedisProtocol protocol) {
     super(protocol);
+  }
+
+  @Test
+  public void compareRepeatedSearchesWithoutCoordinates() {
+    String key = keys.key("geo-response-equality");
+    jedis.geoadd(key, 13.361389, 38.115556, "Palermo");
+    GeoSearchParam params = new GeoSearchParam().fromMember("Palermo").byRadius(1, GeoUnit.KM)
+        .withDist().withHash();
+    List<GeoRadiusResponse> first = jedis.geosearch(key, params);
+    List<GeoRadiusResponse> second = jedis.geosearch(key, params);
+
+    assertEquals(1, first.size());
+    assertNull(first.get(0).getCoordinate());
+    assertEquals(first, second);
+    assertEquals(first.get(0).hashCode(), second.get(0).hashCode());
+    assertTrue(new HashSet<>(first).contains(second.get(0)));
   }
 
   @Test

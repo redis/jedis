@@ -63,7 +63,7 @@ public class ClusterMaintenanceCoordinatorTest {
     coordinator.onSMigrated(closer, conn);
 
     assertFalse(coordinator.hasActiveMigration());
-    verify(cache, times(1)).applySlotMigration(closer.migrations);
+    verify(cache, times(1)).appendSlotMigration(closer.migrations);
   }
 
   @Test
@@ -77,7 +77,7 @@ public class ClusterMaintenanceCoordinatorTest {
 
     coordinator.onSMigrated(migrated(4, "200-300"), conn);
     assertFalse(coordinator.hasActiveMigration());
-    verify(cache, times(2)).applySlotMigration(anyList());
+    verify(cache, times(2)).appendSlotMigration(anyList());
   }
 
   @Test
@@ -90,14 +90,18 @@ public class ClusterMaintenanceCoordinatorTest {
     coordinator.onSMigrated(closer, otherConn); // broadcast copy of the same closer
 
     assertTrue(coordinator.hasActiveMigration(), "second window must survive the duplicate");
-    verify(cache, times(1)).applySlotMigration(anyList());
+    verify(cache, times(1)).appendSlotMigration(anyList());
   }
 
   @Test
-  public void staleOpenerArrivingAfterItsCloserIsIgnored() {
+  public void lateOpenerAfterItsCloserOpensAWindowTheNextCloserRemoves() {
     coordinator.onSMigrated(migrated(2, "0-100"), conn);
-    coordinator.onSMigrating(migrating(1, "0-100"), otherConn); // reordered opener
+    // seqs cannot pair an opener with its closer, so a reordered opener is not rejected: it opens
+    // a window that lingers until the next closer takes it as the oldest, or the TTL expires
+    coordinator.onSMigrating(migrating(1, "0-100"), otherConn);
+    assertTrue(coordinator.hasActiveMigration());
 
+    coordinator.onSMigrated(migrated(3, "200-300"), conn);
     assertFalse(coordinator.hasActiveMigration());
   }
 
@@ -110,7 +114,7 @@ public class ClusterMaintenanceCoordinatorTest {
     coordinator.onSMigrated(migrated(3, "0-100"), otherConn);
 
     assertFalse(coordinator.hasActiveMigration());
-    verify(cache, times(2)).applySlotMigration(anyList());
+    verify(cache, times(2)).appendSlotMigration(anyList());
   }
 
   @Test
@@ -118,13 +122,13 @@ public class ClusterMaintenanceCoordinatorTest {
     coordinator.onSMigrating(migrating(1, "0-100"), conn);
     coordinator.onSMigrated(migrated(3, "200-300"), conn);
     coordinator.onSMigrated(migrated(4, "400-500"), conn);
-    verify(cache, times(2)).applySlotMigration(anyList());
+    verify(cache, times(2)).appendSlotMigration(anyList());
 
     // seq 2 arrives late with seq 3 in between: ambiguous, so its delta is dropped
     SMigratedEvent late = migrated(2, "0-100");
     coordinator.onSMigrated(late, otherConn);
-    verify(cache, never()).applySlotMigration(late.migrations);
-    verify(cache, times(2)).applySlotMigration(anyList());
+    verify(cache, never()).appendSlotMigration(late.migrations);
+    verify(cache, times(2)).appendSlotMigration(anyList());
     // but it is still the first delivery of a closer and concludes the pending window
     assertFalse(coordinator.hasActiveMigration());
   }
@@ -137,7 +141,7 @@ public class ClusterMaintenanceCoordinatorTest {
       applying.countDown();
       release.await(5, TimeUnit.SECONDS); // holds the coordinator lock mid-processing
       return null;
-    }).when(cache).applySlotMigration(anyList());
+    }).when(cache).appendSlotMigration(anyList());
 
     SMigratedEvent first = migrated(1, "0-100");
     SMigratedEvent second = migrated(2, "200-300");
@@ -162,44 +166,34 @@ public class ClusterMaintenanceCoordinatorTest {
 
     // drained lowest seq first: both are the newest at their turn, so neither takes the late path
     InOrder order = inOrder(cache);
-    order.verify(cache).applySlotMigration(first.migrations);
-    order.verify(cache).applySlotMigration(second.migrations);
-    order.verify(cache).applySlotMigration(third.migrations);
-    verify(cache, times(3)).applySlotMigration(anyList());
+    order.verify(cache).appendSlotMigration(first.migrations);
+    order.verify(cache).appendSlotMigration(second.migrations);
+    order.verify(cache).appendSlotMigration(third.migrations);
+    verify(cache, times(3)).appendSlotMigration(anyList());
   }
 
   @Test
-  public void settledDrainRemovesSlotlessNodesOnce() {
+  public void deliveryBracketsTheBatchWithStartAndComplete() {
     coordinator.onSMigrating(migrating(1, "0-100"), conn);
-    SMigratedEvent closer = migrated(2, "0-100");
-    coordinator.onSMigrated(closer, conn);
-    coordinator.onSMigrated(closer, otherConn); // duplicate: nothing applied, nothing to settle
-
-    verify(cache, times(1)).applySlotMigration(closer.migrations);
-    verify(cache, times(1)).cleanupSlotlessNodes();
-  }
-
-  @Test
-  public void drainFlagsMigrationInProgressAndCleansUpOnlyAfterClearingIt() {
     coordinator.onSMigrated(migrated(2, "0-100"), conn);
 
-    // the cache guards its cleanup with the flag, so it must be lowered before the call
+    // the cache holds its pool cleanup between the two calls, so complete must follow the apply
     InOrder order = inOrder(cache);
-    order.verify(cache).setSlotMigrationInProgress(true);
-    order.verify(cache).applySlotMigration(anyList());
-    order.verify(cache).setSlotMigrationInProgress(false);
-    order.verify(cache).cleanupSlotlessNodes();
+    order.verify(cache).startSlotMigration();
+    order.verify(cache).appendSlotMigration(anyList());
+    order.verify(cache).completeSlotMigration();
   }
 
   @Test
-  public void drainWithoutAnyAppliedDeltaLowersTheFlagAndSkipsCleanup() {
+  public void duplicateDeliveriesCompleteTheBatchWithoutReapplying() {
     SMigratedEvent closer = migrated(2, "0-100");
     coordinator.onSMigrated(closer, conn);
-    coordinator.onSMigrated(closer, otherConn); // duplicate-only drain
+    coordinator.onSMigrated(closer, otherConn);
+    coordinator.onSMigrated(closer, conn);
 
-    verify(cache, times(2)).setSlotMigrationInProgress(true);
-    verify(cache, times(2)).setSlotMigrationInProgress(false);
-    verify(cache, times(1)).cleanupSlotlessNodes();
+    verify(cache, times(1)).appendSlotMigration(closer.migrations);
+    verify(cache, times(3)).startSlotMigration();
+    verify(cache, times(3)).completeSlotMigration(); // always paired, even with nothing applied
   }
 
   private static SMigratingEvent migrating(long seq, String slots) {

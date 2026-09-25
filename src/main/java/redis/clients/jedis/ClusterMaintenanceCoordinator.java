@@ -90,18 +90,14 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
     pendingSMigrated.putIfAbsent(e.seq, e);
     smigratedLock.lock();
     try {
-      boolean applied = false;
-      cache.setSlotMigrationInProgress(true);
+      cache.startSlotMigration();
       try {
         Map.Entry<Long, SMigratedEvent> next;
         while ((next = pendingSMigrated.pollFirstEntry()) != null) {
-          applied |= processSMigrated(next.getValue());
+          processSMigrated(next.getValue());
         }
       } finally {
-        cache.setSlotMigrationInProgress(false);
-      }
-      if (applied) {
-        cache.cleanupSlotlessNodes();
+        cache.completeSlotMigration();
       }
     } finally {
       smigratedLock.unlock();
@@ -111,12 +107,11 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
 
   /**
    * Runs under {@link #smigratedLock}: one closer at a time, so record → merge → apply is atomic.
-   * @return whether a slot delta was handed to the cache
    */
-  private boolean processSMigrated(SMigratedEvent e) {
+  private void processSMigrated(SMigratedEvent e) {
     if (completedMigrations.putIfAbsent(e.seq,
       new CompletedMigration(e.seq, e.migrations)) != null) {
-      return false;
+      return;
     }
     List<SlotMigration> toApply;
     Map.Entry<Long, CompletedMigration> lastMigration = completedMigrations.lastEntry();
@@ -133,12 +128,11 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
         "Dropping late slot migration (seq={}): ordering context is ambiguous to merge to (seq={})",
         e.seq, newestSeq);
       closeMigrationWindow(e.seq);
-      return false;
+      return;
     }
     closeMigrationWindow(e.seq);
-    cache.applySlotMigration(toApply);
+    cache.appendSlotMigration(toApply);
     trimCompletedMigrations();
-    return true;
   }
 
   /**

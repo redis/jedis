@@ -262,10 +262,12 @@ public class JedisClusterInfoCache {
         // delta without draining it
         slotDeltaLock.unlock();
         try {
-          if (!pendingSlotDelta.isEmpty()) {
-            drainSlotDeltas();
-            // deltas deferred behind this refresh may have emptied a node the snapshot still listed
-            cleanupSlotlessNodes();
+          if (!slotMigrationInProgress && !pendingSlotDelta.isEmpty()) {
+            // bounded by one coordinator batch: a pass reports false while the lock is briefly held
+            // by the coordinator's completion or while its batch still has the cleanup on hold
+            while (!drainSlotDeltas()) {
+              Thread.yield();
+            }
           }
         } catch (RuntimeException e) {
           // never mask an in-flight discovery exception; queued deltas would re-drain on the next
@@ -407,59 +409,44 @@ public class JedisClusterInfoCache {
     }
   }
 
-  /**
-   * Queues a slot delta and drains the queue if no full topology refresh is in flight.
-   * Enqueue-then-drain against {@link #slotDeltaLock} makes the check atomic: deltas only ever
-   * apply while holding that lock, so a delta can neither interleave with a running refresh nor
-   * race ahead of it — a refresh drains whatever queued behind it right after releasing the lock
-   * (see {@link #renewClusterSlots}). Never blocks the calling (read) thread on a running refresh;
-   * dedup of the broadcast is the caller's job.
-   */
-  void applySlotMigration(List<SlotMigration> migrations) {
+  void appendSlotMigration(List<SlotMigration> migrations) {
     // incremented before the enqueue and decremented only after application completes, so
     // hasPendingSlotDeltas() covers the delta's whole enqueue->applied lifecycle
     inFlightSlotDeltas.incrementAndGet();
     pendingSlotDelta.add(new PendingSlotDelta(migrations));
-    drainSlotDeltas();
   }
 
-  /**
-   * True while any slot delta is enqueued or mid-application — the topology has not settled yet.
-   * Lock-free; consulted by the cluster coordinator's relax gate so timeouts stay relaxed until
-   * every pending delta is processed and completed.
-   */
   boolean hasPendingSlotDeltas() {
     return inFlightSlotDeltas.get() > 0;
   }
 
-  /**
-   * Drains while {@link #slotDeltaLock} is free, re-checking the queue after every release: an
-   * enqueue can race a holder's last poll and see the lock still held — without the releaser
-   * looking again, that entry would strand until the next delta or refresh. A failed
-   * {@code tryLock} is safe to walk away from precisely because every holder re-checks after
-   * unlocking.
-   */
-  private void drainSlotDeltas() {
-    // the loop on empty check to make sure no items left behind when race between multiple drain
-    // attempts
-    while (!pendingSlotDelta.isEmpty()) {
+  private boolean drainSlotDeltas() {
+    boolean needsDrain = true;
+    boolean cleanupCompleted = false;
+    while (needsDrain) {
       if (!slotDeltaLock.tryLock()) {
-        // never spin or block behind the holder
-        return;
+        return false;
       }
       try {
-        PendingSlotDelta delta;
-        while ((delta = pendingSlotDelta.poll()) != null) {
-          try {
-            processSlotDelta(delta.migrations);
-          } finally {
-            inFlightSlotDeltas.decrementAndGet();
+        // the loop on empty check to make sure no items left behind when race between multiple
+        // drain attempts
+        while (!pendingSlotDelta.isEmpty()) {
+          PendingSlotDelta delta;
+          while ((delta = pendingSlotDelta.poll()) != null) {
+            try {
+              processSlotDelta(delta.migrations);
+            } finally {
+              inFlightSlotDeltas.decrementAndGet();
+            }
           }
         }
+        cleanupCompleted = cleanupSlotlessNodes();
       } finally {
         slotDeltaLock.unlock();
       }
+      needsDrain = !pendingSlotDelta.isEmpty();
     }
+    return cleanupCompleted;
   }
 
   /** A slot migration delta awaiting application. */
@@ -471,22 +458,7 @@ public class JedisClusterInfoCache {
     }
   }
 
-  /**
-   * Applies a slot migration delta atomically and reports which primaries are left serving no
-   * slots. Under a SINGLE write-lock hold: provisions each destination node's pool
-   * ({@link #setupNodeIfNotExist}) and reassigns the entry's slots, flushes the client-side cache
-   * (parity with {@link #discoverClusterSlots}: the moved keys may still be cached locally), then
-   * sweeps every known primary for residual ownership. The sweep is independent of the delta's
-   * sources on purpose: in a merged delta a source whose contribution was overridden by a newer one
-   * never appears, yet it may have been left slotless all the same. The single hold is a
-   * correctness requirement — applying and scanning in separate acquisitions leaves an interleaving
-   * window against {@link #renewClusterSlots}. Only ever called under {@link #slotDeltaLock} (see
-   * {@link #drainSlotDeltas}).
-   * @return the primaries that no longer own any slot (candidates for connection retirement); their
-   *         pools stay in place — removal belongs to {@link #removeSlotlessNodes()} once the batch
-   *         has settled, or to the full-refresh dead-pool cleanup
-   */
-  private Set<HostAndPort> processSlotDelta(List<SlotMigration> migrations) {
+  private void processSlotDelta(List<SlotMigration> migrations) {
     w.lock();
     try {
       for (SlotMigration migration : migrations) {
@@ -500,67 +472,48 @@ public class JedisClusterInfoCache {
       if (clientSideCache != null) {
         clientSideCache.flush();
       }
-
-      Set<String> ownerKeys = getOwnerKeys();
-      // a slotless node is no longer a primary: keep broadcast/random selection off it
-      Set<HostAndPort> slotless = new HashSet<>();
-      Iterator<String> primaries = primaryNodes.keySet().iterator();
-      while (primaries.hasNext()) {
-        String nodeKey = primaries.next();
-        if (!ownerKeys.contains(nodeKey)) {
-          primaries.remove();
-          slotless.add(HostAndPort.from(nodeKey)); // node keys are HostAndPort#toString()
-        }
-      }
-      return slotless;
+      primaryNodes.keySet().retainAll(getOwnerKeys());
     } finally {
       w.unlock();
     }
   }
 
-  Set<HostAndPort> cleanupSlotlessNodes() {
-    if (slotMigrationInProgress || hasPendingSlotDeltas()) {
-      return Collections.emptySet();
+  private boolean cleanupSlotlessNodes() {
+    if (slotMigrationInProgress) {
+      return false;
     }
-    if (!slotDeltaLock.tryLock()) {
-      return Collections.emptySet();
-    }
-    List<ConnectionPool> removedNodes = new ArrayList<>();
-    Set<HostAndPort> removedAddress = new HashSet<>();
+    List<ConnectionPool> removedPools = new ArrayList<>();
+    Set<HostAndPort> removedAddresses = new HashSet<>();
+    w.lock();
     try {
-      w.lock();
-      try {
-        Set<String> ownerKeys = getOwnerKeys();
-        Set<ConnectionPool> serving = replicaPoolsInUse();
-        Iterator<Entry<String, ConnectionPool>> entryIt = nodes.entrySet().iterator();
-        while (entryIt.hasNext()) {
-          Entry<String, ConnectionPool> entry = entryIt.next();
-          if (!ownerKeys.contains(entry.getKey()) && !serving.contains(entry.getValue())) {
-            entryIt.remove();
-            primaryNodes.remove(entry.getKey());
-            removedAddress.add(HostAndPort.from(entry.getKey()));
-            if (entry.getValue() != null) {
-              removedNodes.add(entry.getValue());
-            }
+      Set<String> ownerKeys = getOwnerKeys();
+      Set<ConnectionPool> serving = replicaPoolsInUse();
+      Iterator<Entry<String, ConnectionPool>> entryIt = nodes.entrySet().iterator();
+      while (entryIt.hasNext()) {
+        Entry<String, ConnectionPool> entry = entryIt.next();
+        if (!ownerKeys.contains(entry.getKey()) && !serving.contains(entry.getValue())) {
+          entryIt.remove();
+          primaryNodes.remove(entry.getKey());
+          removedAddresses.add(HostAndPort.from(entry.getKey()));
+          if (entry.getValue() != null) {
+            removedPools.add(entry.getValue());
           }
         }
-      } finally {
-        w.unlock();
       }
     } finally {
-      slotDeltaLock.unlock();
+      w.unlock();
     }
-    for (ConnectionPool pool : removedNodes) {
+    for (ConnectionPool pool : removedPools) {
       try {
         pool.destroy();
       } catch (RuntimeException e) {
         logger.debug("Destroying the pool of a slotless node failed", e);
       }
     }
-    if (!removedAddress.isEmpty()) {
-      logger.debug("Removed cluster nodes left without slots: {}", removedAddress);
+    if (!removedAddresses.isEmpty()) {
+      logger.debug("Removed cluster nodes left without slots: {}", removedAddresses);
     }
-    return removedAddress;
+    return true;
   }
 
   /** Keys of the nodes owning at least one primary slot; call under {@link #rwl}. */
@@ -589,9 +542,21 @@ public class JedisClusterInfoCache {
     return pools;
   }
 
-  /** Coordinator hook: true from the first to the last SMIGRATED of a drained batch. */
-  void setSlotMigrationInProgress(boolean inProgress) {
-    this.slotMigrationInProgress = inProgress;
+  /**
+   * Use with caution: internals of this method does not maintain thread safety; it should only be
+   * used in synchronized context which manages start and completion of slot migration.
+   */
+  void startSlotMigration() {
+    slotMigrationInProgress = true;
+  }
+
+  /**
+   * Use with caution: internals of this method does not maintain thread safety; it should only be
+   * used in synchronized context which manages start and completion of slot migration.
+   */
+  void completeSlotMigration() {
+    slotMigrationInProgress = false;
+    drainSlotDeltas();
   }
 
   public void assignSlotsToReplicaNode(List<Integer> targetSlots, HostAndPort targetNode) {

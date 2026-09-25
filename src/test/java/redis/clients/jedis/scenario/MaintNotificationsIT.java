@@ -2,7 +2,10 @@ package redis.clients.jedis.scenario;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
@@ -33,6 +36,7 @@ import com.redis.test.fi.Trigger;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -233,6 +237,102 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
     assertConnectionHandoffLifecycle(trigger.scenario("single_tls"), endpointType);
   }
 
+  /**
+   * endpointType NONE: MOVING carries a null target, so the client does not remap. It keeps serving
+   * the old node, then at half the grace window proactively retires the affected connections; the
+   * pool reconnects to the re-resolved configured endpoint on its own. Verifies the borrowed
+   * connection stays usable throughout the grace window and after it, retirement happens at
+   * ~grace/2 (marking connections for the pool, not closing live sockets), the retired connection
+   * is destroyed on return, and a subsequently borrowed connection reaches the new node and works —
+   * the test never touches the pool.
+   * <p>
+   * Covers connectionHandoffWithNone; partially T.2.1 New Connection Establishment and T.2.3
+   * Traffic Resumption.
+   */
+  @Test
+  @Timeout(300)
+  void connectionHandoffOnMovingNone() {
+    Scenario scenario = CATALOG.effect(StandaloneEffect.DATA_MOVEMENT_CONN_DROP)
+        .trigger("endpoint_rebind").scenario();
+    setUpDatabaseAndClient(scenario, EndpointType.NONE);
+    warmUpPool();
+
+    String host = endpoint.getHost();
+    pinned = pinConnection();
+    ReceivedEvents observed = MaintNotificationsTestSupport.record(pinned);
+    String oldIp = MaintNotificationsTestSupport.remotePeer(pinned).getAddress().getHostAddress();
+    Connection borrowed = client.getPool().getResource(); // borrowed before MOVING, held throughout
+
+    startEffect(scenario);
+
+    // data movement + rebind can take a while to emit the MOVING
+    long movingDeadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(180);
+    while (!observed.movingReceived()) {
+      assertTrue(System.nanoTime() < movingDeadline, "no MOVING within 180 s; received: "
+          + observed.all() + ", effect failures: " + effectFailures);
+      observe();
+      sleepQuietly(200);
+    }
+    ReceivedEvent moving = observed.all().stream()
+        .filter(e -> PushMessageTypes.MOVING.equals(e.type)).findFirst().get();
+    assertNull(moving.target, "none MOVING must carry a null target");
+    long graceMs = TimeUnit.SECONDS.toMillis(moving.timeSeconds);
+
+    // the borrowed connection stays usable throughout the grace window (and beyond): the grace/2
+    // retirement only bars pool reuse (destroyed on return, validated out on next borrow) — it does
+    // not close the live socket, so a held connection keeps working until the server drops it
+    while (!MaintNotificationsTestSupport.isRetired(pinned)) {
+      assertTrue(elapsedMillis(moving.atNanos) < graceMs,
+        "connections were not retired within the grace window");
+      try {
+        borrowed.executeCommand(Protocol.Command.PING);
+      } catch (RuntimeException e) {
+        fail("borrowed connection must stay usable during the grace window: " + e);
+      }
+      observe();
+      sleepQuietly(200);
+    }
+    // delay from MOVING detection to the observed retirement — expected at ~half the grace
+    long retireDelayMs = elapsedMillis(moving.atNanos);
+    assertTrue(retireDelayMs > graceMs * 3 / 10 && retireDelayMs < graceMs * 7 / 10,
+      "none must retire the affected connections at ~half the grace: retired " + retireDelayMs
+          + " ms after MOVING, grace " + graceMs + " ms");
+
+    // every connection on the old node shares the same grace/2 retirement instant
+    assertTrue(MaintNotificationsTestSupport.isRetired(borrowed),
+      "all connections to the old node must retire together at grace/2");
+    // retirement is a pool-lifecycle mark, not a socket close: a still-held connection keeps
+    // serving
+    assertNotNull(borrowed.executeCommand(Protocol.Command.PING),
+      "a retired but still-held connection stays usable until the server drops it");
+    // returned to the pool now — past grace/2, so retired — the connection is destroyed, not reused
+    long destroyedBefore = client.getPool().getDestroyedCount();
+    borrowed.close();
+    assertTrue(client.getPool().getDestroyedCount() > destroyedBefore,
+      "a connection returned after grace/2 must be destroyed, not reused");
+
+    joinEffectThreads();
+    assertEffectSucceeded();
+
+    // the pool reconnects on its own: a borrowed connection now resolves to the new node (never the
+    // retired IP) and serves commands — the test never clears the pool
+    Set<String> currentIps = resolvedIps(host);
+    assertFalse(currentIps.contains(oldIp),
+      "retired node " + oldIp + " must leave the endpoint resolution: " + currentIps);
+    try (Connection reconnected = client.getPool().getResource()) {
+      String newIp = MaintNotificationsTestSupport.remotePeer(reconnected).getAddress()
+          .getHostAddress();
+      assertNotEquals(oldIp, newIp, "a new connection must not target the retired node");
+      assertTrue(currentIps.contains(newIp),
+        "a new connection must target a currently-resolved node: " + newIp + " not in "
+            + currentIps);
+      assertNotNull(reconnected.executeCommand(Protocol.Command.PING),
+        "the reconnected connection must serve commands");
+    }
+    assertEquals("PONG", client.ping(), "client must keep working after the none handoff");
+    releasePinned();
+  }
+
   private void assertConnectionHandoffLifecycle(Scenario scenario, EndpointType endpointType) {
     setUpDatabaseAndClient(scenario, endpointType);
     warmUpPool();
@@ -331,6 +431,16 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
       socket.connect(new InetSocketAddress(hostAndPort.getHost(), hostAndPort.getPort()), 2_000);
     } catch (IOException e) {
       assumeTrue(false, "MOVING target " + target + " is not routable from the test host: " + e);
+    }
+  }
+
+  /** Current resolved addresses of the endpoint host — the source of truth for the 'new' node. */
+  private static Set<String> resolvedIps(String host) {
+    try {
+      return Arrays.stream(InetAddress.getAllByName(host)).map(InetAddress::getHostAddress)
+          .collect(Collectors.toSet());
+    } catch (UnknownHostException e) {
+      throw new AssertionError("endpoint " + host + " does not resolve: " + e, e);
     }
   }
 

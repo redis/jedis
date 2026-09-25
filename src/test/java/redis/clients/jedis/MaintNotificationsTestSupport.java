@@ -27,6 +27,13 @@ public final class MaintNotificationsTestSupport {
     return connection.currentTimeout();
   }
 
+  /**
+   * Whether the connection's maintenance retirement deadline has passed (it must not be reused).
+   */
+  public static boolean isRetired(Connection connection) {
+    return connection.isRetired();
+  }
+
   /** Registers a recorder for every maintenance event dispatched on {@code connection}. */
   public static ReceivedEvents record(Connection connection) {
     ReceivedEvents events = new ReceivedEvents();

@@ -1242,6 +1242,72 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   }
 
   @Test
+  public void testJsonArrPopRawWithPathAndIndexPreservesIntegerText() {
+    String key = "json";
+
+    JSONObject data = new JSONObject().put("numbers", new JSONArray().put(10).put(20).put(30));
+
+    exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
+
+    // The raw variant returns the JSON text as sent by the server: an integer stays "20", not 20.0.
+    List<String> arrPop = exec(commandObjects.jsonArrPopRaw(key, Path2.of(".numbers"), 1));
+    assertThat(arrPop, contains("20"));
+
+    Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
+
+    JSONObject expected = new JSONObject().put("numbers", new JSONArray().put(10).put(30));
+    assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
+  }
+
+  @Test
+  public void testJsonArrPopRawPreservesLargeIntegerPrecision() {
+    String key = "json";
+
+    // 2^53 + 1 cannot be represented exactly as a double.
+    String bigInteger = "9007199254740993";
+
+    exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, new JSONArray("[" + bigInteger + "]")));
+
+    List<String> arrPop = exec(commandObjects.jsonArrPopRaw(key, Path2.ROOT_PATH, -1));
+    assertThat(arrPop, contains(bigInteger));
+  }
+
+  @Test
+  public void testJsonArrPopRawReturnsQuotedJsonStrings() {
+    String key = "json";
+
+    JSONObject data = new JSONObject().put("fruits",
+      new JSONArray().put("apple").put("banana").put("cherry"));
+
+    exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
+
+    // A JSON string element comes back as its JSON representation, including the quotes.
+    List<String> arrPop = exec(commandObjects.jsonArrPopRaw(key, Path2.of(".fruits"), -1));
+    assertThat(arrPop, contains("\"cherry\""));
+
+    Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
+
+    JSONObject expected = new JSONObject().put("fruits",
+      new JSONArray().put("apple").put("banana"));
+    assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
+  }
+
+  @Test
+  public void testJsonArrPopRawWithMultiplePathsAndNonArrayMatch() {
+    String key = "json";
+
+    JSONObject data = new JSONObject().put("a", new JSONArray().put(1).put(2))
+        .put("b", "notAnArray").put("c", new JSONArray());
+
+    exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
+
+    // $.* matches three values: an array, a string and an empty array.
+    // Non-arrays and empty arrays yield a null element in the reply.
+    List<String> arrPop = exec(commandObjects.jsonArrPopRaw(key, Path2.of("$.*"), -1));
+    assertThat(arrPop, containsInAnyOrder(equalTo("2"), nullValue(), nullValue()));
+  }
+
+  @Test
   public void testJsonArrTrimWithPath() {
     String key = "json";
 

@@ -259,4 +259,25 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     assertEquals(boolean.class, type.get().get(0));
     assertEquals(Long.valueOf(1), clear.get());
   }
+
+  @Test
+  public void jsonArrPopRaw() {
+    Map<String, Object> doc = new HashMap<>();
+    doc.put("numbers", new int[] { 1, 2, 3 });
+    doc.put("strings", new String[] { "a", "b", "c" });
+
+    Pipeline p = (Pipeline) client.pipelined();
+
+    Response<String> set = p.jsonSet("raw", Path2.ROOT_PATH, gson.toJson(doc));
+    Response<List<String>> popNumber = p.jsonArrPopRaw("raw", new Path2("numbers"), -1);
+    Response<List<String>> popNumberAtIndex = p.jsonArrPopRaw("raw", new Path2("numbers"), 0);
+    Response<List<String>> popString = p.jsonArrPopRaw("raw", new Path2("strings"), 1);
+
+    p.sync();
+
+    assertEquals("OK", set.get());
+    assertEquals(Collections.singletonList("3"), popNumber.get());
+    assertEquals(Collections.singletonList("1"), popNumberAtIndex.get());
+    assertEquals(Collections.singletonList("\"b\""), popString.get());
+  }
 }

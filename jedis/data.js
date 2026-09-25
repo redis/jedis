@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1790213854108,
+  "lastUpdate": 1790300272541,
   "repoUrl": "https://github.com/redis/jedis",
   "entries": {
     "Benchmark": [
@@ -34034,6 +34034,274 @@ window.BENCHMARK_DATA = {
           {
             "name": "redis.clients.jedis.benchmark.util.SafeEncoderBenchmark.encodeStringToBytes",
             "value": 26.52844293559209,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Igor Malinovskiy",
+            "username": "uglide",
+            "email": "u.glide@gmail.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "31010ecee3e86d93497cb97605d83a77702e9358",
+          "message": "Add scenario tests for Sentinel discovery against Redis Enterprise (#4748)\n\n* Add scenario tests for Sentinel discovery against Redis Enterprise\n\nRedis Enterprise exposes a Sentinel-compatible discovery service on port\n8001 of every cluster node and publishes +switch-master when a database's\nendpoint moves between nodes. RedisSentinelClient already works against\nit, and nothing in the suite covered that.\n\nTwo integration tests, both @Tag(\"scenario\") and driven by the fault\ninjector, so they do not run in public CI:\n\n- EnterpriseSentinelDiscoveryIT pins what the discovery service does and\n  does not implement, so a client-side regression can be told apart from\n  a server-side change. It documents two configuration pitfalls found\n  while writing these: credentials on the sentinel config make discovery\n  fail with \"All sentinels down\" because the service does not\n  authenticate, and each database is announced under both <db> and\n  <db>@internal, of which a client asking for <db> must act on only the\n  former.\n- EnterpriseSentinelEndpointMoveIT moves the endpoint with rladmin and\n  asserts the client follows the announcement inside\n  endpoint_rebind_propagation_grace_time, which the test widens so that\n  \"did the client react\" is separable from \"was it given time to react\".\n  A second test asserts the converse: a shard failover moves no endpoint\n  and is correctly silent, so the suite says what the discovery service\n  does not cover.\n\nSupporting changes:\n\n- EndpointConfig reads a 'discovery_endpoints' field, one <node>:8001\n  entry per cluster node. The tests skip with an explanatory message when\n  an environment does not advertise it.\n- FaultInjectionClient gains rladmin output capture and a non-blocking\n  trigger. The latter is required for anything measuring reaction time:\n  the grace-time wait happens inside the action, so blocking on\n  completion would only start the clock once the window had closed.\n  Action status parsing also handles the captured output arriving as a\n  nested object rather than a plain member.\n- RedisEnterpriseClusterStatus parses the endpoint and node an rladmin\n  status reports for a database, covered offline by\n  RedisEnterpriseClusterStatusUnitTests.\n\nVerified against a live 3-node cluster: 6/6 and 2/2 green, with the\nclient following the announced move in 680ms inside a 60s window.\n\nCo-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>\n\n* Drain the node the discovery service reports, not an arbitrary proxy\n\nRedis Enterprise publishes +switch-master only when the address it\nreports for a database changes, and it keeps reporting the same node for\nas long as that node stays in the endpoint's proxy_uids. The endpoint\nmove test drained the node rladmin lists for the endpoint, assuming that\nis the node being reported. It is, but only while the endpoint has a\nsingle proxy.\n\n'bind endpoint <uid> include <node>' does not move an endpoint back - it\nunions the node onto whatever the proxy policy picked - so restoring that\nway left a two-proxy endpoint, with rladmin printing one ENDPOINTS row\nper proxy in an order that is not stable. Draining whichever row was\nparsed first was therefore a coin flip between the two proxies, and\ndraining the one the discovery service was not tracking left the reported\naddress unchanged with nothing published. The same test then times out\nwaiting for an announcement that was never going to come, which reads as\na client bug and is not one.\n\n- RedisEnterpriseClusterStatus keeps every proxy of an endpoint rather\n  than one arbitrary row, and parses node addresses so the address the\n  discovery service reports can be resolved back to its owner.\n- The move test derives the node to drain from the discovery service\n  itself, collapses the endpoint onto a single proxy up front, and waits\n  for the discovery service to agree with CCS before measuring - without\n  which the drain proves nothing.\n- Restore with 'policy single', which resets both include_proxies and\n  exclude_proxies and collapses the endpoint back onto one proxy, so one\n  test cannot leave the next one in an ambiguous state. The comments\n  claiming 'policy single' does not clear the exclude were wrong.\n\nAlso add the new scenario helpers to the formatter include list, so a\nbulk 'mvn formatter:format' covers them the way the per-file format check\nalready requires.\n\nVerified against a live 3-node cluster: 6/6 and 2/2 green, the client\nfollowing the announced move in 821ms inside a 60s window.\n\nCo-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>\n\n* Format EndpointConfig and FaultInjectionClient\n\nNo behaviour change - whitespace and wrapping only, isolated in its own\ncommit so the preceding one stays readable.\n\nThe format check runs `formatter:validate -f formatter-pom.xml` against\nevery Java file a PR changes, not against the opt-in include list in\npom.xml. Both of these files predate that check and have never been\nformatted, so touching them at all makes the check fail. Reformatting\nthem is the only way to satisfy it.\n\nCo-Authored-By: Claude Opus 5 (1M context) <noreply@anthropic.com>\n\n---------\n\nCo-authored-by: Claude Opus 5 (1M context) <noreply@anthropic.com>",
+          "timestamp": "2026-09-24T13:33:42Z",
+          "url": "https://github.com/redis/jedis/commit/31010ecee3e86d93497cb97605d83a77702e9358"
+        },
+        "date": 1790300270977,
+        "tool": "jmh",
+        "benches": [
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.get",
+            "value": 15013.979321737115,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.pipelinedGet",
+            "value": 896512.6660325512,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.pipelinedSet",
+            "value": 785781.9101643588,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.set",
+            "value": 14985.689832499216,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.pubsub.PubSubPushBenchmark.publishAndReceive",
+            "value": 10111.654012321469,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.get",
+            "value": 14846.910125221428,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.pipelinedGet",
+            "value": 892299.5647377856,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.pipelinedSet",
+            "value": 782893.7413655177,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.set",
+            "value": 14656.48544410364,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.get",
+            "value": 71144.79811105247,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.pipelinedGet",
+            "value": 2434443.6558315367,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.pipelinedSet",
+            "value": 1827095.4313297726,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.set",
+            "value": 70660.50958812257,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.get",
+            "value": 49636.11581696743,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.pipelinedGet",
+            "value": 2124770.781287863,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.pipelinedSet",
+            "value": 1621911.7444289518,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.set",
+            "value": 48536.40209690278,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.JedisPoolT1.workload",
+            "value": 14543.516859377083,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.JedisPoolT8.workload",
+            "value": 48246.40718188336,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.JedisT1.workload",
+            "value": 14930.00200947151,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientCSCT1.workload",
+            "value": 23185.031635276584,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientCSCT8.workload",
+            "value": 66541.14143815514,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientT1.workload",
+            "value": 14752.444605933651,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientT8.workload",
+            "value": 48916.243720973354,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadArray",
+            "value": 64.20232961270307,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadBulkString",
+            "value": 16.55821223514647,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadMultiBulkResponse",
+            "value": 85.80188270678012,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadSimpleString",
+            "value": 11.241343987608456,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readArray",
+            "value": 63.932114249149095,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readBulkString",
+            "value": 16.547586324659843,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readMultiBulkResponse",
+            "value": 84.48261629692348,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readSimpleString",
+            "value": 11.31529563442829,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readWith100PushMessages",
+            "value": 14404.697370577522,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readWith1PushMessage",
+            "value": 169.02018502972678,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadPushesBenchmark.drain1000Pending",
+            "value": 150582.36964886094,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadPushesBenchmark.drain1Pending",
+            "value": 155.77365077801193,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.SendCommandBenchmark.measureSendCommand",
+            "value": 84.6187178814891,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.CRC16Benchmark.getSlotBytes",
+            "value": 29.962303902228324,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.CRC16Benchmark.getSlotString",
+            "value": 63.16545339427419,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.SafeEncoderBenchmark.decodeBytesToString",
+            "value": 23.543089868585596,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.SafeEncoderBenchmark.encodeStringToBytes",
+            "value": 26.50399369284284,
             "unit": "ns/op",
             "extra": "iterations: 5\nforks: 1\nthreads: 1"
           }

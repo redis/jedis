@@ -1561,11 +1561,15 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
   }
 
   /**
-   * Number of documents indexed by the on-timeout tests. Large enough that scanning, scoring and
-   * sorting them cannot complete within the 1ms per-query timeout, so the query engine's on-timeout
-   * policy is guaranteed to kick in.
+   * Number of documents indexed by the on-timeout tests. With {@code search-workers > 0} the
+   * {@code FAIL} policy is enforced by a blocked-client timeout callback racing the worker thread
+   * that runs the query: the error is only returned when the callback wins, so a query that only
+   * slightly overruns its timeout may still return full results (intended server behavior). The
+   * query runtime must therefore exceed the 1ms per-query timeout by a wide margin — outcomes were
+   * measured flaky below ~10x, while 100k documents keep the margin around ~200x. Relevant tests
+   * are filtered for earlier Redis versions( <8.10.0) with the message "search-on-timeout policy".
    */
-  private static final int ON_TIMEOUT_DOC_COUNT = 10_000;
+  private static final int ON_TIMEOUT_DOC_COUNT = 100_000;
 
   private void populateOnTimeoutIndex() {
     assertOK(jedis.ftCreate(INDEX, FTCreateParams.createParams(), TextField.of("title"),
@@ -1598,6 +1602,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
    * not be automatically retried. See CAE-3003 (initiative RED-132340: "Timeout guardrails").
    */
   @Test
+  @SinceRedisVersion(value = "8.10.0", message = "search-on-timeout policy")
   public void searchOnTimeoutFailReturnsError() {
     assumeTrue(RedisConditions.of(jedis).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_810M3),
       "ON_TIMEOUT FAIL policy");
@@ -1625,6 +1630,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
    * FT.SEARCH, so this is asserted on RESP3 only. See CAE-3003.
    */
   @Test
+  @SinceRedisVersion(value = "8.10.0", message = "search-on-timeout policy")
   public void searchOnTimeoutReturnPopulatesWarnings() {
     assumeTrue(RedisConditions.of(jedis).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_810M3),
       "ON_TIMEOUT RETURN warnings");
@@ -1660,6 +1666,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
    * on-timeout policy must surface a server error rather than partial results. See CAE-3003.
    */
   @Test
+  @SinceRedisVersion(value = "8.10.0", message = "search-on-timeout policy")
   public void aggregateOnTimeoutFailReturnsError() {
     assumeTrue(RedisConditions.of(jedis).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_810M3),
       "ON_TIMEOUT FAIL policy");
@@ -1683,6 +1690,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
    * See CAE-3003.
    */
   @Test
+  @SinceRedisVersion(value = "8.10.0", message = "search-on-timeout policy")
   public void aggregateOnTimeoutReturnPopulatesWarnings() {
     assumeTrue(RedisConditions.of(jedis).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_810M3),
       "ON_TIMEOUT RETURN warnings");

@@ -60,7 +60,7 @@ public class SentineledConnectionProviderAuthXManagerTest {
     IdentityProvider idProvider = mock(IdentityProvider.class);
     long now = System.currentTimeMillis();
     when(idProvider.requestToken()).thenReturn(new SimpleToken("default", "password",
-      now + TimeUnit.HOURS.toMillis(1), now, Collections.singletonMap("oid", "default")));
+        now + TimeUnit.HOURS.toMillis(1), now, Collections.singletonMap("oid", "default")));
     IdentityProviderConfig idProviderConfig = mock(IdentityProviderConfig.class);
     when(idProviderConfig.getProvider()).thenReturn(idProvider);
     return new AuthXManager(new TokenAuthConfig(

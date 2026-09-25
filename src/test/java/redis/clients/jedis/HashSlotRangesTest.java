@@ -121,6 +121,10 @@ public class HashSlotRangesTest {
     assertThrows(IllegalArgumentException.class, () -> HashSlotRanges.parse("1-"));
     assertThrows(IllegalArgumentException.class, () -> HashSlotRanges.parse("-5"));
     assertThrows(IllegalArgumentException.class, () -> HashSlotRanges.parse("-"));
+    // trailing empties: String.split drops them unless asked to keep them
+    assertThrows(IllegalArgumentException.class, () -> HashSlotRanges.parse("1,"));
+    assertThrows(IllegalArgumentException.class, () -> HashSlotRanges.parse("1,,"));
+    assertThrows(IllegalArgumentException.class, () -> HashSlotRanges.parse(","));
   }
 
   @Test

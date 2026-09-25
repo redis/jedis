@@ -20,6 +20,8 @@ public class ConnectionPool extends Pool<Connection> {
   private static final Logger log = LoggerFactory.getLogger(ConnectionPool.class);
 
   private AuthXManager authXManager;
+  // kept so the very same instance can be removed again; a fresh method reference never matches
+  private final Consumer<Token> postAuthenticationHook = this::postAuthentication;
   private MaintenanceEventController maintenanceController; // null = maintenance off
   private final Consumer<Connection> returnHook;
 
@@ -140,24 +142,22 @@ public class ConnectionPool extends Pool<Connection> {
     return conn;
   }
 
-  @Override
-  public void close() {
-    try {
-      if (authXManager != null) {
-        authXManager.stop();
-      }
-    } finally {
-      super.close();
-    }
-  }
-
+  /**
+   * Closes the pool and unregisters it from the configured {@link AuthXManager}. The manager itself
+   * is not stopped: it is created by the caller and may be shared with other pools or clients, so
+   * its lifecycle stays with its creator.
+   */
   @Override
   public void destroy() {
     try {
       super.destroy();
     } finally {
-      if (maintenanceController != null) {
-        maintenanceController.close();
+      try {
+        detachAuthenticationListener();
+      } finally {
+        if (maintenanceController != null) {
+          maintenanceController.close();
+        }
       }
     }
   }
@@ -170,17 +170,23 @@ public class ConnectionPool extends Pool<Connection> {
   protected void attachAuthenticationListener(AuthXManager authXManager) {
     this.authXManager = authXManager;
     if (authXManager != null) {
-      authXManager.addPostAuthenticationHook(this::postAuthentication);
+      authXManager.addPostAuthenticationHook(postAuthenticationHook);
     }
   }
 
+  /** Unregisters this pool from its {@link AuthXManager}. Safe to call more than once. */
   protected void detachAuthenticationListener() {
     if (authXManager != null) {
-      authXManager.removePostAuthenticationHook(this::postAuthentication);
+      authXManager.removePostAuthenticationHook(postAuthenticationHook);
     }
   }
 
   private void postAuthentication(Token token) {
+    if (isClosed()) {
+      // a renewal may race with destroy(); evict() would throw on a closed pool and abort the
+      // token manager's renewal cycle for every other pool on this manager
+      return;
+    }
     try {
       // this is to trigger validations on each connection via ConnectionFactory
       evict();

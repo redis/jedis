@@ -255,6 +255,18 @@ public class PipeliningBaseJsonCommandsTest extends PipeliningBaseMockedTestBase
   }
 
   @Test
+  public void testJsonArrPopRawWithPath2AndIndex() {
+    Path2 path = Path2.of("$.array");
+
+    when(commandObjects.jsonArrPopRaw("myJson", path, 1)).thenReturn(listStringCommandObject);
+
+    Response<List<String>> response = pipeliningBase.jsonArrPopRaw("myJson", path, 1);
+
+    assertThat(commands, contains(listStringCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
   public void testJsonArrPopWithClass() {
     when(commandObjects.jsonArrPop("myJson", MyBean.class)).thenReturn(myBeanCommandObject);
 
@@ -483,6 +495,18 @@ public class PipeliningBaseJsonCommandsTest extends PipeliningBaseMockedTestBase
     Response<Object> response = pipeliningBase.jsonNumIncrBy("myJson", path, 42.0);
 
     assertThat(commands, contains(objectCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testJsonNumIncrByNumber() {
+    Path2 path = Path2.of("$.number");
+
+    when(commandObjects.jsonNumIncrByNumber("myJson", path, 42)).thenReturn(listNumberCommandObject);
+
+    Response<List<Number>> response = pipeliningBase.jsonNumIncrByNumber("myJson", path, 42);
+
+    assertThat(commands, contains(listNumberCommandObject));
     assertThat(response, is(predefinedResponse));
   }
 

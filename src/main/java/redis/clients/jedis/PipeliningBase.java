@@ -4600,6 +4600,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<Number>> jsonNumIncrByNumber(String key, Path2 path, Number value) {
+    return appendCommand(commandObjects.jsonNumIncrByNumber(key, path, value));
+  }
+
+  @Override
   public Response<Double> jsonNumIncrBy(String key, Path path, double value) {
     return appendCommand(commandObjects.jsonNumIncrBy(key, path, value));
   }
@@ -4687,6 +4692,11 @@ public abstract class PipeliningBase
   @Override
   public <T> Response<T> jsonArrPop(String key, Class<T> clazz, Path path, int index) {
     return appendCommand(commandObjects.jsonArrPop(key, clazz, path, index));
+  }
+
+  @Override
+  public Response<List<String>> jsonArrPopRaw(String key, Path2 path, int index) {
+    return appendCommand(commandObjects.jsonArrPopRaw(key, path, index));
   }
 
   @Override

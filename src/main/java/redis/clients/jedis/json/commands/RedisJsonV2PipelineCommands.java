@@ -62,6 +62,8 @@ public interface RedisJsonV2PipelineCommands {
 
   Response<Object> jsonNumIncrBy(String key, Path2 path, Number value);
 
+  Response<List<Number>> jsonNumIncrByNumber(String key, Path2 path, Number value);
+
   Response<List<Long>> jsonArrAppend(String key, Path2 path, Object... objects);
 
   Response<List<Long>> jsonArrAppendWithEscape(String key, Path2 path, Object... objects);
@@ -77,6 +79,8 @@ public interface RedisJsonV2PipelineCommands {
   Response<List<Object>> jsonArrPop(String key, Path2 path);
 
   Response<List<Object>> jsonArrPop(String key, Path2 path, int index);
+
+  Response<List<String>> jsonArrPopRaw(String key, Path2 path, int index);
 
   Response<List<Long>> jsonArrLen(String key, Path2 path);
 

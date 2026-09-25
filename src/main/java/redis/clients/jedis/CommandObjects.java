@@ -4550,6 +4550,11 @@ public class CommandObjects {
         JsonBuilderFactory.JSON_ARRAY_OR_NUMBER_LIST);
   }
 
+  public final CommandObject<List<Number>> jsonNumIncrByNumber(String key, Path2 path, Number value) {
+    return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value),
+            JsonBuilderFactory.NUMBER_LIST);
+  }
+
   @Deprecated
   public final CommandObject<Double> jsonNumIncrBy(String key, Path path, double value) {
     return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), BuilderFactory.DOUBLE);
@@ -4659,6 +4664,10 @@ public class CommandObjects {
   @Deprecated
   public final <T> CommandObject<T> jsonArrPop(String key, Class<T> clazz, Path path, int index) {
     return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), new JsonObjectBuilder<>(clazz));
+  }
+
+  public final CommandObject<List<String>> jsonArrPopRaw(String key, Path2 path, int index) {
+    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), BuilderFactory.STRING_LIST);
   }
 
   @Deprecated

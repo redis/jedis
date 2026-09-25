@@ -9,6 +9,7 @@ import static redis.clients.jedis.json.JsonObjects.IRLObject;
 import static redis.clients.jedis.search.RediSearchUtil.toStringMap;
 
 import com.google.gson.Gson;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -258,5 +259,45 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     assertEquals(false, toggle.get().get(0));
     assertEquals(boolean.class, type.get().get(0));
     assertEquals(Long.valueOf(1), clear.get());
+  }
+
+  @Test
+  public void jsonArrPopRaw() {
+    Map<String, Object> doc = new HashMap<>();
+    doc.put("numbers", new int[]{ 1, 2, 3 });
+    doc.put("strings", new String[]{ "a", "b", "c" });
+
+    Pipeline p = (Pipeline) client.pipelined();
+
+    Response<String> set = p.jsonSet("raw", Path2.ROOT_PATH, gson.toJson(doc));
+    Response<List<String>> popNumber = p.jsonArrPopRaw("raw", new Path2("numbers"), -1);
+    Response<List<String>> popNumberAtIndex = p.jsonArrPopRaw("raw", new Path2("numbers"), 0);
+    Response<List<String>> popString = p.jsonArrPopRaw("raw", new Path2("strings"), 1);
+
+    p.sync();
+
+    assertEquals("OK", set.get());
+    assertEquals(Collections.singletonList("3"), popNumber.get());
+    assertEquals(Collections.singletonList("1"), popNumberAtIndex.get());
+    assertEquals(Collections.singletonList("\"b\""), popString.get());
+  }
+
+  @Test
+  public void jsonNumIncrByNumber() {
+    Pipeline p = (Pipeline) client.pipelined();
+
+    Response<String> set = p.jsonSet("num", Path2.ROOT_PATH,
+      "{\"a\":\"b\",\"b\":[{\"a\":2},{\"a\":5.5},{\"a\":\"c\"}]}");
+    Response<List<Number>> incr = p.jsonNumIncrByNumber("num", Path2.of("$..a"), 2);
+    Response<List<Number>> incrFractional = p.jsonNumIncrByNumber("num", Path2.of("$.b[0].a"), 0.5);
+    Response<List<Number>> none = p.jsonNumIncrByNumber("num", Path2.of("$..c"), 1);
+
+    p.sync();
+
+    assertEquals("OK", set.get());
+    // Same shape under RESP2 and RESP3: integral values are Long, fractional values are Double.
+    assertEquals(Arrays.asList(null, 4L, 7.5d, null), incr.get());
+    assertEquals(Collections.singletonList(4.5d), incrFractional.get());
+    assertEquals(Collections.emptyList(), none.get());
   }
 }

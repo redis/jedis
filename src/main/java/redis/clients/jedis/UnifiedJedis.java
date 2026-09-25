@@ -5315,6 +5315,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<Number> jsonNumIncrByNumber(String key, Path2 path, Number value) {
+    return executeCommand(commandObjects.jsonNumIncrByNumber(key, path, value));
+  }
+
+  @Override
   @Deprecated
   public double jsonNumIncrBy(String key, Path path, double value) {
     return executeCommand(commandObjects.jsonNumIncrBy(key, path, value));
@@ -5412,6 +5417,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Deprecated
   public <T> T jsonArrPop(String key, Class<T> clazz, Path path, int index) {
     return executeCommand(commandObjects.jsonArrPop(key, clazz, path, index));
+  }
+
+  @Override
+  public List<String> jsonArrPopRaw(String key, Path2 path, int index) {
+    return executeCommand(commandObjects.jsonArrPopRaw(key, path, index));
   }
 
   @Override

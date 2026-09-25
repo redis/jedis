@@ -4,6 +4,7 @@ import static net.javacrumbs.jsonunit.JsonMatchers.jsonEquals;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasEntry;
@@ -798,6 +799,54 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   }
 
   @Test
+  public void testJsonNumIncrByNumber() {
+    String key = "json";
+
+    JSONObject item = new JSONObject()
+        .put("a", "b")
+        .put("b", new JSONArray()
+            .put(new JSONObject().put("a", 2))
+            .put(new JSONObject().put("a", 5.5))
+            .put(new JSONObject().put("a", "c")));
+
+    exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, item));
+
+    // Integral results come back as Long, fractional results as Double and non-numeric matches as
+    // null. The result is the same under RESP2 and RESP3.
+    List<Number> incr = exec(commandObjects.jsonNumIncrByNumber(key, Path2.of("$..a"), 2));
+    assertThat(incr, contains(nullValue(), equalTo(4L), equalTo(7.5d), nullValue()));
+
+    // A fractional increment turns an integral value into a Double.
+    List<Number> incrFractional = exec(commandObjects.jsonNumIncrByNumber(key, Path2.of("$.b[0].a"), 0.5));
+    assertThat(incrFractional, contains(equalTo(4.5d)));
+
+    // A path matching nothing yields an empty list.
+    List<Number> none = exec(commandObjects.jsonNumIncrByNumber(key, Path2.of("$..c"), 1));
+    assertThat(none, empty());
+
+    Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
+
+    JSONObject expected = new JSONObject()
+        .put("a", "b")
+        .put("b", new JSONArray()
+            .put(new JSONObject().put("a", 4.5))
+            .put(new JSONObject().put("a", 7.5))
+            .put(new JSONObject().put("a", "c")));
+    assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
+  }
+
+  @Test
+  public void testJsonNumIncrByNumberPreservesLargeIntegerPrecision() {
+    String key = "json";
+
+    // 2^53 + 1 cannot be represented exactly as a double.
+    exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, new JSONObject().put("n", 9007199254740993L)));
+
+    List<Number> incr = exec(commandObjects.jsonNumIncrByNumber(key, Path2.of("$.n"), 1L));
+    assertThat(incr, contains(equalTo(9007199254740994L)));
+  }
+
+  @Test
   public void testJsonArrAppendWithEscape() {
     String key = "json";
 
@@ -1239,6 +1288,86 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
             .put(10)
             .put(30));
     assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
+  }
+
+  @Test
+  public void testJsonArrPopRawWithPathAndIndexPreservesIntegerText() {
+    String key = "json";
+
+    JSONObject data = new JSONObject()
+        .put("numbers", new JSONArray()
+            .put(10)
+            .put(20)
+            .put(30));
+
+    exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
+
+    // The raw variant returns the JSON text as sent by the server: an integer stays "20", not 20.0.
+    List<String> arrPop = exec(commandObjects.jsonArrPopRaw(key, Path2.of(".numbers"), 1));
+    assertThat(arrPop, contains("20"));
+
+    Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
+
+    JSONObject expected = new JSONObject()
+        .put("numbers", new JSONArray()
+            .put(10)
+            .put(30));
+    assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
+  }
+
+  @Test
+  public void testJsonArrPopRawPreservesLargeIntegerPrecision() {
+    String key = "json";
+
+    // 2^53 + 1 cannot be represented exactly as a double.
+    String bigInteger = "9007199254740993";
+
+    exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, new JSONArray("[" + bigInteger + "]")));
+
+    List<String> arrPop = exec(commandObjects.jsonArrPopRaw(key, Path2.ROOT_PATH, -1));
+    assertThat(arrPop, contains(bigInteger));
+  }
+
+  @Test
+  public void testJsonArrPopRawReturnsQuotedJsonStrings() {
+    String key = "json";
+
+    JSONObject data = new JSONObject()
+        .put("fruits", new JSONArray()
+            .put("apple")
+            .put("banana")
+            .put("cherry"));
+
+    exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
+
+    // A JSON string element comes back as its JSON representation, including the quotes.
+    List<String> arrPop = exec(commandObjects.jsonArrPopRaw(key, Path2.of(".fruits"), -1));
+    assertThat(arrPop, contains("\"cherry\""));
+
+    Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
+
+    JSONObject expected = new JSONObject()
+        .put("fruits", new JSONArray()
+            .put("apple")
+            .put("banana"));
+    assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
+  }
+
+  @Test
+  public void testJsonArrPopRawWithMultiplePathsAndNonArrayMatch() {
+    String key = "json";
+
+    JSONObject data = new JSONObject()
+        .put("a", new JSONArray().put(1).put(2))
+        .put("b", "notAnArray")
+        .put("c", new JSONArray());
+
+    exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
+
+    // $.* matches three values: an array, a string and an empty array.
+    // Non-arrays and empty arrays yield a null element in the reply.
+    List<String> arrPop = exec(commandObjects.jsonArrPopRaw(key, Path2.of("$.*"), -1));
+    assertThat(arrPop, containsInAnyOrder(equalTo("2"), nullValue(), nullValue()));
   }
 
   @Test

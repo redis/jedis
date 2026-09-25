@@ -73,7 +73,7 @@ public class GeoRadiusResponse {
 
     GeoRadiusResponse response = (GeoRadiusResponse) obj;
     return Double.compare(distance, response.getDistance()) == 0
-            && rawScore == response.getRawScore() && coordinate.equals(response.coordinate)
+            && rawScore == response.getRawScore() && Objects.equals(coordinate, response.coordinate)
             && Arrays.equals(member, response.getMember());
   }
 

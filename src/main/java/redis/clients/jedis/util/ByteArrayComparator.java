@@ -11,10 +11,8 @@ public final class ByteArrayComparator {
     int lmin = Math.min(len1, len2);
 
     for (int i = 0; i < lmin; i++) {
-      byte b1 = val1[i];
-      byte b2 = val2[i];
-      if (b1 < b2) return -1;
-      if (b1 > b2) return 1;
+      int result = Integer.compare(val1[i] & 0xFF, val2[i] & 0xFF);
+      if (result != 0) return result;
     }
 
     if (len1 < len2) return -1;

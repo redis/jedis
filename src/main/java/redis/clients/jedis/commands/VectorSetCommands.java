@@ -76,6 +76,22 @@ public interface VectorSetCommands {
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vadd/">VADD Command</a></b> Add a new element
+   * into the vector set specified by key with dimension reduction.
+   * <p>
+   * Time complexity: O(log(N)) for each element added, where N is the number of elements in the
+   * vector set.
+   * @param key the name of the key that will hold the vector set data
+   * @param vector the vector as floating point numbers
+   * @param element the name of the element that is being added to the vector set
+   * @param reduceDim the target dimension after reduction using random projection
+   * @return 1 if key was added; 0 if key was not added
+   * @since 8.1
+   */
+  @Experimental
+  boolean vadd(String key, float[] vector, String element, int reduceDim);
+
+  /**
+   * <b><a href="https://redis.io/docs/latest/commands/vadd/">VADD Command</a></b> Add a new element
    * into the vector set specified by key with dimension reduction and additional parameters.
    * <p>
    * Time complexity: O(log(N)) for each element added, where N is the number of elements in the
@@ -89,6 +105,22 @@ public interface VectorSetCommands {
    */
   @Experimental
   boolean vadd(String key, float[] vector, String element, int reduceDim, VAddParams params);
+
+  /**
+   * <b><a href="https://redis.io/docs/latest/commands/vadd/">VADD Command</a></b> Add a new element
+   * into the vector set specified by key using FP32 binary format with dimension reduction.
+   * <p>
+   * Time complexity: O(log(N)) for each element added, where N is the number of elements in the
+   * vector set.
+   * @param key the name of the key that will hold the vector set data
+   * @param vectorBlob the vector as FP32 binary blob
+   * @param element the name of the element that is being added to the vector set
+   * @param reduceDim the target dimension after reduction using random projection
+   * @return 1 if key was added; 0 if key was not added
+   * @since 8.1
+   */
+  @Experimental
+  boolean vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vadd/">VADD Command</a></b> Add a new element
@@ -139,12 +171,38 @@ public interface VectorSetCommands {
    * Time complexity: O(log(N)) where N is the number of elements in the vector set.
    * @param key the name of the key that holds the vector set data
    * @param vector the vector to use as similarity reference
+   * @return map of element names to their similarity scores
+   * @since 8.1
+   */
+  @Experimental
+  Map<String, Double> vsimWithScores(String key, float[] vector);
+
+  /**
+   * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements
+   * similar to a given vector with their similarity scores.
+   * <p>
+   * Time complexity: O(log(N)) where N is the number of elements in the vector set.
+   * @param key the name of the key that holds the vector set data
+   * @param vector the vector to use as similarity reference
    * @param params additional parameters for the VSIM command (WITHSCORES will be automatically
    *          added)
    * @return map of element names to their similarity scores
    */
   @Experimental
   Map<String, Double> vsimWithScores(String key, float[] vector, VSimParams params);
+
+  /**
+   * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements
+   * similar to a given vector with their similarity scores and attributes.
+   * <p>
+   * Time complexity: O(log(N)) where N is the number of elements in the vector set.
+   * @param key the name of the key that holds the vector set data
+   * @param vector the vector to use as similarity reference
+   * @return map of element names to their similarity scores and attributes
+   * @since 8.1
+   */
+  @Experimental
+  Map<String, VSimScoreAttribs> vsimWithScoresAndAttribs(String key, float[] vector);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements
@@ -193,12 +251,38 @@ public interface VectorSetCommands {
    * Time complexity: O(log(N)) where N is the number of elements in the vector set.
    * @param key the name of the key that holds the vector set data
    * @param element the name of the element to use as similarity reference
+   * @return map of element names to their similarity scores
+   * @since 8.1
+   */
+  @Experimental
+  Map<String, Double> vsimByElementWithScores(String key, String element);
+
+  /**
+   * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements
+   * similar to a given element in the vector set with their similarity scores.
+   * <p>
+   * Time complexity: O(log(N)) where N is the number of elements in the vector set.
+   * @param key the name of the key that holds the vector set data
+   * @param element the name of the element to use as similarity reference
    * @param params additional parameters for the VSIM command (WITHSCORES will be automatically
    *          added)
    * @return map of element names to their similarity scores
    */
   @Experimental
   Map<String, Double> vsimByElementWithScores(String key, String element, VSimParams params);
+
+  /**
+   * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements
+   * similar to a given element in the vector set with their similarity scores and attributes.
+   * <p>
+   * Time complexity: O(log(N)) where N is the number of elements in the vector set.
+   * @param key the name of the key that holds the vector set data
+   * @param element the name of the element to use as similarity reference
+   * @return map of element names to their similarity scores and attributes
+   * @since 8.1
+   */
+  @Experimental
+  Map<String, VSimScoreAttribs> vsimByElementWithScoresAndAttribs(String key, String element);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements

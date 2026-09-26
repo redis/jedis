@@ -1,11 +1,15 @@
 package redis.clients.jedis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertSame;
 
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
@@ -16,6 +20,7 @@ import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.JedisSentinelTestUtil;
 
 @Tag("integration")
 public class JedisSentinelPoolTest {
@@ -149,5 +154,76 @@ public class JedisSentinelPoolTest {
     }
 
     assertTrue(pool.isClosed());
+  }
+
+  @Test
+  public void connectionToOldMasterIsNotReusedAfterFailover() throws Exception {
+    final String masterName = "mymasterfailover";
+    HostAndPort sentinel = Endpoints.getRedisEndpoint("sentinel-failover").getHostAndPort();
+    Set<String> failoverSentinels = Collections.singleton(sentinel.toString());
+
+    GenericObjectPoolConfig<Jedis> config = new GenericObjectPoolConfig<>();
+    config.setMaxTotal(1);
+    try (JedisSentinelPool pool = new JedisSentinelPool(masterName, failoverSentinels, config, 1000,
+        "foobared", 0)) {
+      HostAndPort oldMaster = pool.getCurrentHostMaster();
+
+      // Borrowed for the whole failover, so the clear() in initMaster cannot reach it
+      Jedis borrowed = pool.getResource();
+      assertEquals(oldMaster.getPort(), serverPort(borrowed));
+
+      try (Jedis sentinelJedis = new Jedis(sentinel); Jedis commandJedis = new Jedis(sentinel)) {
+        JedisSentinelTestUtil.waitForNewPromotedMaster(masterName, sentinelJedis, commandJedis);
+      }
+      HostAndPort newMaster = awaitMasterSwitch(pool, oldMaster);
+      assertNotEquals(oldMaster, newMaster);
+
+      // Returned after the switch while its socket still points at the demoted node
+      borrowed.close();
+
+      try (Jedis reborrowed = pool.getResource()) {
+        assertEquals(newMaster, reborrowed.getClient().getHostAndPort());
+        assertEquals(newMaster.getPort(), serverPort(reborrowed));
+      }
+
+      // Leave the demoted node as a healthy replica for the next failover test
+      awaitReplicaReconfigured(sentinel, masterName);
+    }
+  }
+
+  private static HostAndPort awaitMasterSwitch(JedisSentinelPool pool, HostAndPort oldMaster)
+      throws InterruptedException {
+    long deadline = System.currentTimeMillis() + 10_000;
+    while (oldMaster.equals(pool.getCurrentHostMaster())) {
+      assertTrue(System.currentTimeMillis() < deadline, "pool did not observe +switch-master");
+      Thread.sleep(50);
+    }
+    return pool.getCurrentHostMaster();
+  }
+
+  private static int serverPort(Jedis jedis) {
+    for (String line : jedis.info("server").split("\r\n")) {
+      if (line.startsWith("tcp_port:")) {
+        return Integer.parseInt(line.substring("tcp_port:".length()));
+      }
+    }
+    throw new AssertionError("tcp_port not found in INFO server");
+  }
+
+  private static void awaitReplicaReconfigured(HostAndPort sentinel, String masterName)
+      throws InterruptedException {
+    long deadline = System.currentTimeMillis() + 60_000;
+    try (Jedis jedis = new Jedis(sentinel)) {
+      while (true) {
+        List<Map<String, String>> replicas = jedis.sentinelReplicas(masterName);
+        boolean healthy = replicas.stream().anyMatch(
+          r -> "slave".equals(r.get("flags")) && "ok".equals(r.get("master-link-status")));
+        if (healthy) {
+          return;
+        }
+        assertTrue(System.currentTimeMillis() < deadline, "demoted node did not rejoin as replica");
+        Thread.sleep(500);
+      }
+    }
   }
 }

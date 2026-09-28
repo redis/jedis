@@ -429,4 +429,34 @@ public class MultiDbConnectionProviderTest {
           });
     }
   }
+
+  @Test
+  public void userCommand_afterPermanent_onlySecondaryHealthyAgain_requiresManualSwitch_healthCheckDriven()
+      throws InterruptedException {
+    AtomicReference<HealthStatus> health0 = new AtomicReference<>(HealthStatus.HEALTHY);
+    AtomicReference<HealthStatus> health1 = new AtomicReference<>(HealthStatus.HEALTHY);
+    MultiDbConnectionProvider testProvider = healthCheckDrivenProvider(health0, health1);
+
+    String key = keys.key("foo");
+    try (MultiDbClient jedis = MultiDbClient.builder().connectionProvider(testProvider).build()) {
+      driveToPermanentState(jedis, testProvider, health0, health1, key);
+
+      // Only the lower-weight, non-active database becomes healthy again
+      health1.set(HealthStatus.HEALTHY);
+      await().atMost(Durations.ONE_SECOND)
+          .until(() -> testProvider.getDatabase(endpointStandalone1.getHostAndPort()).isHealthy());
+
+      // No auto-recovery, even well past the grace period: nothing triggers a failover to a
+      // lower-weight database; commands surface the raw connection error instead of failover
+      // exceptions
+      Thread.sleep(300);
+      Exception e = assertThrows(JedisConnectionException.class, () -> jedis.get(key));
+      assertEquals(JedisConnectionException.class, e.getClass());
+      assertEquals(endpointStandalone0.getHostAndPort(), testProvider.getActiveEndpoint());
+
+      // Manual database switch is required to recover
+      testProvider.setActiveDatabase(endpointStandalone1.getHostAndPort());
+      assertDoesNotThrow(() -> jedis.get(key));
+    }
+  }
 }

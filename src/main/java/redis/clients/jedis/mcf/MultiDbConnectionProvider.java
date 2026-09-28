@@ -400,6 +400,10 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
           log.warn("Active database {} became unhealthy, but no failover target is available",
             endpoint, e);
         }
+      } else if (newStatus.isHealthy() && databaseWithHealthChange == activeDatabase) {
+        // The active database recovered in place, without a switch: reset failover
+        // bookkeeping so a later outage starts with a fresh attempt budget
+        resetFailoverState();
       }
     }
   }
@@ -567,9 +571,17 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     Database database = databaseToIterate.getValue();
     boolean changed = setActiveDatabase(database, false);
     if (!changed) return null;
-    failoverAttemptCount.set(0);
     onDatabaseSwitch(reason, databaseToIterate.getKey(), database);
     return databaseToIterate.getKey();
+  }
+
+  /**
+   * Clears failover bookkeeping so the next loss of all databases gets the full configured window
+   * of temporary failures before escalating to permanent.
+   */
+  private void resetFailoverState() {
+    failoverAttemptCount.set(0);
+    failoverFreezeUntil.set(0);
   }
 
   private void handleNoHealthyDatabase() {
@@ -735,6 +747,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       activeDatabaseChangeLock.unlock();
     }
     boolean switched = oldDatabase != database;
+    if (switched) resetFailoverState();
     if (switched && this.multiDbConfig.isFastFailover()) {
       log.info("Forcing disconnect of all active connections in old database: {}",
         oldDatabase.circuitBreaker.getName());

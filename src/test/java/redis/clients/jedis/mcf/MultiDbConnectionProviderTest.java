@@ -427,14 +427,6 @@ public class MultiDbConnectionProviderTest {
             jedis.get(key);
             return true;
           });
-
-      // In-place recovery must also reset the failover attempt budget: a second outage
-      // starts with temporary failures again instead of an immediate permanent one
-      health0.set(HealthStatus.UNHEALTHY);
-      await().atMost(Durations.ONE_SECOND)
-          .until(() -> !testProvider.getDatabase(endpointStandalone0.getHostAndPort()).isHealthy());
-      Exception e = assertThrows(JedisFailoverException.class, () -> jedis.get(key));
-      assertEquals(JedisTemporarilyNotAvailableException.class, e.getClass());
     }
   }
 

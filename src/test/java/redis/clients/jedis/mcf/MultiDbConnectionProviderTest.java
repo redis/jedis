@@ -431,8 +431,7 @@ public class MultiDbConnectionProviderTest {
   }
 
   @Test
-  public void userCommand_afterPermanent_onlySecondaryHealthyAgain_requiresManualSwitch_healthCheckDriven()
-      throws InterruptedException {
+  public void userCommand_afterPermanent_onlySecondaryHealthyAgain_requiresManualSwitch_healthCheckDriven() {
     AtomicReference<HealthStatus> health0 = new AtomicReference<>(HealthStatus.HEALTHY);
     AtomicReference<HealthStatus> health1 = new AtomicReference<>(HealthStatus.HEALTHY);
     MultiDbConnectionProvider testProvider = healthCheckDrivenProvider(health0, health1);
@@ -446,10 +445,12 @@ public class MultiDbConnectionProviderTest {
       await().atMost(Durations.ONE_SECOND)
           .until(() -> testProvider.getDatabase(endpointStandalone1.getHostAndPort()).isHealthy());
 
-      // No auto-recovery, even well past the grace period: nothing triggers a failover to a
-      // lower-weight database; commands surface the raw connection error instead of failover
+      // No auto-recovery, even past the grace period on the active database (waited on the
+      // actual deadline so the claim holds under any CI load): nothing triggers a failover to
+      // a lower-weight database; commands surface the raw connection error instead of failover
       // exceptions
-      Thread.sleep(300);
+      await().atMost(Durations.ONE_SECOND).until(
+        () -> !testProvider.getDatabase(endpointStandalone0.getHostAndPort()).isInGracePeriod());
       Exception e = assertThrows(JedisConnectionException.class, () -> jedis.get(key));
       assertEquals(JedisConnectionException.class, e.getClass());
       assertEquals(endpointStandalone0.getHostAndPort(), testProvider.getActiveEndpoint());

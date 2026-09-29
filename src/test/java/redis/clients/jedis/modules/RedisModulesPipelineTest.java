@@ -15,8 +15,11 @@ import java.util.Map;
 import java.util.Collections;
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
@@ -29,6 +32,7 @@ import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.search.*;
 import redis.clients.jedis.search.aggr.*;
 import redis.clients.jedis.util.AssertUtil;
+import redis.clients.jedis.util.TestKeyRegistry;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
@@ -43,6 +47,19 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
   public RedisModulesPipelineTest(RedisProtocol protocol) {
     super(protocol);
+  }
+
+  private TestKeyRegistry keys;
+
+  @BeforeEach
+  public void setUpKeys(TestInfo testInfo) {
+    keys = TestKeyRegistry.create(testInfo);
+  }
+
+  @AfterEach
+  public void cleanUpKeys() {
+    // Runs before the base class closes the client.
+    keys.cleanup(client);
   }
 
   @Test
@@ -266,12 +283,13 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     doc.put("numbers", new int[] { 1, 2, 3 });
     doc.put("strings", new String[] { "a", "b", "c" });
 
+    String key = keys.key("raw");
     Pipeline p = (Pipeline) client.pipelined();
 
-    Response<String> set = p.jsonSet("raw", Path2.ROOT_PATH, gson.toJson(doc));
-    Response<List<String>> popNumber = p.jsonArrPopRaw("raw", new Path2("numbers"), -1);
-    Response<List<String>> popNumberAtIndex = p.jsonArrPopRaw("raw", new Path2("numbers"), 0);
-    Response<List<String>> popString = p.jsonArrPopRaw("raw", new Path2("strings"), 1);
+    Response<String> set = p.jsonSet(key, Path2.ROOT_PATH, gson.toJson(doc));
+    Response<List<String>> popNumber = p.jsonArrPopRaw(key, new Path2("numbers"), -1);
+    Response<List<String>> popNumberAtIndex = p.jsonArrPopRaw(key, new Path2("numbers"), 0);
+    Response<List<String>> popString = p.jsonArrPopRaw(key, new Path2("strings"), 1);
 
     p.sync();
 

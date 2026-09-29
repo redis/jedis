@@ -232,10 +232,4 @@ public class TrackingConnectionPool extends ConnectionPool {
     }
     ((FailFastConnectionFactory) this.getFactory()).failFast = false;
   }
-
-  @Override
-  public void close() {
-    this.destroy();
-    this.detachAuthenticationListener();
-  }
 }

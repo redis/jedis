@@ -183,14 +183,18 @@ public class ConnectionPool extends Pool<Connection> {
 
   private void postAuthentication(Token token) {
     if (isClosed()) {
-      // a renewal may race with destroy(); evict() would throw on a closed pool and abort the
-      // token manager's renewal cycle for every other pool on this manager
       return;
     }
     try {
       // this is to trigger validations on each connection via ConnectionFactory
       evict();
     } catch (Exception e) {
+      if (isClosed()) {
+        // destroy() landed after the check above: nothing left to re-validate, and throwing here
+        // would abort the renewal cycle for every other pool on this manager
+        log.debug("Skipping post-authentication eviction on a closed pool", e);
+        return;
+      }
       throw new JedisException("Failed to evict connections from pool", e);
     }
   }

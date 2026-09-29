@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static redis.clients.jedis.util.CommandArgumentsMatchers.containsArguments;
 import static redis.clients.jedis.util.CommandArgumentsMatchers.hasArgumentCount;
 import static redis.clients.jedis.util.CommandArgumentsMatchers.hasArguments;
 
@@ -28,7 +29,8 @@ public class CommandObjectsCountMinSketchTest {
     assertThat(args,
       hasArguments(CountMinSketchCommand.INITBYDIM, RawableFactory.from("cms"),
         RawableFactory.from(1000L), RawableFactory.from(5L), RedisBloomKeyword.CELL_SIZE,
-        RawableFactory.from(1L)));
+        CmsCellSize.ONE_BYTE));
+    assertThat(args, containsArguments("1"));
   }
 
   @Test
@@ -40,6 +42,7 @@ public class CommandObjectsCountMinSketchTest {
     assertThat(args,
       hasArguments(CountMinSketchCommand.INITBYPROB, RawableFactory.from("cms"),
         RawableFactory.from(0.001), RawableFactory.from(0.01), RedisBloomKeyword.CELL_SIZE,
-        RawableFactory.from(8L)));
+        CmsCellSize.EIGHT_BYTES));
+    assertThat(args, containsArguments("8"));
   }
 }

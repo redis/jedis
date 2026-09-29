@@ -391,7 +391,15 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     if (initializationComplete) {
       if (!newStatus.isHealthy() && databaseWithHealthChange == activeDatabase) {
         databaseWithHealthChange.setGracePeriod();
-        switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, databaseWithHealthChange);
+        try {
+          switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, databaseWithHealthChange);
+        } catch (JedisFailoverException e) {
+          // Nothing to switch to right now. Do not propagate: this listener runs inside the
+          // health check scheduler task, and an escaping exception would cancel the periodic
+          // check, freezing this endpoint's status and preventing any future recovery.
+          log.warn("Active database {} became unhealthy, but no failover target is available",
+            endpoint, e);
+        }
       }
     }
   }

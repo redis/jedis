@@ -57,7 +57,7 @@
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
-		<jackson.version>2.22.2</jackson.version>
+		<jackson.version>2.22.3</jackson.version>
 		<maven.surefire.version>3.5.6</maven.surefire.version>
 		<junit.version>5.14.4</junit.version>
 		<!-- Default JVM options for tests -->
@@ -638,6 +638,9 @@
 						<include>src/test/jmh/**/*.java</include>
 						<include>**/RedisMultiDbClientSideCacheTest.java</include>
 						<include>**/MultiDbCSCTest.java</include>
+						<include>**/AuthXManagerHookRegistrationTest.java</include>
+						<include>**/TrackingConnectionPoolAuthXManagerTest.java</include>
+						<include>**/SentineledConnectionProviderAuthXManagerTest.java</include>
 						<include>**/*HashImport*.java</include>
 						<include>**/*Himport*.java</include>
 						<include>**/ConnectionRegistry*.java</include>

@@ -297,10 +297,10 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
 
     p.sync();
 
-    assertEquals("OK", set.get());
-    assertEquals(Collections.singletonList("3"), popNumber.get());
-    assertEquals(Collections.singletonList("1"), popNumberAtIndex.get());
-    assertEquals(Collections.singletonList("\"b\""), popString.get());
+    assertThat(set.get(), equalTo("OK"));
+    assertThat(popNumber.get(), contains("3"));
+    assertThat(popNumberAtIndex.get(), contains("1"));
+    assertThat(popString.get(), contains("\"b\""));
   }
 
   @Test

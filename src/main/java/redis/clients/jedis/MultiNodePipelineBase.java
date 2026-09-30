@@ -1,12 +1,12 @@
 package redis.clients.jedis;
 
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -121,10 +121,12 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
         ? new CountDownLatch(pipelinedResponses.size())
         : null;
 
-    Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator = pipelinedResponses.entrySet()
-        .iterator();
-    while (pipelinedResponsesIterator.hasNext()) {
-      Map.Entry<HostAndPort, Queue<Response<?>>> entry = pipelinedResponsesIterator.next();
+    // Nodes whose read failed. Their cleanup is deferred to this thread: the workers run while
+    // this thread may still be iterating pipelinedResponses, and the iterator's remove() acts on
+    // whichever entry this thread last returned, not on the worker's node.
+    List<HostAndPort> failedNodes = new CopyOnWriteArrayList<>();
+
+    for (Map.Entry<HostAndPort, Queue<Response<?>>> entry : pipelinedResponses.entrySet()) {
       HostAndPort nodeKey = entry.getKey();
       Queue<Response<?>> queue = entry.getValue();
       Connection connection = connections.get(nodeKey);
@@ -136,10 +138,7 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
           }
         } catch (JedisConnectionException jce) {
           log.error("Error with connection to " + nodeKey, jce);
-          // cleanup the connection
-          // TODO these operations not thread-safe and when executed here, the iter may moved
-          pipelinedResponsesIterator.remove();
-          connections.remove(nodeKey);
+          failedNodes.add(nodeKey);
           IOUtils.closeQuietly(connection);
         } finally {
           if (multiNode) {
@@ -157,6 +156,12 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
       }
 
       releasePipelineExecutor(executorService);
+    }
+
+    // cleanup the failed connections so the next command to those nodes obtains a fresh one
+    for (HostAndPort nodeKey : failedNodes) {
+      pipelinedResponses.remove(nodeKey);
+      connections.remove(nodeKey);
     }
 
     syncing = false;

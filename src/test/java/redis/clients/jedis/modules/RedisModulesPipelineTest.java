@@ -1,5 +1,9 @@
 package redis.clients.jedis.modules;
 
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -297,5 +301,27 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     assertEquals(Collections.singletonList("3"), popNumber.get());
     assertEquals(Collections.singletonList("1"), popNumberAtIndex.get());
     assertEquals(Collections.singletonList("\"b\""), popString.get());
+  }
+
+  @Test
+  public void jsonArrPopRaw_NotAnArrayOrEmptyArray() {
+    //{"empty_arrays": [[], []], "string": "a"}
+    Map<String, Object> doc = new HashMap<>();
+    doc.put("empty_arrays", new int[][] { {}, {} });
+    doc.put("string", "a");
+
+    String key = keys.key("raw");
+    Pipeline p = (Pipeline) client.pipelined();
+
+    Response<String> set = p.jsonSet(key, Path2.ROOT_PATH, gson.toJson(doc));
+    Response<List<String>> popFromEmptyArrays =
+            p.jsonArrPopRaw(key, new Path2("$.empty_arrays[*]"), 0);
+    Response<List<String>> popFromString =
+            p.jsonArrPopRaw(key, new Path2("$.string"), 0);
+    p.sync();
+
+    assertThat(set.get(), equalTo("OK"));
+    assertThat(popFromEmptyArrays.get(), contains(nullValue(), nullValue()));
+    assertThat(popFromString.get(), contains(nullValue()));
   }
 }

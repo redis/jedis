@@ -4661,6 +4661,11 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index), new JsonObjectBuilder<>(clazz));
   }
 
+  public final CommandObject<List<String>> jsonArrPopRaw(String key, Path2 path, int index) {
+    return new CommandObject<>(commandArguments(JsonCommand.ARRPOP).key(key).add(path).add(index),
+        BuilderFactory.STRING_LIST);
+  }
+
   @Deprecated
   public final CommandObject<Long> jsonArrLen(String key) {
     return new CommandObject<>(commandArguments(JsonCommand.ARRLEN).key(key), BuilderFactory.LONG);
@@ -5388,7 +5393,12 @@ public class CommandObjects {
     return args;
   }
 
+  // The flat-args helpers pre-size from the known collection size so bulk commands
+  // (MSET, HSET, ZADD, GEOADD, XADD with many members) avoid intermediate ArrayList
+  // growth copies.
   private CommandArguments addFlatKeyValueArgs(CommandArguments args, String... keyvalues) {
+    args.ensureCapacity(args.size() + keyvalues.length)
+        .ensureKeyCapacity(args.getKeys().size() + keyvalues.length / 2);
     for (int i = 0; i < keyvalues.length; i += 2) {
       args.key(keyvalues[i]).add(keyvalues[i + 1]);
     }
@@ -5396,6 +5406,8 @@ public class CommandObjects {
   }
 
   private CommandArguments addFlatKeyValueArgs(CommandArguments args, byte[]... keyvalues) {
+    args.ensureCapacity(args.size() + keyvalues.length)
+        .ensureKeyCapacity(args.getKeys().size() + keyvalues.length / 2);
     for (int i = 0; i < keyvalues.length; i += 2) {
       args.key(keyvalues[i]).add(keyvalues[i + 1]);
     }
@@ -5403,6 +5415,7 @@ public class CommandObjects {
   }
 
   private CommandArguments addFlatMapArgs(CommandArguments args, Map<?, ?> map) {
+    args.ensureCapacity(args.size() + 2 * map.size());
     for (Map.Entry<? extends Object, ? extends Object> entry : map.entrySet()) {
       args.add(entry.getKey());
       args.add(entry.getValue());
@@ -5411,6 +5424,7 @@ public class CommandObjects {
   }
 
   private CommandArguments addSortedSetFlatMapArgs(CommandArguments args, Map<?, Double> map) {
+    args.ensureCapacity(args.size() + 2 * map.size());
     for (Map.Entry<? extends Object, Double> entry : map.entrySet()) {
       args.add(entry.getValue());
       args.add(entry.getKey());
@@ -5419,6 +5433,7 @@ public class CommandObjects {
   }
 
   private CommandArguments addGeoCoordinateFlatMapArgs(CommandArguments args, Map<?, GeoCoordinate> map) {
+    args.ensureCapacity(args.size() + 3 * map.size());
     for (Map.Entry<? extends Object, GeoCoordinate> entry : map.entrySet()) {
       GeoCoordinate ord = entry.getValue();
       args.add(ord.getLongitude());

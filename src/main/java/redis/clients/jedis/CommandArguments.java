@@ -48,6 +48,34 @@ public class CommandArguments implements Iterable<Rawable> {
     cachedHashSlots = null;
   }
 
+  /**
+   * Pre-sizes the backing list for the expected total number of arguments, command token
+   * included — i.e. the RESP array length of the final command, which is also what
+   * {@link #size()} returns once fully built. Avoids intermediate {@code ArrayList} growth
+   * when commands are built from large collections. Under-estimating is safe: the list
+   * falls back to normal growth. Values not above the current capacity have no effect.
+   * <p>
+   * Example: ZADD with a key and N member/score pairs expects {@code 2 + 2 * N} arguments.
+   *
+   * @param expectedTotalArguments the expected total argument count, command included
+   * @return this
+   * @since 8.1
+   */
+  public CommandArguments ensureCapacity(int expectedTotalArguments) {
+    args.ensureCapacity(expectedTotalArguments);
+    return this;
+  }
+
+  /**
+   * Pre-sizes the key-tracking list for the expected total number of keys, mirroring the
+   * {@link #ensureCapacity(int)} semantics. Package-private: key counts are only known to
+   * the command builders.
+   */
+  CommandArguments ensureKeyCapacity(int expectedTotalKeys) {
+    keys.ensureCapacity(expectedTotalKeys);
+    return this;
+  }
+
   public ProtocolCommand getCommand() {
     return (ProtocolCommand) args.get(0);
   }
@@ -115,6 +143,9 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   public CommandArguments addObjects(Object... args) {
+    // Pre-size from the known array length so bulk commands avoid intermediate
+    // ArrayList growth copies.
+    this.args.ensureCapacity(this.args.size() + args.length);
     for (Object arg : args) {
       add(arg);
     }
@@ -122,6 +153,10 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   public CommandArguments addObjects(Collection args) {
+    // Pre-size from the known collection size so bulk commands built from
+    // collections (e.g. SADD/ZADD with many members) avoid intermediate
+    // ArrayList growth copies.
+    this.args.ensureCapacity(this.args.size() + args.size());
     args.forEach(arg -> add(arg));
     return this;
   }
@@ -166,11 +201,16 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   public final CommandArguments keys(Object... keys) {
+    // Pre-size both lists for multi-key commands (DEL, MGET, SINTER, ...) with many keys.
+    args.ensureCapacity(args.size() + keys.length);
+    ensureKeyCapacity(this.keys.size() + keys.length);
     Arrays.stream(keys).forEach(this::key);
     return this;
   }
 
   public final CommandArguments keys(Collection keys) {
+    args.ensureCapacity(args.size() + keys.size());
+    ensureKeyCapacity(this.keys.size() + keys.size());
     keys.forEach(this::key);
     return this;
   }

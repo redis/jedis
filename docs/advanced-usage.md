@@ -218,6 +218,8 @@ After adding the dependency, configure it using `EntraIDTokenAuthConfigBuilder`:
 ```
 
 Here you will see the `AuthXManager` class that is built into Jedis. Essentially it integrates the extension into Jedis and handles the authentication process.  
+
+**Lifecycle:** you create the `AuthXManager`, so you own it, just like the `JedisClientConfig` that carries it. Jedis starts it when the first client configured with it is created, and one manager may be shared by any number of clients. Jedis never stops it: call `authXManager.stop()` yourself once the last client using it has been closed, otherwise its token renewal threads keep running.  
 For other available configurations, detailed information and usage of Jedis with Microsoft EntraID, please refer to the [official guide](https://redis.io/docs/latest/develop/clients/jedis/amr/)
 
 **Setting Up AMR or ACR with Microsoft EntraID:**

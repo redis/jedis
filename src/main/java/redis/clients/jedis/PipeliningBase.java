@@ -4605,6 +4605,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<Number>> jsonNumIncrByNumber(String key, Path2 path, Number value) {
+    return appendCommand(commandObjects.jsonNumIncrByNumber(key, path, value));
+  }
+
+  @Override
   public Response<List<Long>> jsonArrAppend(String key, Path2 path, Object... objects) {
     return appendCommand(commandObjects.jsonArrAppend(key, path, objects));
   }

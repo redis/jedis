@@ -820,6 +820,28 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   }
 
   @Test
+  public void testJsonNumIncrByNumber() {
+    String key = keys.key("user:12000");
+
+    JSONObject item = new JSONObject();
+    item.put("balance", 100);
+
+    exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, item));
+
+    Object preCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
+    assertThat(preCheck, jsonEquals(new JSONArray().put(item)));
+
+    Object numIncrBy = exec(commandObjects.jsonNumIncrByNumber(key, Path2.of("$.balance"), 50.0));
+    assertThat(numIncrBy, jsonEquals(new JSONArray().put(150.0)));
+
+    Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
+
+    JSONObject expected = new JSONObject();
+    expected.put("balance", 150.0);
+    assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
+  }
+
+  @Test
   public void testJsonArrAppendWithEscape() {
     String key = "json";
 

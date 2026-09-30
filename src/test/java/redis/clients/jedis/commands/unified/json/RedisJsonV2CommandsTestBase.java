@@ -590,6 +590,32 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
   }
 
   @Test
+  public void numIncrByNumber() {
+    String key = keys.key("doc");
+    jedis.jsonSet(key, ROOT_PATH, "{\"int\":10,\"dec\":10.5}");
+
+    // integer + integer stays a Long
+    assertEquals(singletonList(15L), jedis.jsonNumIncrByNumber(key, Path2.of("$.int"), 5));
+    // decimal values come back as Double
+    assertEquals(singletonList(13.0), jedis.jsonNumIncrByNumber(key, Path2.of("$.dec"), 2.5));
+    // integer + decimal converts to Double
+    assertEquals(singletonList(15.5), jedis.jsonNumIncrByNumber(key, Path2.of("$.int"), 0.5));
+  }
+
+  @Test
+  public void numIncrByNumber_NonExistingPathOrNotANumber() {
+    String key = keys.key("doc");
+    jedis.jsonSet(key, ROOT_PATH, "{\"str\":\"a\",\"nums\":[1,\"b\",2]}");
+
+    assertEquals(Collections.emptyList(), jedis.jsonNumIncrByNumber(key, Path2.of("$.missing"), 1));
+    assertEquals(singletonList((Number) null),
+      jedis.jsonNumIncrByNumber(key, Path2.of("$.str"), 1));
+    // mixed matches: non-number entries are null, numbers are incremented
+    assertEquals(Arrays.asList(2L, null, 3L),
+      jedis.jsonNumIncrByNumber(key, Path2.of("$.nums[*]"), 1));
+  }
+
+  @Test
   public void obj() {
     String json = "{\"a\":[3], \"nested\": {\"a\": {\"b\":2, \"c\": 1}}}";
     jedis.jsonSet("doc", ROOT_PATH, json);

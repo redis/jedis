@@ -2,14 +2,12 @@ package redis.clients.jedis;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.awaitility.Awaitility.await;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doAnswer;
-import static org.mockito.Mockito.inOrder;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 
 import java.util.Collections;
 import java.util.List;
@@ -20,7 +18,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InOrder;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
@@ -63,7 +60,7 @@ public class ClusterMaintenanceCoordinatorTest {
     coordinator.onSMigrated(closer, conn);
 
     assertFalse(coordinator.hasActiveMigration());
-    verify(cache, times(1)).appendSlotMigration(closer.migrations);
+    verify(cache, times(1)).applySlotMigration(closer.migrations);
   }
 
   @Test
@@ -77,7 +74,7 @@ public class ClusterMaintenanceCoordinatorTest {
 
     coordinator.onSMigrated(migrated(4, "200-300"), conn);
     assertFalse(coordinator.hasActiveMigration());
-    verify(cache, times(2)).appendSlotMigration(anyList());
+    verify(cache, times(2)).applySlotMigration(anyList());
   }
 
   @Test
@@ -90,7 +87,7 @@ public class ClusterMaintenanceCoordinatorTest {
     coordinator.onSMigrated(closer, otherConn); // broadcast copy of the same closer
 
     assertTrue(coordinator.hasActiveMigration(), "second window must survive the duplicate");
-    verify(cache, times(1)).appendSlotMigration(anyList());
+    verify(cache, times(1)).applySlotMigration(anyList());
   }
 
   @Test
@@ -106,94 +103,101 @@ public class ClusterMaintenanceCoordinatorTest {
   }
 
   @Test
-  public void lateAdjacentCloserIsMergedAndAppliedCombined() {
-    coordinator.onSMigrating(migrating(1, "0-100"), conn);
-    coordinator.onSMigrating(migrating(2, "200-300"), conn);
-    coordinator.onSMigrated(migrated(4, "200-300"), conn);
-    // seq 3 arrives late; nothing completed in between, so it merges into seq 4
-    coordinator.onSMigrated(migrated(3, "0-100"), otherConn);
-
+  public void redeliveredOpenerDoesNotReopenAClosedWindow() {
+    SMigratingEvent opener = migrating(1, "0-100");
+    coordinator.onSMigrating(opener, conn);
+    coordinator.onSMigrated(migrated(2, "0-100"), conn);
     assertFalse(coordinator.hasActiveMigration());
-    verify(cache, times(2)).appendSlotMigration(anyList());
+
+    // the opener's broadcast copy from a slower connection lands after the window closed
+    coordinator.onSMigrating(opener, otherConn);
+    assertFalse(coordinator.hasActiveMigration(), "a seen opener must not relax again");
+    verify(otherConn).applyCurrentTimeout();
   }
 
   @Test
-  public void lateCloserWithIntermediateIsDroppedButStillClosesAWindow() {
+  public void lateCloserIsAppliedAsIsAndClosesAWindow() {
     coordinator.onSMigrating(migrating(1, "0-100"), conn);
     coordinator.onSMigrated(migrated(3, "200-300"), conn);
     coordinator.onSMigrated(migrated(4, "400-500"), conn);
-    verify(cache, times(2)).appendSlotMigration(anyList());
 
-    // seq 2 arrives late with seq 3 in between: ambiguous, so its delta is dropped
+    // seq 2 arrives after newer closers: no ordering filter, its delta is applied as delivered
     SMigratedEvent late = migrated(2, "0-100");
     coordinator.onSMigrated(late, otherConn);
-    verify(cache, never()).appendSlotMigration(late.migrations);
-    verify(cache, times(2)).appendSlotMigration(anyList());
-    // but it is still the first delivery of a closer and concludes the pending window
+    verify(cache, times(1)).applySlotMigration(late.migrations);
+    verify(cache, times(3)).applySlotMigration(anyList());
     assertFalse(coordinator.hasActiveMigration());
   }
 
   @Test
-  public void overlappingClosersAreProcessedOneAtATimeInSeqOrder() throws Exception {
-    CountDownLatch applying = new CountDownLatch(1);
-    CountDownLatch release = new CountDownLatch(1);
-    doAnswer(inv -> {
-      applying.countDown();
-      release.await(5, TimeUnit.SECONDS); // holds the coordinator lock mid-processing
-      return null;
-    }).when(cache).appendSlotMigration(anyList());
-
-    SMigratedEvent first = migrated(1, "0-100");
-    SMigratedEvent second = migrated(2, "200-300");
-    SMigratedEvent third = migrated(3, "400-500");
-
-    Thread holder = new Thread(() -> coordinator.onSMigrated(first, conn));
-    holder.start();
-    assertTrue(applying.await(5, TimeUnit.SECONDS));
-    // arrivals overlap the holder and each other, higher seq first
-    Thread late = new Thread(() -> coordinator.onSMigrated(third, otherConn));
-    late.start();
-    await().atMost(5, TimeUnit.SECONDS).until(() -> late.getState() == Thread.State.WAITING);
-    Thread earlier = new Thread(() -> coordinator.onSMigrated(second, otherConn));
-    earlier.start();
-    await().atMost(5, TimeUnit.SECONDS).until(() -> earlier.getState() == Thread.State.WAITING);
-
-    release.countDown();
-    holder.join(5000);
-    late.join(5000);
-    earlier.join(5000);
-    assertFalse(holder.isAlive() || late.isAlive() || earlier.isAlive());
-
-    // drained lowest seq first: both are the newest at their turn, so neither takes the late path
-    InOrder order = inOrder(cache);
-    order.verify(cache).appendSlotMigration(first.migrations);
-    order.verify(cache).appendSlotMigration(second.migrations);
-    order.verify(cache).appendSlotMigration(third.migrations);
-    verify(cache, times(3)).appendSlotMigration(anyList());
-  }
-
-  @Test
-  public void deliveryBracketsTheBatchWithStartAndComplete() {
-    coordinator.onSMigrating(migrating(1, "0-100"), conn);
-    coordinator.onSMigrated(migrated(2, "0-100"), conn);
-
-    // the cache holds its pool cleanup between the two calls, so complete must follow the apply
-    InOrder order = inOrder(cache);
-    order.verify(cache).startSlotMigration();
-    order.verify(cache).appendSlotMigration(anyList());
-    order.verify(cache).completeSlotMigration();
-  }
-
-  @Test
-  public void duplicateDeliveriesCompleteTheBatchWithoutReapplying() {
+  public void everyDeliveryReappliesItsConnectionTimeoutButOnlyTheFirstAppliesTheDelta() {
     SMigratedEvent closer = migrated(2, "0-100");
     coordinator.onSMigrated(closer, conn);
     coordinator.onSMigrated(closer, otherConn);
     coordinator.onSMigrated(closer, conn);
 
-    verify(cache, times(1)).appendSlotMigration(closer.migrations);
-    verify(cache, times(3)).startSlotMigration();
-    verify(cache, times(3)).completeSlotMigration(); // always paired, even with nothing applied
+    verify(cache, times(1)).applySlotMigration(closer.migrations);
+    // another connection's copy may have closed the window: each delivery re-evaluates its own
+    verify(conn, times(2)).applyCurrentTimeout();
+    verify(otherConn, times(1)).applyCurrentTimeout();
+  }
+
+  @Test
+  public void distinctClosersDoNotWaitForEachOther() throws Exception {
+    CountDownLatch applying = new CountDownLatch(1);
+    CountDownLatch release = new CountDownLatch(1);
+    SMigratedEvent first = migrated(1, "0-100");
+    SMigratedEvent second = migrated(2, "200-300");
+    doAnswer(inv -> {
+      applying.countDown();
+      release.await(5, TimeUnit.SECONDS); // the cache is slow to take the first delta
+      return null;
+    }).when(cache).applySlotMigration(first.migrations);
+
+    Thread holder = new Thread(() -> coordinator.onSMigrated(first, conn));
+    holder.start();
+    assertTrue(applying.await(5, TimeUnit.SECONDS));
+
+    // no coordinator-level lock: the second closer goes straight through to the cache
+    coordinator.onSMigrated(second, otherConn);
+    verify(cache, timeout(5000).times(1)).applySlotMigration(second.migrations);
+    assertTrue(holder.isAlive(), "the first delivery is still inside the cache");
+
+    release.countDown();
+    holder.join(5000);
+    assertFalse(holder.isAlive());
+  }
+
+  @Test
+  public void concurrentCopiesOfOneCloserApplyExactlyOnce() throws Exception {
+    SMigratedEvent closer = migrated(2, "0-100");
+    int copies = 8;
+    CountDownLatch start = new CountDownLatch(1);
+    CountDownLatch done = new CountDownLatch(copies);
+    for (int i = 0; i < copies; i++) {
+      new Thread(() -> {
+        try {
+          start.await(5, TimeUnit.SECONDS);
+          coordinator.onSMigrated(closer, conn);
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        } finally {
+          done.countDown();
+        }
+      }).start();
+    }
+    start.countDown();
+    assertTrue(done.await(5, TimeUnit.SECONDS));
+
+    verify(cache, times(1)).applySlotMigration(closer.migrations);
+    verify(conn, times(copies)).applyCurrentTimeout();
+  }
+
+  @Test
+  public void openerAloneAppliesNothing() {
+    coordinator.onSMigrating(migrating(1, "0-100"), conn);
+    verify(cache, never()).applySlotMigration(anyList());
+    verify(conn).applyCurrentTimeout();
   }
 
   private static SMigratingEvent migrating(long seq, String slots) {

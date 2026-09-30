@@ -1,6 +1,9 @@
 package redis.clients.jedis;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doAnswer;
@@ -8,11 +11,15 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoInteractions;
+import static org.mockito.Mockito.when;
 
+import java.time.Duration;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
@@ -20,6 +27,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import redis.clients.jedis.TimeoutSource.TimeoutInfo;
 
 /**
  * Unit tests for {@link ClusterMaintenanceCoordinator}: window bookkeeping against the
@@ -198,6 +207,111 @@ public class ClusterMaintenanceCoordinatorTest {
     coordinator.onSMigrating(migrating(1, "0-100"), conn);
     verify(cache, never()).applySlotMigration(anyList());
     verify(conn).applyCurrentTimeout();
+  }
+
+  @Test
+  public void duplicateOpenerWhileItsWindowIsOpenDoesNotOpenASecondOne() {
+    SMigratingEvent opener = migrating(1, "0-100");
+    coordinator.onSMigrating(opener, conn);
+    coordinator.onSMigrating(opener, otherConn); // broadcast copy of the same opener
+    assertTrue(coordinator.hasActiveMigration());
+
+    // one closer is enough: a second window for the same seq would linger until the TTL
+    coordinator.onSMigrated(migrated(2, "0-100"), conn);
+    assertFalse(coordinator.hasActiveMigration());
+  }
+
+  @Test
+  public void closerBelowEveryOpenWindowClosesNothing() {
+    coordinator.onSMigrating(migrating(5, "0-100"), conn);
+    // an opener always precedes its closer, so this closer cannot belong to the seq-5 migration
+    SMigratedEvent closer = migrated(3, "200-300");
+    coordinator.onSMigrated(closer, conn);
+
+    assertTrue(coordinator.hasActiveMigration(), "the seq-5 window must survive");
+    verify(cache, times(1)).applySlotMigration(closer.migrations); // the delta still applies
+  }
+
+  @Test
+  public void timeoutSupplierRelaxesWhileAWindowIsOpenOrADeltaIsPending() {
+    when(cache.hasPendingSlotDeltas()).thenReturn(false);
+    assertNull(coordinator.getTimeoutSupplier().get(), "nothing in flight: no relaxation");
+
+    coordinator.onSMigrating(migrating(1, "0-100"), conn);
+    assertNotNull(coordinator.getTimeoutSupplier().get(), "open window relaxes");
+
+    coordinator.onSMigrated(migrated(2, "0-100"), conn);
+    assertNull(coordinator.getTimeoutSupplier().get(), "closed window and drained delta: back to normal");
+
+    // a delta queued behind a running refresh keeps the client relaxed until it lands
+    when(cache.hasPendingSlotDeltas()).thenReturn(true);
+    assertNotNull(coordinator.getTimeoutSupplier().get(), "pending delta relaxes");
+  }
+
+  @Test
+  public void timeoutSupplierCarriesTheConfiguredRelaxedTimeouts() {
+    coordinator = new ClusterMaintenanceCoordinator(cache, MaintenanceNotificationsConfig.builder()
+        .relaxedTimeout(1234).relaxedBlockingTimeout(5678).build());
+    coordinator.onSMigrating(migrating(1, "0-100"), conn);
+
+    TimeoutInfo relaxed = coordinator.getTimeoutSupplier().get();
+    assertNotNull(relaxed);
+    assertEquals(1234, relaxed.timeout);
+    assertEquals(5678, relaxed.blockingTimeout);
+  }
+
+  @Test
+  public void windowWithALostCloserExpiresOnTheTtlBackstop() {
+    AtomicLong now = new AtomicLong(0);
+    NanoClock.INSTANCE = now::get;
+    try {
+      coordinator = new ClusterMaintenanceCoordinator(cache, MaintenanceNotificationsConfig.builder()
+          .relaxedWindowMaxDuration(Duration.ofSeconds(10)).build());
+      coordinator.onSMigrating(migrating(1, "0-100"), conn);
+      assertTrue(coordinator.hasActiveMigration());
+
+      now.addAndGet(TimeUnit.SECONDS.toNanos(9));
+      assertTrue(coordinator.hasActiveMigration(), "still inside the TTL");
+
+      now.addAndGet(TimeUnit.SECONDS.toNanos(2));
+      assertFalse(coordinator.hasActiveMigration(), "the closer never came: TTL unrelaxes");
+      assertNull(coordinator.getTimeoutSupplier().get());
+      verify(cache, never()).applySlotMigration(anyList());
+    } finally {
+      NanoClock.INSTANCE = System::nanoTime;
+    }
+  }
+
+  @Test
+  public void expiredWindowIsNotClosedInPlaceOfALiveOne() {
+    AtomicLong now = new AtomicLong(0);
+    NanoClock.INSTANCE = now::get;
+    try {
+      coordinator = new ClusterMaintenanceCoordinator(cache, MaintenanceNotificationsConfig.builder()
+          .relaxedWindowMaxDuration(Duration.ofSeconds(10)).build());
+      coordinator.onSMigrating(migrating(1, "0-100"), conn);
+      now.addAndGet(TimeUnit.SECONDS.toNanos(11));
+      assertFalse(coordinator.hasActiveMigration()); // seq 1 is swept here
+
+      coordinator.onSMigrating(migrating(2, "200-300"), conn);
+      coordinator.onSMigrated(migrated(3, "200-300"), conn);
+      assertFalse(coordinator.hasActiveMigration(), "the closer must conclude the live window");
+    } finally {
+      NanoClock.INSTANCE = System::nanoTime;
+    }
+  }
+
+  @Test
+  public void standaloneEventsAreIgnored() {
+    coordinator.onMoving(new MovingEvent(1L, 10, NODE_B), conn);
+    coordinator.onMigrating(new MigratingEvent(2L, 5, "1"), conn);
+    coordinator.onMigrated(new MigratedEvent(3L, "1"), conn);
+    coordinator.onFailingOver(new FailingOverEvent(4L, 5, "1"), conn);
+    coordinator.onFailedOver(new FailedOverEvent(5L, "1"), conn);
+
+    assertFalse(coordinator.hasActiveMigration());
+    verifyNoInteractions(cache);
+    verify(conn, never()).applyCurrentTimeout();
   }
 
   private static SMigratingEvent migrating(long seq, String slots) {

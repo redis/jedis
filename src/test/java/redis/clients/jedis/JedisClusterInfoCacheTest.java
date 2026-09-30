@@ -375,6 +375,116 @@ public class JedisClusterInfoCacheTest {
   }
 
   @Test
+  public void applySlotMigrationAdmitsANeverSeenDestination() {
+    HostAndPort masterA = MASTER_HOST;
+    HostAndPort newcomer = REPLICA_2_HOST;
+    JedisClusterInfoCache cache = new JedisClusterInfoCache(DefaultJedisClientConfig.builder().build(),
+        new HashSet<>(Collections.singletonList(masterA)));
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(masterOnlySlotsResponse());
+    cache.discoverClusterNodesAndSlots(mockConnection);
+    assertNull(cache.getNode(newcomer));
+
+    cache.applySlotMigration(Collections.singletonList(
+      new SlotMigration(masterA, newcomer, HashSlotRanges.parse("0-100"))));
+
+    ConnectionPool newPool = cache.getNode(newcomer);
+    assertNotNull(newPool);
+    assertEquals(newPool, cache.getSlotPool(0));
+    assertEquals(newcomer, cache.getSlotNode(0));
+    assertThat(cache.getPrimaryNodes(), hasEntry(equalTo(getNodeKey(newcomer)), equalTo(newPool)));
+    assertThat(cache.getPrimaryNodes(), aMapWithSize(2));
+  }
+
+  @Test
+  public void deltasQueuedBehindOneRefreshApplyInOrderAndCleanUpTogether() throws Exception {
+    HostAndPort masterA = MASTER_HOST;
+    HostAndPort masterB = REPLICA_1_HOST;
+    JedisClusterInfoCache cache = new JedisClusterInfoCache(DefaultJedisClientConfig.builder().build(),
+        new HashSet<>(Collections.singletonList(masterA)));
+    CountDownLatch querying = new CountDownLatch(1);
+    CountDownLatch release = new CountDownLatch(1);
+    List<Object> twoMasters = createClusterSlotsResponse(
+      new SlotRange.Builder(0, 8191).master(masterA, "a").build(),
+      new SlotRange.Builder(8192, 16383).master(masterB, "b").build());
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(twoMasters).thenAnswer(inv -> {
+          querying.countDown();
+          release.await(5, TimeUnit.SECONDS);
+          return twoMasters;
+        });
+    cache.discoverClusterNodesAndSlots(mockConnection);
+    ConnectionPool poolA = cache.getNode(masterA);
+
+    Thread refresh = new Thread(() -> cache.renewClusterSlots(mockConnection));
+    refresh.start();
+    assertTrue(querying.await(5, TimeUnit.SECONDS));
+    // neither delta empties A alone; together they do, and both wait behind the refresh
+    cache.applySlotMigration(Collections.singletonList(
+      new SlotMigration(masterA, masterB, HashSlotRanges.parse("0-4000"))));
+    cache.applySlotMigration(Collections.singletonList(
+      new SlotMigration(masterA, masterB, HashSlotRanges.parse("4001-8191"))));
+    assertTrue(cache.hasPendingSlotDeltas());
+    assertFalse(poolA.isClosed());
+    assertEquals(masterA, cache.getSlotNode(0), "nothing lands while the refresh holds the table");
+
+    release.countDown();
+    refresh.join(5000);
+    assertFalse(refresh.isAlive());
+    assertEquals(masterB, cache.getSlotNode(0));
+    assertEquals(masterB, cache.getSlotNode(8191));
+    assertFalse(cache.hasPendingSlotDeltas());
+    // the pass that drained both deltas judged A once, against the table after both
+    assertTrue(poolA.isClosed());
+    assertNull(cache.getNode(masterA));
+    assertThat(cache.getNodes(), aMapWithSize(1));
+  }
+
+  @Test
+  public void concurrentDeltasAreAllAppliedAndNoneLeftPending() throws Exception {
+    HostAndPort masterA = MASTER_HOST;
+    HostAndPort masterB = REPLICA_1_HOST;
+    JedisClusterInfoCache cache = new JedisClusterInfoCache(DefaultJedisClientConfig.builder().build(),
+        new HashSet<>(Collections.singletonList(masterA)));
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(masterOnlySlotsResponse());
+    cache.discoverClusterNodesAndSlots(mockConnection);
+    ConnectionPool poolA = cache.getNode(masterA);
+
+    // 16 deltas race for the drain lock, each moving its own 1024-slot stripe from A to B
+    int stripes = 16;
+    CountDownLatch start = new CountDownLatch(1);
+    CountDownLatch done = new CountDownLatch(stripes);
+    for (int i = 0; i < stripes; i++) {
+      String range = (i * 1024) + "-" + (i * 1024 + 1023);
+      new Thread(() -> {
+        try {
+          start.await(5, TimeUnit.SECONDS);
+          cache.applySlotMigration(Collections.singletonList(
+            new SlotMigration(masterA, masterB, HashSlotRanges.parse(range))));
+        } catch (InterruptedException e) {
+          Thread.currentThread().interrupt();
+        } finally {
+          done.countDown();
+        }
+      }).start();
+    }
+    start.countDown();
+    assertTrue(done.await(10, TimeUnit.SECONDS));
+
+    // a delta that lost its tryLock must have been drained by the winner's re-check
+    assertFalse(cache.hasPendingSlotDeltas());
+    for (int slot = 0; slot < Protocol.CLUSTER_HASHSLOTS; slot += 511) {
+      assertEquals(masterB, cache.getSlotNode(slot), "slot " + slot);
+    }
+    assertEquals(masterB, cache.getSlotNode(Protocol.CLUSTER_HASHSLOTS - 1));
+    assertTrue(poolA.isClosed(), "A gave up its last stripe in some pass, and that pass dropped it");
+    assertNull(cache.getNode(masterA));
+    assertThat(cache.getNodes(), aMapWithSize(1));
+    assertThat(cache.getPrimaryNodes(), aMapWithSize(1));
+  }
+
+  @Test
   public void refreshCleansUpNodesEmptiedByDeltasDeferredBehindIt() throws Exception {
     HostAndPort masterA = MASTER_HOST;
     HostAndPort masterB = REPLICA_1_HOST;

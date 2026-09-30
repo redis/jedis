@@ -656,8 +656,7 @@
 						<include>**/sch/*.java</include>
 						<include>**/ConnectionFactoryRebindTest.java</include>
 						<include>**/JedisClusterInfoCache.java</include>
-						<include>**/ClusterMaintenanceCoordinator.java</include>
-						<include>**/ClusterMaintenanceEvent.java</include>
+						<include>**/ClusterMaintenance*.java</include>
 						<include>**/HashSlotRanges.java</include>
 						<include>**/ClusterMaintenanceEventTest.java</include>
 						<include>**/HashSlotRangesTest.java</include>

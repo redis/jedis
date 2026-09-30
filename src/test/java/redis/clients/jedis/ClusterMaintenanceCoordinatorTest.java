@@ -241,7 +241,8 @@ public class ClusterMaintenanceCoordinatorTest {
     assertNotNull(coordinator.getTimeoutSupplier().get(), "open window relaxes");
 
     coordinator.onSMigrated(migrated(2, "0-100"), conn);
-    assertNull(coordinator.getTimeoutSupplier().get(), "closed window and drained delta: back to normal");
+    assertNull(coordinator.getTimeoutSupplier().get(),
+      "closed window and drained delta: back to normal");
 
     // a delta queued behind a running refresh keeps the client relaxed until it lands
     when(cache.hasPendingSlotDeltas()).thenReturn(true);
@@ -265,8 +266,8 @@ public class ClusterMaintenanceCoordinatorTest {
     AtomicLong now = new AtomicLong(0);
     NanoClock.INSTANCE = now::get;
     try {
-      coordinator = new ClusterMaintenanceCoordinator(cache, MaintenanceNotificationsConfig.builder()
-          .relaxedWindowMaxDuration(Duration.ofSeconds(10)).build());
+      coordinator = new ClusterMaintenanceCoordinator(cache, MaintenanceNotificationsConfig
+          .builder().relaxedWindowMaxDuration(Duration.ofSeconds(10)).build());
       coordinator.onSMigrating(migrating(1, "0-100"), conn);
       assertTrue(coordinator.hasActiveMigration());
 
@@ -287,8 +288,8 @@ public class ClusterMaintenanceCoordinatorTest {
     AtomicLong now = new AtomicLong(0);
     NanoClock.INSTANCE = now::get;
     try {
-      coordinator = new ClusterMaintenanceCoordinator(cache, MaintenanceNotificationsConfig.builder()
-          .relaxedWindowMaxDuration(Duration.ofSeconds(10)).build());
+      coordinator = new ClusterMaintenanceCoordinator(cache, MaintenanceNotificationsConfig
+          .builder().relaxedWindowMaxDuration(Duration.ofSeconds(10)).build());
       coordinator.onSMigrating(migrating(1, "0-100"), conn);
       now.addAndGet(TimeUnit.SECONDS.toNanos(11));
       assertFalse(coordinator.hasActiveMigration()); // seq 1 is swept here

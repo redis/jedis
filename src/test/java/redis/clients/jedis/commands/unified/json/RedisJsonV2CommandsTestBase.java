@@ -1,6 +1,9 @@
 package redis.clients.jedis.commands.unified.json;
 
 import static java.util.Collections.singletonList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -10,7 +13,9 @@ import static redis.clients.jedis.json.JsonObjects.*;
 import com.google.gson.Gson;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
@@ -430,6 +435,36 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
     assertEquals(singletonList(4d), jedis.jsonArrPop("arr", ROOT_PATH));
     assertEquals(singletonList(3d), jedis.jsonArrPop("arr", ROOT_PATH, -1));
     assertEquals(singletonList(0d), jedis.jsonArrPop("arr", ROOT_PATH, 0));
+  }
+
+  @Test
+  public void arrPopRaw() {
+    Map<String, Object> doc = new HashMap<>();
+    doc.put("numbers", new int[] { 1, 2, 3 });
+    doc.put("strings", new String[] { "a", "b", "c" });
+
+    String key = keys.key("raw");
+    jedis.jsonSet(key, ROOT_PATH, gson.toJson(doc));
+
+    assertEquals(singletonList("3"), jedis.jsonArrPopRaw(key, new Path2("numbers"), -1));
+    assertEquals(singletonList("1"), jedis.jsonArrPopRaw(key, new Path2("numbers"), 0));
+    assertEquals(singletonList("\"b\""), jedis.jsonArrPopRaw(key, new Path2("strings"), 1));
+  }
+
+  @Test
+  public void arrPopRaw_NotAnArrayOrEmptyArray() {
+    Map<String, Object> doc = new HashMap<>();
+    doc.put("empty_arrays", new int[][] { {}, {} });
+    doc.put("string", "a");
+
+    String key = keys.key("raw");
+    jedis.jsonSet(key, ROOT_PATH, gson.toJson(doc));
+
+    List<String> popFromEmptyArrays = jedis.jsonArrPopRaw(key, new Path2("$.empty_arrays[*]"), 0);
+    List<String> popFromString = jedis.jsonArrPopRaw(key, new Path2("$.string"), 0);
+
+    assertThat(popFromEmptyArrays, contains(nullValue(), nullValue()));
+    assertThat(popFromString, contains(nullValue()));
   }
 
   @Test

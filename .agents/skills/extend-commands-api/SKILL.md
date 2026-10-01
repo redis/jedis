@@ -22,18 +22,23 @@ are identical in both; only who answers questions and approves the plan differs.
   has `CLIENT_SKILL_MODE=unattended`. Never switch to it on your own.
 
 In unattended mode the invoking prompt supplies the inputs a human would give:
-the HLD path (normally `./HLD.md`), the server PR reference, a Redis URL to test
-against (also `$REDIS_URL`), the `redislabs/client-libs-test` image it runs, and the
-test command. Wherever a step below has an **Unattended:** note, follow the note:
+the HLD path (normally `./HLD.md`), the server PR reference, the test command, and
+two running servers from the `redislabs/client-libs-test` image it names (no
+password, no TLS): a standalone (`$REDIS_URL`) and a 6-node cluster with 3 masters and
+3 replicas (`$REDIS_CLUSTER_URLS`). `$REDIS_ENDPOINTS_CONFIG_PATH` already points at an
+`endpoints.json` describing them as `standalone0` and `cluster-stable`. Jedis tests
+read that variable (`TestEnvUtil.getEndpointsConfigPath`), so the integration tests
+run against both servers unchanged. Wherever a step below has an **Unattended:**
+note, follow the note:
 
 | Step | Supervised | Unattended |
 |---|---|---|
 | Phase 0.1 HLD | ask the user for the path | read the given HLD fully |
 | Phase 0.2 `gh` access | ask to run `gh` outside the sandbox | do not ask; use the HLD's server PR facts, else the unauthenticated GitHub API |
-| Phase 0.3 environment / image tag | `make start`; ask for an image tag if the command is missing | no Docker: probe the given Redis URL; if the command is missing there, continue with gated tests |
+| Phase 0.3 environment / image tag | `make start`; ask for an image tag if the command is missing | no Docker: probe the given standalone and cluster; if the command is missing there, continue with gated tests |
 | Phase 0.4 redis-cli scenarios | run against `standalone0` | run against the given Redis URL; if `redis-cli` is unavailable, write them as unverified transcripts |
 | Phase 1 plan + approval | plan mode, ask before editing | write the plan into the final report, then implement it in the same session |
-| Running tests | `make start`, `mvn -B verify`, `make stop` | `mvn -B test` (unit); `mvn -B test-compile` so integration tests still compile |
+| Running tests | `make start`, `mvn -B verify`, `make stop` | `mvn -B test` (unit), then the changed family's integration tests on standalone **and** cluster through `$REDIS_ENDPOINTS_CONFIG_PATH` (see Running the tests) |
 | An open design question | ask the user | take the HLD's choice (else the most consistent existing Jedis convention) and list it as an open question in the report |
 
 Unattended runs also follow these rules:
@@ -46,7 +51,8 @@ Unattended runs also follow these rules:
   - what was implemented
   - the decision-tree class (A–D) and the plan
   - design decisions, and which layers intentionally did NOT change and why
-  - tests run and their results, and integration tests left gated or skipped
+  - unit results; integration results with the test classes run on standalone and on
+    cluster; integration tests left gated, skipped, or out of scope
   - steps skipped because they need a human or Docker
   - open questions for maintainers
 
@@ -130,11 +136,12 @@ Do all of the following before writing any plan or code:
    Keep the environment running for later test runs, or `make stop` if you
    won't need it soon.
    **Unattended:** no Docker, no `make start`/`make stop`, no image-tag question.
-   Probe the Redis URL the invoking prompt gives (it already runs the target
-   image) with the same `INFO server` / `COMMAND INFO` / `COMMAND DOCS` checks,
-   e.g. `redis-cli -u "$REDIS_URL" COMMAND INFO <COMMAND>`. If the command is
-   missing there, continue anyway with gated integration tests, and say so in
-   the report.
+   The servers already run the target image. Probe the standalone with the same
+   `INFO server` / `COMMAND INFO` / `COMMAND DOCS` checks (e.g.
+   `redis-cli -u "$REDIS_URL" COMMAND INFO <COMMAND>`), and the cluster with
+   `redis-cli -c -h "$REDIS_CLUSTER_HOST" -p "$REDIS_CLUSTER_START_PORT" CLUSTER INFO`
+   (expect `cluster_state:ok`). If the command is missing, continue anyway with
+   gated integration tests, and say so in the report.
 4. **Create redis-cli showcase test cases.** Once the command is available on
    the running environment, derive a small set of redis-cli scenarios from the
    HLD and the server PR and run them against `standalone0`. These serve two
@@ -159,8 +166,9 @@ Do all of the following before writing any plan or code:
    assertions, and the PR description. If the command could not be made
    available on any image (see step 3), still write the scenarios from the
    HLD/PR as *expected* transcripts and mark them unverified.
-   **Unattended:** run the scenarios against the given Redis URL instead of
-   `standalone0`. If `redis-cli` isn't installed, write them as unverified
+   **Unattended:** run the scenarios against `$REDIS_URL` instead of
+   `standalone0`. For a keyed command, also run one through the cluster with
+   `redis-cli -c -h "$REDIS_CLUSTER_HOST" -p "$REDIS_CLUSTER_START_PORT"`. If `redis-cli` isn't installed, write them as unverified
    expected transcripts. Keep the scratch file out of the change; carry the
    scenarios into the report instead.
 5. **Read `docs/integration-testing.md`** in the Jedis repo — it defines the test
@@ -396,10 +404,23 @@ silently produce the wrong bytecode target.
   `redislabs/client-libs-test` tag yet, say so: the integration tests will be
   skipped/gated (that is expected and acceptable — `@EnabledOnCommand` /
   `@SinceRedisVersion` handle it), but they must still be written and compile.
-- **Unattended:** there is no Docker environment for Failsafe. Run the unit
-  tests (`mvn -B test`, or the test command the invoking prompt gives), plus
-  `mvn -B test-compile` so the `*IT` classes still compile. Report the
-  integration tests as written but not run here.
+- **Unattended:** no `make start`/`make stop`. The servers are already running
+  and `$REDIS_ENDPOINTS_CONFIG_PATH` points the tests at them. Run:
+  1. Unit tests: `mvn -B test`, or the test command the invoking prompt gives.
+  2. The changed family's integration tests on **both** topologies, through
+     Failsafe only. The existing command test classes are `@Tag("integration")`
+     `*Test` classes, which Failsafe's `it-tagged` execution runs. New classes are
+     `*IT`. Name every runner the change touches: the unified standalone runner
+     (`RedisClient<Family>CommandsTest`), the cluster runner
+     (`Cluster<Family>CommandsTest`), the legacy `commands/jedis/<Family>CommandsTest`,
+     and any new `*IT`:
+     ```bash
+     mvn -B -DskipUnitTests=true -Dit.failIfNoSpecifiedTests=false \
+       -Dit.test='RedisClient<Family>CommandsTest,Cluster<Family>CommandsTest,<Family>CommandsTest' verify
+     ```
+  Tests that need endpoints the file doesn't have (sentinel, TLS, ACL users,
+  `modules-docker`, `cluster-unbound`) are out of scope: list them as not run.
+  Report passed / failed / skipped for the integration run, and the classes run.
 
 ## PR hygiene checklist (verify before finishing)
 

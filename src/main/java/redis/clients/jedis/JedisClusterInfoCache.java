@@ -6,6 +6,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -13,7 +14,9 @@ import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Set;
 
+import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -39,20 +42,35 @@ public class JedisClusterInfoCache {
   private static final Logger logger = LoggerFactory.getLogger(JedisClusterInfoCache.class);
 
   private final Map<String, ConnectionPool> nodes = new HashMap<>();
-  private final Map<String, ConnectionPool> primaryNodesCache = new HashMap<>();
-  private final ConnectionPool[] slots = new ConnectionPool[Protocol.CLUSTER_HASHSLOTS];
-  private final HostAndPort[] slotNodes = new HostAndPort[Protocol.CLUSTER_HASHSLOTS];
-  private final List<ConnectionPool>[] replicaSlots;
+  private final Map<String, ConnectionPool> primaryNodes = new HashMap<>();
+  private final ConnectionPool[] nodeBySlot = new ConnectionPool[Protocol.CLUSTER_HASHSLOTS];
+  private final HostAndPort[] addressBySlot = new HostAndPort[Protocol.CLUSTER_HASHSLOTS];
+  private final List<ConnectionPool>[] replicaNodesBySlot;
 
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
   private final Lock r = rwl.readLock();
   private final Lock w = rwl.writeLock();
-  private final Lock rediscoverLock = new ReentrantLock();
+  private final ReentrantLock rediscoverLock = new ReentrantLock();
+
+  /**
+   * Guards slot-delta application. A full refresh holds it for its whole query→apply span (taken
+   * after, and released before, {@link #rediscoverLock} — only the refresh ever holds both, in that
+   * fixed order), so deltas can never interleave with — and always order after — a refresh, while a
+   * running drain never makes a concurrent {@link #renewClusterSlots} attempt skip itself.
+   */
+  private final ReentrantLock slotDeltaLock = new ReentrantLock();
+
+  private final ConcurrentLinkedQueue<List<SlotMigration>> pendingSlotDelta = new ConcurrentLinkedQueue<>();
+
+  /** Deltas enqueued but not yet fully applied; drives {@link #hasPendingSlotDeltas()}. */
+  private final AtomicInteger inFlightSlotDeltas = new AtomicInteger();
 
   private final GenericObjectPoolConfig<Connection> poolConfig;
   private final JedisClientConfig clientConfig;
   private final Cache clientSideCache;
   private final Set<HostAndPort> startNodes;
+  /** The client-wide SMIGRATING/SMIGRATED coordinator; non-null iff cluster maintenance is on. */
+  private final ClusterMaintenanceCoordinator maintenanceCoordinator;
 
   private static final int MASTER_NODE_INDEX = 2;
 
@@ -70,7 +88,8 @@ public class JedisClusterInfoCache {
     }
   }
 
-  public JedisClusterInfoCache(final JedisClientConfig clientConfig, final Set<HostAndPort> startNodes) {
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig,
+      final Set<HostAndPort> startNodes) {
     this(clientConfig, null, null, startNodes);
   }
 
@@ -101,35 +120,52 @@ public class JedisClusterInfoCache {
   public JedisClusterInfoCache(final JedisClientConfig clientConfig, Cache clientSideCache,
       final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes,
       final Duration topologyRefreshPeriod) {
+    this(clientConfig, clientSideCache, poolConfig, startNodes, topologyRefreshPeriod, null);
+  }
+
+  /**
+   * Creates the cache with cluster maintenance notifications configured for every node pool's
+   * connections; a {@code null} or DISABLED config turns the feature off.
+   * @since 8.1
+   */
+  @Experimental
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig, Cache clientSideCache,
+      final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes,
+      final Duration topologyRefreshPeriod, final MaintenanceNotificationsConfig maintConfig) {
     this.poolConfig = poolConfig;
     this.clientConfig = clientConfig;
     this.clientSideCache = clientSideCache;
     this.startNodes = startNodes;
+    this.maintenanceCoordinator = maintConfig != null && maintConfig.isEnabledOrAuto()
+        ? new ClusterMaintenanceCoordinator(this, maintConfig)
+        : null;
     if (clientConfig.getAuthXManager() != null) {
       clientConfig.getAuthXManager().start();
     }
     if (topologyRefreshPeriod != null) {
-      logger.info("Cluster topology refresh start, period: {}, startNodes: {}", topologyRefreshPeriod, startNodes);
+      logger.info("Cluster topology refresh start, period: {}, startNodes: {}",
+        topologyRefreshPeriod, startNodes);
       topologyRefreshExecutor = Executors.newSingleThreadScheduledExecutor();
-      topologyRefreshExecutor.scheduleWithFixedDelay(new TopologyRefreshTask(), topologyRefreshPeriod.toMillis(),
-          topologyRefreshPeriod.toMillis(), TimeUnit.MILLISECONDS);
+      topologyRefreshExecutor.scheduleWithFixedDelay(new TopologyRefreshTask(),
+        topologyRefreshPeriod.toMillis(), topologyRefreshPeriod.toMillis(), TimeUnit.MILLISECONDS);
     }
     if (clientConfig.isReadOnlyForRedisClusterReplicas()) {
-      replicaSlots = new ArrayList[Protocol.CLUSTER_HASHSLOTS];
+      replicaNodesBySlot = new ArrayList[Protocol.CLUSTER_HASHSLOTS];
     } else {
-      replicaSlots = null;
+      replicaNodesBySlot = null;
     }
   }
 
   /**
-   * Check whether the number and order of slots in the cluster topology are equal to CLUSTER_HASHSLOTS
+   * Check whether the number and order of slots in the cluster topology are equal to
+   * CLUSTER_HASHSLOTS
    * @param slotsInfo the cluster topology
    * @return if slots is ok, return true, elese return false.
    */
   private boolean checkClusterSlotSequence(List<Object> slotsInfo) {
     List<Integer> slots = new ArrayList<>();
     for (Object slotInfoObj : slotsInfo) {
-      List<Object> slotInfo = (List<Object>)slotInfoObj;
+      List<Object> slotInfo = (List<Object>) slotInfoObj;
       slots.addAll(getAssignedSlotArray(slotInfo));
     }
     Collections.sort(slots);
@@ -177,7 +213,7 @@ public class JedisClusterInfoCache {
           HostAndPort targetNode = generateHostAndPort(hostInfos);
           setupNodeIfNotExist(targetNode);
           if (i == MASTER_NODE_INDEX) {
-            primaryNodesCache.put(getNodeKey(targetNode), getNode(targetNode));
+            primaryNodes.put(getNodeKey(targetNode), getNode(targetNode));
             assignSlotsToNode(slotNums, targetNode);
           } else if (clientConfig.isReadOnlyForRedisClusterReplicas()) {
             assignSlotsToReplicaNode(slotNums, targetNode);
@@ -190,9 +226,14 @@ public class JedisClusterInfoCache {
   }
 
   public void renewClusterSlots(Connection jedis) {
-    // If rediscovering is already in process - no need to start one more same rediscovering, just return
+    // If rediscovering is already in process - no need to start one more same rediscovering, just
+    // return
     if (rediscoverLock.tryLock()) {
       try {
+        // Exclude delta application for the whole query->apply span (blocking is fine: drains are
+        // short and memory-only). Deltas queued meanwhile apply in the finally below, ordered
+        // after the refreshed topology.
+        slotDeltaLock.lock();
         // First, if jedis is available, use jedis renew.
         if (jedis != null) {
           try {
@@ -231,7 +272,20 @@ public class JedisClusterInfoCache {
         }
 
       } finally {
-        rediscoverLock.unlock();
+        // release before draining: a delta that lost its tryLock to this refresh is waiting in the
+        // queue for exactly this pass
+        slotDeltaLock.unlock();
+        try {
+          if (!pendingSlotDelta.isEmpty()) {
+            drainSlotDeltas();
+          }
+        } catch (RuntimeException e) {
+          // never mask an in-flight discovery exception; queued deltas would re-drain on the next
+          // delta or refresh
+          logger.warn("Applying queued slot deltas after refresh failed", e);
+        } finally {
+          rediscoverLock.unlock();
+        }
       }
     }
   }
@@ -249,7 +303,7 @@ public class JedisClusterInfoCache {
     w.lock();
     try {
       resetSlots();
-      primaryNodesCache.clear();
+      primaryNodes.clear();
       if (clientSideCache != null) {
         clientSideCache.flush();
       }
@@ -275,7 +329,7 @@ public class JedisClusterInfoCache {
           hostAndPortKeys.add(getNodeKey(targetNode));
           setupNodeIfNotExist(targetNode);
           if (i == MASTER_NODE_INDEX) {
-            primaryNodesCache.put(getNodeKey(targetNode), getNode(targetNode));
+            primaryNodes.put(getNodeKey(targetNode), getNode(targetNode));
             assignSlotsToNode(slotNums, targetNode);
           } else if (clientConfig.isReadOnlyForRedisClusterReplicas()) {
             assignSlotsToReplicaNode(slotNums, targetNode);
@@ -326,27 +380,18 @@ public class JedisClusterInfoCache {
   }
 
   private ConnectionPool createNodePool(HostAndPort node) {
-    if (poolConfig == null) {
-      if (clientSideCache == null) {
-        return new ConnectionPool(node, clientConfig);
-      } else {
-        return new ConnectionPool(node, clientConfig, clientSideCache);
-      }
-    } else {
-      if (clientSideCache == null) {
-        return new ConnectionPool(node, clientConfig, poolConfig);
-      } else {
-        return new ConnectionPool(node, clientConfig, clientSideCache, poolConfig);
-      }
-    }
+    GenericObjectPoolConfig<Connection> cfg = poolConfig != null ? poolConfig
+        : new GenericObjectPoolConfig<>();
+    return new ConnectionPool(node, clientConfig, clientSideCache, cfg,
+        PoolMaintenance.cluster(maintenanceCoordinator));
   }
 
   public void assignSlotToNode(int slot, HostAndPort targetNode) {
     w.lock();
     try {
       ConnectionPool targetPool = setupNodeIfNotExist(targetNode);
-      slots[slot] = targetPool;
-      slotNodes[slot] = targetNode;
+      nodeBySlot[slot] = targetPool;
+      addressBySlot[slot] = targetNode;
     } finally {
       w.unlock();
     }
@@ -357,12 +402,144 @@ public class JedisClusterInfoCache {
     try {
       ConnectionPool targetPool = setupNodeIfNotExist(targetNode);
       for (Integer slot : targetSlots) {
-        slots[slot] = targetPool;
-        slotNodes[slot] = targetNode;
+        nodeBySlot[slot] = targetPool;
+        addressBySlot[slot] = targetNode;
       }
     } finally {
       w.unlock();
     }
+  }
+
+  /**
+   * Applies one SMIGRATED delta: reassigns its slots and drops the pools of its sources that are
+   * left without any slot. Never blocks behind a running refresh — the delta is queued and the
+   * refresh applies it, ordered after the fresh topology, before releasing {@link #slotDeltaLock}
+   * to callers.
+   */
+  void applySlotMigration(List<SlotMigration> migrations) {
+    // incremented before the enqueue and decremented only after application completes, so
+    // hasPendingSlotDeltas() covers the delta's whole enqueue->applied lifecycle
+    inFlightSlotDeltas.incrementAndGet();
+    pendingSlotDelta.add(migrations);
+    drainSlotDeltas();
+  }
+
+  boolean hasPendingSlotDeltas() {
+    return inFlightSlotDeltas.get() > 0;
+  }
+
+  /**
+   * Applies every queued delta under {@link #slotDeltaLock}, then drops the sources those deltas
+   * emptied. A failed tryLock leaves the queue to the holder: a refresh drains after releasing,
+   * another drain re-checks the queue after releasing, so nothing enqueued is ever skipped.
+   */
+  private void drainSlotDeltas() {
+    do {
+      if (!slotDeltaLock.tryLock()) {
+        return;
+      }
+      try {
+        List<SlotMigration> applied = new ArrayList<>();
+        List<SlotMigration> delta;
+        while ((delta = pendingSlotDelta.poll()) != null) {
+          try {
+            processSlotDelta(delta);
+            applied.addAll(delta);
+          } finally {
+            inFlightSlotDeltas.decrementAndGet();
+          }
+        }
+        removeDepartedSources(applied);
+      } finally {
+        slotDeltaLock.unlock();
+      }
+    } while (!pendingSlotDelta.isEmpty());
+  }
+
+  private void processSlotDelta(List<SlotMigration> migrations) {
+    w.lock();
+    try {
+      for (SlotMigration migration : migrations) {
+        ConnectionPool destPool = setupNodeIfNotExist(migration.dest);
+        primaryNodes.put(getNodeKey(migration.dest), destPool);
+        migration.slots.forEachSlot(slot -> {
+          nodeBySlot[slot] = destPool;
+          addressBySlot[slot] = migration.dest;
+        });
+      }
+      if (clientSideCache != null) {
+        clientSideCache.flush();
+      }
+      primaryNodes.keySet().retainAll(getOwnerKeys());
+    } finally {
+      w.unlock();
+    }
+  }
+
+  /**
+   * Forgets and destroys the source nodes of the applied deltas that neither own a primary slot nor
+   * serve a replica slot anymore. Only those sources are candidates: any other node left without
+   * slots is the refresh's to sweep.
+   */
+  private void removeDepartedSources(List<SlotMigration> migrations) {
+    if (migrations.isEmpty()) {
+      return;
+    }
+    List<ConnectionPool> removedPools = new ArrayList<>();
+    Set<HostAndPort> removedAddresses = new HashSet<>();
+    w.lock();
+    try {
+      Set<String> ownerKeys = getOwnerKeys();
+      Set<ConnectionPool> serving = replicaPoolsInUse();
+      for (SlotMigration migration : migrations) {
+        String sourceKey = getNodeKey(migration.src);
+        ConnectionPool sourcePool = nodes.get(sourceKey);
+        if (sourcePool == null || ownerKeys.contains(sourceKey) || serving.contains(sourcePool)) {
+          continue;
+        }
+        nodes.remove(sourceKey);
+        removedPools.add(sourcePool);
+        removedAddresses.add(migration.src);
+      }
+    } finally {
+      w.unlock();
+    }
+    for (ConnectionPool pool : removedPools) {
+      try {
+        pool.destroy();
+      } catch (RuntimeException e) {
+        logger.debug("Destroying the pool of a departed node failed", e);
+      }
+    }
+    if (!removedAddresses.isEmpty()) {
+      logger.debug("Removed cluster nodes departed by slot migration: {}", removedAddresses);
+    }
+  }
+
+  /** Keys of the nodes owning at least one primary slot; call under {@link #rwl}. */
+  private Set<String> getOwnerKeys() {
+    Set<String> keys = new HashSet<>();
+    HostAndPort previousOwner = null;
+    for (HostAndPort owner : addressBySlot) {
+      if (owner != null && owner != previousOwner) { // ranges repeat the same reference
+        keys.add(getNodeKey(owner));
+        previousOwner = owner;
+      }
+    }
+    return keys;
+  }
+
+  /** Pools serving at least one replica slot (identity set); call under {@link #rwl}. */
+  private Set<ConnectionPool> replicaPoolsInUse() {
+    Set<ConnectionPool> pools = Collections.newSetFromMap(new IdentityHashMap<>());
+    if (replicaNodesBySlot != null) {
+      for (List<ConnectionPool> slotReplicas : replicaNodesBySlot) {
+        if (slotReplicas != null) {
+          pools.addAll(slotReplicas);
+        }
+      }
+    }
+    return pools;
   }
 
   public void assignSlotsToReplicaNode(List<Integer> targetSlots, HostAndPort targetNode) {
@@ -370,10 +547,10 @@ public class JedisClusterInfoCache {
     try {
       ConnectionPool targetPool = setupNodeIfNotExist(targetNode);
       for (Integer slot : targetSlots) {
-        if (replicaSlots[slot] == null) {
-          replicaSlots[slot] = new ArrayList<>();
+        if (replicaNodesBySlot[slot] == null) {
+          replicaNodesBySlot[slot] = new ArrayList<>();
         }
-        replicaSlots[slot].add(targetPool);
+        replicaNodesBySlot[slot].add(targetPool);
       }
     } finally {
       w.unlock();
@@ -396,7 +573,7 @@ public class JedisClusterInfoCache {
   public ConnectionPool getSlotPool(int slot) {
     r.lock();
     try {
-      return slots[slot];
+      return nodeBySlot[slot];
     } finally {
       r.unlock();
     }
@@ -405,7 +582,7 @@ public class JedisClusterInfoCache {
   public HostAndPort getSlotNode(int slot) {
     r.lock();
     try {
-      return slotNodes[slot];
+      return addressBySlot[slot];
     } finally {
       r.unlock();
     }
@@ -414,7 +591,7 @@ public class JedisClusterInfoCache {
   public List<ConnectionPool> getSlotReplicaPools(int slot) {
     r.lock();
     try {
-      return replicaSlots[slot];
+      return replicaNodesBySlot[slot];
     } finally {
       r.unlock();
     }
@@ -432,7 +609,7 @@ public class JedisClusterInfoCache {
   public Map<String, ConnectionPool> getPrimaryNodes() {
     r.lock();
     try {
-      return new HashMap<>(primaryNodesCache);
+      return new HashMap<>(primaryNodes);
     } finally {
       r.unlock();
     }
@@ -441,7 +618,7 @@ public class JedisClusterInfoCache {
   public List<ConnectionPool> getShuffledPrimaryNodesPool() {
     r.lock();
     try {
-      List<ConnectionPool> pools = new ArrayList<>(primaryNodesCache.values());
+      List<ConnectionPool> pools = new ArrayList<>(primaryNodes.values());
       Collections.shuffle(pools);
       return pools;
     } finally {
@@ -474,18 +651,18 @@ public class JedisClusterInfoCache {
   }
 
   private void resetSlots() {
-    Arrays.fill(slots, null);
-    Arrays.fill(slotNodes, null);
+    Arrays.fill(nodeBySlot, null);
+    Arrays.fill(addressBySlot, null);
     resetReplicaSlots();
   }
 
   private void resetReplicaSlots() {
-    if (replicaSlots == null) {
+    if (replicaNodesBySlot == null) {
       return;
     }
 
-    Arrays.stream(replicaSlots).filter(Objects::nonNull).forEach(List::clear);
-    Arrays.fill(replicaSlots, null);
+    Arrays.stream(replicaNodesBySlot).filter(Objects::nonNull).forEach(List::clear);
+    Arrays.fill(replicaNodesBySlot, null);
   }
 
   private void resetNodes() {
@@ -499,7 +676,7 @@ public class JedisClusterInfoCache {
       }
     }
     nodes.clear();
-    primaryNodesCache.clear();
+    primaryNodes.clear();
   }
 
   public void close() {
@@ -516,8 +693,7 @@ public class JedisClusterInfoCache {
 
   @SuppressWarnings("unchecked")
   private List<Object> executeClusterSlots(Connection jedis) {
-    CommandArguments clusterSlotsCmd = new CommandArguments(Protocol.Command.CLUSTER).add(
-        "SLOTS");
+    CommandArguments clusterSlotsCmd = new CommandArguments(Protocol.Command.CLUSTER).add("SLOTS");
     return (List<Object>) jedis.executeCommand(clusterSlotsCmd);
   }
 

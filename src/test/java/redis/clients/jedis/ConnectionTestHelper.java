@@ -124,7 +124,8 @@ public class ConnectionTestHelper {
    * instead of polling.
    */
   public static void addHandoffHook(ConnectionPool pool, Runnable hook) {
-    MaintenanceEventController controller = pool.getMaintenanceController();
+    MaintenanceEventController controller = (MaintenanceEventController) pool
+        .getMaintenanceController();
     Runnable poolReaction = controller.getHandoffHook();
     controller.setHandoffHook(() -> {
       poolReaction.run(); // evict first: the pass is fully processed before the test observes it
@@ -138,7 +139,8 @@ public class ConnectionTestHelper {
    * configured endpoint, so tests assert other peers' mapping windows through this seam.
    */
   public static SocketAddress getMappedAddress(ConnectionPool pool, SocketAddress resolved) {
-    return pool.getMaintenanceController().getSocketAddress(resolved);
+    return ((MaintenanceEventController) pool.getMaintenanceController())
+        .getSocketAddress(resolved);
   }
 
   public static void setClockNanos(LongSupplier clock) {

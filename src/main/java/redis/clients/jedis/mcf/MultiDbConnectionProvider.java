@@ -625,7 +625,19 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
    */
   @VisibleForTesting
   public void assertOperability() {
-    failoverIfActiveInoperable();
+    Database current = activeDatabase;
+    if (current.isHealthy()) return;
+    if (!canIterateFrom(current)) {
+      handleNoHealthyDatabase();
+    } else if (activeDatabaseChangeLock.tryLock()) {
+      // Never wait for a switch in progress: this command fails anyway, the next ones use the
+      // new database
+      try {
+        failoverIfActiveInoperable();
+      } finally {
+        activeDatabaseChangeLock.unlock();
+      }
+    }
   }
 
   private static Comparator<Map.Entry<Endpoint, Database>> maxByWeight = Map.Entry

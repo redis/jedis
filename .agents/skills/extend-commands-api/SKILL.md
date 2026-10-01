@@ -23,18 +23,21 @@ are identical in both; only who answers questions and approves the plan differs.
 
 In unattended mode the invoking prompt supplies the inputs a human would give:
 the HLD path (normally `./HLD.md`), the server PR reference, the test command, and
-two running servers from the `redislabs/client-libs-test` image it names (no
-password, no TLS): a standalone (`$REDIS_URL`) and a 6-node cluster with 3 masters and
-3 replicas (`$REDIS_CLUSTER_URLS`). `$REDIS_ENDPOINTS_CONFIG_PATH` already points at an
-`endpoints.json` describing them as `standalone0` and `cluster-stable`. Jedis tests
-read that variable (`TestEnvUtil.getEndpointsConfigPath`), so the integration tests
-run against both servers unchanged. Wherever a step below has an **Unattended:**
+two running servers from the `redislabs/client-libs-test` image it names, password-
+protected like the local Docker env and without TLS: a standalone (`$REDIS_URL`,
+password `$REDIS_STANDALONE_PASSWORD`, i.e. `foobared`) and a 6-node cluster with 3
+masters and 3 replicas (`$REDIS_CLUSTER_URLS`, password `$REDIS_CLUSTER_PASSWORD`,
+i.e. `cluster`). `$REDIS_ENDPOINTS_CONFIG_PATH` already points at an `endpoints.json`
+that describes them, passwords included, as `standalone0`, `modules-docker` (the
+standalone; the image ships the modules) and `cluster-stable`. Jedis tests read that
+variable (`TestEnvUtil.getEndpointsConfigPath`) and authenticate with the passwords in
+it, so the integration tests run against both servers unchanged. Wherever a step below has an **Unattended:**
 note, follow the note:
 
 | Step | Supervised | Unattended |
 |---|---|---|
 | Phase 0.1 HLD | ask the user for the path | read the given HLD fully |
-| Phase 0.2 `gh` access | ask to run `gh` outside the sandbox | do not ask; use the HLD's server PR facts, else the unauthenticated GitHub API |
+| Phase 0.2 server PR | `gh`, asking to run it outside the sandbox if needed | no `gh` at all: the given PR reference, the HLD's facts, else the unauthenticated GitHub REST API |
 | Phase 0.3 environment / image tag | `make start`; ask for an image tag if the command is missing | no Docker: probe the given standalone and cluster; if the command is missing there, continue with gated tests |
 | Phase 0.4 redis-cli scenarios | run against `standalone0` | run against the given Redis URL; if `redis-cli` is unavailable, write them as unverified transcripts |
 | Phase 1 plan + approval | plan mode, ask before editing | write the plan into the final report, then implement it in the same session |
@@ -67,8 +70,17 @@ Do all of the following before writing any plan or code:
    that no HLD exists). If a path is given, read it fully — it is the primary
    source for syntax, semantics, reply shape, and edge cases.
    **Unattended:** don't ask; read the HLD path the invoking prompt gives.
-2. **Find the server-side PR in the `redis/redis` GitHub repo.** First verify
-   that `gh` works in the current (sandboxed) environment:
+2. **Find the server-side PR in the `redis/redis` GitHub repo.**
+   **Unattended:** skip every `gh` command in this step: `gh auth status`, and the
+   `gh search` / `gh pr view` / `gh pr diff` block below. Don't ask for permission.
+   Use the server PR reference the invoking prompt gives. The HLD usually quotes
+   the syntax, the reply shapes and the first version. Fill any gaps from the
+   unauthenticated GitHub REST API (e.g.
+   `https://api.github.com/repos/redis/redis/pulls/<num>/files`, then the raw
+   `src/commands/*.json` file), and go on to "From the server PR, extract".
+
+   **Supervised:** first verify that `gh` works in the current (sandboxed)
+   environment:
    ```bash
    gh auth status
    ```
@@ -81,10 +93,6 @@ Do all of the following before writing any plan or code:
    declines (or `gh` is genuinely not logged in anywhere) fall back to the
    unauthenticated GitHub REST API or fetching
    `https://github.com/redis/redis/pulls?q=<command>`.
-   **Unattended:** don't ask for permission. Use the server PR reference the
-   invoking prompt gives. The HLD usually quotes the syntax, the reply shapes and
-   the first version. Fill any gaps from the unauthenticated GitHub REST API
-   (e.g. `https://api.github.com/repos/redis/redis/pulls/<num>/files`).
 
    Then search for the PR that adds/extends the command on the server:
    ```bash
@@ -138,8 +146,9 @@ Do all of the following before writing any plan or code:
    **Unattended:** no Docker, no `make start`/`make stop`, no image-tag question.
    The servers already run the target image. Probe the standalone with the same
    `INFO server` / `COMMAND INFO` / `COMMAND DOCS` checks (e.g.
-   `redis-cli -u "$REDIS_URL" COMMAND INFO <COMMAND>`), and the cluster with
-   `redis-cli -c -h "$REDIS_CLUSTER_HOST" -p "$REDIS_CLUSTER_START_PORT" CLUSTER INFO`
+   `redis-cli -u "$REDIS_URL" COMMAND INFO <COMMAND>`; the URL carries the
+   credentials), and the cluster with `redis-cli -c -h "$REDIS_CLUSTER_HOST"
+   -p "$REDIS_CLUSTER_START_PORT" -a "$REDIS_CLUSTER_PASSWORD" --no-auth-warning CLUSTER INFO`
    (expect `cluster_state:ok`). If the command is missing, continue anyway with
    gated integration tests, and say so in the report.
 4. **Create redis-cli showcase test cases.** Once the command is available on
@@ -168,7 +177,7 @@ Do all of the following before writing any plan or code:
    HLD/PR as *expected* transcripts and mark them unverified.
    **Unattended:** run the scenarios against `$REDIS_URL` instead of
    `standalone0`. For a keyed command, also run one through the cluster with
-   `redis-cli -c -h "$REDIS_CLUSTER_HOST" -p "$REDIS_CLUSTER_START_PORT"`. If `redis-cli` isn't installed, write them as unverified
+   `redis-cli -c -h "$REDIS_CLUSTER_HOST" -p "$REDIS_CLUSTER_START_PORT" -a "$REDIS_CLUSTER_PASSWORD" --no-auth-warning`. If `redis-cli` isn't installed, write them as unverified
    expected transcripts. Keep the scratch file out of the change; carry the
    scenarios into the report instead.
 5. **Read `docs/integration-testing.md`** in the Jedis repo — it defines the test
@@ -408,19 +417,32 @@ silently produce the wrong bytecode target.
   and `$REDIS_ENDPOINTS_CONFIG_PATH` points the tests at them. Run:
   1. Unit tests: `mvn -B test`, or the test command the invoking prompt gives.
   2. The changed family's integration tests on **both** topologies, through
-     Failsafe only. The existing command test classes are `@Tag("integration")`
-     `*Test` classes, which Failsafe's `it-tagged` execution runs. New classes are
-     `*IT`. Name every runner the change touches: the unified standalone runner
-     (`RedisClient<Family>CommandsTest`), the cluster runner
-     (`Cluster<Family>CommandsTest`), the legacy `commands/jedis/<Family>CommandsTest`,
-     and any new `*IT`:
+     Failsafe only. Two kinds of runner exist:
+     - existing core families: `@Tag("integration")` `*Test` classes (Failsafe's
+       `it-tagged` execution), namely the unified standalone runner
+       `RedisClient<Family>CommandsTest`, the cluster runner
+       `Cluster<Family>CommandsTest` and the legacy `commands/jedis/<Family>CommandsTest`
+     - module and new families: `*IT` classes (the `it-suffix` execution), e.g.
+       `BloomRedisClientCommandsIT`
+     
+     Select them with one wildcard that covers both kinds and every topology, plus
+     an explicit name for any new runner that doesn't match it:
      ```bash
      mvn -B -DskipUnitTests=true -Dit.failIfNoSpecifiedTests=false \
-       -Dit.test='RedisClient<Family>CommandsTest,Cluster<Family>CommandsTest,<Family>CommandsTest' verify
+       -Dit.test='*<Family>*Commands*' verify
      ```
+     `-Dit.failIfNoSpecifiedTests=false` is needed because each Failsafe execution
+     sees the same filter and one of them usually matches nothing. That also means
+     `verify` can pass having run **no** test, so don't trust the exit code alone.
+  3. Prove it ran: read `target/failsafe-reports/*.txt` and list every class that ran
+     with its counts. At least one standalone class and one `Cluster*` class must
+     report `Tests run:` > 0 for the changed commands. If either topology ran nothing,
+     fix the filter and rerun. Don't report success. Module commands run on the
+     standalone only (`modules-docker`); their cluster run is out of scope.
+  
   Tests that need endpoints the file doesn't have (sentinel, TLS, ACL users,
-  `modules-docker`, `cluster-unbound`) are out of scope: list them as not run.
-  Report passed / failed / skipped for the integration run, and the classes run.
+  `cluster-unbound`) are out of scope: list them as not run. Report passed /
+  failed / skipped per topology, and the classes run.
 
 ## PR hygiene checklist (verify before finishing)
 

@@ -304,11 +304,16 @@ public class ClusterMaintenanceCoordinatorTest {
 
   @Test
   public void standaloneEventsAreIgnored() {
-    coordinator.onMoving(new MovingEvent(1L, 10, NODE_B), conn);
-    coordinator.onMigrating(new MigratingEvent(2L, 5, "1"), conn);
-    coordinator.onMigrated(new MigratedEvent(3L, "1"), conn);
-    coordinator.onFailingOver(new FailingOverEvent(4L, 5, "1"), conn);
-    coordinator.onFailedOver(new FailedOverEvent(5L, "1"), conn);
+    // standalone/enterprise events reach the coordinator only through the per-pool controller,
+    // which must drop them without touching the migration state or the connection timeout
+    ClusterMaintenanceController controller = new ClusterMaintenanceController(coordinator);
+    when(conn.toIdentityString()).thenReturn("conn");
+
+    controller.onMoving(new MovingEvent(1L, 10, NODE_B), conn);
+    controller.onMigrating(new MigratingEvent(2L, 5, "1"), conn);
+    controller.onMigrated(new MigratedEvent(3L, "1"), conn);
+    controller.onFailingOver(new FailingOverEvent(4L, 5, "1"), conn);
+    controller.onFailedOver(new FailedOverEvent(5L, "1"), conn);
 
     assertFalse(coordinator.hasActiveMigration());
     verifyNoInteractions(cache);

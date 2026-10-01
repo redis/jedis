@@ -81,8 +81,7 @@ final class ClusterMaintenanceCoordinator {
     return false;
   }
 
-  @Override
-  public void onSMigrating(SMigratingEvent e, Connection c) {
+  void onSMigrating(SMigratingEvent e, Connection c) {
     if (seenSMigrating.add(e.seq)) {
       long deadline = NanoClock.INSTANCE.getAsLong() + maxRelaxedDurationNanos;
       migratingWindows.put(e.seq, new MigratingWindow(e.seq, deadline));
@@ -102,8 +101,7 @@ final class ClusterMaintenanceCoordinator {
    * the delta; every delivery re-evaluates its connection's timeout, since another connection's
    * copy may have closed the window meanwhile.
    */
-  @Override
-  public void onSMigrated(SMigratedEvent e, Connection c) {
+  void onSMigrated(SMigratedEvent e, Connection c) {
     if (seenSMigrated.putIfAbsent(e.seq, e) == null) {
       logger.debug("Slot migration done (seq={}, entries={})", e.seq, e.migrations.size());
       closeMigrationWindow(e.seq);

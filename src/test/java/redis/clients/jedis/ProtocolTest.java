@@ -213,6 +213,42 @@ public class ProtocolTest {
   }
 
   @Test
+  public void bulkReplyLengthAboveIntRange() {
+    // 2^32 narrows to 0: the payload stays in the stream and is read as the next reply
+    InputStream is = new ByteArrayInputStream("$4294967296\r\n\r\n$6\r\nsecret\r\n".getBytes());
+    assertThrows(JedisConnectionException.class, () -> {
+      Protocol.read(new RedisInputStream(is));
+    });
+  }
+
+  @Test
+  public void bulkReplyLengthWrappingToSmallPositive() {
+    // 2^32 + 6 narrows to 6, a length the server never sent
+    InputStream is = new ByteArrayInputStream("$4294967302\r\nsecret\r\n+OK\r\n".getBytes());
+    assertThrows(JedisConnectionException.class, () -> {
+      Protocol.read(new RedisInputStream(is));
+    });
+  }
+
+  @Test
+  public void multiBulkReplyCountAboveIntRange() {
+    // 2^32 + 2 narrows to 2, leaving the third element unconsumed
+    InputStream is = new ByteArrayInputStream(
+        "*4294967298\r\n$1\r\na\r\n$1\r\nb\r\n$1\r\nc\r\n".getBytes());
+    assertThrows(JedisConnectionException.class, () -> {
+      Protocol.read(new RedisInputStream(is));
+    });
+  }
+
+  @Test
+  public void mapReplyCountAboveIntRange() {
+    InputStream is = new ByteArrayInputStream("%4294967297\r\n$1\r\na\r\n$1\r\nb\r\n".getBytes());
+    assertThrows(JedisConnectionException.class, () -> {
+      Protocol.read(new RedisInputStream(is));
+    });
+  }
+
+  @Test
   public void fragmentedVerbatimStringReply() {
     // Test reading a verbatim string that arrives in fragments
     FragmentedByteArrayInputStream fis = new FragmentedByteArrayInputStream(

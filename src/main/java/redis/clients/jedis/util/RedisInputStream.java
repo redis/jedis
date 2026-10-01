@@ -193,8 +193,18 @@ public class RedisInputStream extends FilterInputStream {
     }
   }
 
+  /**
+   * Reads a RESP length or element count. The reply reader consumes these as {@code int}, so a
+   * value outside that range is a frame violation rather than something to narrow: truncating it
+   * leaves the stream misaligned.
+   * @throws JedisConnectionException if the value does not fit in an {@code int}
+   */
   public int readIntCrLf() {
-    return (int) readLongCrLf();
+    final long value = readLongCrLf();
+    if (value < Integer.MIN_VALUE || value > Integer.MAX_VALUE) {
+      throw new JedisConnectionException("Protocol length is out of range: " + value);
+    }
+    return (int) value;
   }
 
   public long readLongCrLf() {

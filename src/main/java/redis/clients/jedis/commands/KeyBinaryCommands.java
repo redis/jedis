@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import java.util.Set;
 
+import redis.clients.jedis.args.BlessFlag;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.RestoreParams;
@@ -115,5 +116,20 @@ public interface KeyBinaryCommands {
   ScanResult<byte[]> scan(byte[] cursor, ScanParams params, byte[] type);
 
   byte[] randomBinaryKey();
+
+  /** @see KeyCommands#blessSet(String, BlessFlag) */
+  long blessSet(byte[] key, BlessFlag flag);
+
+  /** @see KeyCommands#blessClear(String, BlessFlag) */
+  long blessClear(byte[] key, BlessFlag flag);
+
+  /** @see KeyCommands#blessGet(String) */
+  List<byte[]> blessGet(byte[] key);
+
+  /** @see KeyCommands#blessScan(String, BlessFlag) */
+  ScanResult<byte[]> blessScan(byte[] cursor, BlessFlag flag);
+
+  /** @see KeyCommands#blessScan(String, BlessFlag, int) */
+  ScanResult<byte[]> blessScan(byte[] cursor, BlessFlag flag, int count);
 
 }

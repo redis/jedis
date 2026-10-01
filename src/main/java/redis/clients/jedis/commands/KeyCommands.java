@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import java.util.Set;
 
+import redis.clients.jedis.args.BlessFlag;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.RestoreParams;
@@ -626,5 +627,77 @@ public interface KeyCommands {
    * @return The random key, or {@code nil} when the database is empty
    */
   String randomKey();
+
+  /**
+   * <b><a href="https://redis.io/commands/bless-set">BLESS SET Command</a></b>
+   * Protects {@code key} from {@code maxmemory} eviction by turning on {@code flag}. The
+   * protection is stored alongside the key, not as part of its value: it survives value
+   * overwrites (e.g. {@code SET} over the key) and is carried by {@code COPY}, {@code MOVE},
+   * {@code RENAME}, {@code SWAPDB}, replication, persistence and atomic slot migration, but
+   * <b>not</b> by {@code DUMP}/{@code RESTORE}. Only {@code BLESS CLEAR} or deleting the key
+   * removes it.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the key to protect; must exist
+   * @param flag the protection flag to turn on, currently only {@link BlessFlag#NO_EVICT}
+   * @return 1 if the flag was turned on, 0 if it was already on
+   * @since 8.1
+   */
+  long blessSet(String key, BlessFlag flag);
+
+  /**
+   * <b><a href="https://redis.io/commands/bless-clear">BLESS CLEAR Command</a></b>
+   * Removes a protection flag from {@code key}, undoing {@link #blessSet(String, BlessFlag)
+   * BLESS SET}. Unlike {@code BLESS SET}, this command is not subject to {@code DENYOOM}, so it
+   * remains available as a recovery path while the server is over {@code maxmemory}.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the key to unprotect; must exist
+   * @param flag the protection flag to turn off, currently only {@link BlessFlag#NO_EVICT}
+   * @return 1 if the flag was turned off, 0 if it was already off
+   * @since 8.1
+   */
+  long blessClear(String key, BlessFlag flag);
+
+  /**
+   * <b><a href="https://redis.io/commands/bless-get">BLESS GET Command</a></b>
+   * Returns the active protection flags of {@code key}.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the key to query; must exist
+   * @return the active flags, or an empty list if the key carries none (never {@code null})
+   * @since 8.1
+   */
+  List<String> blessGet(String key);
+
+  /**
+   * <b><a href="https://redis.io/commands/bless-scan">BLESS SCAN Command</a></b>
+   * Incrementally iterates the keys of the currently selected database that carry {@code flag}.
+   * Follows the same cursor contract as {@link #scan(String) SCAN}: pass {@code "0"} to start,
+   * and keep calling with the returned cursor until it comes back as {@code "0"}. The iteration
+   * order is nondeterministic and a key may be returned more than once across a full iteration.
+   * <p>
+   * Time complexity: O(1) for every call, O(N) for a complete iteration where N is the number of
+   * blessed keys
+   * @param cursor the scan cursor, {@code "0"} to start a new iteration
+   * @param flag the protection flag to filter on, currently only {@link BlessFlag#NO_EVICT}
+   * @return the next cursor and a batch of matching keys
+   * @since 8.1
+   */
+  ScanResult<String> blessScan(String cursor, BlessFlag flag);
+
+  /**
+   * <b><a href="https://redis.io/commands/bless-scan">BLESS SCAN Command</a></b>
+   * As {@link #blessScan(String, BlessFlag)}, with a hint for how many index entries to visit
+   * per call. {@code COUNT} is a non-strict hint, not a limit: a call may return more or fewer
+   * keys than {@code count}, so the absence of keys in a reply does not imply the iteration is
+   * complete.
+   * @param cursor the scan cursor, {@code "0"} to start a new iteration
+   * @param flag the protection flag to filter on, currently only {@link BlessFlag#NO_EVICT}
+   * @param count hint for how many index entries to visit per call; must be &gt;= 1
+   * @return the next cursor and a batch of matching keys
+   * @since 8.1
+   */
+  ScanResult<String> blessScan(String cursor, BlessFlag flag, int count);
 
 }

@@ -775,6 +775,36 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.randomBinaryKey());
   }
 
+  @Override
+  public long blessSet(byte[] key, BlessFlag flag) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public long blessClear(byte[] key, BlessFlag flag) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public List<byte[]> blessGet(byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public ScanResult<byte[]> blessScan(byte[] cursor, BlessFlag flag) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public ScanResult<byte[]> blessScan(byte[] cursor, BlessFlag flag, int count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessScan(cursor, flag, count));
+  }
+
   /**
    * Atomically renames the key oldkey to newkey. If the source and destination name are the same an
    * error is returned. If newkey already exists it is overwritten.
@@ -5666,6 +5696,36 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public String randomKey() {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.randomKey());
+  }
+
+  @Override
+  public long blessSet(String key, BlessFlag flag) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public long blessClear(String key, BlessFlag flag) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public List<String> blessGet(String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public ScanResult<String> blessScan(String cursor, BlessFlag flag) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public ScanResult<String> blessScan(String cursor, BlessFlag flag, int count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessScan(cursor, flag, count));
   }
 
   /**

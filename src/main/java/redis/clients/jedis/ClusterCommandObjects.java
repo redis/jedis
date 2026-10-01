@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.args.BlessFlag;
 import redis.clients.jedis.params.IParams;
 import redis.clients.jedis.params.MSetExParams;
 import redis.clients.jedis.params.ScanParams;
@@ -28,6 +29,11 @@ public class ClusterCommandObjects extends CommandObjects {
 
   private static final String SCAN_PATTERN_MESSAGE = "Cluster mode only supports SCAN command"
       + " with MATCH pattern containing hash-tag ( curly-brackets enclosed string )";
+
+  private static final String BLESS_SCAN_CLUSTER_MESSAGE = "BLESS SCAN is keyless and has no hash-tag"
+      + " to pin it to a single node, so it cannot be routed automatically in cluster mode."
+      + " Connect to each master node directly (e.g. via getClusterNodes()) and run BLESS SCAN"
+      + " against each one independently, looping its own cursor to 0.";
 
   @Override
   public final CommandObject<ScanResult<String>> scan(String cursor) {
@@ -73,6 +79,26 @@ public class ClusterCommandObjects extends CommandObjects {
       throw new IllegalArgumentException(SCAN_PATTERN_MESSAGE);
     }
     return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params).addHashSlotKey(match).add(TYPE).add(type), BuilderFactory.SCAN_BINARY_RESPONSE);
+  }
+
+  @Override
+  public final CommandObject<ScanResult<String>> blessScan(String cursor, BlessFlag flag) {
+    throw new UnsupportedOperationException(BLESS_SCAN_CLUSTER_MESSAGE);
+  }
+
+  @Override
+  public final CommandObject<ScanResult<String>> blessScan(String cursor, BlessFlag flag, int count) {
+    throw new UnsupportedOperationException(BLESS_SCAN_CLUSTER_MESSAGE);
+  }
+
+  @Override
+  public final CommandObject<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag) {
+    throw new UnsupportedOperationException(BLESS_SCAN_CLUSTER_MESSAGE);
+  }
+
+  @Override
+  public final CommandObject<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag, int count) {
+    throw new UnsupportedOperationException(BLESS_SCAN_CLUSTER_MESSAGE);
   }
 
   @Override

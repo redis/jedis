@@ -376,7 +376,8 @@ public final class Protocol {
     SENTINEL, MODULE, ACL, TOUCH, MEMORY, LOLWUT, COMMAND, RESET, LATENCY, WAITAOF, HOTKEYS,
     VADD, VSIM, VDIM, VCARD, VISMEMBER, VEMB, VREM, VLINKS, VRANDMEMBER, VGETATTR, VSETATTR, VINFO, // <-- vector set
     ARCOUNT, ARDEL, ARDELRANGE, ARGET, ARGETRANGE, ARGREP, ARINFO, ARINSERT, ARLASTITEMS, ARLEN,
-    ARMGET, ARMSET, ARNEXT, AROP, ARRING, ARSCAN, ARSEEK, ARSET; // <-- array
+    ARMGET, ARMSET, ARNEXT, AROP, ARRING, ARSCAN, ARSEEK, ARSET, // <-- array
+    BLESS; // <-- bless (avoid eviction)
 
     private final byte[] raw;
 
@@ -421,7 +422,9 @@ public final class Protocol {
     // SUNIONCARD keywords
     APPROX,
     // HIMPORT keywords (SET reuses the existing SET keyword above)
-    PREPARE, DISCARD;
+    PREPARE, DISCARD,
+    // BLESS keywords (SET and GET reuse the existing SET and GET keywords above)
+    CLEAR, SCAN;
 
     private final byte[] raw;
 

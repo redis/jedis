@@ -712,6 +712,56 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   public byte[] randomBinaryKey() {
     return executeCommand(commandObjects.randomBinaryKey());
   }
+
+  @Override
+  public long blessSet(String key, BlessFlag flag) {
+    return executeCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public long blessSet(byte[] key, BlessFlag flag) {
+    return executeCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public long blessClear(String key, BlessFlag flag) {
+    return executeCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public long blessClear(byte[] key, BlessFlag flag) {
+    return executeCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public List<String> blessGet(String key) {
+    return executeCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public List<byte[]> blessGet(byte[] key) {
+    return executeCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public ScanResult<String> blessScan(String cursor, BlessFlag flag) {
+    return executeCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public ScanResult<String> blessScan(String cursor, BlessFlag flag, int count) {
+    return executeCommand(commandObjects.blessScan(cursor, flag, count));
+  }
+
+  @Override
+  public ScanResult<byte[]> blessScan(byte[] cursor, BlessFlag flag) {
+    return executeCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public ScanResult<byte[]> blessScan(byte[] cursor, BlessFlag flag, int count) {
+    return executeCommand(commandObjects.blessScan(cursor, flag, count));
+  }
   // Key commands
 
   // String commands

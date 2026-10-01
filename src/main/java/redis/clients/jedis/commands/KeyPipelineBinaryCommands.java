@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Set;
 
 import redis.clients.jedis.Response;
+import redis.clients.jedis.args.BlessFlag;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.RestoreParams;
@@ -109,5 +110,20 @@ public interface KeyPipelineBinaryCommands {
   Response<ScanResult<byte[]>> scan(byte[] cursor, ScanParams params, byte[] type);
 
   Response<byte[]> randomBinaryKey();
+
+  /** @see redis.clients.jedis.commands.KeyPipelineCommands#blessSet(String, BlessFlag) */
+  Response<Long> blessSet(byte[] key, BlessFlag flag);
+
+  /** @see redis.clients.jedis.commands.KeyPipelineCommands#blessClear(String, BlessFlag) */
+  Response<Long> blessClear(byte[] key, BlessFlag flag);
+
+  /** @see redis.clients.jedis.commands.KeyPipelineCommands#blessGet(String) */
+  Response<List<byte[]>> blessGet(byte[] key);
+
+  /** @see redis.clients.jedis.commands.KeyPipelineCommands#blessScan(String, BlessFlag) */
+  Response<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag);
+
+  /** @see redis.clients.jedis.commands.KeyPipelineCommands#blessScan(String, BlessFlag, int) */
+  Response<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag, int count);
 
 }

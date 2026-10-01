@@ -589,6 +589,7 @@
 						<include>**/search/hybrid/*.java</include>
 						<include>**/search/FTHybrid*.java</include>
 						<include>**/*Hotkeys*.java</include>
+						<include>**/*Bless*.java</include>
 						<include>**/TestDataUtil*.java</include>
 						<include>**/*JedisClientConfig*.java</include>
 

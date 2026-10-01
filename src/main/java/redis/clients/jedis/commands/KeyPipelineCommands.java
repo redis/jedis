@@ -3,6 +3,7 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import java.util.Set;
 
+import redis.clients.jedis.args.BlessFlag;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.RestoreParams;
@@ -109,5 +110,20 @@ public interface KeyPipelineCommands {
   Response<ScanResult<String>> scan(String cursor, ScanParams params, String type);
 
   Response<String> randomKey();
+
+  /** Pipeline variant of {@link redis.clients.jedis.commands.KeyCommands#blessSet(String, BlessFlag)}. @since 8.1 */
+  Response<Long> blessSet(String key, BlessFlag flag);
+
+  /** Pipeline variant of {@link redis.clients.jedis.commands.KeyCommands#blessClear(String, BlessFlag)}. @since 8.1 */
+  Response<Long> blessClear(String key, BlessFlag flag);
+
+  /** Pipeline variant of {@link redis.clients.jedis.commands.KeyCommands#blessGet(String)}. @since 8.1 */
+  Response<List<String>> blessGet(String key);
+
+  /** Pipeline variant of {@link redis.clients.jedis.commands.KeyCommands#blessScan(String, BlessFlag)}. @since 8.1 */
+  Response<ScanResult<String>> blessScan(String cursor, BlessFlag flag);
+
+  /** Pipeline variant of {@link redis.clients.jedis.commands.KeyCommands#blessScan(String, BlessFlag, int)}. @since 8.1 */
+  Response<ScanResult<String>> blessScan(String cursor, BlessFlag flag, int count);
 
 }

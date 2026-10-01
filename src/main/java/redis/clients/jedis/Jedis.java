@@ -35,6 +35,7 @@ import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.Pool;
+import redis.clients.jedis.args.BlessFlag;
 
 /**
  * Jedis is a lightweight Redis client that uses a single, non-pooled connection to Redis.
@@ -4842,6 +4843,36 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long blessSet(final byte[] key, final BlessFlag flag) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public long blessClear(final byte[] key, final BlessFlag flag) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public List<byte[]> blessGet(final byte[] key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public ScanResult<byte[]> blessScan(final byte[] cursor, final BlessFlag flag) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public ScanResult<byte[]> blessScan(final byte[] cursor, final BlessFlag flag, final int count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessScan(cursor, flag, count));
+  }
+
+  @Override
   public ScanResult<Map.Entry<byte[], byte[]>> hscan(final byte[] key, final byte[] cursor,
       final ScanParams params) {
     checkIsInMultiOrPipeline();
@@ -9483,6 +9514,36 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public ScanResult<String> scan(final String cursor, final ScanParams params, final String type) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.scan(cursor, params, type));
+  }
+
+  @Override
+  public long blessSet(final String key, final BlessFlag flag) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public long blessClear(final String key, final BlessFlag flag) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public List<String> blessGet(final String key) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public ScanResult<String> blessScan(final String cursor, final BlessFlag flag) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public ScanResult<String> blessScan(final String cursor, final BlessFlag flag, final int count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.blessScan(cursor, flag, count));
   }
 
   @Override

@@ -11,6 +11,7 @@ import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.SortingParams;
 import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.args.BlessFlag;
 
 public interface KeyBinaryCommands {
 
@@ -113,6 +114,41 @@ public interface KeyBinaryCommands {
   ScanResult<byte[]> scan(byte[] cursor, ScanParams params);
 
   ScanResult<byte[]> scan(byte[] cursor, ScanParams params, byte[] type);
+
+  /**
+   * Binary variant of {@link KeyCommands#blessSet(String, BlessFlag)}.
+   * @see KeyCommands#blessSet(String, BlessFlag)
+   * @since 8.1
+   */
+  long blessSet(byte[] key, BlessFlag flag);
+
+  /**
+   * Binary variant of {@link KeyCommands#blessClear(String, BlessFlag)}.
+   * @see KeyCommands#blessClear(String, BlessFlag)
+   * @since 8.1
+   */
+  long blessClear(byte[] key, BlessFlag flag);
+
+  /**
+   * Binary variant of {@link KeyCommands#blessGet(String)}.
+   * @see KeyCommands#blessGet(String)
+   * @since 8.1
+   */
+  List<byte[]> blessGet(byte[] key);
+
+  /**
+   * Binary variant of {@link KeyCommands#blessScan(String, BlessFlag)}.
+   * @see KeyCommands#blessScan(String, BlessFlag)
+   * @since 8.1
+   */
+  ScanResult<byte[]> blessScan(byte[] cursor, BlessFlag flag);
+
+  /**
+   * Binary variant of {@link KeyCommands#blessScan(String, BlessFlag, int)}.
+   * @see KeyCommands#blessScan(String, BlessFlag, int)
+   * @since 8.1
+   */
+  ScanResult<byte[]> blessScan(byte[] cursor, BlessFlag flag, int count);
 
   byte[] randomBinaryKey();
 

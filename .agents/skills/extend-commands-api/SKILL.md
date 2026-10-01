@@ -176,9 +176,15 @@ Do all of the following before writing any plan or code:
    available on any image (see step 3), still write the scenarios from the
    HLD/PR as *expected* transcripts and mark them unverified.
    **Unattended:** run the scenarios against `$REDIS_URL` instead of
-   `standalone0`. For a keyed command, also run one through the cluster with
-   `redis-cli -c -h "$REDIS_CLUSTER_HOST" -p "$REDIS_CLUSTER_START_PORT" -a "$REDIS_CLUSTER_PASSWORD" --no-auth-warning`. If `redis-cli` isn't installed, write them as unverified
-   expected transcripts. Keep the scratch file out of the change; carry the
+   `standalone0`. For a keyed command, also run one through the cluster. Always
+   pass the Redis command as arguments: a bare `redis-cli` waits on stdin and
+   hangs a headless run.
+   ```bash
+   redis-cli -u "$REDIS_URL" <COMMAND> <args...>
+   redis-cli -c -h "$REDIS_CLUSTER_HOST" -p "$REDIS_CLUSTER_START_PORT" \
+     -a "$REDIS_CLUSTER_PASSWORD" --no-auth-warning <COMMAND> <args...>
+   ```
+   If `redis-cli` isn't installed, write them as unverified expected transcripts. Keep the scratch file out of the change; carry the
    scenarios into the report instead.
 5. **Read `docs/integration-testing.md`** in the Jedis repo — it defines the test
    environment, endpoint discovery, `*Test` vs `*IT` naming, and how to run tests.
@@ -422,8 +428,11 @@ silently produce the wrong bytecode target.
        `it-tagged` execution), namely the unified standalone runner
        `RedisClient<Family>CommandsTest`, the cluster runner
        `Cluster<Family>CommandsTest` and the legacy `commands/jedis/<Family>CommandsTest`
-     - module and new families: `*IT` classes (the `it-suffix` execution), e.g.
-       `BloomRedisClientCommandsIT`
+     - module and new families: `*IT` classes (the `it-suffix` execution), a
+       standalone runner in `commands/unified/client/<module>/` (e.g.
+       `BloomRedisClientCommandsIT`, on `modules-docker`) and a cluster runner in
+       `commands/unified/cluster/<module>/` (e.g. `BloomClusterCommandsIT`, on
+       `cluster-stable`; the cluster image loads the modules too)
      
      Select them with one wildcard that covers both kinds and every topology, plus
      an explicit name for any new runner that doesn't match it:
@@ -434,11 +443,15 @@ silently produce the wrong bytecode target.
      `-Dit.failIfNoSpecifiedTests=false` is needed because each Failsafe execution
      sees the same filter and one of them usually matches nothing. That also means
      `verify` can pass having run **no** test, so don't trust the exit code alone.
-  3. Prove it ran: read `target/failsafe-reports/*.txt` and list every class that ran
-     with its counts. At least one standalone class and one `Cluster*` class must
-     report `Tests run:` > 0 for the changed commands. If either topology ran nothing,
-     fix the filter and rerun. Don't report success. Module commands run on the
-     standalone only (`modules-docker`); their cluster run is out of scope.
+  3. Prove it ran: read `target/failsafe-reports/*.txt` (one file per class, named
+     by its fully qualified class name) and list every class that ran with its counts.
+     A class in package `redis.clients.jedis.commands.unified.cluster` (any
+     sub-package) is a cluster run; anything else is standalone. Don't go by the
+     name prefix: module runners are `<Family>ClusterCommandsIT`, and one is
+     `FTHybridCommandsClusterIT`. At least one standalone class and one cluster class
+     must report `Tests run:` > 0 for the changed commands. This applies to module
+     families too. If either topology ran nothing, fix the filter and rerun. Don't
+     report success.
   
   Tests that need endpoints the file doesn't have (sentinel, TLS, ACL users,
   `cluster-unbound`) are out of scope: list them as not run. Report passed /

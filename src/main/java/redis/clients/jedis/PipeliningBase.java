@@ -235,6 +235,31 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> blessSet(String key, BlessFlag flag) {
+    return appendCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public Response<Long> blessClear(String key, BlessFlag flag) {
+    return appendCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public Response<List<String>> blessGet(String key) {
+    return appendCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public Response<ScanResult<String>> blessScan(String cursor, BlessFlag flag) {
+    return appendCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public Response<ScanResult<String>> blessScan(String cursor, BlessFlag flag, int count) {
+    return appendCommand(commandObjects.blessScan(cursor, flag, count));
+  }
+
+  @Override
   public Response<String> migrate(String host, int port, String key, int timeout) {
     return appendCommand(commandObjects.migrate(host, port, key, timeout));
   }
@@ -2966,6 +2991,31 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> objectFreq(byte[] key) {
     return appendCommand(commandObjects.objectFreq(key));
+  }
+
+  @Override
+  public Response<Long> blessSet(byte[] key, BlessFlag flag) {
+    return appendCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public Response<Long> blessClear(byte[] key, BlessFlag flag) {
+    return appendCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public Response<List<byte[]>> blessGet(byte[] key) {
+    return appendCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public Response<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag) {
+    return appendCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public Response<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag, int count) {
+    return appendCommand(commandObjects.blessScan(cursor, flag, count));
   }
 
   @Override

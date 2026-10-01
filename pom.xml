@@ -635,6 +635,7 @@
                         <include>**/ConnectionTestHelper.java</include>
 						<include>**/*MockTest.java</include>
 						<include>**/*Increx*.java</include>
+						<include>**/*Bless*.java</include>
 						<include>src/test/jmh/**/*.java</include>
 						<include>**/RedisMultiDbClientSideCacheTest.java</include>
 						<include>**/MultiDbCSCTest.java</include>

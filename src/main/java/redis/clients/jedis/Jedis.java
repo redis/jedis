@@ -307,6 +307,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
             .protocol(JedisURIHelper.getRedisProtocol(uri))
             .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(effective.getSslSocketFactory())
             .sslParameters(effective.getSslParameters()).hostnameVerifier(effective.getHostnameVerifier())
+            .sslOptions(effective.getSslOptions())
             .build());
     commandObjects = new CommandObjects(RedisProtocol.orServerDefault(effective.getRedisProtocol()));
   }

@@ -2,6 +2,8 @@ package redis.clients.jedis.tls;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.net.URI;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
@@ -82,6 +84,23 @@ public class ClientAuthJedisIT extends ClientAuthTestBase {
 
     try (Jedis jedis = new Jedis(endpoint.getHost(), endpoint.getPort(), DefaultJedisClientConfig
         .builder().serverDefaultProtocol().sslOptions(sslOptions).build())) {
+      assertEquals("PONG", jedis.ping());
+      assertExpectedUsername(jedis, jedis.aclWhoAmI(), MTLS_USER_1);
+    }
+  }
+
+  /**
+   * Tests mTLS connection through the URI-based constructor. The URI supplies the address and
+   * scheme while the config supplies SslOptions (truststore, client keystore, verify mode); the
+   * handshake only succeeds if the constructor carries SslOptions into the effective config.
+   */
+  @Test
+  public void connectWithUriAndClientConfig() {
+    SslOptions sslOptions = createMtlsSslOptionsUser1();
+
+    URI uri = URI.create("rediss://" + endpoint.getHost() + ":" + endpoint.getPort());
+    try (Jedis jedis = new Jedis(uri, DefaultJedisClientConfig.builder().serverDefaultProtocol()
+        .sslOptions(sslOptions).build())) {
       assertEquals("PONG", jedis.ping());
       assertExpectedUsername(jedis, jedis.aclWhoAmI(), MTLS_USER_1);
     }

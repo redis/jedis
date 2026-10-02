@@ -160,4 +160,15 @@ public class CommandArgumentsTest {
     assertEquals(JedisClusterCRC16.getSlot("foo"), args.getKeyHashSlots().iterator().next().intValue());
   }
 
+  @Test
+  public void routingOnlyBinaryKeyIsNotAliasedToTheCallerArray() {
+    byte[] sampleKey = "foo".getBytes(StandardCharsets.UTF_8);
+    CommandArguments args = new CommandArguments(TestCommand.HSET).addHashSlotKey(sampleKey);
+
+    sampleKey[0] = 'b'; // caller reuses its buffer for the next command
+
+    assertArrayEquals("foo".getBytes(StandardCharsets.UTF_8), (byte[]) args.getKeys().get(0));
+    assertEquals(JedisClusterCRC16.getSlot("foo"), args.getKeyHashSlots().iterator().next().intValue());
+  }
+
 }

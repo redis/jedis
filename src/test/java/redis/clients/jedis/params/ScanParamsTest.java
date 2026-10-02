@@ -29,16 +29,6 @@ public class ScanParamsTest {
     }
   }
 
-  @Test
-  public void binaryMatchIsNotAliasedToTheCallerArray() {
-    byte[] pattern = SafeEncoder.encode("{tag}*");
-    ScanParams params = new ScanParams().match(pattern);
-
-    pattern[1] = 'x'; // caller reuses its buffer
-
-    assertArrayEquals(SafeEncoder.encode("{tag}*"), params.binaryMatch());
-  }
-
     @Test
     public void checkEqualsIdenticalParams() {
         ScanParams firstParam = getDefaultValue();

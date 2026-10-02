@@ -169,18 +169,15 @@ public class CommandArguments implements Iterable<Rawable> {
     if (key instanceof Rawable) {
       Rawable raw = (Rawable) key;
       args.add(raw);
-      // Extract raw bytes for hash slot computation to avoid ClassCastException in getKeyHashSlots()
-      addHashSlotKey(raw.getRaw());
+      recordKey(raw.getRaw());
     } else if (key instanceof byte[]) {
-      // Record the defensive copy the Rawable holds, not the caller's array, so the recorded key
-      // and the transmitted argument cannot drift apart.
       Rawable raw = RawableFactory.from((byte[]) key);
       args.add(raw);
-      addHashSlotKey(raw.getRaw());
+      recordKey(raw.getRaw());
     } else if (key instanceof String) {
       String raw = (String) key;
       args.add(RawableFactory.from(raw));
-      addHashSlotKey(raw);
+      recordKey(raw);
     } else {
       throw new IllegalArgumentException("\"" + key.toString() + "\" is not a valid argument.");
     }
@@ -189,15 +186,19 @@ public class CommandArguments implements Iterable<Rawable> {
   }
 
   final CommandArguments addHashSlotKey(String key) {
-    keys.add(key);
-    // Invalidate cached hash slots since keys have changed
-    cachedHashSlots = null;
-    return this;
+    return recordKey(key);
   }
 
+  /**
+   * Records a routing-only key that is not transmitted. Copied so the recorded key never aliases
+   * a caller-owned array.
+   */
   final CommandArguments addHashSlotKey(byte[] key) {
+    return recordKey(Arrays.copyOf(key, key.length));
+  }
+
+  private CommandArguments recordKey(Object key) {
     keys.add(key);
-    // Invalidate cached hash slots since keys have changed
     cachedHashSlots = null;
     return this;
   }

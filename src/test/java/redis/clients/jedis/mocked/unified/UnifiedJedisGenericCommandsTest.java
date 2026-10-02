@@ -6,9 +6,11 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.hamcrest.MockitoHamcrest.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static redis.clients.jedis.util.CommandArgumentsMatchers.hasArguments;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -20,10 +22,15 @@ import java.util.Set;
 import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
+import redis.clients.jedis.BlessScanIteration;
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Connection;
+import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.ScanIteration;
+import redis.clients.jedis.args.BlessFlag;
 import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.args.RawableFactory;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.ScanParams;
@@ -1579,4 +1586,192 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     verify(commandObjects).waitAOF(sampleKey, numLocal, numReplicas, timeout);
   }
 
+  @Test
+  public void testBlessSet() {
+    String key = "key";
+    Long expected = 1L;
+
+    when(commandObjects.blessSet(key, BlessFlag.NO_EVICT)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.blessSet(key, BlessFlag.NO_EVICT);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).blessSet(key, BlessFlag.NO_EVICT);
+  }
+
+  @Test
+  public void testBlessSetBinary() {
+    byte[] key = "key".getBytes();
+    Long expected = 0L;
+
+    when(commandObjects.blessSet(key, BlessFlag.NO_EVICT)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.blessSet(key, BlessFlag.NO_EVICT);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).blessSet(key, BlessFlag.NO_EVICT);
+  }
+
+  @Test
+  public void testBlessClear() {
+    String key = "key";
+    Long expected = 1L;
+
+    when(commandObjects.blessClear(key, BlessFlag.NO_EVICT)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.blessClear(key, BlessFlag.NO_EVICT);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).blessClear(key, BlessFlag.NO_EVICT);
+  }
+
+  @Test
+  public void testBlessClearBinary() {
+    byte[] key = "key".getBytes();
+    Long expected = 0L;
+
+    when(commandObjects.blessClear(key, BlessFlag.NO_EVICT)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.blessClear(key, BlessFlag.NO_EVICT);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).blessClear(key, BlessFlag.NO_EVICT);
+  }
+
+  @Test
+  public void testBlessGet() {
+    String key = "key";
+    List<String> expected = Collections.singletonList("NO-EVICT");
+
+    when(commandObjects.blessGet(key)).thenReturn(listStringCommandObject);
+    when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expected);
+
+    List<String> result = jedis.blessGet(key);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listStringCommandObject);
+    verify(commandObjects).blessGet(key);
+  }
+
+  @Test
+  public void testBlessGetBinary() {
+    byte[] key = "key".getBytes();
+    List<byte[]> expected = Collections.emptyList();
+
+    when(commandObjects.blessGet(key)).thenReturn(listBytesCommandObject);
+    when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expected);
+
+    List<byte[]> result = jedis.blessGet(key);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listBytesCommandObject);
+    verify(commandObjects).blessGet(key);
+  }
+
+  @Test
+  public void testBlessScan() {
+    String cursor = "0";
+    ScanResult<String> expected = new ScanResult<>(cursor, Arrays.asList("key1", "key2"));
+
+    when(commandObjects.blessScan(cursor, BlessFlag.NO_EVICT)).thenReturn(scanResultStringCommandObject);
+    when(commandExecutor.executeCommand(scanResultStringCommandObject)).thenReturn(expected);
+
+    ScanResult<String> result = jedis.blessScan(cursor, BlessFlag.NO_EVICT);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(scanResultStringCommandObject);
+    verify(commandObjects).blessScan(cursor, BlessFlag.NO_EVICT);
+  }
+
+  @Test
+  public void testBlessScanCount() {
+    String cursor = "0";
+    ScanResult<String> expected = new ScanResult<>(cursor, Arrays.asList("key1", "key2"));
+
+    when(commandObjects.blessScan(cursor, BlessFlag.NO_EVICT, 10)).thenReturn(scanResultStringCommandObject);
+    when(commandExecutor.executeCommand(scanResultStringCommandObject)).thenReturn(expected);
+
+    ScanResult<String> result = jedis.blessScan(cursor, BlessFlag.NO_EVICT, 10);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(scanResultStringCommandObject);
+    verify(commandObjects).blessScan(cursor, BlessFlag.NO_EVICT, 10);
+  }
+
+  @Test
+  public void testBlessScanBinary() {
+    byte[] cursor = "0".getBytes();
+    ScanResult<byte[]> expected = new ScanResult<>(cursor, Arrays.asList("key1".getBytes(), "key2".getBytes()));
+
+    when(commandObjects.blessScan(cursor, BlessFlag.NO_EVICT)).thenReturn(scanResultBytesCommandObject);
+    when(commandExecutor.executeCommand(scanResultBytesCommandObject)).thenReturn(expected);
+
+    ScanResult<byte[]> result = jedis.blessScan(cursor, BlessFlag.NO_EVICT);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(scanResultBytesCommandObject);
+    verify(commandObjects).blessScan(cursor, BlessFlag.NO_EVICT);
+  }
+
+  @Test
+  public void testBlessScanCountBinary() {
+    byte[] cursor = "0".getBytes();
+    ScanResult<byte[]> expected = new ScanResult<>(cursor, Arrays.asList("key1".getBytes(), "key2".getBytes()));
+
+    when(commandObjects.blessScan(cursor, BlessFlag.NO_EVICT, 10)).thenReturn(scanResultBytesCommandObject);
+    when(commandExecutor.executeCommand(scanResultBytesCommandObject)).thenReturn(expected);
+
+    ScanResult<byte[]> result = jedis.blessScan(cursor, BlessFlag.NO_EVICT, 10);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(scanResultBytesCommandObject);
+    verify(commandObjects).blessScan(cursor, BlessFlag.NO_EVICT, 10);
+  }
+
+  @Test
+  public void testBlessScanIteration() {
+    String cursor = "0";
+    String key1 = "session:1";
+    String key2 = "session:2";
+
+    Connection connection = mock(Connection.class);
+    when(connection.executeCommand(any(CommandArguments.class)))
+        .thenReturn(Arrays.asList(cursor.getBytes(), Arrays.asList(key1.getBytes(), key2.getBytes())));
+
+    when(connectionProvider.getConnectionMap()).thenAnswer(new Answer<Map<?, ?>>() {
+      @Override
+      public Map<?, ?> answer(InvocationOnMock invocationOnMock) {
+        return Collections.singletonMap("c", connection);
+      }
+    });
+
+    BlessScanIteration result = jedis.blessScanIteration(10, BlessFlag.NO_EVICT);
+
+    ScanResult<String> batch = result.nextBatch();
+    assertThat(batch.getCursor(), equalTo(cursor));
+    assertThat(batch.getResult(), contains(key1, key2));
+    assertTrue(result.isIterationCompleted());
+
+    verify(connection).executeCommand(argThat(hasArguments(Command.BLESS, Command.SCAN,
+        RawableFactory.from(cursor), BlessFlag.NO_EVICT, Keyword.COUNT, RawableFactory.from(10))));
+    verify(connectionProvider).getConnectionMap();
+  }
 }

@@ -683,6 +683,19 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     return new ScanIteration(provider, batchCount, match, type);
   }
 
+  /**
+   * Iterates the keys carrying the given {@code BLESS} flag on every node known to the connection
+   * provider, running an independent {@code BLESS SCAN} cursor loop per node. In cluster mode this
+   * includes replicas, so a key may be returned more than once; deduplicate when aggregating.
+   * @param batchCount COUNT for each batch execution
+   * @param flag the flag to filter on
+   * @return bless scan iteration
+   * @since 8.1
+   */
+  public BlessScanIteration blessScanIteration(int batchCount, BlessFlag flag) {
+    return new BlessScanIteration(provider, batchCount, flag);
+  }
+
   @Override
   public Set<byte[]> keys(byte[] pattern) {
     return executeCommand(commandObjects.keys(pattern));
@@ -4615,6 +4628,56 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public Long objectFreq(byte[] key) {
     return executeCommand(commandObjects.objectFreq(key));
+  }
+
+  @Override
+  public long blessSet(String key, BlessFlag flag) {
+    return executeCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public long blessClear(String key, BlessFlag flag) {
+    return executeCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public List<String> blessGet(String key) {
+    return executeCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public ScanResult<String> blessScan(String cursor, BlessFlag flag) {
+    return executeCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public ScanResult<String> blessScan(String cursor, BlessFlag flag, int count) {
+    return executeCommand(commandObjects.blessScan(cursor, flag, count));
+  }
+
+  @Override
+  public long blessSet(byte[] key, BlessFlag flag) {
+    return executeCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public long blessClear(byte[] key, BlessFlag flag) {
+    return executeCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public List<byte[]> blessGet(byte[] key) {
+    return executeCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public ScanResult<byte[]> blessScan(byte[] cursor, BlessFlag flag) {
+    return executeCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public ScanResult<byte[]> blessScan(byte[] cursor, BlessFlag flag, int count) {
+    return executeCommand(commandObjects.blessScan(cursor, flag, count));
   }
 
   @Override

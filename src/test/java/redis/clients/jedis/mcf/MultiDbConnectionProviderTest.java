@@ -321,16 +321,16 @@ public class MultiDbConnectionProviderTest {
     try (MultiDbClient jedis = MultiDbClient.builder().connectionProvider(testProvider).build()) {
       jedis.get(key);
 
-      // disable most weighted database so that it will fail on initial requests
+      // disable most weighted database: the first command fails on it, finds the other database
+      // operable and fails over to it
       testProvider.getDatabase(endpointStandalone0.getHostAndPort()).setDisabled(true);
 
       Exception e = assertThrows(JedisConnectionException.class, () -> jedis.get(key));
       assertEquals(JedisConnectionException.class, e.getClass());
+      assertEquals(endpointStandalone1.getHostAndPort(), testProvider.getActiveEndpoint());
+      assertDoesNotThrow(() -> jedis.get(key));
 
-      e = assertThrows(JedisConnectionException.class, () -> jedis.get(key));
-      assertEquals(JedisConnectionException.class, e.getClass());
-
-      // then disable the second ones
+      // then disable the second one, now active, too
       testProvider.getDatabase(endpointStandalone1.getHostAndPort()).setDisabled(true);
       assertThrows(JedisTemporarilyNotAvailableException.class, () -> jedis.get(key));
       assertThrows(JedisTemporarilyNotAvailableException.class, () -> jedis.get(key));
@@ -344,13 +344,10 @@ public class MultiDbConnectionProviderTest {
       // Fourth get request should continue to throw JedisPermanentlyNotAvailableException
       assertThrows(JedisPermanentlyNotAvailableException.class, () -> jedis.get(key));
 
-      // CB never tripped (default minNumOfFailures not reached), so no failover happened and
-      // the first database is still the active one
-      assertEquals(endpointStandalone0.getHostAndPort(), testProvider.getActiveEndpoint());
-
       // Active database becomes available again: the permanent state is not sticky, the client
       // recovers on the next command without any manual interaction
-      testProvider.getDatabase(endpointStandalone0.getHostAndPort()).setDisabled(false);
+      assertEquals(endpointStandalone1.getHostAndPort(), testProvider.getActiveEndpoint());
+      testProvider.getDatabase(endpointStandalone1.getHostAndPort()).setDisabled(false);
       assertDoesNotThrow(() -> jedis.get(key));
     }
   }
@@ -431,7 +428,7 @@ public class MultiDbConnectionProviderTest {
   }
 
   @Test
-  public void userCommand_afterPermanent_onlySecondaryHealthyAgain_requiresManualSwitch_healthCheckDriven() {
+  public void userCommand_afterPermanent_onlySecondaryHealthyAgain_failsOverAutomatically_healthCheckDriven() {
     AtomicReference<HealthStatus> health0 = new AtomicReference<>(HealthStatus.HEALTHY);
     AtomicReference<HealthStatus> health1 = new AtomicReference<>(HealthStatus.HEALTHY);
     MultiDbConnectionProvider testProvider = healthCheckDrivenProvider(health0, health1);
@@ -440,23 +437,12 @@ public class MultiDbConnectionProviderTest {
     try (MultiDbClient jedis = MultiDbClient.builder().connectionProvider(testProvider).build()) {
       driveToPermanentState(jedis, testProvider, health0, health1, key);
 
-      // Only the lower-weight, non-active database becomes healthy again
+      // Only the lower-weight, non-active database becomes healthy again while the active one is
+      // still unhealthy: the failover that found no candidate is retried and switches to it
       health1.set(HealthStatus.HEALTHY);
-      await().atMost(Durations.ONE_SECOND)
-          .until(() -> testProvider.getDatabase(endpointStandalone1.getHostAndPort()).isHealthy());
+      await().atMost(Durations.FIVE_SECONDS).until(
+        () -> endpointStandalone1.getHostAndPort().equals(testProvider.getActiveEndpoint()));
 
-      // No auto-recovery, even past the grace period on the active database (waited on the
-      // actual deadline so the claim holds under any CI load): nothing triggers a failover to
-      // a lower-weight database; commands surface the raw connection error instead of failover
-      // exceptions
-      await().atMost(Durations.ONE_SECOND).until(
-        () -> !testProvider.getDatabase(endpointStandalone0.getHostAndPort()).isInGracePeriod());
-      Exception e = assertThrows(JedisConnectionException.class, () -> jedis.get(key));
-      assertEquals(JedisConnectionException.class, e.getClass());
-      assertEquals(endpointStandalone0.getHostAndPort(), testProvider.getActiveEndpoint());
-
-      // Manual database switch is required to recover
-      testProvider.setActiveDatabase(endpointStandalone1.getHostAndPort());
       assertDoesNotThrow(() -> jedis.get(key));
     }
   }

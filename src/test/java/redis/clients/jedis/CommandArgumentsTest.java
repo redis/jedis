@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -12,6 +13,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class CommandArgumentsTest {
 
@@ -144,6 +146,18 @@ public class CommandArgumentsTest {
     args.addObjects(values);
 
     assertEquals(51, asList(args).size()); // command + 50 arguments
+  }
+
+  @Test
+  public void binaryKeyIsNotAliasedToTheCallerArray() {
+    byte[] key = "foo".getBytes(StandardCharsets.UTF_8);
+    CommandArguments args = new CommandArguments(TestCommand.HSET).key(key);
+
+    key[0] = 'b'; // caller reuses its buffer for the next command
+
+    assertArrayEquals("foo".getBytes(StandardCharsets.UTF_8), args.get(1).getRaw());
+    assertArrayEquals("foo".getBytes(StandardCharsets.UTF_8), (byte[]) args.getKeys().get(0));
+    assertEquals(JedisClusterCRC16.getSlot("foo"), args.getKeyHashSlots().iterator().next().intValue());
   }
 
 }

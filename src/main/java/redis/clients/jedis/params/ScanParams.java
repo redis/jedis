@@ -3,6 +3,7 @@ package redis.clients.jedis.params;
 import static redis.clients.jedis.Protocol.Keyword.MATCH;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Objects;
@@ -21,7 +22,7 @@ public class ScanParams implements IParams {
   public static final byte[] SCAN_POINTER_START_BINARY = SafeEncoder.encode(SCAN_POINTER_START);
 
   public ScanParams match(final byte[] pattern) {
-    params.put(MATCH, ByteBuffer.wrap(pattern));
+    params.put(MATCH, ByteBuffer.wrap(Arrays.copyOf(pattern, pattern.length)));
     return this;
   }
 

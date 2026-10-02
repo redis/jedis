@@ -73,48 +73,55 @@ public abstract class JedisShardedPubSubBase<T> {
   protected abstract T encode(byte[] raw);
 
   private void process() {
+    boolean completed = false;
+    try {
+      do {
+        Object reply = authenticator.client.getUnflushedObject();
 
-    do {
-      Object reply = authenticator.client.getUnflushedObject();
-
-      if (reply instanceof List) {
-        List<Object> listReply = (List<Object>) reply;
-        final Object firstObj = listReply.get(0);
-        if (!(firstObj instanceof byte[])) {
-          throw new JedisException("Unknown message type: " + firstObj);
-        }
-        final byte[] resp = (byte[]) firstObj;
-        if (Arrays.equals(SSUBSCRIBE.getRaw(), resp)) {
-          subscribedChannels = ((Long) listReply.get(2)).intValue();
-          final byte[] bchannel = (byte[]) listReply.get(1);
-          final T enchannel = (bchannel == null) ? null : encode(bchannel);
-          onSSubscribe(enchannel, subscribedChannels);
-        } else if (Arrays.equals(SUNSUBSCRIBE.getRaw(), resp)) {
-          subscribedChannels = ((Long) listReply.get(2)).intValue();
-          final byte[] bchannel = (byte[]) listReply.get(1);
-          final T enchannel = (bchannel == null) ? null : encode(bchannel);
-          onSUnsubscribe(enchannel, subscribedChannels);
-        } else if (Arrays.equals(SMESSAGE.getRaw(), resp)) {
-          final byte[] bchannel = (byte[]) listReply.get(1);
-          final byte[] bmesg = (byte[]) listReply.get(2);
-          final T enchannel = (bchannel == null) ? null : encode(bchannel);
-          final T enmesg = (bmesg == null) ? null : encode(bmesg);
-          onSMessage(enchannel, enmesg);
+        if (reply instanceof List) {
+          List<Object> listReply = (List<Object>) reply;
+          final Object firstObj = listReply.get(0);
+          if (!(firstObj instanceof byte[])) {
+            throw new JedisException("Unknown message type: " + firstObj);
+          }
+          final byte[] resp = (byte[]) firstObj;
+          if (Arrays.equals(SSUBSCRIBE.getRaw(), resp)) {
+            subscribedChannels = ((Long) listReply.get(2)).intValue();
+            final byte[] bchannel = (byte[]) listReply.get(1);
+            final T enchannel = (bchannel == null) ? null : encode(bchannel);
+            onSSubscribe(enchannel, subscribedChannels);
+          } else if (Arrays.equals(SUNSUBSCRIBE.getRaw(), resp)) {
+            subscribedChannels = ((Long) listReply.get(2)).intValue();
+            final byte[] bchannel = (byte[]) listReply.get(1);
+            final T enchannel = (bchannel == null) ? null : encode(bchannel);
+            onSUnsubscribe(enchannel, subscribedChannels);
+          } else if (Arrays.equals(SMESSAGE.getRaw(), resp)) {
+            final byte[] bchannel = (byte[]) listReply.get(1);
+            final byte[] bmesg = (byte[]) listReply.get(2);
+            final T enchannel = (bchannel == null) ? null : encode(bchannel);
+            final T enmesg = (bmesg == null) ? null : encode(bmesg);
+            onSMessage(enchannel, enmesg);
+          } else {
+            throw new JedisException("Unknown message type: " + firstObj);
+          }
+        } else if (reply instanceof byte[]) {
+          Consumer<Object> resultHandler = authenticator.resultHandler.poll();
+          if (resultHandler == null) {
+            throw new JedisException("Unexpected message : " + SafeEncoder.encode((byte[]) reply));
+          }
+          resultHandler.accept(reply);
         } else {
-          throw new JedisException("Unknown message type: " + firstObj);
+          throw new JedisException("Unknown message type: " + reply);
         }
-      } else if (reply instanceof byte[]) {
-        Consumer<Object> resultHandler = authenticator.resultHandler.poll();
-        if (resultHandler == null) {
-          throw new JedisException("Unexpected message : " + SafeEncoder.encode((byte[]) reply));
-        }
-        resultHandler.accept(reply);
-      } else {
-        throw new JedisException("Unknown message type: " + reply);
+      } while (!Thread.currentThread().isInterrupted() && isSubscribed());
+      completed = true;
+    } finally {
+      if (!completed || isSubscribed()) {
+        authenticator.client.setBroken();
       }
-    } while (!Thread.currentThread().isInterrupted() && isSubscribed());
+    }
 
-//    /* Invalidate instance since this thread is no longer listening */
-//    this.client = null;
+    // /* Invalidate instance since this thread is no longer listening */
+    // this.client = null;
   }
 }

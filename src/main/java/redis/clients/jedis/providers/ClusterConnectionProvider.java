@@ -115,6 +115,14 @@ public class ClusterConnectionProvider implements ConnectionProvider {
     return cache.getPrimaryNodes();
   }
 
+  Map<String, ConnectionPool> getReplicaNodes() {
+    return cache.getReplicaNodes();
+  }
+
+  List<ConnectionPool> getSlotReplicaPools(int slot) {
+    return cache.getSlotReplicaPools(slot);
+  }
+
   public HostAndPort getNode(int slot) {
     return slot >= 0 ? cache.getSlotNode(slot) : null;
   }
@@ -131,8 +139,11 @@ public class ClusterConnectionProvider implements ConnectionProvider {
       throw new JedisClusterOperationException("Cannot get connection for command with multiple hash slots");
     }
 
-    int slot = slots.iterator().next();
-    return slot >= 0 ? getConnectionFromSlot(slot) : getConnection();
+    if (slots.isEmpty()) {
+      return getConnection(); // a keyless command can run on any node
+    }
+
+    return getConnectionFromSlot(slots.iterator().next());
   }
 
   public Connection getReplicaConnection(CommandArguments args) {
@@ -142,8 +153,27 @@ public class ClusterConnectionProvider implements ConnectionProvider {
       throw new JedisClusterOperationException("Cannot get connection for command with multiple hash slots");
     }
 
-    int slot = slots.iterator().next();
-    return slot >= 0 ? getReplicaConnectionFromSlot(slot) : getConnection();
+    if (slots.isEmpty()) {
+      return getAnyReplicaConnection(); // a keyless command can run on any replica
+    }
+
+    return getReplicaConnectionFromSlot(slots.iterator().next());
+  }
+
+  /**
+   * Returns a connection to a randomly picked replica of the current topology, or a primary
+   * connection when that topology records no replica. Replicas are recorded only for a client
+   * configured with {@link JedisClientConfig#isReadOnlyForRedisClusterReplicas()}, so a client
+   * that does not track them falls back right away instead of renewing the slot cache, which is
+   * an expensive operation, on every keyless call.
+   */
+  private Connection getAnyReplicaConnection() {
+    List<ConnectionPool> replicas = new ArrayList<>(getReplicaNodes().values());
+    if (replicas.isEmpty()) {
+      return getConnection();
+    }
+
+    return replicas.get(ThreadLocalRandom.current().nextInt(replicas.size())).getResource();
   }
 
   @Override
@@ -202,16 +232,21 @@ public class ClusterConnectionProvider implements ConnectionProvider {
   }
 
   public Connection getReplicaConnectionFromSlot(int slot) {
-    List<ConnectionPool> connectionPools = cache.getSlotReplicaPools(slot);
+    List<ConnectionPool> connectionPools = getSlotReplicaPools(slot);
+    if (connectionPools == null) {
+      // This client records no replica, so renewing the slot cache cannot produce one.
+      return getConnectionFromSlot(slot);
+    }
+
     ThreadLocalRandom random = ThreadLocalRandom.current();
-    if (connectionPools != null && !connectionPools.isEmpty()) {
+    if (!connectionPools.isEmpty()) {
       // pick up randomly a connection
       int idx = random.nextInt(connectionPools.size());
       return connectionPools.get(idx).getResource();
     }
 
     renewSlotCache();
-    connectionPools = cache.getSlotReplicaPools(slot);
+    connectionPools = getSlotReplicaPools(slot);
     if (connectionPools != null && !connectionPools.isEmpty()) {
       int idx = random.nextInt(connectionPools.size());
       return connectionPools.get(idx).getResource();

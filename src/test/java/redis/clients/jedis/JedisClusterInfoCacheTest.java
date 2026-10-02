@@ -16,6 +16,8 @@ import java.util.stream.Collectors;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.aMapWithSize;
+import static org.hamcrest.Matchers.anEmptyMap;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.hasEntry;
 import static org.hamcrest.Matchers.hasItem;
@@ -183,6 +185,51 @@ public class JedisClusterInfoCacheTest {
             Collections.singletonList(cache.getNode(REPLICA_1_HOST))));
   }
 
+  @Test
+  public void replicaLookupsAreEmptyWhenReplicaTrackingIsDisabled() {
+    // readOnlyForRedisClusterReplicas defaults to false, so no replica is recorded at all
+    JedisClusterInfoCache cache = new JedisClusterInfoCache(
+        DefaultJedisClientConfig.builder().build(),
+        new HashSet<>(Collections.singletonList(MASTER_HOST)));
+
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(masterReplicaSlotsResponse(MASTER_HOST, REPLICA_1_HOST));
+    cache.discoverClusterNodesAndSlots(mockConnection);
+
+    assertNull(cache.getSlotReplicaPools(TEST_SLOT));
+    assertThat(cache.getReplicaNodes(), anEmptyMap());
+  }
+
+  @Test
+  public void replicaPoolsOfAnUnknownSlotAreEmptyWhenReplicaTrackingIsEnabled() {
+    JedisClusterInfoCache cache = createCacheWithReplicasEnabled();
+
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(masterOnlySlotsResponse());
+    cache.discoverClusterNodesAndSlots(mockConnection);
+
+    // a later renewal can still record a replica for this slot, unlike a client that tracks none
+    assertThat(cache.getSlotReplicaPools(TEST_SLOT), empty());
+  }
+
+  @Test
+  public void replicaNodesFollowTheDiscoveredTopology() {
+    JedisClusterInfoCache cache = createCacheWithReplicasEnabled();
+
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(masterReplicaSlotsResponse(MASTER_HOST, REPLICA_1_HOST))
+        .thenReturn(masterOnlySlotsResponse());
+
+    cache.discoverClusterNodesAndSlots(mockConnection);
+    assertThat(cache.getReplicaNodes(), aMapWithSize(1));
+    assertThat(cache.getReplicaNodes(), hasEntry(equalTo(getNodeKey(REPLICA_1_HOST)),
+      equalTo(cache.getNode(REPLICA_1_HOST))));
+
+    // the replica is gone from the topology, so it must be gone from the replica nodes too
+    cache.discoverClusterNodesAndSlots(mockConnection);
+    assertThat(cache.getReplicaNodes(), anEmptyMap());
+  }
+
   private List<Object> masterReplicaSlotsResponse(HostAndPort masterHost, HostAndPort replicaHost) {
     return createClusterSlotsResponse(
             new SlotRange.Builder(0, 16383).master(masterHost, masterHost.toString() + "-id")
@@ -210,8 +257,9 @@ public class JedisClusterInfoCacheTest {
   }
 
   private void assertNoReplicasAvailable(JedisClusterInfoCache cache) {
+    // the client records replicas, so an unknown slot is an empty list and not a null
     List<ConnectionPool> caheReplicaNodePools = cache.getSlotReplicaPools(TEST_SLOT);
-    assertNull(caheReplicaNodePools);
+    assertThat(caheReplicaNodePools, empty());
   }
 
   private void assertReplicasAvailable(JedisClusterInfoCache cache, HostAndPort... replicaNodes) {

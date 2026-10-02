@@ -166,11 +166,12 @@ public class SortingParams implements IParams {
     if (this == o) return true;
     if (o == null || getClass() != o.getClass()) return false;
     SortingParams that = (SortingParams) o;
-    return Objects.equals(params, that.params);
+    // patterns are stored as byte arrays, so they have to be compared by content
+    return Arrays.deepEquals(params.toArray(), that.params.toArray());
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(params);
+    return Arrays.deepHashCode(params.toArray());
   }
 }

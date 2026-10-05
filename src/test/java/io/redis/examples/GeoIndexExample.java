@@ -155,12 +155,12 @@ public class GeoIndexExample {
         // REMOVE_END
 
         // STEP_START gshape_query
-        SearchResult geomResult = jedis.ftSearch("geomidx",
+        SearchResult geomResult = ReproProfile.search(jedis, "geomidx",
             "(-@name:(Green Square) @geom:[WITHIN $qshape])",
             FTSearchParams.searchParams()
                     .addParam("qshape", "POLYGON ((1 1, 1 3, 3 3, 3 1, 1 1))")
                     .dialect(4)
-                    .limit(0, 1)
+                    .limit(0, 1), 1
         );
         System.out.println(geomResult.getTotalResults()); // >>> 1
 

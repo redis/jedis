@@ -127,7 +127,7 @@ public class HomeJsonExample {
         // REMOVE_END
 
         // STEP_START query3
-        AggregationResult aggResult = jedis.ftAggregate("idx:users",
+        AggregationResult aggResult = ReproProfile.aggregate(jedis, "idx:users",
             new AggregationBuilder("*")
                 .groupBy("@city", Reducers.count().as("count"))
         );

@@ -213,7 +213,7 @@ public class SearchQuickstartExample {
 
     // STEP_START wildcard_query
     Query query1 = new Query("*");
-    List<Document> result1 = jedis.ftSearch("idx:bicycle", query1).getDocuments();
+    List<Document> result1 = ReproProfile.search(jedis, "idx:bicycle", query1).getDocuments();
     System.out.println("Documents found:" + result1.size());
     // Prints: Documents found: 10
     // STEP_END
@@ -223,7 +223,7 @@ public class SearchQuickstartExample {
 
     // STEP_START query_single_term
     Query query2 = new Query("@model:Jigger");
-    List<Document> result2 = jedis.ftSearch("idx:bicycle", query2).getDocuments();
+    List<Document> result2 = ReproProfile.search(jedis, "idx:bicycle", query2).getDocuments();
     System.out.println(result2);
     // Prints: [id:bicycle:0, score: 1.0, payload:null,
     // properties:[$={"brand":"Velorim","model":"Jigger","price":270,"description":"Small and powerful, the Jigger is the best ride for the smallest of tikes! This is the tiniest kids’ pedal bike on the market available without a coaster brake, the Jigger is the vehicle of choice for the rare tenacious little rider raring to go.","condition":"new"}]]
@@ -234,7 +234,7 @@ public class SearchQuickstartExample {
 
     // STEP_START query_single_term_limit_fields
     Query query3 = new Query("@model:Jigger").returnFields("price");
-    List<Document> result3 = jedis.ftSearch("idx:bicycle", query3).getDocuments();
+    List<Document> result3 = ReproProfile.search(jedis, "idx:bicycle", query3).getDocuments();
     System.out.println(result3);
     // Prints: [id:bicycle:0, score: 1.0, payload:null, properties:[price=270]]
     // STEP_END
@@ -244,7 +244,7 @@ public class SearchQuickstartExample {
 
     // STEP_START query_single_term_and_num_range
     Query query4 = new Query("basic @price:[500 1000]");
-    List<Document> result4 = jedis.ftSearch("idx:bicycle", query4).getDocuments();
+    List<Document> result4 = ReproProfile.search(jedis, "idx:bicycle", query4).getDocuments();
     System.out.println(result4);
     // Prints: [id:bicycle:5, score: 1.0, payload:null,
     // properties:[$={"brand":"Breakout","model":"XBN 2.1 Alloy","price":810,"description":"The XBN 2.1 Alloy is our entry-level road bike – but that’s not to say that it’s a basic machine. With an internal weld aluminium frame, a full carbon fork, and the slick-shifting Claris gears from Shimano’s, this is a bike which doesn’t break the bank and delivers craved performance.","condition":"new"}]]
@@ -255,7 +255,7 @@ public class SearchQuickstartExample {
 
     // STEP_START query_exact_matching
     Query query5 = new Query("@brand:\"Noka Bikes\"");
-    List<Document> result5 = jedis.ftSearch("idx:bicycle", query5).getDocuments();
+    List<Document> result5 = ReproProfile.search(jedis, "idx:bicycle", query5).getDocuments();
     System.out.println(result5);
     // Prints: [id:bicycle:4, score: 1.0, payload:null,
     // properties:[$={"brand":"Noka Bikes","model":"Kahuna","price":3200,"description":"Whether you want to try your hand at XC racing or are looking for a lively trail bike that's just as inspiring on the climbs as it is over rougher ground, the Wilder is one heck of a bike built specifically for short women. Both the frames and components have been tweaked to include a women’s saddle, different bars and unique colourway.","condition":"used"}]]
@@ -267,7 +267,7 @@ public class SearchQuickstartExample {
     // STEP_START simple_aggregation
     AggregationBuilder ab = new AggregationBuilder("*").groupBy("@condition",
       Reducers.count().as("count"));
-    AggregationResult ar = jedis.ftAggregate("idx:bicycle", ab);
+    AggregationResult ar = ReproProfile.aggregate(jedis, "idx:bicycle", ab);
     for (int i = 0; i < ar.getTotalResults(); i++) {
       System.out.println(ar.getRow(i).getString("condition") + " - "
           + ar.getRow(i).getString("count"));

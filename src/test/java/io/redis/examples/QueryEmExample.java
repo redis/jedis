@@ -224,7 +224,7 @@ public class QueryEmExample {
         }
         // >>> bicycle:0
 
-        SearchResult res2 = jedis.ftSearch("idx:bicycle",
+        SearchResult res2 = ReproProfile.search(jedis, "idx:bicycle",
             "*",
             FTSearchParams.searchParams()
                     .filter("price", 270, 270)
@@ -250,7 +250,7 @@ public class QueryEmExample {
 
 
         // STEP_START em2
-        SearchResult res3 = jedis.ftSearch("idx:bicycle", "@condition:{new}");
+        SearchResult res3 = ReproProfile.search(jedis, "idx:bicycle", "@condition:{new}");
         System.out.println(res3.getTotalResults()); // >>> 5
 
         List<Document> docs3 = res3.getDocuments();
@@ -289,7 +289,7 @@ public class QueryEmExample {
 
         jedis.jsonSet("key:1", Path2.ROOT_PATH, "{\"email\": \"test@redis.com\"}");
         
-        SearchResult res4 = jedis.ftSearch("idx:email",
+        SearchResult res4 = ReproProfile.search(jedis, "idx:email",
             RediSearchUtil.escapeQuery("@email{test@redis.com}"),
             new FTSearchParams().dialect(2)
         );
@@ -303,7 +303,7 @@ public class QueryEmExample {
 
 
         // STEP_START em4
-        SearchResult res5 = jedis.ftSearch("idx:bicycle",
+        SearchResult res5 = ReproProfile.search(jedis, "idx:bicycle",
             "@description:\"rough terrain\""
         );
         System.out.println(res5.getTotalResults()); // >>> 1

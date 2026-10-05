@@ -218,7 +218,7 @@ public class QueryGeoExample {
         }
 
         // STEP_START geo1
-        SearchResult res1 = jedis.ftSearch("idx:bicycle",
+        SearchResult res1 = ReproProfile.search(jedis, "idx:bicycle",
             "@store_location:[$lon $lat $radius $units]",
             FTSearchParams.searchParams()
                     .addParam("lon", -0.1778)
@@ -245,7 +245,7 @@ public class QueryGeoExample {
 
 
         // STEP_START geo2
-        SearchResult res2 = jedis.ftSearch("idx:bicycle",
+        SearchResult res2 = ReproProfile.search(jedis, "idx:bicycle",
             "@pickup_zone:[CONTAINS $bike]",
             FTSearchParams.searchParams()
                     .addParam("bike", "POINT(-0.1278 51.5074)")
@@ -269,7 +269,7 @@ public class QueryGeoExample {
 
 
         // STEP_START geo3
-        SearchResult res3 = jedis.ftSearch("idx:bicycle",
+        SearchResult res3 = ReproProfile.search(jedis, "idx:bicycle",
             "@pickup_zone:[WITHIN $europe]",
             FTSearchParams.searchParams()
                     .addParam("europe", "POLYGON((-25 35, 40 35, 40 70, -25 70, -25 35))")

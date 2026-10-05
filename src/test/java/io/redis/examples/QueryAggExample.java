@@ -278,7 +278,7 @@ public class QueryAggExample {
 
 
         // STEP_START agg3
-        AggregationResult res3 = jedis.ftAggregate("idx:bicycle",
+        AggregationResult res3 = ReproProfile.aggregate(jedis, "idx:bicycle",
             new AggregationBuilder("*")
                     .apply("'bicycle'", "type")
                     .groupBy("@type", Reducers.count().as("num_total"))
@@ -301,7 +301,7 @@ public class QueryAggExample {
 
 
         // STEP_START agg4
-        AggregationResult res4 = jedis.ftAggregate("idx:bicycle",
+        AggregationResult res4 = ReproProfile.aggregate(jedis, "idx:bicycle",
             new AggregationBuilder("*")
                     .load("__key")
                     .groupBy("@condition",

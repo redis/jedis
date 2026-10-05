@@ -234,7 +234,7 @@ public class QueryFtExample {
 
 
         // STEP_START ft2
-        SearchResult res2 = jedis.ftSearch("idx:bicycle", "@model: ka*");
+        SearchResult res2 = ReproProfile.search(jedis, "idx:bicycle", "@model: ka*");
         System.out.println(res2.getTotalResults()); // >>> 1
 
         List<Document> docs2 = res2.getDocuments();
@@ -253,7 +253,7 @@ public class QueryFtExample {
 
 
         // STEP_START ft3
-        SearchResult res3 = jedis.ftSearch("idx:bicycle", "@brand: *bikes");
+        SearchResult res3 = ReproProfile.search(jedis, "idx:bicycle", "@brand: *bikes");
         System.out.println(res3.getTotalResults()); // >>> 2
 
         List<Document> docs3 = res3.getDocuments();
@@ -276,7 +276,7 @@ public class QueryFtExample {
 
 
         // STEP_START ft4
-        SearchResult res4 = jedis.ftSearch("idx:bicycle", "%optamized%");
+        SearchResult res4 = ReproProfile.search(jedis, "idx:bicycle", "%optamized%");
         System.out.println(res4.getTotalResults()); // >>> 1
 
         List<Document> docs4 = res4.getDocuments();
@@ -295,7 +295,7 @@ public class QueryFtExample {
 
 
         // STEP_START ft5
-        SearchResult res5 = jedis.ftSearch("idx:bicycle", "%%optamised%%");
+        SearchResult res5 = ReproProfile.search(jedis, "idx:bicycle", "%%optamised%%");
         System.out.println(res5.getTotalResults()); // >>> 1
 
         List<Document> docs5 = res5.getDocuments();

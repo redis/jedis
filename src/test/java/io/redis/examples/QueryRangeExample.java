@@ -245,7 +245,7 @@ public class QueryRangeExample {
 
 
         // STEP_START range2
-        SearchResult res2 = jedis.ftSearch("idx:bicycle",
+        SearchResult res2 = ReproProfile.search(jedis, "idx:bicycle",
             "*",
             FTSearchParams.searchParams()
                 .returnFields("price")
@@ -274,7 +274,7 @@ public class QueryRangeExample {
 
 
         // STEP_START range3
-        SearchResult res3 = jedis.ftSearch("idx:bicycle",
+        SearchResult res3 = ReproProfile.search(jedis, "idx:bicycle",
             "*",
             FTSearchParams.searchParams()
                 .returnFields("price")
@@ -305,7 +305,7 @@ public class QueryRangeExample {
 
 
         // STEP_START range4
-        SearchResult res4 = jedis.ftSearch("idx:bicycle",
+        SearchResult res4 = ReproProfile.search(jedis, "idx:bicycle",
             "@price:[-inf 2000]",
             FTSearchParams.searchParams()
                     .returnFields("price")

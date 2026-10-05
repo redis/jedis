@@ -1,8 +1,10 @@
 package redis.clients.jedis.providers;
 
+import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+import org.awaitility.Durations;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -10,14 +12,16 @@ import org.mockito.MockedConstruction;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import redis.clients.jedis.Connection;
-import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.mcf.HealthStatus;
+import redis.clients.jedis.mcf.JedisFailoverException.JedisPermanentlyNotAvailableException;
+import redis.clients.jedis.mcf.JedisFailoverException.JedisTemporarilyNotAvailableException;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider;
 import redis.clients.jedis.mcf.MultiDbConnectionProviderHelper;
+import redis.clients.jedis.mcf.TrackingConnectionPool;
 
 /**
  * Tests for MultiDbConnectionProvider event handling behavior during initialization and throughout
@@ -39,10 +43,10 @@ public class MultiDbProviderHealthStatusChangeTest {
     clientConfig = DefaultJedisClientConfig.builder().build();
   }
 
-  private MockedConstruction<ConnectionPool> mockConnectionPool() {
+  private MockedConstruction<TrackingConnectionPool> mockConnectionPool() {
     Connection mockConnection = mock(Connection.class);
     lenient().when(mockConnection.ping()).thenReturn(true);
-    return mockConstruction(ConnectionPool.class, (mock, context) -> {
+    return mockConstruction(TrackingConnectionPool.class, (mock, context) -> {
       when(mock.getResource()).thenReturn(mockConnection);
       doNothing().when(mock).close();
     });
@@ -50,7 +54,7 @@ public class MultiDbProviderHealthStatusChangeTest {
 
   @Test
   void postInit_unhealthy_active_sets_grace_and_fails_over() throws Exception {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
       // Create databases without health checks
       MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
@@ -82,7 +86,7 @@ public class MultiDbProviderHealthStatusChangeTest {
 
   @Test
   void postInit_nonActive_changes_do_not_switch_active() throws Exception {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
       MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
       MultiDbConfig.DatabaseConfig database2 = MultiDbConfig.DatabaseConfig
@@ -128,7 +132,7 @@ public class MultiDbProviderHealthStatusChangeTest {
 
   @Test
   void init_selects_highest_weight_healthy_when_checks_disabled() throws Exception {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
       MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
@@ -154,7 +158,7 @@ public class MultiDbProviderHealthStatusChangeTest {
 
   @Test
   void init_single_database_initializes_and_is_healthy() throws Exception {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
       MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
@@ -178,7 +182,7 @@ public class MultiDbProviderHealthStatusChangeTest {
 
   @Test
   void postInit_two_hop_failover_chain_respected() throws Exception {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
       MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
@@ -221,7 +225,7 @@ public class MultiDbProviderHealthStatusChangeTest {
 
   @Test
   void postInit_rapid_events_respect_grace_and_keep_active_stable() throws Exception {
-    try (MockedConstruction<ConnectionPool> mockedPool = mockConnectionPool()) {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
       MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
           .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
 
@@ -249,6 +253,107 @@ public class MultiDbProviderHealthStatusChangeTest {
           "Endpoint1 should be in grace period");
         assertEquals(provider.getDatabase(endpoint2), provider.getDatabase(),
           "Active database should remain endpoint2");
+      }
+    }
+  }
+
+  @Test
+  void postInit_healthyEventWithoutFailoverTarget_countsAsFailoverAttempt() throws Exception {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
+      MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
+          .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
+      MultiDbConfig.DatabaseConfig database2 = MultiDbConfig.DatabaseConfig
+          .builder(endpoint2, clientConfig).weight(0.5f).healthCheckEnabled(false).build();
+
+      // No delay in between attempts, so every failed attempt is counted
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { database1, database2 }).maxNumFailoverAttempts(2)
+              .delayInBetweenFailoverAttempts(0).build();
+
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
+        // Health checks are disabled here, so the outage is modelled with setDisabled; the real
+        // health check flow is covered in MultiDbConnectionProviderTest
+        provider.getDatabase(endpoint2).setDisabled(true);
+        // Total outage: the first failed failover attempt uses 1 of the 2 attempts
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+          HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+
+        // Failed attempts triggered by health events count like the ones triggered by commands
+        for (int i = 0; i < 2; i++) {
+          MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint2,
+            HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+        }
+
+        assertThrows(JedisPermanentlyNotAvailableException.class, provider::assertOperability);
+      }
+    }
+  }
+
+  @Test
+  void postInit_assertOperability_candidateOperableAfterItsGrace_failsOverToIt() throws Exception {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
+      MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
+          .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
+      MultiDbConfig.DatabaseConfig database2 = MultiDbConfig.DatabaseConfig
+          .builder(endpoint2, clientConfig).weight(0.5f).healthCheckEnabled(false).build();
+
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { database1, database2 }).build();
+
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
+        // Health checks are disabled here, so the outage is modelled with setDisabled and grace
+        // periods; the real health check flow is covered in MultiDbConnectionProviderTest
+        provider.getDatabase(endpoint2).setDisabled(true);
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+          HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+
+        // The candidate reports healthy but is still in its own grace period
+        provider.getDatabase(endpoint2).setDisabled(false);
+        provider.getDatabase(endpoint2).setGracePeriod(200);
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint2,
+          HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+        assertEquals(provider.getDatabase(endpoint1), provider.getDatabase(),
+          "No operable target while the candidate is in grace");
+
+        // Nothing announces the end of a grace period, so no health event switches here
+        await().atMost(Durations.ONE_SECOND)
+            .until(() -> provider.getDatabase(endpoint2).isHealthy());
+        assertEquals(provider.getDatabase(endpoint1), provider.getDatabase());
+
+        // assertOperability stands in for a command that cannot get a connection from the
+        // inoperable active database; the end-to-end version is in MultiDbConnectionProviderTest
+        assertDoesNotThrow(provider::assertOperability);
+        assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
+      }
+    }
+  }
+
+  @Test
+  void postInit_forcedActiveDatabaseDown_staysActiveWhileForced() throws Exception {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockConnectionPool()) {
+      MultiDbConfig.DatabaseConfig database1 = MultiDbConfig.DatabaseConfig
+          .builder(endpoint1, clientConfig).weight(1.0f).healthCheckEnabled(false).build();
+      MultiDbConfig.DatabaseConfig database2 = MultiDbConfig.DatabaseConfig
+          .builder(endpoint2, clientConfig).weight(0.5f).healthCheckEnabled(false).build();
+
+      MultiDbConfig config = new MultiDbConfig.Builder(
+          new MultiDbConfig.DatabaseConfig[] { database1, database2 }).build();
+
+      try (MultiDbConnectionProvider provider = new MultiDbConnectionProvider(config)) {
+        provider.forceActiveDatabase(endpoint2, 60_000);
+        assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
+
+        // The pinned database goes down while the other database reports healthy: the other one
+        // is in grace for the pin duration, so there is nothing to fail over to
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint2,
+          HealthStatus.HEALTHY, HealthStatus.UNHEALTHY);
+        MultiDbConnectionProviderHelper.onHealthStatusChange(provider, endpoint1,
+          HealthStatus.UNHEALTHY, HealthStatus.HEALTHY);
+
+        assertEquals(provider.getDatabase(endpoint2), provider.getDatabase(),
+          "The pinned database stays active");
+        assertThrows(JedisTemporarilyNotAvailableException.class, provider::assertOperability);
+        assertEquals(provider.getDatabase(endpoint2), provider.getDatabase());
       }
     }
   }

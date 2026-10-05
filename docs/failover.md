@@ -278,7 +278,12 @@ If a failover is triggered but no other healthy database exists, the command fai
 
 The attempt counter resets as soon as a switch to a healthy database succeeds.
 Applications can catch the temporary variant to back off and retry, and treat the permanent variant as a signal
-to alert or shut down.
+to alert.
+
+In both cases Jedis switches to another database as soon as one is usable again, whatever its weight: when a health
+check reports it healthy, or when a command finds the active database unusable while another one is usable (for
+example once that database's grace period has ended, or when health checks are disabled). If the active database
+itself recovers, the client resumes using it.
 
 ### Health Check Configuration and Customization
 
@@ -548,7 +553,7 @@ MultiDbClient client = MultiDbClient.builder()
 | `SwitchReason`    | Triggered by                                                                                   |
 |-------------------|------------------------------------------------------------------------------------------------|
 | `CIRCUIT_BREAKER` | The active database's circuit breaker tripped                                                  |
-| `HEALTH_CHECK`    | A health check reported the active database as unhealthy                                       |
+| `HEALTH_CHECK`    | The active database is unhealthy                                                               |
 | `FAILBACK`        | The periodic failback check found a healthy database with a higher weight                      |
 | `FORCED`          | `setActiveDatabase()`, `forceActiveDatabase()`, or removal of the active database via `removeDatabase()` |
 

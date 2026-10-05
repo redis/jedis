@@ -48,8 +48,8 @@ public final class Protocol {
   public static final byte[] BYTES_EQUAL = SafeEncoder.encode("=");
   public static final byte[] BYTES_ASTERISK = SafeEncoder.encode("*");
 
-  public static final byte[] POSITIVE_INFINITY_BYTES = "+inf".getBytes();
-  public static final byte[] NEGATIVE_INFINITY_BYTES = "-inf".getBytes();
+  public static final byte[] POSITIVE_INFINITY_BYTES = SafeEncoder.encode("+inf");
+  public static final byte[] NEGATIVE_INFINITY_BYTES = SafeEncoder.encode("-inf");
 
   static final List<KeyValue> PROTOCOL_EMPTY_MAP = Collections.unmodifiableList(new ArrayList<>(0));
 

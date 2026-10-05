@@ -57,7 +57,7 @@
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
-		<jackson.version>2.22.2</jackson.version>
+		<jackson.version>2.22.3</jackson.version>
 		<maven.surefire.version>3.5.6</maven.surefire.version>
 		<junit.version>5.14.4</junit.version>
 		<!-- Default JVM options for tests -->
@@ -115,7 +115,7 @@
 		<dependency>
 			<groupId>com.kohlschutter.junixsocket</groupId>
 			<artifactId>junixsocket-core</artifactId>
-			<version>2.11.0</version>
+			<version>2.11.1</version>
 			<type>pom</type>
 			<scope>test</scope>
 		</dependency>
@@ -353,7 +353,7 @@
 			</plugin>
 			<plugin>
 				<artifactId>maven-compiler-plugin</artifactId>
-				<version>3.15.0</version>
+				<version>3.16.0</version>
 				<configuration>
 					<source>1.8</source>
 					<target>1.8</target>
@@ -638,6 +638,9 @@
 						<include>src/test/jmh/**/*.java</include>
 						<include>**/RedisMultiDbClientSideCacheTest.java</include>
 						<include>**/MultiDbCSCTest.java</include>
+						<include>**/AuthXManagerHookRegistrationTest.java</include>
+						<include>**/TrackingConnectionPoolAuthXManagerTest.java</include>
+						<include>**/SentineledConnectionProviderAuthXManagerTest.java</include>
 						<include>**/*HashImport*.java</include>
 						<include>**/*Himport*.java</include>
 						<include>**/ConnectionRegistry*.java</include>
@@ -655,6 +658,9 @@
 						<include>**/SocketAddress*.java</include>
 						<include>**/sch/*.java</include>
 						<include>**/ConnectionFactoryRebindTest.java</include>
+						<include>**/scenario/EnterpriseSentinelSupport.java</include>
+						<include>**/scenario/RedisEnterpriseClusterStatus.java</include>
+						<include>**/scenario/RedisEnterpriseClusterStatusUnitTests.java</include>
 					</includes>
 				</configuration>
 				<executions>
@@ -747,7 +753,7 @@
 				<plugins>
 					<plugin>
 						<artifactId>maven-compiler-plugin</artifactId>
-						<version>3.15.0</version>
+						<version>3.16.0</version>
 						<configuration>
 							<source>1.8</source>
 							<target>1.8</target>
@@ -780,7 +786,7 @@
 					<plugin>
 						<groupId>org.apache.maven.plugins</groupId>
 						<artifactId>maven-compiler-plugin</artifactId>
-						<version>3.15.0</version>
+						<version>3.16.0</version>
 						<configuration>
 							<source>1.8</source>
 							<target>1.8</target>
@@ -808,7 +814,7 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>build-helper-maven-plugin</artifactId>
-						<version>3.6.1</version>
+						<version>3.6.2</version>
 						<executions>
 							<execution>
 								<id>add-jmh-source</id>
@@ -827,7 +833,7 @@
 					<plugin>
 						<groupId>org.codehaus.mojo</groupId>
 						<artifactId>exec-maven-plugin</artifactId>
-						<version>3.6.3</version>
+						<version>3.6.4</version>
 						<executions>
 							<execution>
 								<id>run-benchmarks</id>

@@ -36,6 +36,16 @@ jobs:
       - name: Maven offline
         run: |
           mvn -q dependency:go-offline
+      - name: Record CPU and Redis worker settings
+        run: |
+          mkdir -p redis-logs
+          {
+            echo "runner nproc: $(nproc)"
+            echo "runner online CPUs: $(getconf _NPROCESSORS_ONLN)"
+            lscpu | grep -E "^(Architecture|CPU\(s\)|Model name|Thread|Core)"
+            echo "redis container online CPUs: $(docker exec ${{ job.services.redis.id }} getconf _NPROCESSORS_ONLN)"
+            docker exec ${{ job.services.redis.id }} redis-cli FT.CONFIG GET WORKERS
+          } | tee redis-logs/ci-env.txt
       - name: Run doctests
         run: |
           mvn -Pdoctests clean compile test

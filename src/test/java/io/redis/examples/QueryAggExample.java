@@ -217,10 +217,10 @@ public class QueryAggExample {
         }
 
         // STEP_START agg1
-        AggregationResult res1 = jedis.ftAggregate("idx:bicycle",
+        AggregationResult res1 = ReproProfile.aggregate(jedis, "idx:bicycle", "agg1 @condition:{new}",
             new AggregationBuilder("@condition:{new}")
                     .load("__key", "price")
-                    .apply("@price - (@price * 0.1)", "discounted")
+                    .apply("@price - (@price * 0.1)", "discounted"), 5
         );
         
         List<Row> rows1 = res1.getRows();
@@ -247,12 +247,12 @@ public class QueryAggExample {
 
 
         // STEP_START agg2
-        AggregationResult res2 = jedis.ftAggregate("idx:bicycle",
+        AggregationResult res2 = ReproProfile.aggregate(jedis, "idx:bicycle", "agg2 * GROUPBY @condition",
             new AggregationBuilder("*")
                     .load("price")
                     .apply("@price<1000", "price_category")
                     .groupBy("@condition",
-                        Reducers.sum("@price_category").as("num_affordable"))
+                        Reducers.sum("@price_category").as("num_affordable")), 3
         );
 
         List<Row> rows2 = res2.getRows();

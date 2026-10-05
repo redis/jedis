@@ -219,9 +219,9 @@ public class QueryRangeExample {
 
 
         // STEP_START range1
-        SearchResult res1 = jedis.ftSearch(
+        SearchResult res1 = ReproProfile.search(jedis,
             "idx:bicycle", "@price:[500 1000]",
-            FTSearchParams.searchParams().returnFields("price"));
+            FTSearchParams.searchParams().returnFields("price"), 3);
         System.out.println(res1.getTotalResults()); // >>> 3
 
         List<Document> docs1 = res1.getDocuments();

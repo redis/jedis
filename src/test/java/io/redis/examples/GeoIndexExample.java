@@ -83,8 +83,8 @@ public class GeoIndexExample {
         // REMOVE_END
 
         // STEP_START geo_query
-        SearchResult geoResult = jedis.ftSearch("productidx",
-            "@location:[-104.800644 38.846127 100 mi]"
+        SearchResult geoResult = ReproProfile.search(jedis, "productidx",
+            "@location:[-104.800644 38.846127 100 mi]", null, 1
         );
 
         System.out.println(geoResult.getTotalResults()); // >>> 1

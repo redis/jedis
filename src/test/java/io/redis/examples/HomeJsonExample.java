@@ -87,8 +87,8 @@ public class HomeJsonExample {
         // REMOVE_END
 
         // STEP_START query1
-        SearchResult findPaulResult = jedis.ftSearch("idx:users",
-             "Paul @age:[30 40]"
+        SearchResult findPaulResult = ReproProfile.search(jedis, "idx:users",
+             "Paul @age:[30 40]", null, 1
         );
         
         System.out.println(findPaulResult.getTotalResults()); // >>> 1
@@ -105,10 +105,10 @@ public class HomeJsonExample {
         // REMOVE_END
 
         // STEP_START query2
-        SearchResult citiesResult = jedis.ftSearch("idx:users",
+        SearchResult citiesResult = ReproProfile.search(jedis, "idx:users",
             "Paul",
             FTSearchParams.searchParams()
-                .returnFields("city")
+                .returnFields("city"), 2
         );
 
         System.out.println(citiesResult.getTotalResults()); // >>> 2
@@ -209,8 +209,8 @@ public class HomeJsonExample {
         // REMOVE_END
         
         // STEP_START query1_hash
-        SearchResult findPaulHashResult = jedis.ftSearch("hash-idx:users",
-             "Paul @age:[30 40]"
+        SearchResult findPaulHashResult = ReproProfile.search(jedis, "hash-idx:users",
+             "Paul @age:[30 40]", null, 1
         );
         
         System.out.println(findPaulHashResult.getTotalResults()); // >>> 1

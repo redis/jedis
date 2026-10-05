@@ -211,7 +211,7 @@ public class QueryFtExample {
         }
 
         // STEP_START ft1
-        SearchResult res1 = jedis.ftSearch("idx:bicycle", "@description: kids");
+        SearchResult res1 = ReproProfile.search(jedis, "idx:bicycle", "@description: kids", null, 2);
         System.out.println(res1.getTotalResults()); // >>> 2
 
         List<Document> docs1 = res1.getDocuments();

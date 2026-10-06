@@ -11,6 +11,12 @@
 
 * Client-side Caching: <https://github.com/Redislabs-Solution-Architects/redis-client-side-caching-csc-jedis-demo>
 
+When caching JSON reads, `jsonGet(String, Path2...)` can return `JSONObject` or
+`JSONArray` values. Each cache read returns an independent JSON container, so
+modifying a returned object or array does not modify the cached value. See the
+[8.1.0 release notes](release-notes/8.1.0.md#json-object-and-array-values-in-client-side-caching)
+for the supported scope and the limitation for collections containing JSON values.
+
 ## JSON
 
 * Store, Read and Search JSON: <https://redis.io/kb/doc/1cd7hi2721/learn-to-store-read-and-search-data-in-json-documents-using-jedis>

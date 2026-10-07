@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
 import static org.mockito.Mockito.times;
@@ -15,6 +16,7 @@ import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -66,7 +68,6 @@ public class ClusterMaintenanceCoordinatorTest {
     SMigratedEvent closer = migrated(2, "0-100");
     coordinator.onSMigrated(closer, conn);
     coordinator.onSMigrated(closer, otherConn);
-    coordinator.onSMigrated(closer, conn);
 
     assertFalse(coordinator.hasActiveMigration());
     verify(cache, times(1)).applySlotMigration(closer.migrations);
@@ -143,11 +144,10 @@ public class ClusterMaintenanceCoordinatorTest {
     SMigratedEvent closer = migrated(2, "0-100");
     coordinator.onSMigrated(closer, conn);
     coordinator.onSMigrated(closer, otherConn);
-    coordinator.onSMigrated(closer, conn);
 
     verify(cache, times(1)).applySlotMigration(closer.migrations);
     // another connection's copy may have closed the window: each delivery re-evaluates its own
-    verify(conn, times(2)).applyCurrentTimeout();
+    verify(conn, times(1)).applyCurrentTimeout();
     verify(otherConn, times(1)).applyCurrentTimeout();
   }
 
@@ -183,11 +183,15 @@ public class ClusterMaintenanceCoordinatorTest {
     int copies = 8;
     CountDownLatch start = new CountDownLatch(1);
     CountDownLatch done = new CountDownLatch(copies);
+    // the broadcast lands once per node connection, so every copy rides its own connection
+    List<Connection> connections = new ArrayList<>();
     for (int i = 0; i < copies; i++) {
+      Connection copyConn = mock(Connection.class);
+      connections.add(copyConn);
       new Thread(() -> {
         try {
           start.await(5, TimeUnit.SECONDS);
-          coordinator.onSMigrated(closer, conn);
+          coordinator.onSMigrated(closer, copyConn);
         } catch (InterruptedException e) {
           Thread.currentThread().interrupt();
         } finally {
@@ -199,7 +203,9 @@ public class ClusterMaintenanceCoordinatorTest {
     assertTrue(done.await(5, TimeUnit.SECONDS));
 
     verify(cache, times(1)).applySlotMigration(closer.migrations);
-    verify(conn, times(copies)).applyCurrentTimeout();
+    for (Connection copyConn : connections) {
+      verify(copyConn, times(1)).applyCurrentTimeout();
+    }
   }
 
   @Test

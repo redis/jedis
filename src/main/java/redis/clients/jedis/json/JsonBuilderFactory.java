@@ -11,6 +11,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.DoublePrecision;
 import redis.clients.jedis.util.SafeEncoder;
 
 public final class JsonBuilderFactory {
@@ -183,22 +184,73 @@ public final class JsonBuilderFactory {
       if (data == null) {
         return null;
       }
-      if (data instanceof byte[]) {
-        JSONArray arr = new JSONArray(SafeEncoder.encode((byte[]) data));
-        List<Number> out = new ArrayList<>(arr.length());
-        for (int i = 0; i < arr.length(); i++) {
-          out.add(arr.isNull(i) ? null : toLongOrDouble(arr.getNumber(i)));
+      if (data instanceof List<?>) {
+        List<?> list = (List<?>) data;
+        List<Number> out = new ArrayList<>(list.size());
+        for (Object element : list) {
+          out.add(toNumber(element));
         }
         return out;
       }
-      if (data instanceof List<?>) {
-        return ((List<?>) data).stream()
-            .map(o -> o == null ? null : toLongOrDouble((Number) o))
-            .collect(Collectors.toList());
+      if (data instanceof byte[]) {
+        return parseJsonNumberArray(SafeEncoder.encode((byte[]) data));
       }
       throw new JedisException("Unsupported type: " + data.getClass());
     }
+
+    @Override
+    public String toString() {
+      return "List<Number>";
+    }
   };
+
+  private static Number toNumber(Object element) {
+    if (element == null) {
+      return null;
+    }
+    if (element instanceof byte[]) {
+      return parseNumber(SafeEncoder.encode((byte[]) element));
+    }
+    if (element instanceof Number) {
+      return toLongOrDouble((Number) element);
+    }
+    throw new JedisException("Unsupported type: " + element.getClass());
+  }
+
+  private static List<Number> parseJsonNumberArray(String json) {
+    String str = json.trim();
+    if (str.length() < 2 || str.charAt(0) != '[' || str.charAt(str.length() - 1) != ']') {
+      throw new JedisException("Expected a JSON array of numbers but got: " + json);
+    }
+    String body = str.substring(1, str.length() - 1).trim();
+    if (body.isEmpty()) {
+      return new ArrayList<>(0);
+    }
+    String[] tokens = body.split(",");
+    List<Number> out = new ArrayList<>(tokens.length);
+    for (String token : tokens) {
+      out.add(parseNumber(token.trim()));
+    }
+    return out;
+  }
+
+  private static Number parseNumber(String str) {
+    if ("null".equals(str)) {
+      return null;
+    }
+    if (str.indexOf('.') < 0 && str.indexOf('e') < 0 && str.indexOf('E') < 0) {
+      try {
+        return Long.parseLong(str);
+      } catch (NumberFormatException e) {
+        // integer outside the long range; fall through to double
+      }
+    }
+    try {
+      return DoublePrecision.parseFloatingPointNumber(str);
+    } catch (NumberFormatException e) {
+      throw new JedisException("Expected a number but got: " + str, e);
+    }
+  }
 
   private static Number toLongOrDouble(Number n) {
     if (n instanceof Long || n instanceof Double) {

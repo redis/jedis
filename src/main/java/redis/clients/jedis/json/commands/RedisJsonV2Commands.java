@@ -68,9 +68,9 @@ public interface RedisJsonV2Commands {
    * @param key the key holding the JSON document
    * @param path the JSONPath to the array(s)
    * @param value the number value to increment
-   * @return the incremented value as a {@link Long} or {@link Double}, one per matched path,
-   *         or {@code null} for a matched value that is not a number. Missing paths return an
-   *         empty list
+   * @return the incremented value as a {@link Long} or {@link Double}, one per matched path, or
+   *         {@code null} for a matched value that is not a number. Missing paths return an empty
+   *         list
    * @since 8.1
    */
   List<Number> jsonNumIncrByNumber(String key, Path2 path, Number value);

@@ -76,23 +76,11 @@ public abstract class JedisPubSubBase<T> {
   }
 
   public final void ping() {
-    authenticator.commandSync.lock();
-    try {
-      sendAndFlushCommand(Command.PING);
-      authenticator.resultHandler.add(pingResultHandler);
-    } finally {
-      authenticator.commandSync.unlock();
-    }
+    authenticator.sendAndFlushCommandWithReplyHandler(Command.PING, pingResultHandler);
   }
 
   public final void ping(T argument) {
-    authenticator.commandSync.lock();
-    try {
-      sendAndFlushCommand(Command.PING, argument);
-      authenticator.resultHandler.add(pingResultHandler);
-    } finally {
-      authenticator.commandSync.unlock();
-    }
+    authenticator.sendAndFlushCommandWithReplyHandler(Command.PING, pingResultHandler, argument);
   }
 
   public final boolean isSubscribed() {

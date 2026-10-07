@@ -111,7 +111,7 @@ Everything lives under **`src/test/resources/env/`**.
 src/test/resources/env/
 ├── docker-compose.yml         # all Redis services (standalone/sentinel/cluster/tls/mtls/stack)
 ├── .env                       # base vars (default REDIS_VERSION, image name, work dir)
-├── .env.v6.2 … .env.v8.10     # per-version overrides (just pin REDIS_VERSION)
+├── .env.v6.2 … .env.v8.12     # per-version overrides (just pin REDIS_VERSION)
 ├── redis1-2-5-8-sentinel/     # one dir per environment
 │   ├── config/node-<port>/redis.conf   # mounted read-only into the container
 │   └── work/                  # runtime state (TLS certs land in work/tls/)
@@ -206,7 +206,7 @@ TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
 
 | Command                  | Effect                                                                                                                                |
 |--------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| `make start version=8.6` | `docker compose … up -d --wait` with `.env` + `.env.v8.6`. Supported: 6.2, 7.2, 7.4, 8.0, 8.2, 8.4, 8.6, 8.8, 8.10 (default **8.10**). |
+| `make start version=8.6` | `docker compose … up -d --wait` with `.env` + `.env.v8.6`. Supported: 6.2, 7.2, 7.4, 8.0, 8.2, 8.4, 8.6, 8.8, 8.10, 8.12 (milestone `8.12-m02-int`; default **8.10**). |
 | `make stop`              | `docker compose … down`.                                                                                                              |
 | `make test [version=…]`  | `start` → `mvn clean verify` → `stop`.                                                                                                |
 | `mvn clean verify`       | Run tests against an already-started env (use this from the IDE between `make start`/`make stop`).                                    |
@@ -321,7 +321,7 @@ local env runs only a subset. Full coverage requires the Docker env.
 
 | Workflow             | Environment                     | What it does                                                                                                                                                                                                                                                                          |
 |----------------------|---------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `test-on-docker.yml` | **Docker (full)**               | Matrix over Redis 7.2 → 8.10. Uses the `run-tests` composite action: `make start version=<v>` → `TEST_ENV_PROVIDER=oss-docker`, `TEST_WORK_FOLDER=$REDIS_ENV_WORK_DIR`, `mvn -B -DskipUnitTests=true clean compile verify` → `make stop`. Uploads JaCoCo + Surefire/Failsafe reports. |
+| `test-on-docker.yml` | **Docker (full)**               | Matrix over Redis 7.2 → 8.12. Uses the `run-tests` composite action: `make start version=<v>` → `TEST_ENV_PROVIDER=oss-docker`, `TEST_WORK_FOLDER=$REDIS_ENV_WORK_DIR`, `mvn -B -DskipUnitTests=true clean compile verify` → `make stop`. Uploads JaCoCo + Surefire/Failsafe reports. |
 | `integration.yml`    | **Local-from-source (limited)** | Java 8; `make system-setup` builds Redis from source + the test module; `make test-local` runs the `oss-source` subset.                                                                                                                                                               |
 
 > Both clients pin **Java 8** for the test build. Use it when reproducing CI.

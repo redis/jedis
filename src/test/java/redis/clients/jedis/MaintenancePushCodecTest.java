@@ -120,6 +120,10 @@ public class MaintenancePushCodecTest {
     assertMalformed(PushType.MOVING, push(type("MOVING"), 30L, 15L, 6379L));
     // unparseable host:port
     assertMalformed(PushType.MOVING, push(type("MOVING"), 30L, 15L, bytes("no-port")));
+    // parseable but invalid host:port
+    assertMalformed(PushType.MOVING, push(type("MOVING"), 30L, 15L, bytes(":6380")));
+    assertMalformed(PushType.MOVING, push(type("MOVING"), 30L, 15L, bytes("h:0")));
+    assertMalformed(PushType.MOVING, push(type("MOVING"), 30L, 15L, bytes("h:65536")));
   }
 
   @Test
@@ -265,11 +269,25 @@ public class MaintenancePushCodecTest {
       sMigrated(12L, entry(bytes("no-port"), bytes("h2:7001"), bytes("0-100"))));
     assertMalformed(PushType.SMIGRATED,
       sMigrated(12L, entry(bytes("h1:7000"), bytes("h2:notaport"), bytes("0-100"))));
+    // parseable but invalid node addresses: empty host, port out of range
+    assertMalformed(PushType.SMIGRATED,
+      sMigrated(12L, entry(bytes(":7000"), bytes("h2:7001"), bytes("0-100"))));
+    assertMalformed(PushType.SMIGRATED,
+      sMigrated(12L, entry(bytes("h1:7000"), bytes("h2:0"), bytes("0-100"))));
+    assertMalformed(PushType.SMIGRATED,
+      sMigrated(12L, entry(bytes("h1:7000"), bytes("h2:-1"), bytes("0-100"))));
+    assertMalformed(PushType.SMIGRATED,
+      sMigrated(12L, entry(bytes("h1:7000"), bytes("h2:65536"), bytes("0-100"))));
     // unparseable slots
     assertMalformed(PushType.SMIGRATED,
       sMigrated(12L, entry(bytes("h1:7000"), bytes("h2:7001"), bytes("100-0"))));
     assertMalformed(PushType.SMIGRATED,
       sMigrated(12L, entry(bytes("h1:7000"), bytes("h2:7001"), bytes(""))));
+    // slot lists with trailing or lone commas must not yield a partial or empty slot set
+    assertMalformed(PushType.SMIGRATED,
+      sMigrated(12L, entry(bytes("h1:7000"), bytes("h2:7001"), bytes("1,"))));
+    assertMalformed(PushType.SMIGRATED,
+      sMigrated(12L, entry(bytes("h1:7000"), bytes("h2:7001"), bytes(","))));
     // one bad entry rejects the whole frame
     assertMalformed(PushType.SMIGRATED,
       sMigrated(12L, ok, entry(bytes("h1:7000"), bytes("h2:7001"), bytes("bad"))));

@@ -383,14 +383,17 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
     handedOff.executeCommand(Protocol.Command.PING);
     inflight.executeCommand(Protocol.Command.PING);
 
-    // the pre-MOVING connection is discarded on return, never handed out again
+    // the pre-MOVING connection is discarded on return, never handed out again; the pool is fully
+    // borrowed, so the next borrow can only be served by a connection created after the discard
+    assertEquals(client.getPool().getMaxTotal(), client.getPool().getNumActive(),
+      "the pool must be fully borrowed");
     long destroyedBefore = client.getPool().getDestroyedCount();
     inflight.close();
     assertTrue(client.getPool().getDestroyedCount() > destroyedBefore,
       "returning a connection borrowed before MOVING must destroy it");
     Connection next = client.getPool().getResource();
     assertConnectedToTarget(next, moving.target,
-      "replacement for the discarded connection must target the MOVING endpoint");
+      "a connection created after the discard must target the MOVING endpoint");
     next.close();
     handedOff.close();
 

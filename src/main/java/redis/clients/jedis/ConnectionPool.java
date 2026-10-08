@@ -4,6 +4,8 @@ import java.util.function.Consumer;
 
 import org.apache.commons.pool2.PooledObjectFactory;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import redis.clients.authentication.core.Token;
 import redis.clients.jedis.annots.Experimental;
@@ -14,6 +16,7 @@ import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.Pool;
 
 public class ConnectionPool extends Pool<Connection> {
+  private static final Logger log = LoggerFactory.getLogger(ConnectionPool.class);
 
   private AuthXManager authXManager;
   private PoolMaintenance maintenance = PoolMaintenance.OFF;

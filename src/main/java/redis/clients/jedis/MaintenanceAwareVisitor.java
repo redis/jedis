@@ -54,7 +54,7 @@ class MaintenanceAwareVisitor implements InitVisitor {
     }
 
     boolean strict = mConfig.getMode() == MaintenanceNotificationsConfig.Mode.ENABLED;
-    boolean keepOverrides = false;
+    boolean maintenanceOn = false;
 
     MaintenanceEventConsumer consumer = null;
     try {
@@ -80,7 +80,7 @@ class MaintenanceAwareVisitor implements InitVisitor {
         resolveEndpointType(connection, mConfig));
       try {
         connection.getStatusCodeReply();
-        keepOverrides = true;
+        maintenanceOn = true;
       } catch (JedisDataException e) {
 
         if (strict) {
@@ -92,7 +92,7 @@ class MaintenanceAwareVisitor implements InitVisitor {
           e.getMessage());
       }
     } finally {
-      if (!keepOverrides) {
+      if (!maintenanceOn) {
         connection.removePushConsumer(consumer);
         // Undo the relax overlays installed before the handshake — this connection does NOT
         // support maintenance notifications.

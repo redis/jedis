@@ -75,6 +75,11 @@ final class ClusterMaintenanceController
     warnUnsupported(e, c);
   }
 
+  @Override
+  public void close() {
+    // No resources to release for the cluster controller itself.
+  }
+
   private static void warnUnsupported(MaintenanceEvent e, Connection c) {
     logger.warn(
       "Standalone maintenance events are not supported on cluster connections: {} conn={}", e,

@@ -21,7 +21,5 @@ interface MaintenanceController extends AutoCloseable {
 
   void unregister(Connection connection);
 
-  @Override
-  default void close() {
-  }
+  void close();
 }

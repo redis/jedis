@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -185,6 +186,9 @@ public class JedisSentinelPoolTest {
         assertEquals(newMaster, reborrowed.getClient().getHostAndPort());
         assertEquals(newMaster.getPort(), serverPort(reborrowed));
       }
+
+      // Discarding it has to close the socket, not just drop it from the pool
+      assertFalse(borrowed.getConnection().isConnected());
 
       // Leave the demoted node as a healthy replica for the next failover test
       awaitReplicaReconfigured(sentinel, masterName);

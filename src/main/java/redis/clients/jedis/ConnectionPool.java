@@ -135,8 +135,8 @@ public class ConnectionPool extends Pool<Connection> {
     try {
       super.destroy();
     } finally {
-      maintenance.close();
       detachAuthenticationListener();
+      maintenance.close();
     }
   }
 

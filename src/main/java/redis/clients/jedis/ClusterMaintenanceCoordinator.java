@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.TimeoutSource.TimeoutInfo;
+import redis.clients.jedis.annots.VisibleForTesting;
 
 /**
  * Per-client dedup and apply point for the SMIGRATING/SMIGRATED cluster maintenance broadcast. Seq
@@ -75,10 +76,13 @@ final class ClusterMaintenanceCoordinator {
         return true;
       }
     }
-    while (migratingWindows.size() > MAX_HISTORY_OF_EVENTS) {
-      migratingWindows.pollFirstEntry();
-    }
     return false;
+  }
+
+  /** Windows currently open (expired ones included until the next gate check). */
+  @VisibleForTesting
+  int openMigrationWindows() {
+    return migratingWindows.size();
   }
 
   void onSMigrating(SMigratingEvent e, Connection c) {
@@ -88,6 +92,11 @@ final class ClusterMaintenanceCoordinator {
       if (logger.isDebugEnabled()) {
         logger.debug("Slot migration starting: {} (seq={}) conn={}", e.slots, e.seq,
           c.toIdentityString());
+      }
+      // a flood of openers whose closers never arrive must not grow without bound: the oldest
+      // windows go first, the TTL backstop would have reclaimed them anyway
+      while (migratingWindows.size() > MAX_HISTORY_OF_EVENTS) {
+        migratingWindows.pollFirstEntry();
       }
       while (seenSMigrating.size() > MAX_HISTORY_OF_EVENTS) {
         seenSMigrating.pollFirst();

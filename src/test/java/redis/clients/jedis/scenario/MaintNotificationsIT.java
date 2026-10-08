@@ -68,8 +68,15 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
 
   private static final int PROBE_DELAY_SECONDS = 3;
-  /** Relaxed probes succeed at the server delay, never at the base timeout. */
-  private static final long RELAXED_SUCCESS_FLOOR_MS = 2_500;
+  /** Headroom above the blocking base timeout that a relaxed probe must clear. */
+  private static final long BASE_TIMEOUT_MARGIN_MS = 500;
+  /**
+   * Minimum duration of a successful relaxed probe: above the blocking base timeout, so only
+   * relaxation could have let it succeed, and below {@code PROBE_DELAY_SECONDS}, so a genuine
+   * success meets it.
+   */
+  private static final long MIN_RELAXED_PROBE_DURATION_MS = CLIENT_BLOCKING_SOCKET_TIMEOUT_MS
+      + BASE_TIMEOUT_MARGIN_MS;
   private static final Duration PUSH_WAIT_TIMEOUT = Duration.ofSeconds(60);
 
   private static final CommandObject<List<String>> REGULAR_PROBE = new CommandObject<>(
@@ -457,7 +464,7 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
 
   private static void assertProbeSucceededAtServerDelay(ProbeContext probe,
       ReceivedEvents received) {
-    if (probe.error != null || probe.durationMillis < RELAXED_SUCCESS_FLOOR_MS) {
+    if (probe.error != null || probe.durationMillis < MIN_RELAXED_PROBE_DURATION_MS) {
       fail(probe + " must survive to the server delay inside the relaxation window; events: "
           + received.all());
     }

@@ -26,12 +26,10 @@ import com.redis.test.fi.StandaloneEffect;
 import com.redis.test.fi.StandaloneTriggerCatalog;
 
 import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.Named;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
@@ -66,6 +64,9 @@ public class MaintenanceTrafficResilienceIT {
   // Keep traffic flowing this long after the effect completes to cover the MOVING grace tail — the
   // client-side grace timer runs past the server-reported completion — then drain and assert.
   private static final long POST_EFFECT_TRAFFIC_MS = 20_000;
+  /** The stock maintenance-notifications config (mode AUTO) the hitless guarantee is made for. */
+  private static final MaintenanceNotificationsConfig DEFAULT_MAINTENANCE = MaintenanceNotificationsConfig
+      .builder().build();
 
   private RedisClient client;
   private long bdbId = -1;
@@ -79,21 +80,11 @@ public class MaintenanceTrafficResilienceIT {
       CATALOG.effect(StandaloneEffect.DATA_MOVEMENT_NO_CONN_DROP).trigger("failover").scenario());
   }
 
-  /** Maintenance-notifications configs to exercise — today only the stock default (mode AUTO). */
-  static Stream<Named<MaintenanceNotificationsConfig>> maintenanceConfigs() {
-    return Stream.of(Named.of("default", MaintenanceNotificationsConfig.builder().build()));
-  }
-
-  static Stream<Arguments> scenariosWithMaintenanceConfig() {
-    return scenarios().flatMap(s -> maintenanceConfigs().map(config -> Arguments.of(s, config)));
-  }
-
-  @ParameterizedTest(name = "{0} [{1}]")
-  @MethodSource("scenariosWithMaintenanceConfig")
+  @ParameterizedTest(name = "{0}")
+  @MethodSource("scenarios")
   @Timeout(420)
-  void trafficUninterruptedDuringMaintenance(Scenario scenario,
-      MaintenanceNotificationsConfig maint) {
-    TrafficRunner traffic = runTrafficAcrossEffect(scenario, maint);
+  void trafficUninterruptedDuringMaintenance(Scenario scenario) {
+    TrafficRunner traffic = runTrafficAcrossEffect(scenario, DEFAULT_MAINTENANCE);
     if (traffic.errorCount() != 0) {
       fail("topology change must be hitless — " + traffic.summary(), traffic.firstError());
     }

@@ -34,6 +34,13 @@ import java.util.Set;
  * <li><strong>Retry Logic:</strong> Configurable retry mechanisms with exponential backoff</li>
  * </ul>
  * <p>
+ * <strong>Prolonged outages:</strong> while no endpoint is available, commands fail with
+ * {@code JedisTemporarilyNotAvailableException} and the client keeps trying to recover. Once the
+ * configured failover attempts are exhausted they fail with
+ * {@code JedisPermanentlyNotAvailableException}, and Jedis gives no guarantee of automatic
+ * recovery: create a new client.
+ * </p>
+ * <p>
  * <strong>Usage Example:</strong>
  * </p>
  * 

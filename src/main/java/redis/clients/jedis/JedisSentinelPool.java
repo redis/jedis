@@ -347,7 +347,7 @@ public class JedisSentinelPool extends Pool<Jedis> {
     protected int port;
     protected long subscribeRetryWaitTimeMillis = 5000;
     protected volatile Jedis j;
-    protected AtomicBoolean running = new AtomicBoolean(false);
+    protected AtomicBoolean running = new AtomicBoolean(true);
 
     protected MasterListener() {
     }
@@ -368,18 +368,16 @@ public class JedisSentinelPool extends Pool<Jedis> {
     @Override
     public void run() {
 
-      running.set(true);
-
       while (running.get()) {
 
         try {
-          // double check that it is not being shutdown
+          final HostAndPort hostPort = new HostAndPort(host, port);
+          j = new Jedis(hostPort, sentinelClientConfig);
+
+          // Shutdown may have happened before the new connection was published.
           if (!running.get()) {
             break;
           }
-          
-          final HostAndPort hostPort = new HostAndPort(host, port);
-          j = new Jedis(hostPort, sentinelClientConfig);
 
           // code for active refresh
           List<String> masterAddr = j.sentinelGetMasterAddrByName(masterName);

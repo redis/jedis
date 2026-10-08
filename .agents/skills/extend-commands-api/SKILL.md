@@ -1,12 +1,65 @@
 ---
 name: extend-commands-api
-description: Add or extend Redis commands in the Jedis client API — a new core command, a family of new commands, an extension to an existing command's options, or a module command (Search/TimeSeries/JSON/Bloom). Gathers evidence (Redis server PR, HLD document), plans the full implementation matrix in plan mode, then implements with unit and integration tests following Jedis maintainer conventions.
+description: Add or extend Redis commands in the Jedis client API — a new core command, a family of new commands, an extension to an existing command's options, or a module command (Search/TimeSeries/JSON/Bloom). Gathers evidence (Redis server PR, HLD document), plans the full implementation matrix, then implements with unit and integration tests following Jedis maintainer conventions. Runs supervised (plan mode, user approval) by default, or unattended for automation such as the RedisClientsBot parity pipeline.
+metadata:
+  modes: supervised, unattended
 ---
 
 # Extend the Jedis Commands API
 
 Implement a new Redis command (or extend an existing one) in Jedis, following the
 conventions Jedis maintainers enforce in review.
+
+## Modes — read this first
+
+This skill runs in one of two modes. The engineering rules in every section below
+are identical in both; only who answers questions and approves the plan differs.
+
+- **Supervised** (default): a human is in the session. Ask the questions, present
+  the plan in plan mode and wait for approval, as written below.
+- **Unattended**: no human will answer or approve anything, so never stop to wait.
+  Use it ONLY when the invoking prompt says `Mode: unattended` or the environment
+  has `CLIENT_SKILL_MODE=unattended`. Never switch to it on your own.
+
+In unattended mode the invoking prompt supplies the inputs a human would give:
+the HLD path (normally `./HLD.md`), the server PR reference, the test command, and
+two running servers from the `redislabs/client-libs-test` image it names, password-
+protected like the local Docker env and without TLS: a standalone (`$REDIS_URL`,
+password `$REDIS_STANDALONE_PASSWORD`, i.e. `foobared`) and a 6-node cluster with 3
+masters and 3 replicas (`$REDIS_CLUSTER_URLS`, password `$REDIS_CLUSTER_PASSWORD`,
+i.e. `cluster`). `$REDIS_ENDPOINTS_CONFIG_PATH` already points at an `endpoints.json`
+that describes them, passwords included, as `standalone0`, `modules-docker` (the
+standalone; the image ships the modules) and `cluster-stable`. Jedis tests read that
+variable (`TestEnvUtil.getEndpointsConfigPath`) and authenticate with the passwords in
+it, so the integration tests run against both servers unchanged. Wherever a step below has an **Unattended:**
+note, follow the note:
+
+| Step | Supervised | Unattended |
+|---|---|---|
+| Phase 0.1 HLD | ask the user for the path | read the given HLD fully |
+| Phase 0.2 server PR | `gh`, asking to run it outside the sandbox if needed | no `gh` at all: the given PR reference, the HLD's facts, else the unauthenticated GitHub REST API |
+| Phase 0.3 environment / image tag | `make start`; ask for an image tag if the command is missing | no Docker: probe the given standalone and cluster; if the command is missing there, continue with gated tests |
+| Phase 0.4 redis-cli scenarios | run against `standalone0` | run against the given Redis URL; if `redis-cli` is unavailable, write them as unverified transcripts |
+| Phase 1 plan + approval | plan mode, ask before editing | write the plan into the final report, then implement it in the same session |
+| Running tests | `make start`, `mvn -B verify`, `make stop` | `mvn -B test` (unit), then the changed family's integration tests on standalone **and** cluster through `$REDIS_ENDPOINTS_CONFIG_PATH` (see Running the tests) |
+| An open design question | ask the user | take the HLD's choice (else the most consistent existing Jedis convention) and list it as an open question in the report |
+
+Unattended runs also follow these rules:
+- **Change files.** A run that ends without changes has failed. Stop without
+  editing only when implementing is impossible, and say exactly why in the report.
+- **Don't commit, push, or open a PR.** The automation that invoked you does that.
+  Don't edit `.github/` workflows, release/version files or `pom.xml` versions.
+  The formatter includes in `pom.xml` are the exception (see B.7).
+- **Finish with a report** covering, in plain text with no placeholders:
+  - what was implemented
+  - the decision-tree class (A–D) and the plan
+  - design decisions, and which layers intentionally did NOT change and why
+  - unit results; integration results with the test classes run on standalone and on
+    cluster; integration tests left gated, skipped, or out of scope
+  - steps skipped because they need a human or Docker
+  - open questions for maintainers
+
+  This feeds the PR description (see the PR hygiene checklist).
 
 ## Phase 0 — Gather evidence BEFORE planning
 
@@ -16,8 +69,18 @@ Do all of the following before writing any plan or code:
    markdown file containing the High-Level Design for the command(s) (or confirm
    that no HLD exists). If a path is given, read it fully — it is the primary
    source for syntax, semantics, reply shape, and edge cases.
-2. **Find the server-side PR in the `redis/redis` GitHub repo.** First verify
-   that `gh` works in the current (sandboxed) environment:
+   **Unattended:** don't ask; read the HLD path the invoking prompt gives.
+2. **Find the server-side PR in the `redis/redis` GitHub repo.**
+   **Unattended:** skip every `gh` command in this step: `gh auth status`, and the
+   `gh search` / `gh pr view` / `gh pr diff` block below. Don't ask for permission.
+   Use the server PR reference the invoking prompt gives. The HLD usually quotes
+   the syntax, the reply shapes and the first version. Fill any gaps from the
+   unauthenticated GitHub REST API (e.g.
+   `https://api.github.com/repos/redis/redis/pulls/<num>/files`, then the raw
+   `src/commands/*.json` file), and go on to "From the server PR, extract".
+
+   **Supervised:** first verify that `gh` works in the current (sandboxed)
+   environment:
    ```bash
    gh auth status
    ```
@@ -80,6 +143,14 @@ Do all of the following before writing any plan or code:
    be gated/skipped until a `redislabs/client-libs-test` image ships the change.
    Keep the environment running for later test runs, or `make stop` if you
    won't need it soon.
+   **Unattended:** no Docker, no `make start`/`make stop`, no image-tag question.
+   The servers already run the target image. Probe the standalone with the same
+   `INFO server` / `COMMAND INFO` / `COMMAND DOCS` checks (e.g.
+   `redis-cli -u "$REDIS_URL" COMMAND INFO <COMMAND>`; the URL carries the
+   credentials), and the cluster with `redis-cli -c -h "$REDIS_CLUSTER_HOST"
+   -p "$REDIS_CLUSTER_START_PORT" -a "$REDIS_CLUSTER_PASSWORD" --no-auth-warning CLUSTER INFO`
+   (expect `cluster_state:ok`). If the command is missing, continue anyway with
+   gated integration tests, and say so in the report.
 4. **Create redis-cli showcase test cases.** Once the command is available on
    the running environment, derive a small set of redis-cli scenarios from the
    HLD and the server PR and run them against `standalone0`. These serve two
@@ -104,6 +175,17 @@ Do all of the following before writing any plan or code:
    assertions, and the PR description. If the command could not be made
    available on any image (see step 3), still write the scenarios from the
    HLD/PR as *expected* transcripts and mark them unverified.
+   **Unattended:** run the scenarios against `$REDIS_URL` instead of
+   `standalone0`. For a keyed command, also run one through the cluster. Always
+   pass the Redis command as arguments: a bare `redis-cli` waits on stdin and
+   hangs a headless run.
+   ```bash
+   redis-cli -u "$REDIS_URL" <COMMAND> <args...>
+   redis-cli -c -h "$REDIS_CLUSTER_HOST" -p "$REDIS_CLUSTER_START_PORT" \
+     -a "$REDIS_CLUSTER_PASSWORD" --no-auth-warning <COMMAND> <args...>
+   ```
+   If `redis-cli` isn't installed, write them as unverified expected transcripts. Keep the scratch file out of the change; carry the
+   scenarios into the report instead.
 5. **Read `docs/integration-testing.md`** in the Jedis repo — it defines the test
    environment, endpoint discovery, `*Test` vs `*IT` naming, and how to run tests.
 6. **Trace one analogous existing command** end-to-end in the codebase (same
@@ -115,16 +197,22 @@ Do all of the following before writing any plan or code:
    ```
    Strip `-SNAPSHOT` (e.g. `8.0.0-SNAPSHOT` → `@since 8.0`).
 
-## Phase 1 — Plan mode, then explicit approval
+## Phase 1 — Plan, then approval (supervised) or straight to implementation (unattended)
 
-Enter **plan mode**. Using the evidence, classify the change with the decision
-tree below, enumerate the exact file-by-file touch list, the test matrix, and the
-gating annotations. Open the plan with a short "what this feature enables"
-section built from the redis-cli showcase scenarios (Phase 0 step 4), including
-one or two representative command/reply transcripts, so the user sees the
-use-case before the file list. Present the plan to the user and **explicitly ask
-permission to execute in auto-accept mode** before implementing. Do not start
-editing files until the user approves.
+Using the evidence, classify the change with the decision tree below, enumerate
+the exact file-by-file touch list, the test matrix, and the gating annotations.
+Open the plan with a short "what this feature enables" section built from the
+redis-cli showcase scenarios (Phase 0 step 4), including one or two
+representative command/reply transcripts, so the reader sees the use-case before
+the file list.
+
+- **Supervised:** enter **plan mode**, present the plan to the user and
+  **explicitly ask permission to execute in auto-accept mode** before
+  implementing. Do not start editing files until the user approves.
+- **Unattended:** don't enter plan mode and don't wait. The automation's
+  approval was the merged HLD. Keep the plan for the final report, then
+  implement it right away, following the whole matrix exactly as a supervised
+  run would.
 
 ## Decision tree — what kind of change is this?
 
@@ -331,6 +419,43 @@ silently produce the wrong bytecode target.
   `redislabs/client-libs-test` tag yet, say so: the integration tests will be
   skipped/gated (that is expected and acceptable — `@EnabledOnCommand` /
   `@SinceRedisVersion` handle it), but they must still be written and compile.
+- **Unattended:** no `make start`/`make stop`. The servers are already running
+  and `$REDIS_ENDPOINTS_CONFIG_PATH` points the tests at them. Run:
+  1. Unit tests: `mvn -B test`, or the test command the invoking prompt gives.
+  2. The changed family's integration tests on **both** topologies, through
+     Failsafe only. Two kinds of runner exist:
+     - existing core families: `@Tag("integration")` `*Test` classes (Failsafe's
+       `it-tagged` execution), namely the unified standalone runner
+       `RedisClient<Family>CommandsTest`, the cluster runner
+       `Cluster<Family>CommandsTest` and the legacy `commands/jedis/<Family>CommandsTest`
+     - module and new families: `*IT` classes (the `it-suffix` execution), a
+       standalone runner in `commands/unified/client/<module>/` (e.g.
+       `BloomRedisClientCommandsIT`, on `modules-docker`) and a cluster runner in
+       `commands/unified/cluster/<module>/` (e.g. `BloomClusterCommandsIT`, on
+       `cluster-stable`; the cluster image loads the modules too)
+     
+     Select them with one wildcard that covers both kinds and every topology, plus
+     an explicit name for any new runner that doesn't match it:
+     ```bash
+     mvn -B -DskipUnitTests=true -Dit.failIfNoSpecifiedTests=false \
+       -Dit.test='*<Family>*Commands*' verify
+     ```
+     `-Dit.failIfNoSpecifiedTests=false` is needed because each Failsafe execution
+     sees the same filter and one of them usually matches nothing. That also means
+     `verify` can pass having run **no** test, so don't trust the exit code alone.
+  3. Prove it ran: read `target/failsafe-reports/*.txt` (one file per class, named
+     by its fully qualified class name) and list every class that ran with its counts.
+     A class in package `redis.clients.jedis.commands.unified.cluster` (any
+     sub-package) is a cluster run; anything else is standalone. Don't go by the
+     name prefix: module runners are `<Family>ClusterCommandsIT`, and one is
+     `FTHybridCommandsClusterIT`. At least one standalone class and one cluster class
+     must report `Tests run:` > 0 for the changed commands. This applies to module
+     families too. If either topology ran nothing, fix the filter and rerun. Don't
+     report success.
+  
+  Tests that need endpoints the file doesn't have (sentinel, TLS, ACL users,
+  `cluster-unbound`) are out of scope: list them as not run. Report passed /
+  failed / skipped per topology, and the classes run.
 
 ## PR hygiene checklist (verify before finishing)
 
@@ -344,4 +469,5 @@ silently produce the wrong bytecode target.
       guide entry if anything breaks.
 - [ ] PR description states: server PR link, version gate choice and why, which
       layers intentionally did NOT change and why, and behavior against older
-      servers.
+      servers. (**Unattended:** put these in the final report; the automation
+      builds the PR description from it.)

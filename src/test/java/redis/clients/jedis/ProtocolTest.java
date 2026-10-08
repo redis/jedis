@@ -29,6 +29,14 @@ import redis.clients.jedis.util.SafeEncoder;
 
 public class ProtocolTest {
   @Test
+  public void infinityUsesProtocolEncoding() {
+    assertArrayEquals(new byte[] { '+', 'i', 'n', 'f' },
+      Protocol.toByteArray(Double.POSITIVE_INFINITY));
+    assertArrayEquals(new byte[] { '-', 'i', 'n', 'f' },
+      Protocol.toByteArray(Double.NEGATIVE_INFINITY));
+  }
+
+  @Test
   public void buildACommand() throws IOException {
     PipedInputStream pis = new PipedInputStream();
     BufferedInputStream bis = new BufferedInputStream(pis);

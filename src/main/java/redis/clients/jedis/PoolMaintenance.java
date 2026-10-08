@@ -72,9 +72,9 @@ abstract class PoolMaintenance implements AutoCloseable {
   }
 
   /**
-   * Cluster pools need only the controller on the factory: it installs the handshake visitor on each
-   * new connection, which is where the pool-wide relax gate and the event dispatch are wired. Nothing
-   * is remapped or retired per pool, so there is no pool-side reaction to attach.
+   * Cluster pools need only the controller on the factory: it installs the handshake visitor on
+   * each new connection, which is where the pool-wide relax gate and the event dispatch are wired.
+   * Nothing is remapped or retired per pool, so there is no pool-side reaction to attach.
    */
   private static final class ClusterPoolMaintenance extends PoolMaintenance {
 

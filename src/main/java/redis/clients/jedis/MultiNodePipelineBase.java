@@ -1,12 +1,13 @@
 package redis.clients.jedis;
 
+import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -121,10 +122,11 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
         ? new CountDownLatch(pipelinedResponses.size())
         : null;
 
-    // Nodes whose read failed. Their cleanup is deferred to this thread: the workers run while
-    // this thread may still be iterating pipelinedResponses, and the iterator's remove() acts on
-    // whichever entry this thread last returned, not on the worker's node.
-    List<HostAndPort> failedNodes = new CopyOnWriteArrayList<>();
+    // The read error of each failed node, recorded by its worker. The bookkeeping cleanup is
+    // deferred to this thread: a worker runs while this thread may still be iterating
+    // pipelinedResponses, where remove() acts on whichever entry this thread last returned
+    // rather than on the worker's node.
+    Map<HostAndPort, JedisConnectionException> failures = new ConcurrentHashMap<>();
 
     for (Map.Entry<HostAndPort, Queue<Response<?>>> entry : pipelinedResponses.entrySet()) {
       HostAndPort nodeKey = entry.getKey();
@@ -138,7 +140,11 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
           }
         } catch (JedisConnectionException jce) {
           log.error("Error with connection to " + nodeKey, jce);
-          failedNodes.add(nodeKey);
+          // getMany discards the replies it had already read, so none of this node's responses
+          // is set. Complete them with the error, otherwise get() reports them as not synced and
+          // the caller cannot tell which commands were left in doubt.
+          queue.forEach(response -> response.setFailure(jce));
+          failures.put(nodeKey, jce);
           IOUtils.closeQuietly(connection);
         } finally {
           if (multiNode) {
@@ -158,13 +164,30 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
       releasePipelineExecutor(executorService);
     }
 
-    // cleanup the failed connections so the next command to those nodes obtains a fresh one
-    for (HostAndPort nodeKey : failedNodes) {
-      pipelinedResponses.remove(nodeKey);
-      connections.remove(nodeKey);
+    // Drop the failed nodes so the next command routed to one of them obtains a fresh connection,
+    // keeping both maps in step. Reporting follows pipeline order, not completion order.
+    JedisConnectionException failure = null;
+    if (!failures.isEmpty()) {
+      for (HostAndPort nodeKey : new ArrayList<>(pipelinedResponses.keySet())) {
+        JedisConnectionException nodeFailure = failures.get(nodeKey);
+        if (nodeFailure == null) {
+          continue;
+        }
+        pipelinedResponses.remove(nodeKey);
+        connections.remove(nodeKey);
+        if (failure == null) {
+          failure = nodeFailure;
+        } else {
+          failure.addSuppressed(nodeFailure);
+        }
+      }
     }
 
     syncing = false;
+
+    if (failure != null) {
+      throw failure;
+    }
   }
 
   /**

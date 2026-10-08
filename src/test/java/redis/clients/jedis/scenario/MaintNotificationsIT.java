@@ -361,6 +361,10 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
     ReceivedEvent moving = inflightEvents.all().stream()
         .filter(e -> PushMessageTypes.MOVING.equals(e.type)).findFirst().get();
     assertNotNull(moving.target, "endpoint_rebind MOVING must carry a target");
+    // the test databases use a single proxy, so MOVING retires the whole pool at once — including
+    // the pinned connection, which never read it
+    assertTrue(MaintNotificationsTestSupport.isRetired(pinned),
+      "MOVING must retire every connection on the old node, not only the receiver");
     // a long in-flight command on the old endpoint still completes inside the grace window
     inflight.executeCommand(REGULAR_PROBE);
 
@@ -368,6 +372,8 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
 
     // new connections are created toward the notification's endpoint, relaxed like the rest
     Connection handedOff = client.getPool().getResource();
+    assertFalse(MaintNotificationsTestSupport.isRetired(handedOff),
+      "the pool handed out a connection that MOVING retired");
     assertConnectedToTarget(handedOff, moving.target,
       "new connection must target the MOVING endpoint");
     assertEquals(RELAXED_TIMEOUT_MS,

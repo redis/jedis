@@ -309,6 +309,22 @@ public class ClusterMaintenanceCoordinatorTest {
   }
 
   @Test
+  public void openWindowsAreCappedOldestFirst() {
+    for (long seq = 1; seq <= 130; seq++) {
+      coordinator.onSMigrating(migrating(seq, "0"), conn);
+    }
+    assertEquals(128, coordinator.openMigrationWindows(), "bounded by the history cap");
+    assertTrue(coordinator.hasActiveMigration());
+
+    // the two oldest were dropped: a closer just above them finds no window to conclude
+    coordinator.onSMigrated(migrated(3L, "0"), conn);
+    assertEquals(128, coordinator.openMigrationWindows());
+    // the next closer concludes the oldest survivor
+    coordinator.onSMigrated(migrated(200L, "0"), conn);
+    assertEquals(127, coordinator.openMigrationWindows());
+  }
+
+  @Test
   public void standaloneEventsAreIgnored() {
     // standalone/enterprise events reach the coordinator only through the per-pool controller,
     // which must drop them without touching the migration state or the connection timeout

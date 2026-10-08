@@ -28,8 +28,10 @@ import static org.hamcrest.Matchers.hasKey;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.times;
@@ -586,6 +588,81 @@ public class JedisClusterInfoCacheTest {
     assertTrue(poolA.isClosed());
     assertFalse(poolC.isClosed());
     assertThat(cache.getNodes(), aMapWithSize(2));
+  }
+
+  // --- cluster maintenance wiring: config -> coordinator -> every node pool ---
+
+  @Test
+  public void maintenanceConfigWiresOneSharedCoordinatorIntoEveryNodePool() {
+    MaintenanceNotificationsConfig maintConfig = MaintenanceNotificationsConfig.builder()
+        .relaxedTimeout(10_000).build();
+    JedisClusterInfoCache cache = new JedisClusterInfoCache(DefaultJedisClientConfig.builder().build(),
+        null, null, new HashSet<>(Collections.singletonList(MASTER_HOST)), null, maintConfig);
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(createClusterSlotsResponse(
+          new SlotRange.Builder(0, 8191).master(MASTER_HOST, "a").build(),
+          new SlotRange.Builder(8192, 16383).master(REPLICA_1_HOST, "b").build()));
+    cache.discoverClusterNodesAndSlots(mockConnection);
+
+    ClusterMaintenanceController controllerA = assertInstanceOf(ClusterMaintenanceController.class,
+      cache.getNode(MASTER_HOST).getMaintenanceController());
+    ClusterMaintenanceController controllerB = assertInstanceOf(ClusterMaintenanceController.class,
+      cache.getNode(REPLICA_1_HOST).getMaintenanceController());
+    assertSame(maintConfig, controllerA.getConfig());
+    assertSame(maintConfig, controllerB.getConfig());
+
+    // one coordinator behind both pools: an opener seen through A's controller relaxes a
+    // connection registered with B's controller
+    Connection viaB = new Connection();
+    viaB.setSoTimeout(2000);
+    controllerB.register(viaB);
+    controllerA.onSMigrating(new SMigratingEvent(1L, HashSlotRanges.parse("0-100")),
+      mockEventConnection);
+    assertTrue(ConnectionTestHelper.isRelaxedTimeoutActive(viaB));
+    assertEquals(10_000, viaB.getTimeoutSource().get().timeout);
+  }
+
+  @Test
+  public void disabledOrAbsentMaintenanceConfigLeavesNodePoolsWithoutAController() {
+    JedisClusterInfoCache disabled = new JedisClusterInfoCache(
+        DefaultJedisClientConfig.builder().build(), null, null,
+        new HashSet<>(Collections.singletonList(MASTER_HOST)), null,
+        MaintenanceNotificationsConfig.DISABLED);
+    JedisClusterInfoCache legacy = new JedisClusterInfoCache(DefaultJedisClientConfig.builder().build(),
+        new HashSet<>(Collections.singletonList(MASTER_HOST)));
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(masterOnlySlotsResponse());
+    disabled.discoverClusterNodesAndSlots(mockConnection);
+    legacy.discoverClusterNodesAndSlots(mockConnection);
+
+    assertNull(disabled.getNode(MASTER_HOST).getMaintenanceController());
+    assertNull(legacy.getNode(MASTER_HOST).getMaintenanceController());
+  }
+
+  @Test
+  public void slotDeltaDeliveredThroughANodePoolControllerReroutesTheCache() {
+    JedisClusterInfoCache cache = new JedisClusterInfoCache(DefaultJedisClientConfig.builder().build(),
+        null, null, new HashSet<>(Collections.singletonList(MASTER_HOST)), null,
+        MaintenanceNotificationsConfig.builder().build());
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(createClusterSlotsResponse(
+          new SlotRange.Builder(0, 8191).master(MASTER_HOST, "a").build(),
+          new SlotRange.Builder(8192, 16383).master(REPLICA_1_HOST, "b").build()));
+    cache.discoverClusterNodesAndSlots(mockConnection);
+    ConnectionPool poolA = cache.getNode(MASTER_HOST);
+    ClusterMaintenanceController controllerA = (ClusterMaintenanceController) poolA
+        .getMaintenanceController();
+
+    // the closer arrives on a connection of the departing node itself
+    controllerA.onSMigrated(new SMigratedEvent(2L, Collections.singletonList(
+      new SlotMigration(MASTER_HOST, REPLICA_1_HOST, HashSlotRanges.parse("0-8191")))),
+      mockEventConnection);
+
+    assertEquals(REPLICA_1_HOST, cache.getSlotNode(0));
+    assertEquals(cache.getNode(REPLICA_1_HOST), cache.getSlotPool(8191));
+    assertTrue(poolA.isClosed(), "A owns no slot anymore: its pool is destroyed");
+    assertNull(cache.getNode(MASTER_HOST));
+    assertFalse(cache.hasPendingSlotDeltas());
   }
 
   private List<Object> masterReplicaSlotsResponse(HostAndPort masterHost, HostAndPort replicaHost) {

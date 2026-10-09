@@ -245,35 +245,35 @@ public class JsonBuilderFactoryTest {
   public void numberListRejectsEmptyElements() {
     byte[] data = "[1,,3]".getBytes();
     assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
-        "Should reject empty elements");
+      "Should reject empty elements");
   }
 
   @Test
   public void numberListRejectsTrailingComma() {
     byte[] data = "[1,2,]".getBytes();
     assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
-        "Should reject trailing comma");
+      "Should reject trailing comma");
   }
 
   @Test
   public void numberListRejectsLeadingComma() {
     byte[] data = "[,1,2]".getBytes();
     assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
-        "Should reject leading comma");
+      "Should reject leading comma");
   }
 
   @Test
   public void numberListRejectsInvalidJson() {
     byte[] data = "not an array".getBytes();
     assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
-        "Should reject invalid JSON");
+      "Should reject invalid JSON");
   }
 
   @Test
   public void numberListRejectsInvalidNumbers() {
     byte[] data = "[1,abc,3]".getBytes();
     assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
-        "Should reject non-numeric values");
+      "Should reject non-numeric values");
   }
 
   @Test

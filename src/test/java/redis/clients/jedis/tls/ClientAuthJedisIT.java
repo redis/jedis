@@ -2,10 +2,13 @@ package redis.clients.jedis.tls;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.net.URI;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.DefaultJedisClientConfig;
+import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.SslOptions;
@@ -84,6 +87,38 @@ public class ClientAuthJedisIT extends ClientAuthTestBase {
         .builder().serverDefaultProtocol().sslOptions(sslOptions).build())) {
       assertEquals("PONG", jedis.ping());
       assertExpectedUsername(jedis, jedis.aclWhoAmI(), MTLS_USER_1);
+    }
+  }
+
+  /**
+   * Tests mTLS connection through the URI-based constructor. The URI supplies the address and
+   * scheme while the config supplies SslOptions (truststore, client keystore, verify mode); the
+   * handshake only succeeds if the constructor carries SslOptions into the effective config.
+   */
+  @Test
+  public void connectWithUriAndClientConfig() {
+    SslOptions sslOptions = createMtlsSslOptionsUser1();
+
+    URI uri = URI.create("rediss://" + endpoint.getHost() + ":" + endpoint.getPort());
+    try (Jedis jedis = new Jedis(uri, DefaultJedisClientConfig.builder().serverDefaultProtocol()
+        .sslOptions(sslOptions).build())) {
+      assertEquals("PONG", jedis.ping());
+      assertExpectedUsername(jedis, jedis.aclWhoAmI(), MTLS_USER_1);
+    }
+  }
+
+  /**
+   * The URI scheme stays authoritative for TLS, as the constructor documents, so a redis:// URI
+   * connects in plaintext even when the reused config carries SslOptions.
+   */
+  @Test
+  public void uriSchemeKeepsPlaintextDespiteSslOptions() {
+    EndpointConfig plaintextEndpoint = Endpoints.getRedisEndpoint("standalone0");
+
+    URI uri = plaintextEndpoint.getURIBuilder().defaultCredentials().build();
+    try (Jedis jedis = new Jedis(uri, DefaultJedisClientConfig.builder().serverDefaultProtocol()
+        .sslOptions(createMtlsSslOptionsUser1()).build())) {
+      assertEquals("PONG", jedis.ping());
     }
   }
 

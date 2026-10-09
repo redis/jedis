@@ -18,4 +18,8 @@ interface MaintenanceEventListener {
   void onFailingOver(FailingOverEvent e, Connection c);
 
   void onFailedOver(FailedOverEvent e, Connection c);
+
+  void onSMigrating(SMigratingEvent e, Connection c);
+
+  void onSMigrated(SMigratedEvent e, Connection c);
 }

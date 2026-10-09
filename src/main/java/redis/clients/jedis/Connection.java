@@ -400,7 +400,7 @@ public class Connection implements Closeable {
     applyCurrentTimeout();
   }
 
-  private int currentTimeout() {
+  int currentTimeout() {
     return isBlocking ? defaultTimeoutSource.get().blockingTimeout : defaultTimeoutSource.get().timeout;
   }
 

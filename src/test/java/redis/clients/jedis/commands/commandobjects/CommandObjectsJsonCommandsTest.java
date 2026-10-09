@@ -820,7 +820,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
   }
 
   @Test
-  public void testJsonNumIncrByNumber() {
+  public void testJsonNumIncrByAsNumbers() {
     String key = keys.key("user:12000");
 
     JSONObject item = new JSONObject();
@@ -831,7 +831,7 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
     Object preCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
     assertThat(preCheck, jsonEquals(new JSONArray().put(item)));
 
-    Object numIncrBy = exec(commandObjects.jsonNumIncrByNumber(key, Path2.of("$.balance"), 50.0));
+    Object numIncrBy = exec(commandObjects.jsonNumIncrByAsNumbers(key, Path2.of("$.balance"), 50.0));
     assertThat(numIncrBy, jsonEquals(new JSONArray().put(150.0)));
 
     Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));

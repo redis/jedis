@@ -4555,7 +4555,7 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), BuilderFactory.DOUBLE);
   }
 
-  public final CommandObject<List<Number>> jsonNumIncrByNumber(String key, Path2 path,
+  public final CommandObject<List<Number>> jsonNumIncrByAsNumbers(String key, Path2 path,
       Number value) {
     return new CommandObject<>(
         commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value),

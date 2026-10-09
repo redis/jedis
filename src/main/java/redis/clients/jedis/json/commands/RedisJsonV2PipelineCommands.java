@@ -74,7 +74,7 @@ public interface RedisJsonV2PipelineCommands {
    *         list
    * @since 8.1
    */
-  Response<List<Number>> jsonNumIncrByNumber(String key, Path2 path, Number value);
+  Response<List<Number>> jsonNumIncrByAsNumbers(String key, Path2 path, Number value);
 
   Response<List<Long>> jsonArrAppend(String key, Path2 path, Object... objects);
 

@@ -327,14 +327,14 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void jsonNumIncrByNumber() {
+  public void jsonNumIncrByAsNumbers() {
     String key = keys.key("doc");
     Pipeline p = (Pipeline) client.pipelined();
 
     Response<String> set = p.jsonSet(key, Path2.ROOT_PATH, "{\"int\":10,\"dec\":10.5}");
-    Response<List<Number>> incrInt = p.jsonNumIncrByNumber(key, Path2.of("$.int"), 5);
-    Response<List<Number>> incrDec = p.jsonNumIncrByNumber(key, Path2.of("$.dec"), 2.5);
-    Response<List<Number>> incrIntByDec = p.jsonNumIncrByNumber(key, Path2.of("$.int"), 0.5);
+    Response<List<Number>> incrInt = p.jsonNumIncrByAsNumbers(key, Path2.of("$.int"), 5);
+    Response<List<Number>> incrDec = p.jsonNumIncrByAsNumbers(key, Path2.of("$.dec"), 2.5);
+    Response<List<Number>> incrIntByDec = p.jsonNumIncrByAsNumbers(key, Path2.of("$.int"), 0.5);
 
     p.sync();
 
@@ -345,14 +345,14 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
   }
 
   @Test
-  public void jsonNumIncrByNumber_NonExistingPathOrNotANumber() {
+  public void jsonNumIncrByAsNumbers_NonExistingPathOrNotANumber() {
     String key = keys.key("doc");
     Pipeline p = (Pipeline) client.pipelined();
 
     Response<String> set = p.jsonSet(key, Path2.ROOT_PATH, "{\"str\":\"a\",\"nums\":[1,\"b\",2]}");
-    Response<List<Number>> missingPath = p.jsonNumIncrByNumber(key, Path2.of("$.missing"), 1);
-    Response<List<Number>> notANumber = p.jsonNumIncrByNumber(key, Path2.of("$.str"), 1);
-    Response<List<Number>> mixed = p.jsonNumIncrByNumber(key, Path2.of("$.nums[*]"), 1);
+    Response<List<Number>> missingPath = p.jsonNumIncrByAsNumbers(key, Path2.of("$.missing"), 1);
+    Response<List<Number>> notANumber = p.jsonNumIncrByAsNumbers(key, Path2.of("$.str"), 1);
+    Response<List<Number>> mixed = p.jsonNumIncrByAsNumbers(key, Path2.of("$.nums[*]"), 1);
 
     p.sync();
 

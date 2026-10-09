@@ -73,7 +73,7 @@ public interface RedisJsonV2Commands {
    *         list
    * @since 8.1
    */
-  List<Number> jsonNumIncrByNumber(String key, Path2 path, Number value);
+  List<Number> jsonNumIncrByAsNumbers(String key, Path2 path, Number value);
 
   List<Long> jsonArrAppend(String key, Path2 path, Object... objects);
 

@@ -499,13 +499,13 @@ public class PipeliningBaseJsonCommandsTest extends PipeliningBaseMockedTestBase
   }
 
   @Test
-  public void testJsonNumIncrByNumberWithPath2() {
+  public void testJsonNumIncrByAsNumbersWithPath2() {
     Path2 path = Path2.of("$.number");
 
-    when(commandObjects.jsonNumIncrByNumber("myJson", path, 42))
+    when(commandObjects.jsonNumIncrByAsNumbers("myJson", path, 42))
         .thenReturn(listNumberCommandObject);
 
-    Response<List<Number>> response = pipeliningBase.jsonNumIncrByNumber("myJson", path, 42);
+    Response<List<Number>> response = pipeliningBase.jsonNumIncrByAsNumbers("myJson", path, 42);
 
     assertThat(commands, contains(listNumberCommandObject));
     assertThat(response, is(predefinedResponse));

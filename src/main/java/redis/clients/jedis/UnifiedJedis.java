@@ -5321,8 +5321,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<Number> jsonNumIncrByNumber(String key, Path2 path, Number value) {
-    return executeCommand(commandObjects.jsonNumIncrByNumber(key, path, value));
+  public List<Number> jsonNumIncrByAsNumbers(String key, Path2 path, Number value) {
+    return executeCommand(commandObjects.jsonNumIncrByAsNumbers(key, path, value));
   }
 
   @Override

@@ -595,11 +595,11 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
     jedis.jsonSet(key, ROOT_PATH, "{\"int\":10,\"dec\":10.5}");
 
     // integer + integer stays a Long
-    assertEquals(singletonList(15L), jedis.jsonNumIncrByNumber(key, Path2.of("$.int"), 5));
+    assertEquals(singletonList(15L), jedis.jsonNumIncrByAsNumbers(key, Path2.of("$.int"), 5));
     // decimal values come back as Double
-    assertEquals(singletonList(13.0), jedis.jsonNumIncrByNumber(key, Path2.of("$.dec"), 2.5));
+    assertEquals(singletonList(13.0), jedis.jsonNumIncrByAsNumbers(key, Path2.of("$.dec"), 2.5));
     // integer + decimal converts to Double
-    assertEquals(singletonList(15.5), jedis.jsonNumIncrByNumber(key, Path2.of("$.int"), 0.5));
+    assertEquals(singletonList(15.5), jedis.jsonNumIncrByAsNumbers(key, Path2.of("$.int"), 0.5));
   }
 
   @Test
@@ -607,12 +607,12 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
     String key = keys.key("doc");
     jedis.jsonSet(key, ROOT_PATH, "{\"str\":\"a\",\"nums\":[1,\"b\",2]}");
 
-    assertEquals(Collections.emptyList(), jedis.jsonNumIncrByNumber(key, Path2.of("$.missing"), 1));
+    assertEquals(Collections.emptyList(), jedis.jsonNumIncrByAsNumbers(key, Path2.of("$.missing"), 1));
     assertEquals(singletonList((Number) null),
-      jedis.jsonNumIncrByNumber(key, Path2.of("$.str"), 1));
+      jedis.jsonNumIncrByAsNumbers(key, Path2.of("$.str"), 1));
     // mixed matches: non-number entries are null, numbers are incremented
     assertEquals(Arrays.asList(2L, null, 3L),
-      jedis.jsonNumIncrByNumber(key, Path2.of("$.nums[*]"), 1));
+      jedis.jsonNumIncrByAsNumbers(key, Path2.of("$.nums[*]"), 1));
   }
 
   @Test

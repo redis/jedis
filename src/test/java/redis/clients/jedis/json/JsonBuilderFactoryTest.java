@@ -2,12 +2,15 @@ package redis.clients.jedis.json;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * Unit tests for JsonBuilderFactory, specifically for the JSON_NUMBER_LIST builder that preserves
@@ -87,7 +90,8 @@ public class JsonBuilderFactoryTest {
   @Test
   public void jsonNumberListParsesStringIntegers() {
     // Simulates RESP2 response where numbers come as byte arrays/strings
-    List<Object> input = Arrays.asList("1".getBytes(), "2".getBytes(), "100".getBytes());
+    List<Object> input = Arrays.asList(SafeEncoder.encode("1"), SafeEncoder.encode("2"),
+      SafeEncoder.encode("100"));
     List<Number> result = JsonBuilderFactory.JSON_NUMBER_LIST.build(input);
 
     assertEquals(3, result.size());
@@ -102,7 +106,8 @@ public class JsonBuilderFactoryTest {
   @Test
   public void jsonNumberListParsesStringDecimals() {
     // Simulates RESP2 response where decimal numbers come as byte arrays/strings
-    List<Object> input = Arrays.asList("1.5".getBytes(), "2.5".getBytes(), "3.14159".getBytes());
+    List<Object> input = Arrays.asList(SafeEncoder.encode("1.5"), SafeEncoder.encode("2.5"),
+      SafeEncoder.encode("3.14159"));
     List<Number> result = JsonBuilderFactory.JSON_NUMBER_LIST.build(input);
 
     assertEquals(3, result.size());
@@ -117,7 +122,7 @@ public class JsonBuilderFactoryTest {
   @Test
   public void jsonNumberListParsesScientificNotation() {
     // Test parsing of scientific notation numbers
-    List<Object> input = Arrays.asList("1e10".getBytes(), "2.5E-3".getBytes());
+    List<Object> input = Arrays.asList(SafeEncoder.encode("1e10"), SafeEncoder.encode("2.5E-3"));
     List<Number> result = JsonBuilderFactory.JSON_NUMBER_LIST.build(input);
 
     assertEquals(2, result.size());
@@ -141,5 +146,177 @@ public class JsonBuilderFactoryTest {
     assertTrue(numberList.get(0) instanceof Long, "First element should be Long");
     assertTrue(numberList.get(1) instanceof Double, "Second element should be Double");
     assertTrue(numberList.get(2) instanceof Long, "Third element should be Long");
+  }
+
+  // ===== Tests for NUMBER_LIST builder (RESP2 JSON array parsing) =====
+
+  @Test
+  public void numberListParsesJsonArrayOfIntegers() {
+    byte[] data = SafeEncoder.encode("[1,2,3]");
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(3, result.size());
+    assertEquals(1L, result.get(0));
+    assertEquals(2L, result.get(1));
+    assertEquals(3L, result.get(2));
+  }
+
+  @Test
+  public void numberListParsesJsonArrayOfDecimals() {
+    byte[] data = SafeEncoder.encode("[1.5,2.5,3.14]");
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(3, result.size());
+    assertEquals(1.5, result.get(0));
+    assertEquals(2.5, result.get(1));
+    assertEquals(3.14, result.get(2));
+  }
+
+  @Test
+  public void numberListParsesJsonArrayWithNullValues() {
+    byte[] data = SafeEncoder.encode("[1,null,3.5]");
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(3, result.size());
+    assertEquals(1L, result.get(0));
+    assertNull(result.get(1));
+    assertEquals(3.5, result.get(2));
+  }
+
+  @Test
+  public void numberListParsesJsonArrayWithScientificNotation() {
+    byte[] data = SafeEncoder.encode("[1e10,2.5E-3,3.0e2]");
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(3, result.size());
+    assertEquals(1e10, result.get(0));
+    assertEquals(2.5e-3, result.get(1));
+    assertEquals(3.0e2, result.get(2));
+  }
+
+  @Test
+  public void numberListParsesEmptyJsonArray() {
+    byte[] data = SafeEncoder.encode("[]");
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(0, result.size());
+  }
+
+  @Test
+  public void numberListHandlesWhitespace() {
+    byte[] data = SafeEncoder.encode("[ 1 , null , 3.5 ]");
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(3, result.size());
+    assertEquals(1L, result.get(0));
+    assertNull(result.get(1));
+    assertEquals(3.5, result.get(2));
+  }
+
+  @Test
+  public void numberListHandlesLeadingAndTrailingWhitespace() {
+    byte[] data = SafeEncoder.encode("  [ 1 , 2 ]  ");
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(2, result.size());
+    assertEquals(1L, result.get(0));
+    assertEquals(2L, result.get(1));
+  }
+
+  @Test
+  public void numberListParsesNegativeNumbers() {
+    byte[] data = SafeEncoder.encode("[-1,-2.5,-3e2]");
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(3, result.size());
+    assertEquals(-1L, result.get(0));
+    assertEquals(-2.5, result.get(1));
+    assertEquals(-3e2, result.get(2));
+  }
+
+  @Test
+  public void numberListParsesLargeNumbers() {
+    byte[] data = SafeEncoder.encode("[9223372036854775807,1.7976931348623157e308]");
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(2, result.size());
+    assertEquals(Long.MAX_VALUE, result.get(0));
+    assertEquals(Double.MAX_VALUE, result.get(1));
+  }
+
+  @Test
+  public void numberListRejectsEmptyElements() {
+    byte[] data = SafeEncoder.encode("[1,,3]");
+    assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
+      "Should reject empty elements");
+  }
+
+  @Test
+  public void numberListRejectsTrailingComma() {
+    byte[] data = SafeEncoder.encode("[1,2,]");
+    assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
+      "Should reject trailing comma");
+  }
+
+  @Test
+  public void numberListRejectsLeadingComma() {
+    byte[] data = SafeEncoder.encode("[,1,2]");
+    assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
+      "Should reject leading comma");
+  }
+
+  @Test
+  public void numberListRejectsInvalidJson() {
+    byte[] data = SafeEncoder.encode("not an array");
+    assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
+      "Should reject invalid JSON");
+  }
+
+  @Test
+  public void numberListRejectsInvalidNumbers() {
+    byte[] data = SafeEncoder.encode("[1,abc,3]");
+    assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
+      "Should reject non-numeric values");
+  }
+
+  @Test
+  public void numberListHandlesNullInput() {
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(null);
+    assertNull(result);
+  }
+
+  @Test
+  public void numberListHandlesAllNullArray() {
+    byte[] data = SafeEncoder.encode("[null,null,null]");
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(3, result.size());
+    assertNull(result.get(0));
+    assertNull(result.get(1));
+    assertNull(result.get(2));
+  }
+
+  @Test
+  public void numberListHandlesMixedWhitespaceVariations() {
+    byte[] data = SafeEncoder.encode("[\n  1  ,\t  null\t,  3.5  \n]");
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(3, result.size());
+    assertEquals(1L, result.get(0));
+    assertNull(result.get(1));
+    assertEquals(3.5, result.get(2));
+  }
+
+  @Test
+  public void numberListPreservesNumericTypes() {
+    byte[] data = SafeEncoder.encode("[42,3.14,null,-100,1e5]");
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(5, result.size());
+    assertTrue(result.get(0) instanceof Long, "Integer should be Long");
+    assertTrue(result.get(1) instanceof Double, "Decimal should be Double");
+    assertNull(result.get(2));
+    assertTrue(result.get(3) instanceof Long, "Negative integer should be Long");
+    assertTrue(result.get(4) instanceof Double, "Scientific notation should be Double");
   }
 }

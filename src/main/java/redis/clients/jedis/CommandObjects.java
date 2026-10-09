@@ -5491,6 +5491,10 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
+  public final CommandObject<Boolean> vadd(String key, float[] vector, String element, int reduceDim) {
+    return vadd(key, vector, element, reduceDim, null);
+  }
+
   public final CommandObject<Boolean> vadd(String key, float[] vector, String element, int reduceDim, VAddParams params) {
     CommandArguments args = commandArguments(Command.VADD).key(key);
     args.add(Keyword.REDUCE).add(reduceDim);
@@ -5500,12 +5504,20 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
+  public final CommandObject<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim) {
+    return vaddFP32(key, vectorBlob, element, reduceDim, null);
+  }
+
   public final CommandObject<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim, VAddParams params) {
     CommandArguments args = commandArguments(Command.VADD).key(key);
     args.add(Keyword.REDUCE).add(reduceDim);
     args.add(Keyword.FP32).add(vectorBlob).add(element);
     addOptionalParams(params, args);
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
+  }
+
+  public final CommandObject<Boolean> vadd(byte[] key, float[] vector, byte[] element, int reduceDim) {
+    return vadd(key, vector, element, reduceDim, null);
   }
 
   public final CommandObject<Boolean> vadd(byte[] key, float[] vector, byte[] element, int reduceDim, VAddParams params) {
@@ -5528,6 +5540,10 @@ public class CommandObjects {
     for (float value : vector) {
       args.add(value);
     }
+  }
+
+  public final CommandObject<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim) {
+    return vaddFP32(key, vectorBlob, element, reduceDim, null);
   }
 
   public final CommandObject<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim, VAddParams params) {
@@ -5556,12 +5572,20 @@ public class CommandObjects {
     }
   }
 
+  public final CommandObject<Map<String, Double>> vsimWithScores(String key, float[] vector) {
+    return vsimWithScores(key, vector, null);
+  }
+
   public final CommandObject<Map<String, Double>> vsimWithScores(String key, float[] vector, VSimParams params) {
     CommandArguments args = commandArguments(Command.VSIM).key(key);
     addVectors(vector, args);
     args.add(Keyword.WITHSCORES);
     addOptionalParams(params, args);
     return new CommandObject<>(args, BuilderFactory.STRING_DOUBLE_MAP);
+  }
+
+  public final CommandObject<Map<String, VSimScoreAttribs>> vsimWithScoresAndAttribs(String key, float[] vector) {
+    return vsimWithScoresAndAttribs(key, vector, null);
   }
 
   public final CommandObject<Map<String, VSimScoreAttribs>> vsimWithScoresAndAttribs(String key, float[] vector, VSimParams params) {
@@ -5584,12 +5608,20 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.STRING_LIST);
   }
 
+  public final CommandObject<Map<String, Double>> vsimByElementWithScores(String key, String element) {
+    return vsimByElementWithScores(key, element, null);
+  }
+
   public final CommandObject<Map<String, Double>> vsimByElementWithScores(String key, String element, VSimParams params) {
     CommandArguments args = commandArguments(Command.VSIM).key(key);
     args.add(Keyword.ELE).add(element);
     args.add(Keyword.WITHSCORES);
     addOptionalParams(params, args);
     return new CommandObject<>(args, BuilderFactory.STRING_DOUBLE_MAP);
+  }
+
+  public final CommandObject<Map<String, VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(String key, String element) {
+    return vsimByElementWithScoresAndAttribs(key, element, null);
   }
 
   public final CommandObject<Map<String, VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(String key, String element, VSimParams params) {
@@ -5612,12 +5644,20 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.BINARY_LIST);
   }
 
+  public final CommandObject<Map<byte[], Double>> vsimWithScores(byte[] key, float[] vector) {
+    return vsimWithScores(key, vector, null);
+  }
+
   public final CommandObject<Map<byte[], Double>> vsimWithScores(byte[] key, float[] vector, VSimParams params) {
     CommandArguments args = commandArguments(Command.VSIM).key(key);
     addVectors(vector, args);
     args.add(Keyword.WITHSCORES);
     addOptionalParams(params, args);
     return new CommandObject<>(args, BuilderFactory.BINARY_DOUBLE_MAP);
+  }
+
+  public final CommandObject<Map<byte[], VSimScoreAttribs>> vsimWithScoresAndAttribs(byte[] key, float[] vector) {
+    return vsimWithScoresAndAttribs(key, vector, null);
   }
 
   public final CommandObject<Map<byte[], VSimScoreAttribs>> vsimWithScoresAndAttribs(byte[] key, float[] vector, VSimParams params) {
@@ -5640,12 +5680,20 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.BINARY_LIST);
   }
 
+  public final CommandObject<Map<byte[], Double>> vsimByElementWithScores(byte[] key, byte[] element) {
+    return vsimByElementWithScores(key, element, null);
+  }
+
   public final CommandObject<Map<byte[], Double>> vsimByElementWithScores(byte[] key, byte[] element, VSimParams params) {
     CommandArguments args = commandArguments(Command.VSIM).key(key);
     args.add(Keyword.ELE).add(element);
     args.add(Keyword.WITHSCORES);
     addOptionalParams(params, args);
     return new CommandObject<>(args, BuilderFactory.BINARY_DOUBLE_MAP);
+  }
+
+  public final CommandObject<Map<byte[], VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(byte[] key, byte[] element) {
+    return vsimByElementWithScoresAndAttribs(key, element, null);
   }
 
   public final CommandObject<Map<byte[], VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(byte[] key, byte[] element, VSimParams params) {

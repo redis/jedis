@@ -60,11 +60,11 @@ public class XAddParams implements IParams {
   }
 
   public XAddParams id(long time, long sequence) {
-    return id(time + "-" + sequence);
+    return id(Long.toUnsignedString(time) + "-" + Long.toUnsignedString(sequence));
   }
 
   public XAddParams id(long time) {
-    return id(time + "-*");
+    return id(Long.toUnsignedString(time) + "-*");
   }
 
   public XAddParams maxLen(long maxLen) {

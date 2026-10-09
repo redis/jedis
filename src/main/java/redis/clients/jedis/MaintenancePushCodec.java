@@ -127,7 +127,7 @@ final class MaintenancePushCodec {
     if (c.size() < 3 || !(c.get(1) instanceof Long) || !(c.get(2) instanceof List)) {
       throw malformed("SMIGRATED", c);
     }
-    List<?> entries = (List<?>) c.get(2);
+    List<?> entries = (List<?>) c.get(2); // may be empty: a closer that only ends the relax window
     List<SlotMigration> migrations = new ArrayList<>(entries.size());
     for (Object entryObj : entries) {
       if (!(entryObj instanceof List)) {

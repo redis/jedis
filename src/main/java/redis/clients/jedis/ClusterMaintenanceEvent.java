@@ -36,7 +36,8 @@ final class SMigratingEvent extends ClusterMaintenanceEvent {
 
 /**
  * {@code [SMIGRATED, seq, [[src, dest, slots-or-ranges], ...]]} — the migration ended; unrelax,
- * apply the slot delta, and retire connections to nodes left without slots.
+ * apply the slot delta, and drop the pools of nodes left without slots. The entry list may be
+ * empty: such a closer only ends the relax window.
  */
 final class SMigratedEvent extends ClusterMaintenanceEvent {
   final List<SlotMigration> migrations;

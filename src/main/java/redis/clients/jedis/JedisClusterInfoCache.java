@@ -69,6 +69,8 @@ public class JedisClusterInfoCache {
   private final JedisClientConfig clientConfig;
   private final Cache clientSideCache;
   private final Set<HostAndPort> startNodes;
+  /** The client-wide SMIGRATING/SMIGRATED coordinator; non-null iff cluster maintenance is on. */
+  private final ClusterMaintenanceCoordinator maintenanceCoordinator;
 
   private static final int MASTER_NODE_INDEX = 2;
 
@@ -118,10 +120,25 @@ public class JedisClusterInfoCache {
   public JedisClusterInfoCache(final JedisClientConfig clientConfig, Cache clientSideCache,
       final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes,
       final Duration topologyRefreshPeriod) {
+    this(clientConfig, clientSideCache, poolConfig, startNodes, topologyRefreshPeriod, null);
+  }
+
+  /**
+   * Creates the cache with cluster maintenance notifications configured for every node pool's
+   * connections; a {@code null} or DISABLED config turns the feature off.
+   * @since 8.1
+   */
+  @Experimental
+  public JedisClusterInfoCache(final JedisClientConfig clientConfig, Cache clientSideCache,
+      final GenericObjectPoolConfig<Connection> poolConfig, final Set<HostAndPort> startNodes,
+      final Duration topologyRefreshPeriod, final MaintenanceNotificationsConfig maintConfig) {
     this.poolConfig = poolConfig;
     this.clientConfig = clientConfig;
     this.clientSideCache = clientSideCache;
     this.startNodes = startNodes;
+    this.maintenanceCoordinator = maintConfig != null && maintConfig.isEnabledOrAuto()
+        ? new ClusterMaintenanceCoordinator(this, maintConfig)
+        : null;
     if (clientConfig.getAuthXManager() != null) {
       clientConfig.getAuthXManager().start();
     }
@@ -363,19 +380,10 @@ public class JedisClusterInfoCache {
   }
 
   private ConnectionPool createNodePool(HostAndPort node) {
-    if (poolConfig == null) {
-      if (clientSideCache == null) {
-        return new ConnectionPool(node, clientConfig);
-      } else {
-        return new ConnectionPool(node, clientConfig, clientSideCache);
-      }
-    } else {
-      if (clientSideCache == null) {
-        return new ConnectionPool(node, clientConfig, poolConfig);
-      } else {
-        return new ConnectionPool(node, clientConfig, clientSideCache, poolConfig);
-      }
-    }
+    GenericObjectPoolConfig<Connection> cfg = poolConfig != null ? poolConfig
+        : new GenericObjectPoolConfig<>();
+    return new ConnectionPool(node, clientConfig, clientSideCache, cfg,
+        PoolMaintenance.cluster(maintenanceCoordinator));
   }
 
   public void assignSlotToNode(int slot, HostAndPort targetNode) {

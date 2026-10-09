@@ -177,9 +177,9 @@ public final class JsonBuilderFactory {
   };
 
   /**
-   * Builder that parses a List of numbers with type preservation (Long for integers, Double for
-   * decimals). Supports both RESP3 (List<Object>) and RESP2 (JSON array as byte[]). Returns null
-   * values for JSON null literals.
+   * Builder that parses a List of numbers with type preservation ({@link Long} for integers,
+   * {@link Double} for decimals). Supports both RESP3 ({@code List<Object>}) and RESP2 (JSON array
+   * as {@code byte[]}). Returns {@code null} values for JSON null literals.
    */
   public static final Builder<List<Number>> NUMBER_LIST = new Builder<List<Number>>() {
     @Override

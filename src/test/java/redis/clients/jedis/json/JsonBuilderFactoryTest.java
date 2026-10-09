@@ -10,6 +10,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * Unit tests for JsonBuilderFactory, specifically for the JSON_NUMBER_LIST builder that preserves
@@ -89,7 +90,8 @@ public class JsonBuilderFactoryTest {
   @Test
   public void jsonNumberListParsesStringIntegers() {
     // Simulates RESP2 response where numbers come as byte arrays/strings
-    List<Object> input = Arrays.asList("1".getBytes(), "2".getBytes(), "100".getBytes());
+    List<Object> input = Arrays.asList(SafeEncoder.encode("1"), SafeEncoder.encode("2"),
+      SafeEncoder.encode("100"));
     List<Number> result = JsonBuilderFactory.JSON_NUMBER_LIST.build(input);
 
     assertEquals(3, result.size());
@@ -104,7 +106,8 @@ public class JsonBuilderFactoryTest {
   @Test
   public void jsonNumberListParsesStringDecimals() {
     // Simulates RESP2 response where decimal numbers come as byte arrays/strings
-    List<Object> input = Arrays.asList("1.5".getBytes(), "2.5".getBytes(), "3.14159".getBytes());
+    List<Object> input = Arrays.asList(SafeEncoder.encode("1.5"), SafeEncoder.encode("2.5"),
+      SafeEncoder.encode("3.14159"));
     List<Number> result = JsonBuilderFactory.JSON_NUMBER_LIST.build(input);
 
     assertEquals(3, result.size());
@@ -119,7 +122,7 @@ public class JsonBuilderFactoryTest {
   @Test
   public void jsonNumberListParsesScientificNotation() {
     // Test parsing of scientific notation numbers
-    List<Object> input = Arrays.asList("1e10".getBytes(), "2.5E-3".getBytes());
+    List<Object> input = Arrays.asList(SafeEncoder.encode("1e10"), SafeEncoder.encode("2.5E-3"));
     List<Number> result = JsonBuilderFactory.JSON_NUMBER_LIST.build(input);
 
     assertEquals(2, result.size());
@@ -149,7 +152,7 @@ public class JsonBuilderFactoryTest {
 
   @Test
   public void numberListParsesJsonArrayOfIntegers() {
-    byte[] data = "[1,2,3]".getBytes();
+    byte[] data = SafeEncoder.encode("[1,2,3]");
     List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
 
     assertEquals(3, result.size());
@@ -160,7 +163,7 @@ public class JsonBuilderFactoryTest {
 
   @Test
   public void numberListParsesJsonArrayOfDecimals() {
-    byte[] data = "[1.5,2.5,3.14]".getBytes();
+    byte[] data = SafeEncoder.encode("[1.5,2.5,3.14]");
     List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
 
     assertEquals(3, result.size());
@@ -171,7 +174,7 @@ public class JsonBuilderFactoryTest {
 
   @Test
   public void numberListParsesJsonArrayWithNullValues() {
-    byte[] data = "[1,null,3.5]".getBytes();
+    byte[] data = SafeEncoder.encode("[1,null,3.5]");
     List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
 
     assertEquals(3, result.size());
@@ -182,7 +185,7 @@ public class JsonBuilderFactoryTest {
 
   @Test
   public void numberListParsesJsonArrayWithScientificNotation() {
-    byte[] data = "[1e10,2.5E-3,3.0e2]".getBytes();
+    byte[] data = SafeEncoder.encode("[1e10,2.5E-3,3.0e2]");
     List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
 
     assertEquals(3, result.size());
@@ -193,7 +196,7 @@ public class JsonBuilderFactoryTest {
 
   @Test
   public void numberListParsesEmptyJsonArray() {
-    byte[] data = "[]".getBytes();
+    byte[] data = SafeEncoder.encode("[]");
     List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
 
     assertEquals(0, result.size());
@@ -201,7 +204,7 @@ public class JsonBuilderFactoryTest {
 
   @Test
   public void numberListHandlesWhitespace() {
-    byte[] data = "[ 1 , null , 3.5 ]".getBytes();
+    byte[] data = SafeEncoder.encode("[ 1 , null , 3.5 ]");
     List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
 
     assertEquals(3, result.size());
@@ -212,7 +215,7 @@ public class JsonBuilderFactoryTest {
 
   @Test
   public void numberListHandlesLeadingAndTrailingWhitespace() {
-    byte[] data = "  [ 1 , 2 ]  ".getBytes();
+    byte[] data = SafeEncoder.encode("  [ 1 , 2 ]  ");
     List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
 
     assertEquals(2, result.size());
@@ -222,7 +225,7 @@ public class JsonBuilderFactoryTest {
 
   @Test
   public void numberListParsesNegativeNumbers() {
-    byte[] data = "[-1,-2.5,-3e2]".getBytes();
+    byte[] data = SafeEncoder.encode("[-1,-2.5,-3e2]");
     List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
 
     assertEquals(3, result.size());
@@ -233,7 +236,7 @@ public class JsonBuilderFactoryTest {
 
   @Test
   public void numberListParsesLargeNumbers() {
-    byte[] data = "[9223372036854775807,1.7976931348623157e308]".getBytes();
+    byte[] data = SafeEncoder.encode("[9223372036854775807,1.7976931348623157e308]");
     List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
 
     assertEquals(2, result.size());
@@ -243,35 +246,35 @@ public class JsonBuilderFactoryTest {
 
   @Test
   public void numberListRejectsEmptyElements() {
-    byte[] data = "[1,,3]".getBytes();
+    byte[] data = SafeEncoder.encode("[1,,3]");
     assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
       "Should reject empty elements");
   }
 
   @Test
   public void numberListRejectsTrailingComma() {
-    byte[] data = "[1,2,]".getBytes();
+    byte[] data = SafeEncoder.encode("[1,2,]");
     assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
       "Should reject trailing comma");
   }
 
   @Test
   public void numberListRejectsLeadingComma() {
-    byte[] data = "[,1,2]".getBytes();
+    byte[] data = SafeEncoder.encode("[,1,2]");
     assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
       "Should reject leading comma");
   }
 
   @Test
   public void numberListRejectsInvalidJson() {
-    byte[] data = "not an array".getBytes();
+    byte[] data = SafeEncoder.encode("not an array");
     assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
       "Should reject invalid JSON");
   }
 
   @Test
   public void numberListRejectsInvalidNumbers() {
-    byte[] data = "[1,abc,3]".getBytes();
+    byte[] data = SafeEncoder.encode("[1,abc,3]");
     assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
       "Should reject non-numeric values");
   }
@@ -284,7 +287,7 @@ public class JsonBuilderFactoryTest {
 
   @Test
   public void numberListHandlesAllNullArray() {
-    byte[] data = "[null,null,null]".getBytes();
+    byte[] data = SafeEncoder.encode("[null,null,null]");
     List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
 
     assertEquals(3, result.size());
@@ -295,7 +298,7 @@ public class JsonBuilderFactoryTest {
 
   @Test
   public void numberListHandlesMixedWhitespaceVariations() {
-    byte[] data = "[\n  1  ,\t  null\t,  3.5  \n]".getBytes();
+    byte[] data = SafeEncoder.encode("[\n  1  ,\t  null\t,  3.5  \n]");
     List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
 
     assertEquals(3, result.size());
@@ -306,7 +309,7 @@ public class JsonBuilderFactoryTest {
 
   @Test
   public void numberListPreservesNumericTypes() {
-    byte[] data = "[42,3.14,null,-100,1e5]".getBytes();
+    byte[] data = SafeEncoder.encode("[42,3.14,null,-100,1e5]");
     List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
 
     assertEquals(5, result.size());

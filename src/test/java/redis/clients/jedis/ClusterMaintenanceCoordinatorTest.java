@@ -309,6 +309,21 @@ public class ClusterMaintenanceCoordinatorTest {
   }
 
   @Test
+  public void emptyCloserEndsTheWindowWithoutTouchingTheCache() {
+    coordinator.onSMigrating(migrating(1L, "0-100"), conn);
+    assertTrue(coordinator.hasActiveMigration());
+
+    coordinator.onSMigrated(new SMigratedEvent(2L, Collections.emptyList()), conn);
+
+    assertFalse(coordinator.hasActiveMigration(), "the window is closed...");
+    verify(cache, never()).applySlotMigration(anyList()); // ...and nothing is rerouted or dropped
+    verify(conn, times(2)).applyCurrentTimeout();
+    // a re-delivered empty closer is deduplicated like any other
+    coordinator.onSMigrated(new SMigratedEvent(2L, Collections.emptyList()), conn);
+    verify(cache, never()).applySlotMigration(anyList());
+  }
+
+  @Test
   public void openWindowsAreCappedOldestFirst() {
     for (long seq = 1; seq <= 130; seq++) {
       coordinator.onSMigrating(migrating(seq, "0"), conn);

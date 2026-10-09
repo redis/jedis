@@ -211,7 +211,7 @@ public class MaintenancePushCodecTest {
   }
 
   @Test
-  public void buildSMigratedWithNoEntries() { // an empty delta is a well-formed terminator
+  public void buildSMigratedWithNoEntries() { // a closer that only ends the window is well-formed
     SMigratedEvent e = assertInstanceOf(SMigratedEvent.class,
       build(PushType.SMIGRATED, push(type("SMIGRATED"), 12L, Collections.emptyList())));
     assertEquals(12L, e.seq);

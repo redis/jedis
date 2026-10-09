@@ -1,7 +1,12 @@
 package redis.clients.jedis;
 
+import java.util.function.Supplier;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import redis.clients.jedis.TimeoutSource.TimeoutInfo;
+import redis.clients.jedis.annots.VisibleForTesting;
 
 /**
  * Per-pool controller for the cluster message family: dispatches SMIGRATING/SMIGRATED to the
@@ -24,6 +29,12 @@ final class ClusterMaintenanceController
   @Override
   public MaintenanceNotificationsConfig getConfig() {
     return coordinator.getConfig();
+  }
+
+  /** The client-wide relax gate this controller installs on its connections. */
+  @VisibleForTesting
+  Supplier<TimeoutInfo> getTimeoutSupplier() {
+    return coordinator.getTimeoutSupplier();
   }
 
   @Override

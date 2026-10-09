@@ -108,13 +108,16 @@ final class ClusterMaintenanceCoordinator {
   /**
    * The winning {@code putIfAbsent} is the only delivery of a seq that closes a window and applies
    * the delta; every delivery re-evaluates its connection's timeout, since another connection's
-   * copy may have closed the window meanwhile.
+   * copy may have closed the window meanwhile. A closer without entries only ends the window: no
+   * slot is rerouted and no pool is touched.
    */
   void onSMigrated(SMigratedEvent e, Connection c) {
     if (seenSMigrated.putIfAbsent(e.seq, e) == null) {
       logger.debug("Slot migration done (seq={}, entries={})", e.seq, e.migrations.size());
       closeMigrationWindow(e.seq);
-      cache.applySlotMigration(e.migrations);
+      if (!e.migrations.isEmpty()) {
+        cache.applySlotMigration(e.migrations);
+      }
       while (seenSMigrated.size() > MAX_HISTORY_OF_EVENTS) {
         seenSMigrated.pollFirstEntry();
       }

@@ -2,7 +2,6 @@ package redis.clients.jedis.json;
 
 import static redis.clients.jedis.BuilderFactory.STRING;
 
-import java.math.BigInteger;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,7 +10,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.util.DoublePrecision;
 import redis.clients.jedis.util.SafeEncoder;
 
 public final class JsonBuilderFactory {
@@ -178,20 +176,20 @@ public final class JsonBuilderFactory {
     }
   };
 
+  /**
+   * Builder that parses a List of numbers with type preservation (Long for integers, Double for decimals).
+   * Supports both RESP3 (List<Object>) and RESP2 (JSON array as byte[]).
+   * Returns null values for JSON null literals.
+   */
   public static final Builder<List<Number>> NUMBER_LIST = new Builder<List<Number>>() {
     @Override
     public List<Number> build(Object data) {
       if (data == null) {
         return null;
       }
-      if (data instanceof List<?>) {
-        List<?> list = (List<?>) data;
-        List<Number> out = new ArrayList<>(list.size());
-        for (Object element : list) {
-          out.add(toNumber(element));
-        }
-        return out;
-      }
+      // RESP3 -> expected List<Number>
+      if (data instanceof List) return JSON_NUMBER_LIST.build(data);
+      // RESP2 > Bulk string reply containing a JSON array of Number elements (nullable):
       if (data instanceof byte[]) {
         return parseJsonNumberArray(SafeEncoder.encode((byte[]) data));
       }
@@ -204,41 +202,96 @@ public final class JsonBuilderFactory {
     }
   };
 
-  private static Number toNumber(Object element) {
-    if (element == null) {
-      return null;
-    }
-    if (element instanceof byte[]) {
-      return parseNumber(SafeEncoder.encode((byte[]) element));
-    }
-    if (element instanceof Number) {
-      return toLongOrDouble((Number) element);
-    }
-    throw new JedisException("Unsupported type: " + element.getClass());
-  }
-
   private static List<Number> parseJsonNumberArray(String json) {
-    String str = json.trim();
-    if (str.length() < 2 || str.charAt(0) != '[' || str.charAt(str.length() - 1) != ']') {
+    int len = json.length();
+    int start = 0;
+    // Find '[' skipping leading whitespace
+    while (start < len && Character.isWhitespace(json.charAt(start))) {
+      start++;
+    }
+    if (start >= len || json.charAt(start) != '[') {
       throw new JedisException("Expected a JSON array of numbers but got: " + json);
     }
-    String body = str.substring(1, str.length() - 1).trim();
-    if (body.isEmpty()) {
-      return new ArrayList<>(0);
+
+    int end = len - 1;
+    // Find ']' skipping trailing whitespace
+    while (end > start && Character.isWhitespace(json.charAt(end))) {
+      end--;
     }
-    String[] tokens = body.split(",");
-    List<Number> out = new ArrayList<>(tokens.length);
-    for (String token : tokens) {
-      out.add(parseNumber(token.trim()));
+    if (json.charAt(end) != ']') {
+      throw new JedisException("Expected a JSON array of numbers but got: " + json);
+    }
+
+    List<Number> out = new ArrayList<>();
+    int i = start + 1;
+    boolean expectToken = true;
+    while (i < end) {
+      // Skip whitespace
+      while (i < end && Character.isWhitespace(json.charAt(i))) {
+        i++;
+      }
+      if (i >= end) break;
+
+      // Skip comma if present (only after tokens, not at start)
+      if (json.charAt(i) == ',') {
+        if (expectToken) {
+          throw new JedisException("Expected null or number but got empty element in: " + json);
+        }
+        i++;
+        // Skip trailing whitespace after comma
+        while (i < end && Character.isWhitespace(json.charAt(i))) {
+          i++;
+        }
+        if (i >= end || json.charAt(i) == ',') {
+          throw new JedisException("Expected null or number but got empty element in: " + json);
+        }
+        expectToken = true;
+        continue;
+      }
+
+      // Parse token (null or number)
+      int tokenStart = i;
+      while (i < end && json.charAt(i) != ',') {
+        i++;
+      }
+
+      // Trim leading whitespace
+      while (tokenStart < i && Character.isWhitespace(json.charAt(tokenStart))) {
+        tokenStart++;
+      }
+
+      // Trim trailing whitespace
+      int tokenEnd = i;
+      while (tokenEnd > tokenStart && Character.isWhitespace(json.charAt(tokenEnd - 1))) {
+        tokenEnd--;
+      }
+
+      if (tokenStart >= tokenEnd) {
+        throw new JedisException("Expected null or number but got empty element in: " + json);
+      }
+
+      String token = json.substring(tokenStart, tokenEnd);
+      out.add(parseNullOrNumber(token));
+      expectToken = false;
     }
     return out;
   }
 
-  private static Number parseNumber(String str) {
+  private static Number parseNullOrNumber(String str) {
     if ("null".equals(str)) {
       return null;
     }
-    if (str.indexOf('.') < 0 && str.indexOf('e') < 0 && str.indexOf('E') < 0) {
+    // Single pass to detect decimal or exponent
+    boolean isDecimal = false;
+    for (int i = 0; i < str.length(); i++) {
+      char c = str.charAt(i);
+      if (c == '.' || c == 'e' || c == 'E') {
+        isDecimal = true;
+        break;
+      }
+    }
+
+    if (!isDecimal) {
       try {
         return Long.parseLong(str);
       } catch (NumberFormatException e) {
@@ -246,26 +299,11 @@ public final class JsonBuilderFactory {
       }
     }
     try {
-      return DoublePrecision.parseFloatingPointNumber(str);
+      return Double.parseDouble(str);
     } catch (NumberFormatException e) {
       throw new JedisException("Expected a number but got: " + str, e);
     }
   }
-
-  private static Number toLongOrDouble(Number n) {
-    if (n instanceof Long || n instanceof Double) {
-      return n;
-    }
-    if (n instanceof Integer || n instanceof Short || n instanceof Byte) {
-      return n.longValue();
-    }
-    if (n instanceof BigInteger) {
-      BigInteger bi = (BigInteger) n;
-      return bi.bitLength() < Long.SIZE ? (Number) bi.longValue() : (Number) bi.doubleValue();
-    }
-    return n.doubleValue();
-  }
-
   private JsonBuilderFactory() {
     throw new InstantiationError("Must not instantiate this class");
   }

@@ -2,12 +2,14 @@ package redis.clients.jedis.json;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Arrays;
 import java.util.List;
 
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.exceptions.JedisException;
 
 /**
  * Unit tests for JsonBuilderFactory, specifically for the JSON_NUMBER_LIST builder that preserves
@@ -141,5 +143,177 @@ public class JsonBuilderFactoryTest {
     assertTrue(numberList.get(0) instanceof Long, "First element should be Long");
     assertTrue(numberList.get(1) instanceof Double, "Second element should be Double");
     assertTrue(numberList.get(2) instanceof Long, "Third element should be Long");
+  }
+
+  // ===== Tests for NUMBER_LIST builder (RESP2 JSON array parsing) =====
+
+  @Test
+  public void numberListParsesJsonArrayOfIntegers() {
+    byte[] data = "[1,2,3]".getBytes();
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(3, result.size());
+    assertEquals(1L, result.get(0));
+    assertEquals(2L, result.get(1));
+    assertEquals(3L, result.get(2));
+  }
+
+  @Test
+  public void numberListParsesJsonArrayOfDecimals() {
+    byte[] data = "[1.5,2.5,3.14]".getBytes();
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(3, result.size());
+    assertEquals(1.5, result.get(0));
+    assertEquals(2.5, result.get(1));
+    assertEquals(3.14, result.get(2));
+  }
+
+  @Test
+  public void numberListParsesJsonArrayWithNullValues() {
+    byte[] data = "[1,null,3.5]".getBytes();
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(3, result.size());
+    assertEquals(1L, result.get(0));
+    assertNull(result.get(1));
+    assertEquals(3.5, result.get(2));
+  }
+
+  @Test
+  public void numberListParsesJsonArrayWithScientificNotation() {
+    byte[] data = "[1e10,2.5E-3,3.0e2]".getBytes();
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(3, result.size());
+    assertEquals(1e10, result.get(0));
+    assertEquals(2.5e-3, result.get(1));
+    assertEquals(3.0e2, result.get(2));
+  }
+
+  @Test
+  public void numberListParsesEmptyJsonArray() {
+    byte[] data = "[]".getBytes();
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(0, result.size());
+  }
+
+  @Test
+  public void numberListHandlesWhitespace() {
+    byte[] data = "[ 1 , null , 3.5 ]".getBytes();
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(3, result.size());
+    assertEquals(1L, result.get(0));
+    assertNull(result.get(1));
+    assertEquals(3.5, result.get(2));
+  }
+
+  @Test
+  public void numberListHandlesLeadingAndTrailingWhitespace() {
+    byte[] data = "  [ 1 , 2 ]  ".getBytes();
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(2, result.size());
+    assertEquals(1L, result.get(0));
+    assertEquals(2L, result.get(1));
+  }
+
+  @Test
+  public void numberListParsesNegativeNumbers() {
+    byte[] data = "[-1,-2.5,-3e2]".getBytes();
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(3, result.size());
+    assertEquals(-1L, result.get(0));
+    assertEquals(-2.5, result.get(1));
+    assertEquals(-3e2, result.get(2));
+  }
+
+  @Test
+  public void numberListParsesLargeNumbers() {
+    byte[] data = "[9223372036854775807,1.7976931348623157e308]".getBytes();
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(2, result.size());
+    assertEquals(Long.MAX_VALUE, result.get(0));
+    assertEquals(Double.MAX_VALUE, result.get(1));
+  }
+
+  @Test
+  public void numberListRejectsEmptyElements() {
+    byte[] data = "[1,,3]".getBytes();
+    assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
+        "Should reject empty elements");
+  }
+
+  @Test
+  public void numberListRejectsTrailingComma() {
+    byte[] data = "[1,2,]".getBytes();
+    assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
+        "Should reject trailing comma");
+  }
+
+  @Test
+  public void numberListRejectsLeadingComma() {
+    byte[] data = "[,1,2]".getBytes();
+    assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
+        "Should reject leading comma");
+  }
+
+  @Test
+  public void numberListRejectsInvalidJson() {
+    byte[] data = "not an array".getBytes();
+    assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
+        "Should reject invalid JSON");
+  }
+
+  @Test
+  public void numberListRejectsInvalidNumbers() {
+    byte[] data = "[1,abc,3]".getBytes();
+    assertThrows(JedisException.class, () -> JsonBuilderFactory.NUMBER_LIST.build(data),
+        "Should reject non-numeric values");
+  }
+
+  @Test
+  public void numberListHandlesNullInput() {
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(null);
+    assertNull(result);
+  }
+
+  @Test
+  public void numberListHandlesAllNullArray() {
+    byte[] data = "[null,null,null]".getBytes();
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(3, result.size());
+    assertNull(result.get(0));
+    assertNull(result.get(1));
+    assertNull(result.get(2));
+  }
+
+  @Test
+  public void numberListHandlesMixedWhitespaceVariations() {
+    byte[] data = "[\n  1  ,\t  null\t,  3.5  \n]".getBytes();
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(3, result.size());
+    assertEquals(1L, result.get(0));
+    assertNull(result.get(1));
+    assertEquals(3.5, result.get(2));
+  }
+
+  @Test
+  public void numberListPreservesNumericTypes() {
+    byte[] data = "[42,3.14,null,-100,1e5]".getBytes();
+    List<Number> result = JsonBuilderFactory.NUMBER_LIST.build(data);
+
+    assertEquals(5, result.size());
+    assertTrue(result.get(0) instanceof Long, "Integer should be Long");
+    assertTrue(result.get(1) instanceof Double, "Decimal should be Double");
+    assertNull(result.get(2));
+    assertTrue(result.get(3) instanceof Long, "Negative integer should be Long");
+    assertTrue(result.get(4) instanceof Double, "Scientific notation should be Double");
   }
 }

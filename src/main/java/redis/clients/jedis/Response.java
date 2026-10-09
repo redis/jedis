@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.util.function.Supplier;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisException;
 
 public class Response<T> implements Supplier<T> {
   protected T response = null;
@@ -10,6 +11,7 @@ public class Response<T> implements Supplier<T> {
   private boolean building = false;
   private boolean built = false;
   private boolean set = false;
+  private JedisException failure = null;
 
   private Builder<T> builder;
   private Object data;
@@ -24,8 +26,19 @@ public class Response<T> implements Supplier<T> {
     set = true;
   }
 
+  /**
+   * Completes this response with the error that stopped its reply from being read, so that
+   * {@link #get()} rethrows that error instead of reporting the response as not synced yet.
+   */
+  void setFailure(JedisException failure) {
+    this.failure = failure;
+  }
+
   @Override
   public T get() {
+    if (failure != null) {
+      throw failure;
+    }
     // if response has dependency response and dependency is not built, build it first and no more!!
     if (dependency != null && dependency.set && !dependency.built) {
       dependency.build();

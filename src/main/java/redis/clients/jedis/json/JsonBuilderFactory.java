@@ -205,95 +205,56 @@ public final class JsonBuilderFactory {
   };
 
   private static List<Number> parseJsonNumberArray(String json) {
-    int len = json.length();
-    int start = 0;
-    // Find '[' skipping leading whitespace
-    while (start < len && Character.isWhitespace(json.charAt(start))) {
-      start++;
+    int first = 0;
+    int last = json.length() - 1;
+    while (first <= last && Character.isWhitespace(json.charAt(first))) {
+      first++;
     }
-    if (start >= len || json.charAt(start) != '[') {
-      throw new JedisException("Expected a JSON array of numbers but got: " + json);
+    while (last > first && Character.isWhitespace(json.charAt(last))) {
+      last--;
     }
-
-    int end = len - 1;
-    // Find ']' skipping trailing whitespace
-    while (end > start && Character.isWhitespace(json.charAt(end))) {
-      end--;
-    }
-    if (json.charAt(end) != ']') {
+    if (last <= first || json.charAt(first) != '[' || json.charAt(last) != ']') {
       throw new JedisException("Expected a JSON array of numbers but got: " + json);
     }
 
     List<Number> out = new ArrayList<>();
-    int i = start + 1;
-    boolean expectToken = true;
-    while (i < end) {
-      // Skip whitespace
-      while (i < end && Character.isWhitespace(json.charAt(i))) {
+    int i = first + 1;
+    while (true) {
+      while (i < last && Character.isWhitespace(json.charAt(i))) {
         i++;
       }
-      if (i >= end) break;
-
-      // Skip comma if present (only after tokens, not at start)
-      if (json.charAt(i) == ',') {
-        if (expectToken) {
-          throw new JedisException("Expected null or number but got empty element in: " + json);
+      if (i == last) {
+        if (out.isEmpty()) {
+          return out; // "[]"
         }
-        i++;
-        // Skip trailing whitespace after comma
-        while (i < end && Character.isWhitespace(json.charAt(i))) {
-          i++;
-        }
-        if (i >= end || json.charAt(i) == ',') {
-          throw new JedisException("Expected null or number but got empty element in: " + json);
-        }
-        expectToken = true;
-        continue;
+        throw new JedisException("Expected null or number but got empty element in: " + json);
       }
 
-      // Parse token (null or number)
       int tokenStart = i;
-      while (i < end && json.charAt(i) != ',') {
+      while (i < last && json.charAt(i) != ',') {
         i++;
       }
-
-      // Trim leading whitespace
-      while (tokenStart < i && Character.isWhitespace(json.charAt(tokenStart))) {
-        tokenStart++;
-      }
-
-      // Trim trailing whitespace
       int tokenEnd = i;
       while (tokenEnd > tokenStart && Character.isWhitespace(json.charAt(tokenEnd - 1))) {
         tokenEnd--;
       }
-
-      if (tokenStart >= tokenEnd) {
+      if (tokenStart == tokenEnd) {
         throw new JedisException("Expected null or number but got empty element in: " + json);
       }
+      out.add(parseNullOrNumber(json.substring(tokenStart, tokenEnd)));
 
-      String token = json.substring(tokenStart, tokenEnd);
-      out.add(parseNullOrNumber(token));
-      expectToken = false;
+      if (i == last) {
+        return out;
+      }
+      i++; // skip ','
     }
-    return out;
   }
 
   private static Number parseNullOrNumber(String str) {
     if ("null".equals(str)) {
       return null;
     }
-    // Single pass to detect decimal or exponent
-    boolean isDecimal = false;
-    for (int i = 0; i < str.length(); i++) {
-      char c = str.charAt(i);
-      if (c == '.' || c == 'e' || c == 'E') {
-        isDecimal = true;
-        break;
-      }
-    }
-
-    if (!isDecimal) {
+    if (str.indexOf('.') < 0 && str.indexOf('e') < 0 && str.indexOf('E') < 0) {
       try {
         return Long.parseLong(str);
       } catch (NumberFormatException e) {

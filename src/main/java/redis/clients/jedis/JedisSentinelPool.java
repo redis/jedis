@@ -312,14 +312,16 @@ public class JedisSentinelPool extends Pool<Jedis> {
   public Jedis getResource() {
     while (true) {
       Jedis jedis = super.getResource();
-      jedis.setDataSource(this);
 
       // get a reference because it can change concurrently
       final HostAndPort master = currentHostMaster;
       final HostAndPort connection = jedis.getClient().getHostAndPort();
 
       if (master.equals(connection)) {
-        // connected to the correct master
+        // connected to the correct master. Only the instance handed out gets a data source:
+        // destroyObject() closes through Jedis.close(), which with one set would return the
+        // object to the pool it was just invalidated in and leave the socket open
+        jedis.setDataSource(this);
         return jedis;
       } else {
         returnBrokenResource(jedis);

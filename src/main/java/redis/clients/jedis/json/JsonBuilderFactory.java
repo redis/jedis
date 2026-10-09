@@ -188,8 +188,10 @@ public final class JsonBuilderFactory {
         return null;
       }
       // RESP3 -> expected List<Number>
-      if (data instanceof List) return JSON_NUMBER_LIST.build(data);
-      // RESP2 > Bulk string reply containing a JSON array of Number elements (nullable):
+      if (data instanceof List) {
+        return JSON_NUMBER_LIST.build(data);
+      }
+      // RESP2 -> Bulk string reply containing a JSON array of Number elements (nullable):
       if (data instanceof byte[]) {
         return parseJsonNumberArray(SafeEncoder.encode((byte[]) data));
       }
@@ -304,6 +306,7 @@ public final class JsonBuilderFactory {
       throw new JedisException("Expected a number but got: " + str, e);
     }
   }
+
   private JsonBuilderFactory() {
     throw new InstantiationError("Must not instantiate this class");
   }

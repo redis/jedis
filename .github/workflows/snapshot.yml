@@ -22,9 +22,6 @@ jobs:
         with:
           java-version: '8'
           distribution: 'temurin'
-          server-id: central
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_PASSWORD
       - name: Cache dependencies
         uses: actions/cache@v5
         with:
@@ -38,6 +35,7 @@ jobs:
       - name: deploy
         run: |
           mvn --no-transfer-progress \
+            --settings .github/maven-settings.xml \
             -DskipTests deploy
         env:
           MAVEN_USERNAME: ${{secrets.OSSH_USERNAME}}

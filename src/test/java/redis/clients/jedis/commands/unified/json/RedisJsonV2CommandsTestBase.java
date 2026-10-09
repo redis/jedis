@@ -607,7 +607,8 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
     String key = keys.key("doc");
     jedis.jsonSet(key, ROOT_PATH, "{\"str\":\"a\",\"nums\":[1,\"b\",2]}");
 
-    assertEquals(Collections.emptyList(), jedis.jsonNumIncrByAsNumbers(key, Path2.of("$.missing"), 1));
+    assertEquals(Collections.emptyList(),
+      jedis.jsonNumIncrByAsNumbers(key, Path2.of("$.missing"), 1));
     assertEquals(singletonList((Number) null),
       jedis.jsonNumIncrByAsNumbers(key, Path2.of("$.str"), 1));
     // mixed matches: non-number entries are null, numbers are incremented

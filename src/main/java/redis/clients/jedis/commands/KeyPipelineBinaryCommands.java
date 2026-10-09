@@ -2,6 +2,7 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 import java.util.Set;
+import redis.clients.jedis.args.BlessFlag;
 
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.ExpiryOption;
@@ -110,4 +111,33 @@ public interface KeyPipelineBinaryCommands {
 
   Response<byte[]> randomBinaryKey();
 
+  /**
+   * Pipeline variant of {@link KeyBinaryCommands#blessSet(byte[], BlessFlag)}.
+   * @since 8.1
+   */
+  Response<Long> blessSet(byte[] key, BlessFlag flag);
+
+  /**
+   * Pipeline variant of {@link KeyBinaryCommands#blessClear(byte[], BlessFlag)}.
+   * @since 8.1
+   */
+  Response<Long> blessClear(byte[] key, BlessFlag flag);
+
+  /**
+   * Pipeline variant of {@link KeyBinaryCommands#blessGet(byte[])}.
+   * @since 8.1
+   */
+  Response<List<byte[]>> blessGet(byte[] key);
+
+  /**
+   * Pipeline variant of {@link KeyBinaryCommands#blessScan(byte[], BlessFlag)}.
+   * @since 8.1
+   */
+  Response<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag);
+
+  /**
+   * Pipeline variant of {@link KeyBinaryCommands#blessScan(byte[], BlessFlag, int)}.
+   * @since 8.1
+   */
+  Response<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag, int count);
 }

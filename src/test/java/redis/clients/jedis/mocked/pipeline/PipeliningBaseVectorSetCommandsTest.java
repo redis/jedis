@@ -20,8 +20,8 @@ public class PipeliningBaseVectorSetCommandsTest extends PipeliningBaseMockedTes
     when(commandObjects.vsimWithScoresAndAttribs("key", vector))
         .thenReturn(mapStringVSimScoreAttribsCommandObject);
 
-    Response<Map<String, VSimScoreAttribs>> response =
-        pipeliningBase.vsimWithScoresAndAttribs("key", vector);
+    Response<Map<String, VSimScoreAttribs>> response = pipeliningBase
+        .vsimWithScoresAndAttribs("key", vector);
 
     assertThat(commands, contains(mapStringVSimScoreAttribsCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -34,8 +34,8 @@ public class PipeliningBaseVectorSetCommandsTest extends PipeliningBaseMockedTes
     when(commandObjects.vsimWithScoresAndAttribs("key", vector, params))
         .thenReturn(mapStringVSimScoreAttribsCommandObject);
 
-    Response<Map<String, VSimScoreAttribs>> response =
-        pipeliningBase.vsimWithScoresAndAttribs("key", vector, params);
+    Response<Map<String, VSimScoreAttribs>> response = pipeliningBase
+        .vsimWithScoresAndAttribs("key", vector, params);
 
     assertThat(commands, contains(mapStringVSimScoreAttribsCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -48,8 +48,8 @@ public class PipeliningBaseVectorSetCommandsTest extends PipeliningBaseMockedTes
     when(commandObjects.vsimWithScoresAndAttribs(key, vector))
         .thenReturn(mapBytesVSimScoreAttribsCommandObject);
 
-    Response<Map<byte[], VSimScoreAttribs>> response =
-        pipeliningBase.vsimWithScoresAndAttribs(key, vector);
+    Response<Map<byte[], VSimScoreAttribs>> response = pipeliningBase.vsimWithScoresAndAttribs(key,
+      vector);
 
     assertThat(commands, contains(mapBytesVSimScoreAttribsCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -63,8 +63,8 @@ public class PipeliningBaseVectorSetCommandsTest extends PipeliningBaseMockedTes
     when(commandObjects.vsimWithScoresAndAttribs(key, vector, params))
         .thenReturn(mapBytesVSimScoreAttribsCommandObject);
 
-    Response<Map<byte[], VSimScoreAttribs>> response =
-        pipeliningBase.vsimWithScoresAndAttribs(key, vector, params);
+    Response<Map<byte[], VSimScoreAttribs>> response = pipeliningBase.vsimWithScoresAndAttribs(key,
+      vector, params);
 
     assertThat(commands, contains(mapBytesVSimScoreAttribsCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -75,8 +75,8 @@ public class PipeliningBaseVectorSetCommandsTest extends PipeliningBaseMockedTes
     when(commandObjects.vsimByElementWithScoresAndAttribs("key", "element"))
         .thenReturn(mapStringVSimScoreAttribsCommandObject);
 
-    Response<Map<String, VSimScoreAttribs>> response =
-        pipeliningBase.vsimByElementWithScoresAndAttribs("key", "element");
+    Response<Map<String, VSimScoreAttribs>> response = pipeliningBase
+        .vsimByElementWithScoresAndAttribs("key", "element");
 
     assertThat(commands, contains(mapStringVSimScoreAttribsCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -88,8 +88,8 @@ public class PipeliningBaseVectorSetCommandsTest extends PipeliningBaseMockedTes
     when(commandObjects.vsimByElementWithScoresAndAttribs("key", "element", params))
         .thenReturn(mapStringVSimScoreAttribsCommandObject);
 
-    Response<Map<String, VSimScoreAttribs>> response =
-        pipeliningBase.vsimByElementWithScoresAndAttribs("key", "element", params);
+    Response<Map<String, VSimScoreAttribs>> response = pipeliningBase
+        .vsimByElementWithScoresAndAttribs("key", "element", params);
 
     assertThat(commands, contains(mapStringVSimScoreAttribsCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -102,8 +102,8 @@ public class PipeliningBaseVectorSetCommandsTest extends PipeliningBaseMockedTes
     when(commandObjects.vsimByElementWithScoresAndAttribs(key, element))
         .thenReturn(mapBytesVSimScoreAttribsCommandObject);
 
-    Response<Map<byte[], VSimScoreAttribs>> response =
-        pipeliningBase.vsimByElementWithScoresAndAttribs(key, element);
+    Response<Map<byte[], VSimScoreAttribs>> response = pipeliningBase
+        .vsimByElementWithScoresAndAttribs(key, element);
 
     assertThat(commands, contains(mapBytesVSimScoreAttribsCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -117,8 +117,8 @@ public class PipeliningBaseVectorSetCommandsTest extends PipeliningBaseMockedTes
     when(commandObjects.vsimByElementWithScoresAndAttribs(key, element, params))
         .thenReturn(mapBytesVSimScoreAttribsCommandObject);
 
-    Response<Map<byte[], VSimScoreAttribs>> response =
-        pipeliningBase.vsimByElementWithScoresAndAttribs(key, element, params);
+    Response<Map<byte[], VSimScoreAttribs>> response = pipeliningBase
+        .vsimByElementWithScoresAndAttribs(key, element, params);
 
     assertThat(commands, contains(mapBytesVSimScoreAttribsCommandObject));
     assertThat(response, is(predefinedResponse));

@@ -8,6 +8,7 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
+import redis.clients.jedis.resps.VSimScoreAttribs;
 
 /**
  * Interface for Redis Vector Set binary pipeline commands. Vector sets are a new data type
@@ -170,6 +171,29 @@ public interface VectorSetPipelineBinaryCommands {
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements
+   * similar to a given vector with their similarity scores and attributes.
+   * @param key the name of the key that holds the vector set data
+   * @param vector the vector to use as similarity reference
+   * @return Response wrapping map of element names to their similarity scores and attributes
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<byte[], VSimScoreAttribs>> vsimWithScoresAndAttribs(byte[] key, float[] vector);
+
+  /**
+   * Return elements similar to a given vector with their similarity scores and attributes.
+   * @param key the name of the key that holds the vector set data
+   * @param vector the vector to use as similarity reference
+   * @param params additional parameters for the VSIM command
+   * @return Response wrapping map of element names to their similarity scores and attributes
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<byte[], VSimScoreAttribs>> vsimWithScoresAndAttribs(byte[] key, float[] vector,
+      VSimParams params);
+
+  /**
+   * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements
    * similar to a given element in the vector set.
    * <p>
    * Time complexity: O(log(N)) where N is the number of elements in the vector set.
@@ -214,6 +238,30 @@ public interface VectorSetPipelineBinaryCommands {
   @Experimental
   Response<Map<byte[], Double>> vsimByElementWithScores(byte[] key, byte[] element,
       VSimParams params);
+
+  /**
+   * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements
+   * similar to a given element with their similarity scores and attributes.
+   * @param key the name of the key that holds the vector set data
+   * @param element the name of the element to use as similarity reference
+   * @return Response wrapping map of element names to their similarity scores and attributes
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<byte[], VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(byte[] key,
+      byte[] element);
+
+  /**
+   * Return elements similar to a given element with their similarity scores and attributes.
+   * @param key the name of the key that holds the vector set data
+   * @param element the name of the element to use as similarity reference
+   * @param params additional parameters for the VSIM command
+   * @return Response wrapping map of element names to their similarity scores and attributes
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<byte[], VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(byte[] key,
+      byte[] element, VSimParams params);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vdim/">VDIM Command</a></b> Return the number

@@ -1,6 +1,12 @@
 package redis.clients.jedis.commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.CommandObjects;
@@ -100,5 +106,43 @@ public class VectorSetPlainOverloadsTest {
     byte[] element = { 'e' };
     assertEquals(commands.vsimByElementWithScoresAndAttribs(key, element, null),
       commands.vsimByElementWithScoresAndAttribs(key, element));
+  }
+
+  @Test
+  public void newVectorSetCommandFactoriesAreMarkedExperimental() throws IOException {
+    String source = new String(
+        Files.readAllBytes(Paths.get("src/main/java/redis/clients/jedis/CommandObjects.java")),
+        StandardCharsets.UTF_8);
+    assertExperimental(source,
+      "public final CommandObject<Boolean> vadd(String key, float[] vector, String element, int reduceDim) {");
+    assertExperimental(source,
+      "public final CommandObject<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim) {");
+    assertExperimental(source,
+      "public final CommandObject<Boolean> vadd(byte[] key, float[] vector, byte[] element, int reduceDim) {");
+    assertExperimental(source,
+      "public final CommandObject<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim) {");
+    assertExperimental(source,
+      "public final CommandObject<Map<String, Double>> vsimWithScores(String key, float[] vector) {");
+    assertExperimental(source,
+      "public final CommandObject<Map<String, VSimScoreAttribs>> vsimWithScoresAndAttribs(String key, float[] vector) {");
+    assertExperimental(source,
+      "public final CommandObject<Map<String, Double>> vsimByElementWithScores(String key, String element) {");
+    assertExperimental(source,
+      "public final CommandObject<Map<String, VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(String key, String element) {");
+    assertExperimental(source,
+      "public final CommandObject<Map<byte[], Double>> vsimWithScores(byte[] key, float[] vector) {");
+    assertExperimental(source,
+      "public final CommandObject<Map<byte[], VSimScoreAttribs>> vsimWithScoresAndAttribs(byte[] key, float[] vector) {");
+    assertExperimental(source,
+      "public final CommandObject<Map<byte[], Double>> vsimByElementWithScores(byte[] key, byte[] element) {");
+    assertExperimental(source,
+      "public final CommandObject<Map<byte[], VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(byte[] key, byte[] element) {");
+  }
+
+  private void assertExperimental(String source, String methodDeclaration) {
+    int methodIndex = source.indexOf(methodDeclaration);
+    assertTrue(methodIndex >= 0, () -> methodDeclaration + " should exist");
+    assertTrue(source.substring(0, methodIndex).trim().endsWith("@Experimental"),
+      () -> methodDeclaration + " should be marked experimental");
   }
 }

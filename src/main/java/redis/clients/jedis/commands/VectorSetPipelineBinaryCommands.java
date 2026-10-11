@@ -75,6 +75,13 @@ public interface VectorSetPipelineBinaryCommands {
   Response<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, VAddParams params);
 
   /**
+   * Add a new element into the vector set with dimension reduction.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Boolean> vadd(byte[] key, float[] vector, byte[] element, int reduceDim);
+
+  /**
    * <b><a href="https://redis.io/docs/latest/commands/vadd/">VADD Command</a></b> Add a new element
    * into the vector set specified by key with dimension reduction and additional parameters.
    * <p>
@@ -87,16 +94,16 @@ public interface VectorSetPipelineBinaryCommands {
    * @param params additional parameters for the VADD command
    * @return Response wrapping 1 if key was added; 0 if key was not added
    */
-  /**
-   * Add a new element into the vector set with dimension reduction.
-   * @since 8.1
-   */
-  @Experimental
-  Response<Boolean> vadd(byte[] key, float[] vector, byte[] element, int reduceDim);
-
   @Experimental
   Response<Boolean> vadd(byte[] key, float[] vector, byte[] element, int reduceDim,
       VAddParams params);
+
+  /**
+   * Add a new element into the vector set using FP32 binary format with dimension reduction.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vadd/">VADD Command</a></b> Add a new element
@@ -112,13 +119,6 @@ public interface VectorSetPipelineBinaryCommands {
    * @param params additional parameters for the VADD command
    * @return Response wrapping 1 if key was added; 0 if key was not added
    */
-  /**
-   * Add a new element into the vector set using FP32 binary format with dimension reduction.
-   * @since 8.1
-   */
-  @Experimental
-  Response<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim);
-
   @Experimental
   Response<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim,
       VAddParams params);
@@ -149,6 +149,13 @@ public interface VectorSetPipelineBinaryCommands {
   Response<List<byte[]>> vsim(byte[] key, float[] vector, VSimParams params);
 
   /**
+   * Return elements similar to a given vector with their similarity scores.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<byte[], Double>> vsimWithScores(byte[] key, float[] vector);
+
+  /**
    * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements
    * similar to a given vector with their similarity scores.
    * <p>
@@ -159,13 +166,6 @@ public interface VectorSetPipelineBinaryCommands {
    *          added)
    * @return Response wrapping map of element names to their similarity scores
    */
-  /**
-   * Return elements similar to a given vector with their similarity scores.
-   * @since 8.1
-   */
-  @Experimental
-  Response<Map<byte[], Double>> vsimWithScores(byte[] key, float[] vector);
-
   @Experimental
   Response<Map<byte[], Double>> vsimWithScores(byte[] key, float[] vector, VSimParams params);
 
@@ -218,6 +218,13 @@ public interface VectorSetPipelineBinaryCommands {
   Response<List<byte[]>> vsimByElement(byte[] key, byte[] element, VSimParams params);
 
   /**
+   * Return elements similar to a given element with their similarity scores.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<byte[], Double>> vsimByElementWithScores(byte[] key, byte[] element);
+
+  /**
    * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements
    * similar to a given element in the vector set with their similarity scores.
    * <p>
@@ -228,13 +235,6 @@ public interface VectorSetPipelineBinaryCommands {
    *          added)
    * @return Response wrapping map of element names to their similarity scores
    */
-  /**
-   * Return elements similar to a given element with their similarity scores.
-   * @since 8.1
-   */
-  @Experimental
-  Response<Map<byte[], Double>> vsimByElementWithScores(byte[] key, byte[] element);
-
   @Experimental
   Response<Map<byte[], Double>> vsimByElementWithScores(byte[] key, byte[] element,
       VSimParams params);

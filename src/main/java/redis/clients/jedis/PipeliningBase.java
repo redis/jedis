@@ -5281,6 +5281,17 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Map<String, VSimScoreAttribs>> vsimWithScoresAndAttribs(String key, float[] vector) {
+    return appendCommand(commandObjects.vsimWithScoresAndAttribs(key, vector));
+  }
+
+  @Override
+  public Response<Map<String, VSimScoreAttribs>> vsimWithScoresAndAttribs(String key, float[] vector,
+      VSimParams params) {
+    return appendCommand(commandObjects.vsimWithScoresAndAttribs(key, vector, params));
+  }
+
+  @Override
   public Response<List<String>> vsimByElement(String key, String element) {
     return appendCommand(commandObjects.vsimByElement(key, element));
   }
@@ -5298,6 +5309,17 @@ public abstract class PipeliningBase
   @Override
   public Response<Map<String, Double>> vsimByElementWithScores(String key, String element, VSimParams params) {
     return appendCommand(commandObjects.vsimByElementWithScores(key, element, params));
+  }
+
+  @Override
+  public Response<Map<String, VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(String key, String element) {
+    return appendCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element));
+  }
+
+  @Override
+  public Response<Map<String, VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(String key, String element,
+      VSimParams params) {
+    return appendCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element, params));
   }
 
   @Override
@@ -5427,6 +5449,17 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Map<byte[], VSimScoreAttribs>> vsimWithScoresAndAttribs(byte[] key, float[] vector) {
+    return appendCommand(commandObjects.vsimWithScoresAndAttribs(key, vector));
+  }
+
+  @Override
+  public Response<Map<byte[], VSimScoreAttribs>> vsimWithScoresAndAttribs(byte[] key, float[] vector,
+      VSimParams params) {
+    return appendCommand(commandObjects.vsimWithScoresAndAttribs(key, vector, params));
+  }
+
+  @Override
   public Response<List<byte[]>> vsimByElement(byte[] key, byte[] element) {
     return appendCommand(commandObjects.vsimByElement(key, element));
   }
@@ -5444,6 +5477,17 @@ public abstract class PipeliningBase
   @Override
   public Response<Map<byte[], Double>> vsimByElementWithScores(byte[] key, byte[] element, VSimParams params) {
     return appendCommand(commandObjects.vsimByElementWithScores(key, element, params));
+  }
+
+  @Override
+  public Response<Map<byte[], VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element));
+  }
+
+  @Override
+  public Response<Map<byte[], VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(byte[] key, byte[] element,
+      VSimParams params) {
+    return appendCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element, params));
   }
 
   @Override

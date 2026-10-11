@@ -5498,6 +5498,10 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
+  /**
+   * Add a new element into the vector set with dimension reduction.
+   * @since 8.1
+   */
   public final CommandObject<Boolean> vadd(String key, float[] vector, String element, int reduceDim) {
     return vadd(key, vector, element, reduceDim, null);
   }
@@ -5511,6 +5515,10 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
+  /**
+   * Add a new element into the vector set using FP32 binary format with dimension reduction.
+   * @since 8.1
+   */
   public final CommandObject<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim) {
     return vaddFP32(key, vectorBlob, element, reduceDim, null);
   }
@@ -5523,6 +5531,10 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.BOOLEAN);
   }
 
+  /**
+   * Add a new element into the vector set with dimension reduction.
+   * @since 8.1
+   */
   public final CommandObject<Boolean> vadd(byte[] key, float[] vector, byte[] element, int reduceDim) {
     return vadd(key, vector, element, reduceDim, null);
   }
@@ -5549,6 +5561,10 @@ public class CommandObjects {
     }
   }
 
+  /**
+   * Add a new element into the vector set using FP32 binary format with dimension reduction.
+   * @since 8.1
+   */
   public final CommandObject<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim) {
     return vaddFP32(key, vectorBlob, element, reduceDim, null);
   }
@@ -5579,6 +5595,10 @@ public class CommandObjects {
     }
   }
 
+  /**
+   * Return elements similar to a given vector with their similarity scores.
+   * @since 8.1
+   */
   public final CommandObject<Map<String, Double>> vsimWithScores(String key, float[] vector) {
     return vsimWithScores(key, vector, null);
   }
@@ -5591,6 +5611,10 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.STRING_DOUBLE_MAP);
   }
 
+  /**
+   * Return elements similar to a given vector with their similarity scores and attributes.
+   * @since 8.1
+   */
   public final CommandObject<Map<String, VSimScoreAttribs>> vsimWithScoresAndAttribs(String key, float[] vector) {
     return vsimWithScoresAndAttribs(key, vector, null);
   }
@@ -5615,6 +5639,10 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.STRING_LIST);
   }
 
+  /**
+   * Return elements similar to a given element with their similarity scores.
+   * @since 8.1
+   */
   public final CommandObject<Map<String, Double>> vsimByElementWithScores(String key, String element) {
     return vsimByElementWithScores(key, element, null);
   }
@@ -5627,6 +5655,10 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.STRING_DOUBLE_MAP);
   }
 
+  /**
+   * Return elements similar to a given element with their similarity scores and attributes.
+   * @since 8.1
+   */
   public final CommandObject<Map<String, VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(String key, String element) {
     return vsimByElementWithScoresAndAttribs(key, element, null);
   }
@@ -5651,6 +5683,10 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.BINARY_LIST);
   }
 
+  /**
+   * Return elements similar to a given vector with their similarity scores.
+   * @since 8.1
+   */
   public final CommandObject<Map<byte[], Double>> vsimWithScores(byte[] key, float[] vector) {
     return vsimWithScores(key, vector, null);
   }
@@ -5663,6 +5699,10 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.BINARY_DOUBLE_MAP);
   }
 
+  /**
+   * Return elements similar to a given vector with their similarity scores and attributes.
+   * @since 8.1
+   */
   public final CommandObject<Map<byte[], VSimScoreAttribs>> vsimWithScoresAndAttribs(byte[] key, float[] vector) {
     return vsimWithScoresAndAttribs(key, vector, null);
   }
@@ -5687,6 +5727,10 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.BINARY_LIST);
   }
 
+  /**
+   * Return elements similar to a given element with their similarity scores.
+   * @since 8.1
+   */
   public final CommandObject<Map<byte[], Double>> vsimByElementWithScores(byte[] key, byte[] element) {
     return vsimByElementWithScores(key, element, null);
   }
@@ -5699,6 +5743,10 @@ public class CommandObjects {
     return new CommandObject<>(args, BuilderFactory.BINARY_DOUBLE_MAP);
   }
 
+  /**
+   * Return elements similar to a given element with their similarity scores and attributes.
+   * @since 8.1
+   */
   public final CommandObject<Map<byte[], VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(byte[] key, byte[] element) {
     return vsimByElementWithScoresAndAttribs(key, element, null);
   }

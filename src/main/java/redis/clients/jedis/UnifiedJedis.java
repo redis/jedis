@@ -6182,6 +6182,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Experimental
   public boolean vadd(String key, float[] vector, String element, int reduceDim) {
     return executeCommand(commandObjects.vadd(key, vector, element, reduceDim));
   }
@@ -6192,6 +6193,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Experimental
   public boolean vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim) {
     return executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, reduceDim));
   }
@@ -6212,6 +6214,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Experimental
   public Map<String, Double> vsimWithScores(String key, float[] vector) {
     return executeCommand(commandObjects.vsimWithScores(key, vector));
   }
@@ -6222,6 +6225,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Experimental
   public Map<String, VSimScoreAttribs> vsimWithScoresAndAttribs(String key, float[] vector) {
     return executeCommand(commandObjects.vsimWithScoresAndAttribs(key, vector));
   }
@@ -6242,6 +6246,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Experimental
   public Map<String, Double> vsimByElementWithScores(String key, String element) {
     return executeCommand(commandObjects.vsimByElementWithScores(key, element));
   }
@@ -6252,6 +6257,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Experimental
   public Map<String, VSimScoreAttribs> vsimByElementWithScoresAndAttribs(String key, String element) {
     return executeCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element));
   }
@@ -6348,6 +6354,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Experimental
   public boolean vadd(byte[] key, float[] vector, byte[] element, int reduceDim) {
     return executeCommand(commandObjects.vadd(key, vector, element, reduceDim));
   }
@@ -6358,6 +6365,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Experimental
   public boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim) {
     return executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, reduceDim));
   }
@@ -6378,6 +6386,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Experimental
   public Map<byte[], Double> vsimWithScores(byte[] key, float[] vector) {
     return executeCommand(commandObjects.vsimWithScores(key, vector));
   }
@@ -6388,6 +6397,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Experimental
   public Map<byte[], VSimScoreAttribs> vsimWithScoresAndAttribs(byte[] key, float[] vector) {
     return executeCommand(commandObjects.vsimWithScoresAndAttribs(key, vector));
   }
@@ -6408,6 +6418,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Experimental
   public Map<byte[], Double> vsimByElementWithScores(byte[] key, byte[] element) {
     return executeCommand(commandObjects.vsimByElementWithScores(key, element));
   }
@@ -6418,6 +6429,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  @Experimental
   public Map<byte[], VSimScoreAttribs> vsimByElementWithScoresAndAttribs(byte[] key, byte[] element) {
     return executeCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element));
   }

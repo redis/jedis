@@ -5415,6 +5415,11 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<String> jsonArrPopRaw(String key, Path2 path, int index) {
+    return executeCommand(commandObjects.jsonArrPopRaw(key, path, index));
+  }
+
+  @Override
   @Deprecated
   public Long jsonArrLen(String key) {
     return executeCommand(commandObjects.jsonArrLen(key));

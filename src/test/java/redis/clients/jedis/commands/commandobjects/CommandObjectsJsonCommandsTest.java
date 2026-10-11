@@ -19,12 +19,16 @@ import java.util.stream.Stream;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInfo;
 import org.junit.jupiter.api.extension.RegisterExtension;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 import io.redis.test.annotations.SinceRedisVersion;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.json.JsonSetParams;
@@ -32,6 +36,7 @@ import redis.clients.jedis.json.JsonSetParams.FphaType;
 import redis.clients.jedis.json.Path;
 import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.util.RedisVersionCondition;
+import redis.clients.jedis.util.TestKeyRegistry;
 
 /**
  * Tests related to <a href="https://redis.io/commands/?group=json">JSON</a> commands.
@@ -44,6 +49,23 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
 
   public CommandObjectsJsonCommandsTest(RedisProtocol protocol) {
     super(protocol);
+  }
+
+  private TestKeyRegistry keys;
+
+  @BeforeEach
+  public void setUpKeys(TestInfo testInfo) {
+    keys = TestKeyRegistry.create(testInfo);
+  }
+
+  @AfterEach
+  public void cleanUpKeys() {
+    // This low-level test drives commands through the private executor and has no reusable
+    // KeyBinaryCommands client, so open a short-lived Jedis to delete the registered keys.
+    try (Jedis cleanupClient = new Jedis(endpoint.getHostAndPort(),
+        endpoint.getClientConfigBuilder().protocol(protocol).build())) {
+      keys.cleanup(cleanupClient);
+    }
   }
 
   @Test
@@ -1231,6 +1253,33 @@ public class CommandObjectsJsonCommandsTest extends CommandObjectsModulesTestBas
 
     Object arrPop = exec(commandObjects.jsonArrPop(key, Path.of(".numbers"), 1));
     assertThat(arrPop, equalTo(20.0));
+
+    Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
+
+    JSONObject expected = new JSONObject()
+        .put("numbers", new JSONArray()
+            .put(10)
+            .put(30));
+    assertThat(postCheck, jsonEquals(new JSONArray().put(expected)));
+  }
+
+  @Test
+  public void testJsonArrPopRawWithPathAndIndex() {
+    String key = keys.key("json");
+
+    JSONObject data = new JSONObject()
+        .put("numbers", new JSONArray()
+            .put(10)
+            .put(20)
+            .put(30));
+
+    exec(commandObjects.jsonSet(key, Path2.ROOT_PATH, data));
+
+    Object preCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
+    assertThat(preCheck, jsonEquals(new JSONArray().put(data)));
+
+    List<String> arrPop = exec(commandObjects.jsonArrPopRaw(key, Path2.of(".numbers"), 1));
+    assertThat(arrPop, contains("20"));
 
     Object postCheck = exec(commandObjects.jsonGet(key, Path2.ROOT_PATH));
 

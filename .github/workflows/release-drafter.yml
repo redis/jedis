@@ -2,20 +2,65 @@ name: Release Drafter
 
 on:
   push:
-    # branches to consider in the event; optional, defaults to all
     branches:
       - master
+      - '[0-9]+.x'          # MAJOR.x hosts MAJOR.0.PATCH
+      - '[0-9]+.[0-9]+.x'   # MAJOR.MINOR.x hosts MAJOR.MINOR.PATCH
   workflow_dispatch:
+    inputs:
+      version:
+        description: 'Override next version (e.g. 9.0.0 or 8.1.0-beta2). Empty = derive from tags.'
+        required: false
+
+permissions:
+  contents: write
+  pull-requests: read
 
 jobs:
   update_release_draft:
     runs-on: ubuntu-latest
     steps:
-      # Drafts your next Release notes as Pull Requests are merged into "master"
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      # Next version comes from the nearest GA tag reachable from the branch.
+      # The tag's commit date is the changelog cutoff when no release targets
+      # this branch yet (first patch after a maintenance branch is cut).
+      - name: Derive next version from tags
+        id: ver
+        env:
+          BRANCH: ${{ github.ref_name }}
+          VERSION: ${{ inputs.version }}
+        run: |
+          case "$BRANCH" in
+            master) match='v*' ;;
+            *.*.x)  match="v${BRANCH%.x}.*" ;;    # 7.5.x -> v7.5.*
+            *.x)    match="v${BRANCH%.x}.0.*" ;;  # 8.x   -> v8.0.*
+            *) echo "unsupported branch $BRANCH" >&2; exit 1 ;;
+          esac
+          last=$(git describe --tags --abbrev=0 --match "$match" --exclude '*-*')
+          echo "since=$(git log -1 --format=%cI "$last")" >> "$GITHUB_OUTPUT"
+          if [ -z "$VERSION" ]; then
+            IFS=. read -r major minor patch <<< "${last#v}"
+            if [ "$BRANCH" = master ]; then
+              VERSION="$major.$((minor + 1)).0"
+            else
+              VERSION="$major.$minor.$((patch + 1))"
+            fi
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "last=$last version=$VERSION"
+
+      # Config is always read from the default branch; everything branch
+      # specific is passed as inputs so the same file works on every branch.
       - uses: release-drafter/release-drafter@v6
         with:
-          # (Optional) specify config name to use, relative to .github/. Default: release-drafter.yml
-           config-name: release-drafter-config.yml
+          config-name: release-drafter-config.yml
+          commitish: ${{ github.ref_name }}
+          version: ${{ steps.ver.outputs.version }}
+          tag: v${{ steps.ver.outputs.version }}
+          name: ${{ steps.ver.outputs.version }}
+          initial-commits-since: ${{ steps.ver.outputs.since }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-

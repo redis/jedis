@@ -4555,6 +4555,13 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value), BuilderFactory.DOUBLE);
   }
 
+  public final CommandObject<List<Number>> jsonNumIncrByAsNumbers(String key, Path2 path,
+      Number value) {
+    return new CommandObject<>(
+        commandArguments(JsonCommand.NUMINCRBY).key(key).add(path).add(value),
+        JsonBuilderFactory.NUMBER_LIST);
+  }
+
   @Deprecated
   public final CommandObject<Long> jsonArrAppend(String key, String path, JSONObject... objects) {
     CommandArguments args = commandArguments(JsonCommand.ARRAPPEND).key(key).add(path);

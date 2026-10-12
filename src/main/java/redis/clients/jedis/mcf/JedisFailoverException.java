@@ -27,6 +27,10 @@ public class JedisFailoverException extends JedisConnectionException {
    * Exception thrown when a failover attempt fails due to lack of available/healthy databases, and
    * the max number of failover attempts has been exceeded. And there is still no healthy databases.
    * <p>
+   * Jedis gives no guarantee of automatic recovery after this exception. The client may resume if a
+   * database becomes available again, but applications must not rely on it: treat it as a signal
+   * that action is required, such as checking the databases and creating a new client.
+   * <p>
    * See the configuration properties
    * {@link redis.clients.jedis.MultiDbConfig#maxNumFailoverAttempts} and
    * {@link redis.clients.jedis.MultiDbConfig#delayInBetweenFailoverAttempts} for more details.
@@ -45,7 +49,8 @@ public class JedisFailoverException extends JedisConnectionException {
    * Exception thrown when a failover attempt fails due to lack of available/healthy databases, but
    * the max number of failover attempts has not been exceeded yet. Though there is no healthy
    * database including the selected/current one, given configuration suggests that it should be a
-   * temporary condition and it is possible that there will be a healthy database available.
+   * temporary condition and it is possible that there will be a healthy database available. The
+   * client keeps trying and recovers automatically as soon as a database is usable again.
    * <p>
    * See the configuration properties
    * {@link redis.clients.jedis.MultiDbConfig#maxNumFailoverAttempts} and

@@ -2,12 +2,12 @@ package redis.clients.jedis.scenario;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import java.net.URI;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import com.redis.test.fi.Database;
 import com.redis.test.fi.FaultInjectorClient;
 import com.redis.test.fi.StandaloneEffect;
 
@@ -57,8 +57,7 @@ public class MaintNotificationsConfigIT {
     EXPECTED_ENDPOINT_TYPE.put(EndpointType.NONE, "none");
   }
 
-  private static Map<String, Object> sharedOutput;
-  private static long sharedBdbId = -1;
+  private static Database shared;
 
   /**
    * Creates the single shared database. The trigger is arbitrary — no effect fires — but the
@@ -68,19 +67,16 @@ public class MaintNotificationsConfigIT {
   static void createSharedDatabase() {
     Map<String, Object> dbConfig = faultInjector.getStandaloneTriggers(StandaloneEffect.CONN_DROP)
         .trigger("endpoint_rebind").requirement("single").dbConfig();
-    Map<String, Object> output = faultInjector.createDatabase(dbConfig);
-    // record the id before any further step so @AfterAll cleans up even on a later failure
-    sharedBdbId = ((Number) output.get("bdb_id")).longValue();
-    sharedOutput = output;
-    URI endpoint = URI.create((String) ((List<?>) output.get("endpoints")).get(0));
-    MaintNotificationsScenarioBase.awaitEndpointConnectable(endpoint);
+    // assign before any further step so @AfterAll cleans up even on a later failure
+    shared = faultInjector.createDatabase(dbConfig);
+    MaintNotificationsScenarioBase.awaitEndpointConnectable(shared.endpoint());
   }
 
   @AfterAll
   static void deleteSharedDatabase() {
-    if (sharedBdbId >= 0) {
-      faultInjector.deleteDatabase(sharedBdbId);
-      sharedBdbId = -1;
+    if (shared != null) {
+      faultInjector.deleteDatabase(shared.id());
+      shared = null;
     }
   }
 
@@ -132,7 +128,7 @@ public class MaintNotificationsConfigIT {
   }
 
   private static RedisClient buildClient(MaintenanceNotificationsConfig maintenance) {
-    return MaintNotificationsScenarioBase.buildClient(sharedOutput, maintenance, null);
+    return MaintNotificationsScenarioBase.buildClient(shared, maintenance, null);
   }
 
   /**

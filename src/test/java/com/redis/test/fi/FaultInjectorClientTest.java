@@ -2,12 +2,14 @@ package com.redis.test.fi;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
 import java.io.OutputStream;
 import java.net.InetSocketAddress;
+import java.net.URI;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -144,10 +146,13 @@ public class FaultInjectorClientTest {
     Map<String, Object> dbConfig = client
         .getStandaloneTriggers(StandaloneEffect.DATA_MOVEMENT_NO_CONN_DROP).trigger("migrate")
         .requirement().dbConfig();
-    Map<String, Object> output = client.createDatabase(dbConfig);
+    Database database = client.createDatabase(dbConfig);
 
-    assertEquals(42L, output.get("bdb_id"));
-    assertEquals("redis://db.example:12000", ((List<?>) output.get("endpoints")).get(0));
+    assertEquals(42L, database.id());
+    assertEquals(URI.create("redis://db.example:12000"), database.endpoint());
+    assertEquals("db.example", database.host());
+    assertEquals(12000, database.port());
+    assertFalse(database.tls());
     Map<String, Object> payload = parse(requests.get(1)[2]);
     assertEquals("create_database", payload.get("type"));
     String createBody = requests.get(1)[2];
@@ -155,6 +160,38 @@ public class FaultInjectorClientTest {
       "integral dbconfig fields must round-trip unchanged, got: " + createBody);
     assertTrue(createBody.contains("\"memory_size\":134217728"),
       "integral dbconfig fields must round-trip unchanged, got: " + createBody);
+  }
+
+  @Test
+  public void createDatabaseThrowsWhenTheActionReturnsNoOutput() {
+    responses.add("{\"action_id\": \"a7\"}");
+    responses.add("{\"status\": \"success\"}");
+
+    FaultInjectorException e = assertThrows(FaultInjectorException.class,
+      () -> client.createDatabase(Collections.singletonMap("name", "db")));
+    assertTrue(e.getMessage().contains("no output"), e.getMessage());
+  }
+
+  @Test
+  public void databaseCarriesCredentialsAndFoldsTheDefaultUser() {
+    Map<String, Object> output = new HashMap<>();
+    output.put("bdb_id", 7);
+    output.put("endpoints", Collections.singletonList("rediss://db.example:12001"));
+    output.put("username", "default");
+    output.put("password", "s3cret");
+    output.put("tls", true);
+
+    Database database = Database.parse(output);
+
+    assertEquals(7L, database.id());
+    assertTrue(database.tls());
+    assertNull(database.clientConfig().build().getUser(),
+      "the default user must not be sent explicitly");
+    assertEquals("s3cret", database.clientConfig().build().getPassword());
+    assertFalse(database.toString().contains("s3cret"), "toString must not leak the password");
+
+    output.put("username", "app");
+    assertEquals("app", Database.parse(output).clientConfig().build().getUser());
   }
 
   @Test

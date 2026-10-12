@@ -264,7 +264,7 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
     setUpDatabaseAndClient(scenario, EndpointType.NONE);
     warmUpPool();
 
-    String host = endpoint.getHost();
+    String host = database.host();
     pinned = pinConnection();
     ReceivedEvents observed = MaintNotificationsTestSupport.record(pinned);
     String oldIp = MaintNotificationsTestSupport.remotePeer(pinned).getAddress().getHostAddress();

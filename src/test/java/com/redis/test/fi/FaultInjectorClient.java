@@ -112,16 +112,18 @@ public final class FaultInjectorClient {
         + "&cluster_index=0&include_tls=true"));
   }
 
-  /**
-   * Creates a database from a discovery-provided dbconfig (passed verbatim) and returns the action
-   * output: {@code {"bdb_id", "username", "password", "tls", "endpoints": ["redis://host:port"]}}.
-   */
-  public Map<String, Object> createDatabase(Map<String, Object> dbConfig) {
+  /** Creates a database from a discovery-provided dbconfig (passed verbatim). */
+  @SuppressWarnings("unchecked")
+  public Database createDatabase(Map<String, Object> dbConfig) {
     Map<String, Object> parameters = new HashMap<>();
     parameters.put("database_config", dbConfig);
     Map<String, Object> response = awaitAction(postAction("create_database", parameters),
       DATABASE_TIMEOUT);
-    return asObject(response.get("output"));
+    Object output = response.get("output");
+    if (!(output instanceof Map)) {
+      throw new FaultInjectorException("create_database returned no output: " + response);
+    }
+    return Database.parse((Map<String, Object>) output);
   }
 
   public void deleteDatabase(long bdbId) {
@@ -183,10 +185,5 @@ public final class FaultInjectorClient {
     Map<String, Object> parsed = gson.fromJson(json, new TypeToken<Map<String, Object>>() {
     }.getType());
     return parsed == null ? new HashMap<>() : parsed;
-  }
-
-  @SuppressWarnings("unchecked")
-  private static Map<String, Object> asObject(Object value) {
-    return value instanceof Map ? (Map<String, Object>) value : new HashMap<>();
   }
 }

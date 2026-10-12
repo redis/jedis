@@ -3,27 +3,22 @@ package redis.clients.jedis.scenario;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.X509Certificate;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redis.test.fi.FaultInjectorClient;
+import com.redis.test.fi.Database;
 import com.redis.test.fi.Scenario;
-import com.redis.test.fi.StandaloneTriggerCatalog;
 
 import org.junit.jupiter.api.AfterEach;
 
@@ -38,25 +33,14 @@ import redis.clients.jedis.SslOptions;
 import redis.clients.jedis.util.TlsUtil;
 
 /**
- * Shared environment for maintenance-notification scenario tests. The FI is the single source of
- * truth: each test creates its own database from a discovery-provided dbconfig, builds the client
- * from the create output, and deletes the database on teardown.
+ * Shared toolkit for maintenance-notification scenario tests on top of the fault-injector database
+ * lifecycle: a tuned client whose relaxed and restored timeouts are observable, a pinned observer
+ * connection that reads the pushes, pool warm-up, and the effect running on a background thread.
  */
-abstract class MaintNotificationsScenarioBase {
+abstract class MaintNotificationsScenarioBase extends FaultInjectorScenarioBase {
 
   private static final Logger logger = LoggerFactory
       .getLogger(MaintNotificationsScenarioBase.class);
-
-  // Short JVM DNS cache: these tests reconnect across endpoint rebinds, where the default 30s
-  // positive cache can outlive the DNS repoint, and await fresh database names, where the
-  // default 10s negative cache delays convergence. The JVM reads these once, at its first name
-  // lookup — this block must run before that (it does under the surefire fork; an IDE may
-  // resolve earlier, in which case pass -Dsun.net.inetaddr.ttl=2 and
-  // -Dsun.net.inetaddr.negative.ttl=2 in the run configuration).
-  static {
-    java.security.Security.setProperty("networkaddress.cache.ttl", "2");
-    java.security.Security.setProperty("networkaddress.cache.negative.ttl", "2");
-  }
 
   /** Base socket timeout kept low so relaxed/restored timeouts are directly observable. */
   static final int CLIENT_SOCKET_TIMEOUT_MS = 1_000;
@@ -66,47 +50,26 @@ abstract class MaintNotificationsScenarioBase {
   static final long EFFECT_JOIN_TIMEOUT_MS = 200_000;
   static final String TRUSTSTORE_PASSWORD = "changeit";
 
-  /** One FI client for parameter collection and test execution. */
-  static final FaultInjectorClient faultInjector = new FaultInjectorClient();
-
   RedisClient client;
   Connection pinned;
   Path serverTruststore;
-  URI endpoint;
-  private DnsDiagnostics dnsDiag;
-  long bdbId = -1;
   final List<Thread> effectThreads = new ArrayList<>();
   final List<Throwable> effectFailures = Collections.synchronizedList(new ArrayList<>());
 
-  /**
-   * The full topology-change-standalone catalog, resolved once: effect -> triggers -> requirements.
-   */
-  static final StandaloneTriggerCatalog CATALOG = StandaloneTriggerCatalog.resolve(faultInjector);
-
-  /**
-   * Creates the scenario's test database and builds the client from the create output. The dbconfig
-   * comes from a fresh discovery call: the FI generates a unique name and port per call, so every
-   * database gets its own endpoint DNS name.
-   */
+  /** Deploys the scenario's database and builds the client from the create output. */
   void setUpDatabaseAndClient(Scenario scenario) {
     setUpDatabaseAndClient(scenario, null);
   }
 
   /** As {@link #setUpDatabaseAndClient(Scenario)}, requesting a fixed MOVING endpoint type. */
   void setUpDatabaseAndClient(Scenario scenario, EndpointType endpointType) {
-    Map<String, Object> dbConfig = faultInjector.getStandaloneTriggers(scenario.effect())
-        .trigger(scenario.trigger().name()).requirement(scenario.requirement().config()).dbConfig();
-    Map<String, Object> output = faultInjector.createDatabase(dbConfig);
-    bdbId = ((Number) output.get("bdb_id")).longValue();
-    endpoint = URI.create((String) ((List<?>) output.get("endpoints")).get(0));
-    awaitEndpointConnectable(endpoint);
-    dnsDiag = DnsDiagnostics.follow(endpoint.getHost());
+    Database database = deployDatabase(scenario);
     SslOptions sslOptions = null;
-    if (Boolean.TRUE.equals(output.get("tls"))) {
-      serverTruststore = createServerTruststore(endpoint);
+    if (database.tls()) {
+      serverTruststore = createServerTruststore(database.endpoint());
       sslOptions = sslOptionsFor(serverTruststore);
     }
-    client = buildClient(output, endpointType, sslOptions);
+    client = buildClient(database, endpointType, sslOptions);
   }
 
   /**
@@ -148,26 +111,7 @@ abstract class MaintNotificationsScenarioBase {
     serverTruststore = null;
   }
 
-  /**
-   * A fresh endpoint's DNS record may not have propagated yet (or a negative lookup may be cached)
-   * — wait until the endpoint accepts connections before building the client.
-   */
-  static void awaitEndpointConnectable(URI endpoint) {
-    long deadline = System.nanoTime() + TimeUnit.SECONDS.toNanos(60);
-    IOException last = null;
-    while (System.nanoTime() < deadline) {
-      try (Socket socket = new Socket()) {
-        socket.connect(new InetSocketAddress(endpoint.getHost(), endpoint.getPort()), 2_000);
-        return;
-      } catch (IOException e) {
-        last = e;
-        sleepQuietly(1_000);
-      }
-    }
-    throw new IllegalStateException("Endpoint " + endpoint + " not connectable within 60 s", last);
-  }
-
-  private static RedisClient buildClient(Map<String, Object> output, EndpointType endpointType,
+  private static RedisClient buildClient(Database database, EndpointType endpointType,
       SslOptions sslOptions) {
     MaintenanceNotificationsConfig.Builder maintenance = MaintenanceNotificationsConfig.builder()
         .mode(MaintenanceNotificationsConfig.Mode.ENABLED).relaxedTimeout(RELAXED_TIMEOUT_MS)
@@ -175,7 +119,7 @@ abstract class MaintNotificationsScenarioBase {
     if (endpointType != null) {
       maintenance.endpointType(endpointType); // null: auto-resolve from connection characteristics
     }
-    return buildClient(output, maintenance.build(), sslOptions);
+    return buildClient(database, maintenance.build(), sslOptions);
   }
 
   /**
@@ -183,30 +127,26 @@ abstract class MaintNotificationsScenarioBase {
    * timeouts stay low so relaxed/restored timeouts remain observable, and the standalone client
    * runs without retries so those timeouts are not masked.
    */
-  static RedisClient buildClient(Map<String, Object> output,
-      MaintenanceNotificationsConfig maintenance, SslOptions sslOptions) {
-    URI endpoint = URI.create((String) ((List<?>) output.get("endpoints")).get(0));
+  static RedisClient buildClient(Database database, MaintenanceNotificationsConfig maintenance,
+      SslOptions sslOptions) {
 
-    DefaultJedisClientConfig.Builder config = DefaultJedisClientConfig.builder()
-        .protocol(RedisProtocol.RESP3) // push notifications require RESP3
+    DefaultJedisClientConfig.Builder config = database.clientConfig().protocol(RedisProtocol.RESP3) // push
+                                                                                                    // notifications
+                                                                                                    // require
+                                                                                                    // RESP3
         .socketTimeoutMillis(CLIENT_SOCKET_TIMEOUT_MS)
         // finite (default 0 = infinite would hang blocking probes) and distinct from the
         // non-blocking base, so a probe's failure time identifies the timeout that fired
-        .blockingSocketTimeoutMillis(CLIENT_BLOCKING_SOCKET_TIMEOUT_MS)
-        .password((String) output.get("password"));
+        .blockingSocketTimeoutMillis(CLIENT_BLOCKING_SOCKET_TIMEOUT_MS);
     if (sslOptions != null) {
       config.sslOptions(sslOptions);
-    }
-    String username = (String) output.get("username");
-    if (username != null && !"default".equals(username)) {
-      config.user(username);
     }
 
     // one pinned observer + two parallel probe slots
     GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
     poolConfig.setMaxTotal(3);
 
-    return RedisClient.builder().hostAndPort(endpoint.getHost(), endpoint.getPort())
+    return RedisClient.builder().hostAndPort(database.host(), database.port())
         .clientConfig(config.build()).poolConfig(poolConfig).maintenanceNotifications(maintenance)
         .build();
   }
@@ -270,7 +210,7 @@ abstract class MaintNotificationsScenarioBase {
 
   /** Runs the effect on a background thread so it is in flight while the test body observes. */
   void startEffect(Scenario scenario) {
-    long id = bdbId;
+    long id = database.id();
     Thread thread = new Thread(() -> {
       try {
         faultInjector.triggerEffect(id, scenario.effect(), scenario.trigger().name());
@@ -310,7 +250,7 @@ abstract class MaintNotificationsScenarioBase {
   }
 
   @AfterEach
-  void tearDownScenario() {
+  void tearDownClient() {
     try {
       // close the pool before releasing a still-pinned connection: a closed pool destroys the
       // returned connection without creating a replacement, which on aborted runs could target
@@ -324,27 +264,7 @@ abstract class MaintNotificationsScenarioBase {
     } finally {
       effectThreads.clear();
       effectFailures.clear();
-      if (dnsDiag != null) {
-        dnsDiag.close();
-        dnsDiag = null;
-      }
       deleteServerTruststore();
-      if (bdbId >= 0) {
-        faultInjector.deleteDatabase(bdbId);
-        bdbId = -1;
-      }
-    }
-  }
-
-  static long elapsedMillis(long startNanos) {
-    return TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - startNanos);
-  }
-
-  static void sleepQuietly(long millis) {
-    try {
-      Thread.sleep(millis);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
     }
   }
 }

@@ -6,8 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
-import java.net.URI;
-import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -20,10 +18,9 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redis.test.fi.FaultInjectorClient;
+import com.redis.test.fi.Database;
 import com.redis.test.fi.Scenario;
 import com.redis.test.fi.StandaloneEffect;
-import com.redis.test.fi.StandaloneTriggerCatalog;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
@@ -32,15 +29,15 @@ import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
 
-import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.RedisClient;
 
 /**
- * Traffic-continuity resiliency: with a stock {@link RedisClient} (RESP3 auto-negotiated, SCH in
- * its default AUTO mode), a topology change must be hitless — continuous traffic before, during,
- * and after the fault-injector effect completes sees zero command or connectivity errors. This is a
- * black-box guarantee (no notification/timeout assertions), complementary to the functional suite.
+ * Traffic-continuity resiliency: with a default-configured {@link RedisClient} (RESP3
+ * auto-negotiated, SCH in its default AUTO mode), a topology change must be hitless — continuous
+ * traffic before, during, and after the fault-injector effect completes sees zero command or
+ * connectivity errors. This is a black-box guarantee (no notification/timeout assertions),
+ * complementary to the functional suite.
  * <p>
  * Runs each MOVING-coordinated or hitless topology change the fault injector can drive on a single
  * standalone db: conn_drop and data_movement_conn_drop endpoint rebinds, and the hitless
@@ -50,26 +47,21 @@ import redis.clients.jedis.RedisClient;
  * DNS re-resolution.
  */
 @Tag("scenario")
-public class MaintenanceTrafficResilienceIT {
+public class MaintenanceTrafficResilienceIT extends FaultInjectorScenarioBase {
 
   private static final Logger logger = LoggerFactory
       .getLogger(MaintenanceTrafficResilienceIT.class);
-
-  // referencing the base's static field also runs its DNS-cache TTL static block before any lookup
-  private static final FaultInjectorClient faultInjector = MaintNotificationsScenarioBase.faultInjector;
-  private static final StandaloneTriggerCatalog CATALOG = MaintNotificationsScenarioBase.CATALOG;
 
   private static final int WORKERS = 6;
   private static final long BASELINE_COMMANDS = 200;
   // Keep traffic flowing this long after the effect completes to cover the MOVING grace tail — the
   // client-side grace timer runs past the server-reported completion — then drain and assert.
   private static final long POST_EFFECT_TRAFFIC_MS = 20_000;
-  /** The stock maintenance-notifications config (mode AUTO) the hitless guarantee is made for. */
+  /** The default maintenance-notifications config (mode AUTO) the hitless guarantee is made for. */
   private static final MaintenanceNotificationsConfig DEFAULT_MAINTENANCE = MaintenanceNotificationsConfig
       .builder().build();
 
   private RedisClient client;
-  private long bdbId = -1;
 
   static Stream<Scenario> scenarios() {
     return Stream.of(
@@ -113,18 +105,12 @@ public class MaintenanceTrafficResilienceIT {
   }
 
   /**
-   * Deploys a fresh db, drives traffic before/during/after the effect with a stock client (or the
+   * Deploys a fresh db, drives traffic before/during/after the effect with a default client (or the
    * given maintenance config), then stops and drains. Returns the runner for the caller to assert.
    */
   private TrafficRunner runTrafficAcrossEffect(Scenario scenario,
       MaintenanceNotificationsConfig maint) {
-    Map<String, Object> dbConfig = faultInjector.getStandaloneTriggers(scenario.effect())
-        .trigger(scenario.trigger().name()).requirement(scenario.requirement().config()).dbConfig();
-    Map<String, Object> output = faultInjector.createDatabase(dbConfig);
-    bdbId = ((Number) output.get("bdb_id")).longValue();
-    URI endpoint = URI.create((String) ((List<?>) output.get("endpoints")).get(0));
-    MaintNotificationsScenarioBase.awaitEndpointConnectable(endpoint);
-    client = buildClient(output, endpoint, maint);
+    client = buildDefaultClient(deployDatabase(scenario), maint);
 
     TrafficRunner traffic = new TrafficRunner(client, WORKERS);
     traffic.start();
@@ -135,7 +121,7 @@ public class MaintenanceTrafficResilienceIT {
 
       // during: run the effect to completion while traffic keeps flowing
       long submittedBeforeEffect = traffic.submittedCount();
-      faultInjector.triggerEffect(bdbId, scenario.effect(), scenario.trigger().name());
+      faultInjector.triggerEffect(database.id(), scenario.effect(), scenario.trigger().name());
 
       // after: keep traffic flowing through the handoff grace tail
       long submittedAtCompletion = traffic.submittedCount();
@@ -158,42 +144,22 @@ public class MaintenanceTrafficResilienceIT {
   }
 
   @AfterEach
-  void tearDown() {
-    try {
-      if (client != null) {
-        client.close();
-        client = null;
-      }
-    } finally {
-      if (bdbId >= 0) {
-        faultInjector.deleteDatabase(bdbId);
-        bdbId = -1;
-      }
+  void tearDownClient() {
+    if (client != null) {
+      client.close();
+      client = null;
     }
   }
 
   /**
-   * RedisClient with only credentials otherwise (RESP3 auto-negotiated, default pool and executor)
-   * and the given maintenance-notifications config.
+   * A client with only credentials and the given maintenance-notifications config, so every other
+   * setting is the Jedis default. The suite measures what an application gets without tuning; the
+   * base's {@code buildClient} sets explicit timeouts and a small pool for probing.
    */
-  private static RedisClient buildClient(Map<String, Object> output, URI endpoint,
+  private static RedisClient buildDefaultClient(Database database,
       MaintenanceNotificationsConfig maint) {
-    DefaultJedisClientConfig.Builder config = DefaultJedisClientConfig.builder()
-        .password((String) output.get("password"));
-    String username = (String) output.get("username");
-    if (username != null && !"default".equals(username)) {
-      config.user(username);
-    }
-    return RedisClient.builder().hostAndPort(endpoint.getHost(), endpoint.getPort())
-        .clientConfig(config.build()).maintenanceNotifications(maint).build();
-  }
-
-  private static void sleepQuietly(long millis) {
-    try {
-      Thread.sleep(millis);
-    } catch (InterruptedException e) {
-      Thread.currentThread().interrupt();
-    }
+    return RedisClient.builder().hostAndPort(database.host(), database.port())
+        .clientConfig(database.clientConfig().build()).maintenanceNotifications(maint).build();
   }
 
   /**

@@ -76,7 +76,7 @@ public interface VectorSetPipelineCommands {
   Response<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, VAddParams params);
 
   /**
-   * Add a new element into the vector set with dimension reduction.
+   * Pipeline variant of {@link VectorSetCommands#vadd(String, float[], String, int)}.
    * @since 8.1
    */
   @Experimental
@@ -100,7 +100,7 @@ public interface VectorSetPipelineCommands {
       VAddParams params);
 
   /**
-   * Add a new element into the vector set using FP32 binary format with dimension reduction.
+   * Pipeline variant of {@link VectorSetCommands#vaddFP32(String, byte[], String, int)}.
    * @since 8.1
    */
   @Experimental
@@ -150,7 +150,7 @@ public interface VectorSetPipelineCommands {
   Response<List<String>> vsim(String key, float[] vector, VSimParams params);
 
   /**
-   * Return elements similar to a given vector with their similarity scores.
+   * Pipeline variant of {@link VectorSetCommands#vsimWithScores(String, float[])}.
    * @since 8.1
    */
   @Experimental
@@ -171,22 +171,15 @@ public interface VectorSetPipelineCommands {
   Response<Map<String, Double>> vsimWithScores(String key, float[] vector, VSimParams params);
 
   /**
-   * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements
-   * similar to a given vector with their similarity scores and attributes.
-   * @param key the name of the key that holds the vector set data
-   * @param vector the vector to use as similarity reference
-   * @return Response wrapping map of element names to their similarity scores and attributes
+   * Pipeline variant of {@link VectorSetCommands#vsimWithScoresAndAttribs(String, float[])}.
    * @since 8.1
    */
   @Experimental
   Response<Map<String, VSimScoreAttribs>> vsimWithScoresAndAttribs(String key, float[] vector);
 
   /**
-   * Return elements similar to a given vector with their similarity scores and attributes.
-   * @param key the name of the key that holds the vector set data
-   * @param vector the vector to use as similarity reference
-   * @param params additional parameters for the VSIM command
-   * @return Response wrapping map of element names to their similarity scores and attributes
+   * Pipeline variant of
+   * {@link VectorSetCommands#vsimWithScoresAndAttribs(String, float[], VSimParams)}.
    * @since 8.1
    */
   @Experimental
@@ -219,7 +212,7 @@ public interface VectorSetPipelineCommands {
   Response<List<String>> vsimByElement(String key, String element, VSimParams params);
 
   /**
-   * Return elements similar to a given element with their similarity scores.
+   * Pipeline variant of {@link VectorSetCommands#vsimByElementWithScores(String, String)}.
    * @since 8.1
    */
   @Experimental
@@ -241,11 +234,8 @@ public interface VectorSetPipelineCommands {
       VSimParams params);
 
   /**
-   * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements
-   * similar to a given element with their similarity scores and attributes.
-   * @param key the name of the key that holds the vector set data
-   * @param element the name of the element to use as similarity reference
-   * @return Response wrapping map of element names to their similarity scores and attributes
+   * Pipeline variant of
+   * {@link VectorSetCommands#vsimByElementWithScoresAndAttribs(String, String)}.
    * @since 8.1
    */
   @Experimental
@@ -253,11 +243,8 @@ public interface VectorSetPipelineCommands {
       String element);
 
   /**
-   * Return elements similar to a given element with their similarity scores and attributes.
-   * @param key the name of the key that holds the vector set data
-   * @param element the name of the element to use as similarity reference
-   * @param params additional parameters for the VSIM command
-   * @return Response wrapping map of element names to their similarity scores and attributes
+   * Pipeline variant of
+   * {@link VectorSetCommands#vsimByElementWithScoresAndAttribs(String, String, VSimParams)}.
    * @since 8.1
    */
   @Experimental

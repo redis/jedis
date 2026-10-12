@@ -74,16 +74,7 @@ public interface VectorSetBinaryCommands {
   boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, VAddParams params);
 
   /**
-   * <b><a href="https://redis.io/docs/latest/commands/vadd/">VADD Command</a></b> Add a new element
-   * into the vector set specified by key with dimension reduction.
-   * <p>
-   * Time complexity: O(log(N)) for each element added, where N is the number of elements in the
-   * vector set.
-   * @param key the name of the key that will hold the vector set data
-   * @param vector the vector as floating point numbers
-   * @param element the name of the element that is being added to the vector set
-   * @param reduceDim the target dimension after reduction using random projection
-   * @return 1 if key was added; 0 if key was not added
+   * @see VectorSetCommands#vadd(String, float[], String, int)
    * @since 8.1
    */
   @Experimental
@@ -106,16 +97,7 @@ public interface VectorSetBinaryCommands {
   boolean vadd(byte[] key, float[] vector, byte[] element, int reduceDim, VAddParams params);
 
   /**
-   * <b><a href="https://redis.io/docs/latest/commands/vadd/">VADD Command</a></b> Add a new element
-   * into the vector set specified by key using FP32 binary format with dimension reduction.
-   * <p>
-   * Time complexity: O(log(N)) for each element added, where N is the number of elements in the
-   * vector set.
-   * @param key the name of the key that will hold the vector set data
-   * @param vectorBlob the vector as FP32 binary blob
-   * @param element the name of the element that is being added to the vector set
-   * @param reduceDim the target dimension after reduction using random projection
-   * @return 1 if key was added; 0 if key was not added
+   * @see VectorSetCommands#vaddFP32(String, byte[], String, int)
    * @since 8.1
    */
   @Experimental
@@ -164,7 +146,7 @@ public interface VectorSetBinaryCommands {
   List<byte[]> vsim(byte[] key, float[] vector, VSimParams params);
 
   /**
-   * Return elements similar to a given vector with their similarity scores.
+   * @see VectorSetCommands#vsimWithScores(String, float[])
    * @since 8.1
    */
   @Experimental
@@ -185,7 +167,7 @@ public interface VectorSetBinaryCommands {
   Map<byte[], Double> vsimWithScores(byte[] key, float[] vector, VSimParams params);
 
   /**
-   * Return elements similar to a given vector with their similarity scores and attributes.
+   * @see VectorSetCommands#vsimWithScoresAndAttribs(String, float[])
    * @since 8.1
    */
   @Experimental
@@ -232,7 +214,7 @@ public interface VectorSetBinaryCommands {
   List<byte[]> vsimByElement(byte[] key, byte[] element, VSimParams params);
 
   /**
-   * Return elements similar to a given element with their similarity scores.
+   * @see VectorSetCommands#vsimByElementWithScores(String, String)
    * @since 8.1
    */
   @Experimental
@@ -253,7 +235,7 @@ public interface VectorSetBinaryCommands {
   Map<byte[], Double> vsimByElementWithScores(byte[] key, byte[] element, VSimParams params);
 
   /**
-   * Return elements similar to a given element with their similarity scores and attributes.
+   * @see VectorSetCommands#vsimByElementWithScoresAndAttribs(String, String)
    * @since 8.1
    */
   @Experimental

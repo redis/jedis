@@ -37,7 +37,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
  * parseable payload, each delivered by a real cluster operation.
  */
 @Tag("scenario")
-public class MaintNotificationsReceptionIT extends MaintNotificationsScenarioBase {
+public class MaintNotificationsReceptionIT extends MaintNotificationsObserverBase {
 
   private static final Logger log = LoggerFactory.getLogger(MaintNotificationsReceptionIT.class);
 
@@ -74,7 +74,7 @@ public class MaintNotificationsReceptionIT extends MaintNotificationsScenarioBas
   void receivesExpectedNotificationSequence(Scenario scenario) {
     List<String> expected = EXPECTATIONS.get(scenario.trigger());
 
-    setUpDatabaseAndClient(scenario);
+    openClient(deployDatabase(scenario), relaxedMaintenance().autoResolveEndpointType().build());
     pinned = pinConnection();
     ReceivedEvents received = MaintNotificationsTestSupport.record(pinned);
 

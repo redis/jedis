@@ -1,18 +1,10 @@
 package redis.clients.jedis.scenario;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.io.IOException;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.X509Certificate;
-import java.util.concurrent.CompletableFuture;
-
-import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,56 +12,60 @@ import org.slf4j.LoggerFactory;
 import com.redis.test.fi.Database;
 import com.redis.test.fi.Scenario;
 
+import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
+
 import org.junit.jupiter.api.AfterEach;
 
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
-import redis.clients.jedis.MaintenanceNotificationsConfig.EndpointType;
-import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisClient;
-import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.SslOptions;
 import redis.clients.jedis.util.TlsUtil;
 
 /**
- * Shared toolkit for maintenance-notification scenario tests on top of the fault-injector database
- * lifecycle: a tuned client whose relaxed and restored timeouts are observable, a pinned observer
- * connection that reads the pushes, pool warm-up, and the effect running on a background thread.
+ * Scenario tests that run one standalone {@link RedisClient} against the deployed database. A
+ * subclass deploys the database and opens the client through {@link #openClient}; the client config
+ * starts from the database's credentials (plus pinned TLS trust for a TLS database) and the pool
+ * from its defaults, and {@link #customiseClientConfig} / {@link #customiseClientPoolConfig} add a
+ * subclass's settings. The client is owned here and closed on teardown before the database is
+ * deleted.
  */
 abstract class MaintNotificationsScenarioBase extends FaultInjectorScenarioBase {
 
   private static final Logger logger = LoggerFactory
       .getLogger(MaintNotificationsScenarioBase.class);
 
-  /** Base socket timeout kept low so relaxed/restored timeouts are directly observable. */
-  static final int CLIENT_SOCKET_TIMEOUT_MS = 1_000;
-  /** Deliberately different from the non-blocking base, so probes prove which timeout applied. */
-  static final int CLIENT_BLOCKING_SOCKET_TIMEOUT_MS = 2_000;
-  static final int RELAXED_TIMEOUT_MS = 30_000;
-  static final long EFFECT_JOIN_TIMEOUT_MS = 200_000;
   static final String TRUSTSTORE_PASSWORD = "changeit";
 
   RedisClient client;
-  Connection pinned;
   Path serverTruststore;
-  final List<Thread> effectThreads = new ArrayList<>();
-  final List<Throwable> effectFailures = Collections.synchronizedList(new ArrayList<>());
 
-  /** Deploys the scenario's database and builds the client from the create output. */
-  void setUpDatabaseAndClient(Scenario scenario) {
-    setUpDatabaseAndClient(scenario, null);
-  }
-
-  /** As {@link #setUpDatabaseAndClient(Scenario)}, requesting a fixed MOVING endpoint type. */
-  void setUpDatabaseAndClient(Scenario scenario, EndpointType endpointType) {
-    Database database = deployDatabase(scenario);
-    SslOptions sslOptions = null;
+  /** Opens the client under test and takes ownership of it. */
+  RedisClient openClient(Database database, MaintenanceNotificationsConfig maintenance) {
+    DefaultJedisClientConfig.Builder config = database.clientConfig();
     if (database.tls()) {
       serverTruststore = createServerTruststore(database.endpoint());
-      sslOptions = sslOptionsFor(serverTruststore);
+      config.sslOptions(sslOptionsFor(serverTruststore));
     }
-    client = buildClient(database, endpointType, sslOptions);
+    customiseClientConfig(config);
+    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
+    customiseClientPoolConfig(poolConfig);
+    client = RedisClient.builder().hostAndPort(database.host(), database.port())
+        .clientConfig(config.build()).poolConfig(poolConfig).maintenanceNotifications(maintenance)
+        .build();
+    return client;
+  }
+
+  /**
+   * Adds client settings on top of the credentials and TLS trust. The default adds nothing: the
+   * client is what an application gets without tuning.
+   */
+  void customiseClientConfig(DefaultJedisClientConfig.Builder config) {
+  }
+
+  /** Adds pool settings on top of the defaults. */
+  void customiseClientPoolConfig(GenericObjectPoolConfig<Connection> poolConfig) {
   }
 
   /**
@@ -111,160 +107,20 @@ abstract class MaintNotificationsScenarioBase extends FaultInjectorScenarioBase 
     serverTruststore = null;
   }
 
-  private static RedisClient buildClient(Database database, EndpointType endpointType,
-      SslOptions sslOptions) {
-    MaintenanceNotificationsConfig.Builder maintenance = MaintenanceNotificationsConfig.builder()
-        .mode(MaintenanceNotificationsConfig.Mode.ENABLED).relaxedTimeout(RELAXED_TIMEOUT_MS)
-        .relaxedBlockingTimeout(RELAXED_TIMEOUT_MS);
-    if (endpointType != null) {
-      maintenance.endpointType(endpointType); // null: auto-resolve from connection characteristics
-    }
-    return buildClient(database, maintenance.build(), sslOptions);
-  }
-
-  /**
-   * Builds a client from the create output with an explicit maintenance configuration. Base socket
-   * timeouts stay low so relaxed/restored timeouts remain observable, and the standalone client
-   * runs without retries so those timeouts are not masked.
-   */
-  static RedisClient buildClient(Database database, MaintenanceNotificationsConfig maintenance,
-      SslOptions sslOptions) {
-
-    DefaultJedisClientConfig.Builder config = database.clientConfig().protocol(RedisProtocol.RESP3) // push
-                                                                                                    // notifications
-                                                                                                    // require
-                                                                                                    // RESP3
-        .socketTimeoutMillis(CLIENT_SOCKET_TIMEOUT_MS)
-        // finite (default 0 = infinite would hang blocking probes) and distinct from the
-        // non-blocking base, so a probe's failure time identifies the timeout that fired
-        .blockingSocketTimeoutMillis(CLIENT_BLOCKING_SOCKET_TIMEOUT_MS);
-    if (sslOptions != null) {
-      config.sslOptions(sslOptions);
-    }
-
-    // one pinned observer + two parallel probe slots
-    GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
-    poolConfig.setMaxTotal(3);
-
-    return RedisClient.builder().hostAndPort(database.host(), database.port())
-        .clientConfig(config.build()).poolConfig(poolConfig).maintenanceNotifications(maintenance)
-        .build();
-  }
-
-  /**
-   * Borrows (and keeps) a pool connection of the tested client, so maintenance pushes arrive on a
-   * connection the test controls — the handshake enables CLIENT MAINT_NOTIFICATIONS before the
-   * effect fires.
-   */
-  Connection pinConnection() {
-    return client.getPool().getResource();
-  }
-
-  /**
-   * Returns the pinned connection to the pool. Releasing is never an error, also mid- or
-   * post-rebind: a broken return destroys the connection and the pool creates the replacement
-   * toward the MOVING target (window open) or the configured endpoint (window expired).
-   */
-  void releasePinned() {
-    if (pinned != null) {
-      logger.trace("releasing pinned: {}", pinned.toIdentityString());
-      pinned.close();
-      pinned = null;
-    }
-  }
-
-  /**
-   * Observes the pinned connection via a PING round-trip: buffered pushes are consumed inline
-   * during the reply read, dispatching maintenance events on this thread. A command round-trip is
-   * the only reliable way to read pushes — the commandless push read is a no-op on plain
-   * connections and cannot see TLS-buffered pushes (SSLSocket available() stays 0).
-   */
-  void observe() {
-    pinned.executeCommand(Protocol.Command.PING);
-  }
-
-  /**
-   * Creates every pool connection up front — holding maxTotal borrows simultaneously forces
-   * distinct creations, so tests measure command time, not handshakes.
-   */
-  void warmUpPool() {
-    int size = client.getPool().getMaxTotal();
-    List<Connection> borrowed = new ArrayList<>(size);
-    for (int i = 0; i < size; i++) {
-      borrowed.add(client.getPool().getResource());
-    }
-    borrowed.forEach(Connection::close);
-  }
-
-  /**
-   * Observes the pinned connection until {@code future} completes, then returns its value — the
-   * test thread keeps reading pushes (events, timeout changes stay current) while it waits.
-   */
-  <T> T observeAndAwait(CompletableFuture<T> future) {
-    while (!future.isDone()) {
-      observe();
-      sleepQuietly(100);
-    }
-    return future.join();
-  }
-
-  /** Runs the effect on a background thread so it is in flight while the test body observes. */
-  void startEffect(Scenario scenario) {
-    long id = database.id();
-    Thread thread = new Thread(() -> {
-      try {
-        faultInjector.triggerEffect(id, scenario.effect(), scenario.trigger().name());
-      } catch (Throwable e) {
-        effectFailures.add(e);
-      }
-    }, "fi-effect-" + scenario.trigger().name());
-    thread.start();
-    effectThreads.add(thread);
-  }
-
-  boolean effectDone() {
-    for (Thread thread : effectThreads) {
-      if (thread.isAlive()) {
-        return false;
-      }
-    }
-    return true;
-  }
-
-  void joinEffectThreads() {
-    for (Thread thread : effectThreads) {
-      try {
-        thread.join(EFFECT_JOIN_TIMEOUT_MS);
-      } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        break;
-      }
-      if (thread.isAlive()) {
-        thread.interrupt();
-      }
-    }
-  }
-
-  void assertEffectSucceeded() {
-    assertTrue(effectFailures.isEmpty(), "fault-injector effect failed: " + effectFailures);
-  }
-
   @AfterEach
-  void tearDownClient() {
+  final void tearDownClient() {
     try {
-      // close the pool before releasing a still-pinned connection: a closed pool destroys the
-      // returned connection without creating a replacement, which on aborted runs could target
-      // a rebind endpoint that is unroutable from this host
-      if (client != null) {
-        client.close();
-        client = null;
-      }
-      releasePinned();
-      joinEffectThreads();
+      client = closeIfOpen(client);
     } finally {
-      effectThreads.clear();
-      effectFailures.clear();
       deleteServerTruststore();
     }
+  }
+
+  /** Closes the client if one is open; returns null so the field is cleared in one step. */
+  static RedisClient closeIfOpen(RedisClient client) {
+    if (client != null) {
+      client.close();
+    }
+    return null;
   }
 }

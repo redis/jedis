@@ -78,18 +78,23 @@ abstract class FaultInjectorScenarioBase {
   }
 
   @AfterEach
-  void tearDownDatabase() {
+  final void tearDownDatabase() {
     try {
       if (dnsDiag != null) {
         dnsDiag.close();
         dnsDiag = null;
       }
     } finally {
-      if (database != null) {
-        faultInjector.deleteDatabase(database.id());
-        database = null;
-      }
+      database = deleteIfPresent(database);
     }
+  }
+
+  /** Deletes the database if one was deployed; returns null so the field is cleared in one step. */
+  static Database deleteIfPresent(Database database) {
+    if (database != null) {
+      faultInjector.deleteDatabase(database.id());
+    }
+    return null;
   }
 
   static long elapsedMillis(long startNanos) {

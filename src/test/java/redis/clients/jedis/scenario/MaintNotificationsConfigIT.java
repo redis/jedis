@@ -40,9 +40,9 @@ import redis.clients.jedis.util.KeyValue;
 @Tag("scenario")
 public class MaintNotificationsConfigIT {
 
-  // Reuse the base's client: referencing its static field forces the base class (and its DNS-cache
-  // TTL static block) to initialize at load time, before the first FI/endpoint name lookup.
-  private static final FaultInjectorClient faultInjector = MaintNotificationsScenarioBase.faultInjector;
+  // Referencing the scenario base's static field also runs its DNS-cache TTL static block before
+  // the first FI/endpoint name lookup.
+  private static final FaultInjectorClient faultInjector = FaultInjectorScenarioBase.faultInjector;
 
   private static final String STATUS_ON = "on";
   private static final String STATUS_OFF = "off";
@@ -69,7 +69,7 @@ public class MaintNotificationsConfigIT {
         .trigger("endpoint_rebind").requirement("single").dbConfig();
     // assign before any further step so @AfterAll cleans up even on a later failure
     shared = faultInjector.createDatabase(dbConfig);
-    MaintNotificationsScenarioBase.awaitEndpointConnectable(shared.endpoint());
+    FaultInjectorScenarioBase.awaitEndpointConnectable(shared.endpoint());
   }
 
   @AfterAll
@@ -128,7 +128,8 @@ public class MaintNotificationsConfigIT {
   }
 
   private static RedisClient buildClient(MaintenanceNotificationsConfig maintenance) {
-    return MaintNotificationsScenarioBase.buildClient(shared, maintenance, null);
+    return RedisClient.builder().hostAndPort(shared.host(), shared.port())
+        .clientConfig(shared.clientConfig().build()).maintenanceNotifications(maintenance).build();
   }
 
   /**

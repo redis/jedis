@@ -18,11 +18,9 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.redis.test.fi.Database;
 import com.redis.test.fi.Scenario;
 import com.redis.test.fi.StandaloneEffect;
 
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -47,7 +45,7 @@ import redis.clients.jedis.RedisClient;
  * DNS re-resolution.
  */
 @Tag("scenario")
-public class MaintenanceTrafficResilienceIT extends FaultInjectorScenarioBase {
+public class MaintenanceTrafficResilienceIT extends MaintNotificationsScenarioBase {
 
   private static final Logger logger = LoggerFactory
       .getLogger(MaintenanceTrafficResilienceIT.class);
@@ -60,8 +58,6 @@ public class MaintenanceTrafficResilienceIT extends FaultInjectorScenarioBase {
   /** The default maintenance-notifications config (mode AUTO) the hitless guarantee is made for. */
   private static final MaintenanceNotificationsConfig DEFAULT_MAINTENANCE = MaintenanceNotificationsConfig
       .builder().build();
-
-  private RedisClient client;
 
   static Stream<Scenario> scenarios() {
     return Stream.of(
@@ -110,7 +106,7 @@ public class MaintenanceTrafficResilienceIT extends FaultInjectorScenarioBase {
    */
   private TrafficRunner runTrafficAcrossEffect(Scenario scenario,
       MaintenanceNotificationsConfig maint) {
-    client = buildDefaultClient(deployDatabase(scenario), maint);
+    openClient(deployDatabase(scenario), maint);
 
     TrafficRunner traffic = new TrafficRunner(client, WORKERS);
     traffic.start();
@@ -141,25 +137,6 @@ public class MaintenanceTrafficResilienceIT extends FaultInjectorScenarioBase {
     traffic.awaitAllProcessed();
     logger.info("{} (maint={}) result: {}", scenario, maint.getMode(), traffic.summary());
     return traffic;
-  }
-
-  @AfterEach
-  void tearDownClient() {
-    if (client != null) {
-      client.close();
-      client = null;
-    }
-  }
-
-  /**
-   * A client with only credentials and the given maintenance-notifications config, so every other
-   * setting is the Jedis default. The suite measures what an application gets without tuning; the
-   * base's {@code buildClient} sets explicit timeouts and a small pool for probing.
-   */
-  private static RedisClient buildDefaultClient(Database database,
-      MaintenanceNotificationsConfig maint) {
-    return RedisClient.builder().hostAndPort(database.host(), database.port())
-        .clientConfig(database.clientConfig().build()).maintenanceNotifications(maint).build();
   }
 
   /**

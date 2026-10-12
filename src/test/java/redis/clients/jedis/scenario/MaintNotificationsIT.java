@@ -65,7 +65,7 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
  * rides on a pinned observer connection the probes never touch.
  */
 @Tag("scenario")
-public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
+public class MaintNotificationsIT extends MaintNotificationsObserverBase {
 
   private static final int PROBE_DELAY_SECONDS = 3;
   /** Headroom above the blocking base timeout that a relaxed probe must clear. */
@@ -118,7 +118,7 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
   @MethodSource("noConnDropScenarios")
   @Timeout(300)
   void timeoutRelaxedWithinMaintenanceWindow(Scenario scenario) {
-    setUpDatabaseAndClient(scenario);
+    openClient(deployDatabase(scenario), relaxedMaintenance().autoResolveEndpointType().build());
     warmUpPool();
     pinned = pinConnection();
     ReceivedEvents received = MaintNotificationsTestSupport.record(pinned);
@@ -165,7 +165,7 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
   @MethodSource("movingScenarios")
   @Timeout(300)
   void timeoutRelaxedWithinMovingWindow(Scenario scenario) {
-    setUpDatabaseAndClient(scenario);
+    openClient(deployDatabase(scenario), relaxedMaintenance().autoResolveEndpointType().build());
     warmUpPool();
     pinned = pinConnection();
     ReceivedEvents received = MaintNotificationsTestSupport.record(pinned);
@@ -261,7 +261,8 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
   void connectionHandoffOnMovingNone() {
     Scenario scenario = CATALOG.effect(StandaloneEffect.DATA_MOVEMENT_CONN_DROP)
         .trigger("endpoint_rebind").scenario();
-    setUpDatabaseAndClient(scenario, EndpointType.NONE);
+    openClient(deployDatabase(scenario),
+      relaxedMaintenance().endpointType(EndpointType.NONE).build());
     warmUpPool();
 
     String host = database.host();
@@ -341,7 +342,7 @@ public class MaintNotificationsIT extends MaintNotificationsScenarioBase {
   }
 
   private void assertConnectionHandoffLifecycle(Scenario scenario, EndpointType endpointType) {
-    setUpDatabaseAndClient(scenario, endpointType);
+    openClient(deployDatabase(scenario), relaxedMaintenance().endpointType(endpointType).build());
     warmUpPool();
     pinned = pinConnection();
 

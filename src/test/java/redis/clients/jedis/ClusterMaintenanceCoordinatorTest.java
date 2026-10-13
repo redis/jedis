@@ -207,6 +207,42 @@ public class ClusterMaintenanceCoordinatorTest {
   }
 
   @Test
+  public void concurrentDistinctClosersEachConcludeAWindow() throws Exception {
+    // two closers racing on the same oldest window: the loser must move on to the next one rather
+    // than leave it open until the TTL backstop; many short rounds to actually hit the race
+    int windows = 8;
+    for (int round = 0; round < 50; round++) {
+      long base = round * 100L;
+      for (int i = 1; i <= windows; i++) {
+        coordinator.onSMigrating(migrating(base + i, "0"), conn);
+      }
+      assertEquals(windows, coordinator.openMigrationWindows());
+
+      CountDownLatch start = new CountDownLatch(1);
+      CountDownLatch done = new CountDownLatch(windows);
+      for (int i = 1; i <= windows; i++) {
+        SMigratedEvent closer = migrated(base + windows + i, "0");
+        new Thread(() -> {
+          try {
+            start.await(5, TimeUnit.SECONDS);
+            coordinator.onSMigrated(closer, mock(Connection.class));
+          } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+          } finally {
+            done.countDown();
+          }
+        }).start();
+      }
+      start.countDown();
+      assertTrue(done.await(5, TimeUnit.SECONDS));
+
+      assertEquals(0, coordinator.openMigrationWindows(),
+        "round " + round + ": every distinct closer must conclude exactly one window");
+      assertFalse(coordinator.hasActiveMigration());
+    }
+  }
+
+  @Test
   public void openerAloneAppliesNothing() {
     coordinator.onSMigrating(migrating(1, "0-100"), conn);
     verify(cache, never()).applySlotMigration(anyList());
@@ -322,19 +358,27 @@ public class ClusterMaintenanceCoordinatorTest {
   }
 
   @Test
-  public void openWindowsAreCappedOldestFirst() {
-    for (long seq = 1; seq <= 130; seq++) {
+  public void liveWindowsAreNotEvictedByTheHistoryCap() {
+    // more openers than the dedup history holds: every one of them is still a live migration
+    int openers = 130;
+    for (long seq = 1; seq <= openers; seq++) {
       coordinator.onSMigrating(migrating(seq, "0"), conn);
     }
-    assertEquals(128, coordinator.openMigrationWindows(), "bounded by the history cap");
+    assertEquals(openers, coordinator.openMigrationWindows(),
+      "live windows are bounded by TTL only");
     assertTrue(coordinator.hasActiveMigration());
 
-    // the two oldest were dropped: a closer just above them finds no window to conclude
-    coordinator.onSMigrated(migrated(3L, "0"), conn);
-    assertEquals(128, coordinator.openMigrationWindows());
-    // the next closer concludes the oldest survivor
-    coordinator.onSMigrated(migrated(200L, "0"), conn);
-    assertEquals(127, coordinator.openMigrationWindows());
+    // closers for the oldest 129 migrations, in order: each concludes its own window ...
+    for (long seq = 1; seq < openers; seq++) {
+      coordinator.onSMigrated(migrated(1000 + seq, "0"), conn);
+    }
+    // ... and the youngest migration, whose closer has not arrived, keeps the relax open
+    assertEquals(1, coordinator.openMigrationWindows());
+    assertTrue(coordinator.hasActiveMigration(), "the 130th migration is still running");
+
+    coordinator.onSMigrated(migrated(2000, "0"), conn);
+    assertEquals(0, coordinator.openMigrationWindows());
+    assertFalse(coordinator.hasActiveMigration());
   }
 
   @Test

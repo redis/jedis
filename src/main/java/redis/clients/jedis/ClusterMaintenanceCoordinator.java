@@ -64,6 +64,7 @@ final class ClusterMaintenanceCoordinator {
 
   /**
    * True while any migration window is open (SMIGRATING seen, SMIGRATED not yet, TTL unexpired).
+   * Expired windows are reclaimed here.
    */
   boolean hasActiveMigration() {
     if (migratingWindows.isEmpty()) {
@@ -92,11 +93,6 @@ final class ClusterMaintenanceCoordinator {
       if (logger.isDebugEnabled()) {
         logger.debug("Slot migration starting: {} (seq={}) conn={}", e.slots, e.seq,
           c.toIdentityString());
-      }
-      // a flood of openers whose closers never arrive must not grow without bound: the oldest
-      // windows go first, the TTL backstop would have reclaimed them anyway
-      while (migratingWindows.size() > MAX_HISTORY_OF_EVENTS) {
-        migratingWindows.pollFirstEntry();
       }
       while (seenSMigrating.size() > MAX_HISTORY_OF_EVENTS) {
         seenSMigrating.pollFirst();
@@ -131,17 +127,21 @@ final class ClusterMaintenanceCoordinator {
    * open window below its own seq. Exactly one window per first delivery: closing every lower
    * window would unrelax an overlapping migration still in progress, and the relax gate is
    * client-wide anyway, so which window goes does not matter — only how many stay open. A window
-   * whose closer is lost therefore lingers until the next closer or the TTL backstop.
+   * whose closer is lost therefore lingers until the next closer or the TTL backstop. Distinct
+   * closers arriving concurrently race for the same oldest window; the loser retries on the next
+   * one so that every first delivery still concludes exactly one window.
    */
   private void closeMigrationWindow(long closingSeq) {
-    Map.Entry<Long, MigratingWindow> oldest = migratingWindows.firstEntry();
-    if (oldest != null && oldest.getKey() < closingSeq) {
+    Map.Entry<Long, MigratingWindow> oldest;
+    while ((oldest = migratingWindows.firstEntry()) != null && oldest.getKey() < closingSeq) {
       if (migratingWindows.remove(oldest.getKey(), oldest.getValue())) {
         if (logger.isDebugEnabled()) {
           logger.debug("Closing migration window (seq={}) on closing seq={}", oldest.getKey(),
             closingSeq);
         }
+        return;
       }
+      // lost the race to another closer or to TTL expiry: the next oldest window is ours
     }
   }
 

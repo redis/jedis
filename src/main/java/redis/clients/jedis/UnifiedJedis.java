@@ -44,6 +44,7 @@ import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.args.BlessFlag;
 
 public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
@@ -701,6 +702,69 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public ScanResult<byte[]> scan(byte[] cursor, ScanParams params, byte[] type) {
     return executeCommand(commandObjects.scan(cursor, params, type));
+  }
+
+  @Override
+  public long blessSet(String key, BlessFlag flag) {
+    return executeCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public long blessSet(byte[] key, BlessFlag flag) {
+    return executeCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public long blessClear(String key, BlessFlag flag) {
+    return executeCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public long blessClear(byte[] key, BlessFlag flag) {
+    return executeCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public List<String> blessGet(String key) {
+    return executeCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public List<byte[]> blessGet(byte[] key) {
+    return executeCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public ScanResult<String> blessScan(String cursor, BlessFlag flag) {
+    return executeCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public ScanResult<String> blessScan(String cursor, BlessFlag flag, int count) {
+    return executeCommand(commandObjects.blessScan(cursor, flag, count));
+  }
+
+  @Override
+  public ScanResult<byte[]> blessScan(byte[] cursor, BlessFlag flag) {
+    return executeCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public ScanResult<byte[]> blessScan(byte[] cursor, BlessFlag flag, int count) {
+    return executeCommand(commandObjects.blessScan(cursor, flag, count));
+  }
+
+  /**
+   * Iterate the keys carrying {@code flag} on every node known to this client, each with its own
+   * {@code BLESS SCAN} cursor. This is the cluster-safe counterpart of
+   * {@link #blessScan(String, BlessFlag, int)}.
+   * @param batchCount COUNT for each batch execution
+   * @param flag the flag to filter on
+   * @return bless scan iteration
+   * @since 8.1
+   */
+  public BlessScanIteration blessScanIteration(int batchCount, BlessFlag flag) {
+    return new BlessScanIteration(provider, batchCount, flag);
   }
 
   @Override

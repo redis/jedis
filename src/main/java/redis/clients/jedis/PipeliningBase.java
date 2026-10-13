@@ -27,6 +27,7 @@ import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.util.KeyValue;
+import redis.clients.jedis.args.BlessFlag;
 
 public abstract class PipeliningBase
     implements PipelineCommands, PipelineBinaryCommands, RedisModulePipelineCommands {
@@ -2996,6 +2997,56 @@ public abstract class PipeliningBase
   @Override
   public Response<ScanResult<byte[]>> scan(byte[] cursor, ScanParams params, byte[] type) {
     return appendCommand(commandObjects.scan(cursor, params, type));
+  }
+
+  @Override
+  public Response<Long> blessSet(String key, BlessFlag flag) {
+    return appendCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public Response<Long> blessSet(byte[] key, BlessFlag flag) {
+    return appendCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public Response<Long> blessClear(String key, BlessFlag flag) {
+    return appendCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public Response<Long> blessClear(byte[] key, BlessFlag flag) {
+    return appendCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public Response<List<String>> blessGet(String key) {
+    return appendCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public Response<List<byte[]>> blessGet(byte[] key) {
+    return appendCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public Response<ScanResult<String>> blessScan(String cursor, BlessFlag flag) {
+    return appendCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public Response<ScanResult<String>> blessScan(String cursor, BlessFlag flag, int count) {
+    return appendCommand(commandObjects.blessScan(cursor, flag, count));
+  }
+
+  @Override
+  public Response<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag) {
+    return appendCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public Response<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag, int count) {
+    return appendCommand(commandObjects.blessScan(cursor, flag, count));
   }
 
   @Override

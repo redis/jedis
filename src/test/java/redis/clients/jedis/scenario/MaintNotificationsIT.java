@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.time.Duration;
 import java.util.Arrays;
@@ -35,6 +36,7 @@ import com.redis.test.fi.StandaloneEffect;
 import com.redis.test.fi.Trigger;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Timeout;
@@ -68,15 +70,6 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 public class MaintNotificationsIT extends MaintNotificationsObserverBase {
 
   private static final int PROBE_DELAY_SECONDS = 3;
-  /** Headroom above the blocking base timeout that a relaxed probe must clear. */
-  private static final long BASE_TIMEOUT_MARGIN_MS = 500;
-  /**
-   * Minimum duration of a successful relaxed probe: above the blocking base timeout, so only
-   * relaxation could have let it succeed, and below {@code PROBE_DELAY_SECONDS}, so a genuine
-   * success meets it.
-   */
-  private static final long MIN_RELAXED_PROBE_DURATION_MS = CLIENT_BLOCKING_SOCKET_TIMEOUT_MS
-      + BASE_TIMEOUT_MARGIN_MS;
   private static final Duration PUSH_WAIT_TIMEOUT = Duration.ofSeconds(60);
 
   private static final CommandObject<List<String>> REGULAR_PROBE = new CommandObject<>(
@@ -86,6 +79,13 @@ public class MaintNotificationsIT extends MaintNotificationsObserverBase {
       new CommandArguments(Protocol.Command.BLPOP).key("missing{probe}").add(PROBE_DELAY_SECONDS)
           .blocking(),
       BuilderFactory.STRING_LIST); // -> blockingSocketTimeout / relaxedBlockingTimeout
+
+  /** Probes can only prove relaxation if the server holds them past the blocking base timeout. */
+  @BeforeAll
+  static void probeDelayOutlivesBlockingBaseTimeout() {
+    assertTrue(TimeUnit.SECONDS.toMillis(PROBE_DELAY_SECONDS) > CLIENT_BLOCKING_SOCKET_TIMEOUT_MS,
+      "PROBE_DELAY_SECONDS must exceed CLIENT_BLOCKING_SOCKET_TIMEOUT_MS");
+  }
 
   private ExecutorService probeExecutor;
 
@@ -134,8 +134,7 @@ public class MaintNotificationsIT extends MaintNotificationsObserverBase {
       "opening notification must relax the observer socket timeout");
 
     // relaxation enforced behaviorally for non-blocking and blocking commands, in parallel
-    observeAndAwait(runProbes())
-        .forEach(probe -> assertProbeSucceededAtServerDelay(probe, received));
+    observeAndAwait(runProbes()).forEach(probe -> assertProbeTimedOutOnServer(probe, received));
 
     awaitPush(received::closingReceived, "closing (MIGRATED/FAILED_OVER)", received);
     assertEquals(CLIENT_SOCKET_TIMEOUT_MS,
@@ -182,7 +181,7 @@ public class MaintNotificationsIT extends MaintNotificationsObserverBase {
 
     // pool-wide relaxation: the probes run on other pool connections (the pool recreates the
     // retired ones toward the MOVING target) and must survive to the server delay
-    runProbes().join().forEach(probe -> assertProbeSucceededAtServerDelay(probe, received));
+    runProbes().join().forEach(probe -> assertProbeTimedOutOnServer(probe, received));
 
     assertEquals(RELAXED_TIMEOUT_MS, MaintNotificationsTestSupport.effectiveTimeoutMillis(pinned),
       "no closing notification: relaxation holds until the window expires");
@@ -472,10 +471,13 @@ public class MaintNotificationsIT extends MaintNotificationsObserverBase {
     return regular.thenCombine(blocking, Arrays::asList);
   }
 
-  private static void assertProbeSucceededAtServerDelay(ProbeContext probe,
-      ReceivedEvents received) {
-    if (probe.error != null || probe.durationMillis < MIN_RELAXED_PROBE_DURATION_MS) {
-      fail(probe + " must survive to the server delay inside the relaxation window; events: "
+  /**
+   * BLPOP returns nil only when its server-side timeout expires, so a nil reply proves the probe
+   * waited the full delay; a client timeout fails it, and a value would mean an early reply.
+   */
+  private static void assertProbeTimedOutOnServer(ProbeContext probe, ReceivedEvents received) {
+    if (probe.error != null || probe.reply != null) {
+      fail(probe + " must wait for the server timeout inside the relaxation window; events: "
           + received.all());
     }
   }
@@ -491,7 +493,10 @@ public class MaintNotificationsIT extends MaintNotificationsObserverBase {
 
   private static void assertProbeTimedOutAtBase(ProbeContext probe, String phase) {
     long atLeast = probe.blocking() ? CLIENT_BLOCKING_SOCKET_TIMEOUT_MS : CLIENT_SOCKET_TIMEOUT_MS;
-    assertTrue(probe.error instanceof JedisConnectionException,
+    // a read timeout, not a connection failure: both surface as JedisConnectionException
+    assertTrue(
+      probe.error instanceof JedisConnectionException
+          && probe.error.getCause() instanceof SocketTimeoutException,
       phase + ": expected a base-timeout failure, got " + probe);
     // a timeout never fires earlier than configured; it can fire later when a push arrives
     // before the reply — that read returns the push, and the reply wait restarts its own window
@@ -507,10 +512,10 @@ public class MaintNotificationsIT extends MaintNotificationsObserverBase {
   private ProbeContext runProbe(CommandObject<List<String>> probe) {
     long start = System.nanoTime();
     try {
-      client.executeCommand(probe);
-      return new ProbeContext(probe, start, null, elapsedMillis(start));
+      List<String> reply = client.executeCommand(probe);
+      return new ProbeContext(probe, start, reply, null, elapsedMillis(start));
     } catch (RuntimeException e) {
-      return new ProbeContext(probe, start, e, elapsedMillis(start));
+      return new ProbeContext(probe, start, null, e, elapsedMillis(start));
     }
   }
 
@@ -518,13 +523,18 @@ public class MaintNotificationsIT extends MaintNotificationsObserverBase {
   private static final class ProbeContext {
     final CommandObject<List<String>> probe;
     final long startedAtNanos;
+    /**
+     * BLPOP's reply: nil after the server-side timeout, {@code [key, value]} for a popped element.
+     */
+    final List<String> reply;
     final Throwable error;
     final long durationMillis;
 
-    ProbeContext(CommandObject<List<String>> probe, long startedAtNanos, Throwable error,
-        long durationMillis) {
+    ProbeContext(CommandObject<List<String>> probe, long startedAtNanos, List<String> reply,
+        Throwable error, long durationMillis) {
       this.probe = probe;
       this.startedAtNanos = startedAtNanos;
+      this.reply = reply;
       this.error = error;
       this.durationMillis = durationMillis;
     }
@@ -536,8 +546,9 @@ public class MaintNotificationsIT extends MaintNotificationsObserverBase {
     @Override
     public String toString() {
       return (blocking() ? "blocking" : "non-blocking") + " probe "
-          + (error == null ? "success" : "failure(" + error + ")") + " after " + durationMillis
-          + " ms";
+          + (error != null ? "failure(" + error + ")"
+              : reply == null ? "nil reply" : "reply " + reply)
+          + " after " + durationMillis + " ms";
     }
   }
 

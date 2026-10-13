@@ -368,7 +368,13 @@ public class MaintNotificationsIT extends MaintNotificationsObserverBase {
     // a long in-flight command on the old endpoint still completes inside the grace window
     inflight.executeCommand(REGULAR_PROBE);
 
-    assumeTargetReachable(moving.target, endpointType);
+    if (!targetReachable(moving.target, endpointType)) {
+      // skip, not fail: close the client first so the returned connection is destroyed instead
+      // of replaced toward the unroutable target
+      client = closeIfOpen(client);
+      inflight.close();
+      assumeTrue(false, "MOVING target " + moving.target + " is not routable from the test host");
+    }
 
     // new connections are created toward the notification's endpoint, relaxed like the rest
     Connection handedOff = client.getPool().getResource();
@@ -437,16 +443,17 @@ public class MaintNotificationsIT extends MaintNotificationsObserverBase {
         + " is not among the target addresses " + targetIps + " of " + target);
   }
 
-  /** Internal targets may not be routable/resolvable from the test host; skip, do not fail. */
-  private static void assumeTargetReachable(String target, EndpointType endpointType) {
+  /** Internal targets may not resolve or route from the test host; external ones are not probed. */
+  private static boolean targetReachable(String target, EndpointType endpointType) {
     if (endpointType != EndpointType.INTERNAL_IP && endpointType != EndpointType.INTERNAL_FQDN) {
-      return;
+      return true;
     }
     HostAndPort hostAndPort = HostAndPort.from(target);
     try (Socket socket = new Socket()) {
       socket.connect(new InetSocketAddress(hostAndPort.getHost(), hostAndPort.getPort()), 2_000);
+      return true;
     } catch (IOException e) {
-      assumeTrue(false, "MOVING target " + target + " is not routable from the test host: " + e);
+      return false;
     }
   }
 

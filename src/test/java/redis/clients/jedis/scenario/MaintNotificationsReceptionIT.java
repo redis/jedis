@@ -97,11 +97,12 @@ public class MaintNotificationsReceptionIT extends MaintNotificationsObserverBas
   /**
    * Observes the pinned connection until the stream is drained: MOVING is always terminal (the
    * server disconnects the old endpoint afterwards, so a connection error after MOVING is the
-   * expected end of stream); otherwise until the effect finished and no event arrived for a settle
-   * period.
+   * expected end of stream); otherwise until a settle period passed since both the effect finished
+   * and the last event arrived.
    */
   private void observeUntilDrained(ReceivedEvents received) {
     long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(PUMP_DEADLINE_MILLIS);
+    long effectDoneAt = -1;
     while (System.nanoTime() < deadline) {
       try {
         observe();
@@ -115,7 +116,11 @@ public class MaintNotificationsReceptionIT extends MaintNotificationsObserverBas
       if (received.movingReceived()) {
         return;
       }
-      if (effectDone() && drainedFor(received, SETTLE_MILLIS)) {
+      if (effectDoneAt < 0 && effectDone()) {
+        effectDoneAt = System.nanoTime();
+      }
+      // the closing can trail the fault injector's success report
+      if (settledSince(effectDoneAt) && settledSince(received.lastEventAtNanos())) {
         return;
       }
       sleepQuietly(100);
@@ -124,9 +129,9 @@ public class MaintNotificationsReceptionIT extends MaintNotificationsObserverBas
         + received.all());
   }
 
-  private boolean drainedFor(ReceivedEvents received, long settleMillis) {
-    long last = received.lastEventAtNanos();
-    return last >= 0 && elapsedMillis(last) >= settleMillis;
+  /** {@code -1} = not happened yet. */
+  private static boolean settledSince(long atNanos) {
+    return atNanos >= 0 && elapsedMillis(atNanos) >= SETTLE_MILLIS;
   }
 
   /** Payload sanity of one event, independent of its position in the sequence. */

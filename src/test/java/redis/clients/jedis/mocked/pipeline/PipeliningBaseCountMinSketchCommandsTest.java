@@ -11,6 +11,7 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.bloom.CmsCellSize;
 
 public class PipeliningBaseCountMinSketchCommandsTest extends PipeliningBaseMockedTestBase {
 
@@ -95,4 +96,29 @@ public class PipeliningBaseCountMinSketchCommandsTest extends PipeliningBaseMock
     assertThat(response, is(predefinedResponse));
   }
 
+  @Test
+  public void testCmsInitByDimWithCellSize() {
+    CmsCellSize cellSize = CmsCellSize.ONE_BYTE;
+
+    when(commandObjects.cmsInitByDim("myCountMinSketch", 1000L, 5L, cellSize)).thenReturn(stringCommandObject);
+
+    Response<String> response = pipeliningBase.cmsInitByDim("myCountMinSketch", 1000L, 5L, cellSize);
+
+    assertThat(commands, contains(stringCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testCmsInitByProbWithCellSize() {
+    double error = 0.01;
+    double probability = 0.99;
+    CmsCellSize cellSize = CmsCellSize.EIGHT_BYTES;
+
+    when(commandObjects.cmsInitByProb("myCountMinSketch", error, probability, cellSize)).thenReturn(stringCommandObject);
+
+    Response<String> response = pipeliningBase.cmsInitByProb("myCountMinSketch", error, probability, cellSize);
+
+    assertThat(commands, contains(stringCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
 }

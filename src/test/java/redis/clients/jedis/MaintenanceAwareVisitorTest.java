@@ -8,7 +8,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoInteractions;
 import static org.mockito.Mockito.when;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -23,7 +22,6 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
  * undone again — independent of which family the controller serves. The RESP3 handshake exchange
  * itself needs a server and is covered by the TcpMockServer-backed tests.
  */
-@Tag("unit")
 @ExtendWith(MockitoExtension.class)
 public class MaintenanceAwareVisitorTest {
 

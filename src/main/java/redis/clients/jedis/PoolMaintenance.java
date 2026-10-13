@@ -40,8 +40,8 @@ abstract class PoolMaintenance implements AutoCloseable {
 
   /**
    * The cluster family: SMIGRATING/SMIGRATED are dispatched to the client-wide coordinator; nothing
-   * is remapped or retired per pool (Case-2 teardown is pool-level). {@code null} coordinator
-   * yields {@link #OFF}.
+   * is remapped or retired per pool — a source node that leaves the cluster has its whole pool
+   * dropped by {@link JedisClusterInfoCache} instead. {@code null} coordinator yields {@link #OFF}.
    */
   static PoolMaintenance cluster(ClusterMaintenanceCoordinator coordinator) {
     if (coordinator == null) {

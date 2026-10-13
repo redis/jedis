@@ -24,7 +24,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -37,7 +36,6 @@ import redis.clients.jedis.TimeoutSource.TimeoutInfo;
  * SMIGRATING/SMIGRATED broadcast (seq ids are unique per message, never shared by a pair) and the
  * dedup of slot-delta application.
  */
-@Tag("unit")
 @ExtendWith(MockitoExtension.class)
 public class ClusterMaintenanceCoordinatorTest {
 

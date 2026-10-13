@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Supplier;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.TimeoutSource.TimeoutInfo;
@@ -15,7 +14,6 @@ import redis.clients.jedis.TimeoutSource.TimeoutInfo;
  * Unit tests for {@link ManagedTimeoutSource}: a chain link whose opinion is whatever its supplier
  * says right now, and whose identity for {@link ChainedTimeoutSource#seekBy} is that supplier.
  */
-@Tag("unit")
 public class ManagedTimeoutSourceTest {
 
   private static final TimeoutInfo BASE = new TimeoutInfo(2000, 5000);

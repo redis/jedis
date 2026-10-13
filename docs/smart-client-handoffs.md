@@ -25,8 +25,9 @@ The feature is negotiated per connection during the handshake with
 - **Server support.** The server must support the `CLIENT MAINT_NOTIFICATIONS` command; see
   [SCH support in Redis server products](https://redis.io/docs/latest/develop/clients/sch/#sch-support-in-redis-server-products)
   for availability and enablement per product.
-- **Client.** `RedisClient` (standalone) supports the feature and enables it automatically on RESP3
-  connections.
+- **Client.** `RedisClient` (standalone) and `RedisClusterClient` (Redis Cluster) support the
+  feature and enable it automatically on RESP3 connections. The two clients receive different
+  notification families; see [Redis Cluster](#redis-cluster) for the cluster-specific behavior.
 
 ## Enabling
 
@@ -67,7 +68,7 @@ RedisClient plain = RedisClient.builder()
 
 | Mode | Behavior |
 | --- | --- |
-| `AUTO` (default for `RedisClient`) | The handshake is attempted on RESP3 connections; if the server rejects it (or the connection is RESP2), the feature is quietly disabled for that connection. |
+| `AUTO` (default for `RedisClient` and `RedisClusterClient`) | The handshake is attempted on RESP3 connections; if the server rejects it (or the connection is RESP2), the feature is quietly disabled for that connection. |
 | `ENABLED` | The handshake must succeed: connection setup fails if the server rejects `CLIENT MAINT_NOTIFICATIONS` or the connection is not RESP3. |
 | `DISABLED` | The handshake is not attempted; the feature is off. |
 
@@ -119,6 +120,54 @@ client runs — an internal IP is typically not reachable from outside the clust
 
 See the [official SCH documentation](https://redis.io/docs/latest/develop/clients/sch/) for the
 cross-client overview, server-side enablement, and product-specific limitations.
+
+## Redis Cluster
+
+`RedisClusterClient` receives a separate notification family for slot migrations. The server
+announces the start and end of a migration on every connection to the node, and Jedis folds those
+copies into a single client-wide reaction:
+
+| Notification | Wire format | Meaning | Client reaction |
+| --- | --- | --- | --- |
+| `SMIGRATING` | `["SMIGRATING", seq, "slots"]` | The listed slots or ranges (e.g. `"123,456,789-1000"`) start migrating. | Relax timeouts on **all** cluster connections until the migration ends. |
+| `SMIGRATED` | `["SMIGRATED", seq, [["src", "dst", "slots"], ...]]` | The listed slots moved from `src` to `dst`. | Re-route the slots to `dst` in place, without a full `CLUSTER SLOTS` refresh; close the relax window; drop the pool of a source node left without slots. |
+
+Differences from the standalone behavior:
+
+- **Relaxed timeouts are client-wide.** Timeouts stay relaxed on every connection while any
+  migration is open, and return to normal only when the last one closes (or after
+  `relaxedWindowMaxDuration` if the closing notification is lost).
+- **No pre-handoff.** `MOVING` is not part of the cluster family; nodes are not re-mapped and
+  connections are not retired per pool. A source node that owns no slots after the migration has its
+  connection pool removed once the slot delta has been applied.
+- **Slot deltas never fight a topology refresh.** A delta that arrives while a full refresh is in
+  flight is queued and applied right after it, so the routing table always reflects the newer state.
+  Client-side caching is flushed when a delta is applied, as it is on a full refresh.
+
+Enable, tune, or turn the feature off through the cluster builder — the configuration object and the
+[modes](#modes) are the same as for `RedisClient`:
+
+```java
+RedisClusterClient cluster = RedisClusterClient.builder()
+    .nodes(Collections.singleton(new HostAndPort("localhost", 7000)))
+    .clientConfig(DefaultJedisClientConfig.builder()
+        .protocol(RedisProtocol.RESP3)
+        .build())
+    .maintenanceNotifications(MaintenanceNotificationsConfig.builder()
+        .mode(MaintenanceNotificationsConfig.Mode.ENABLED)
+        .relaxedTimeout(30_000)
+        .build())
+    .build();
+
+// off:
+RedisClusterClient plain = RedisClusterClient.builder()
+    .nodes(Collections.singleton(new HostAndPort("localhost", 7000)))
+    .maintenanceNotifications(MaintenanceNotificationsConfig.DISABLED)
+    .build();
+```
+
+The endpoint-type settings described under [Pre-handoff](#pre-handoff-moving) only apply to
+`MOVING` and have no effect on cluster connections.
 
 ## Pub/Sub
 

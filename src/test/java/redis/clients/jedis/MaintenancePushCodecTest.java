@@ -14,7 +14,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.MaintenancePushCodec.PushType;
@@ -25,7 +24,6 @@ import redis.clients.jedis.util.SafeEncoder;
  * {@link MaintenancePushCodec#build} field extraction / malformed-frame rejection, for both the
  * standalone ({@link MaintenanceEvent}) and cluster ({@link ClusterMaintenanceEvent}) families.
  */
-@Tag("unit")
 public class MaintenancePushCodecTest {
 
   private static final byte[] SHARDS = bytes("[\"2\",\"4\"]");
@@ -211,7 +209,7 @@ public class MaintenancePushCodecTest {
   }
 
   @Test
-  public void buildSMigratedWithNoEntries() { // an empty delta is a well-formed terminator
+  public void buildSMigratedWithNoEntries() { // a closer that only ends the window is well-formed
     SMigratedEvent e = assertInstanceOf(SMigratedEvent.class,
       build(PushType.SMIGRATED, push(type("SMIGRATED"), 12L, Collections.emptyList())));
     assertEquals(12L, e.seq);

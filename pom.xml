@@ -652,7 +652,7 @@
 						<include>**/NanoClock.java</include>
 						<include>**/*TimeoutSource*.java</include>
 						<include>**/RebindAwareEvictionPolicy.java</include>
-						<include>**/Maintenance*.java</include>
+						<include>**/*Maintenance*.java</include>
 						<include>**/ConnectionRegistry.java</include>
 						<include>**/MovingOperations.java</include>
 						<include>**/SocketAddress*.java</include>

@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.TimeoutSource.TimeoutInfo;
+import redis.clients.jedis.annots.VisibleForTesting;
 
 /**
  * Per-client dedup and apply point for the SMIGRATING/SMIGRATED cluster maintenance broadcast. Seq
@@ -16,7 +17,7 @@ import redis.clients.jedis.TimeoutSource.TimeoutInfo;
  * first delivery of an SMIGRATED is applied as-is, in arrival order; a stale slot left by a
  * reordered closer self-heals through MOVED redirects and the topology refresh.
  */
-final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
+final class ClusterMaintenanceCoordinator {
 
   private static final Logger logger = LoggerFactory.getLogger(ClusterMaintenanceCoordinator.class);
 
@@ -34,15 +35,26 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
   /** Closers already applied, by seq; the broadcast copies from other connections dedup here. */
   private final ConcurrentSkipListMap<Long, SMigratedEvent> seenSMigrated = new ConcurrentSkipListMap<>();
 
+  private final MaintenanceNotificationsConfig config;
+
   ClusterMaintenanceCoordinator(JedisClusterInfoCache cache,
       MaintenanceNotificationsConfig config) {
     this.cache = cache;
+    this.config = config;
     this.maxRelaxedDurationNanos = config.getRelaxedWindowMaxDuration().toNanos();
     TimeoutInfo relaxedTimeoutInfo = new TimeoutInfo(config.getRelaxedTimeout(),
         config.getRelaxedBlockingTimeout());
     this.timeoutSupplier = () -> hasActiveMigration() || cache.hasPendingSlotDeltas()
         ? relaxedTimeoutInfo
         : null;
+  }
+
+  /**
+   * The config this coordinator was built from; drives the cluster connections' MAINT_NOTIFICATIONS
+   * handshake.
+   */
+  MaintenanceNotificationsConfig getConfig() {
+    return config;
   }
 
   /** The client-wide relax gate consulted by every cluster connection's timeout overlay. */
@@ -52,6 +64,7 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
 
   /**
    * True while any migration window is open (SMIGRATING seen, SMIGRATED not yet, TTL unexpired).
+   * Expired windows are reclaimed here.
    */
   boolean hasActiveMigration() {
     if (migratingWindows.isEmpty()) {
@@ -64,14 +77,16 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
         return true;
       }
     }
-    while (migratingWindows.size() > MAX_HISTORY_OF_EVENTS) {
-      migratingWindows.pollFirstEntry();
-    }
     return false;
   }
 
-  @Override
-  public void onSMigrating(SMigratingEvent e, Connection c) {
+  /** Windows currently open (expired ones included until the next gate check). */
+  @VisibleForTesting
+  int openMigrationWindows() {
+    return migratingWindows.size();
+  }
+
+  void onSMigrating(SMigratingEvent e, Connection c) {
     if (seenSMigrating.add(e.seq)) {
       long deadline = NanoClock.INSTANCE.getAsLong() + maxRelaxedDurationNanos;
       migratingWindows.put(e.seq, new MigratingWindow(e.seq, deadline));
@@ -89,14 +104,16 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
   /**
    * The winning {@code putIfAbsent} is the only delivery of a seq that closes a window and applies
    * the delta; every delivery re-evaluates its connection's timeout, since another connection's
-   * copy may have closed the window meanwhile.
+   * copy may have closed the window meanwhile. A closer without entries only ends the window: no
+   * slot is rerouted and no pool is touched.
    */
-  @Override
-  public void onSMigrated(SMigratedEvent e, Connection c) {
+  void onSMigrated(SMigratedEvent e, Connection c) {
     if (seenSMigrated.putIfAbsent(e.seq, e) == null) {
       logger.debug("Slot migration done (seq={}, entries={})", e.seq, e.migrations.size());
       closeMigrationWindow(e.seq);
-      cache.applySlotMigration(e.migrations);
+      if (!e.migrations.isEmpty()) {
+        cache.applySlotMigration(e.migrations);
+      }
       while (seenSMigrated.size() > MAX_HISTORY_OF_EVENTS) {
         seenSMigrated.pollFirstEntry();
       }
@@ -110,17 +127,21 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
    * open window below its own seq. Exactly one window per first delivery: closing every lower
    * window would unrelax an overlapping migration still in progress, and the relax gate is
    * client-wide anyway, so which window goes does not matter — only how many stay open. A window
-   * whose closer is lost therefore lingers until the next closer or the TTL backstop.
+   * whose closer is lost therefore lingers until the next closer or the TTL backstop. Distinct
+   * closers arriving concurrently race for the same oldest window; the loser retries on the next
+   * one so that every first delivery still concludes exactly one window.
    */
   private void closeMigrationWindow(long closingSeq) {
-    Map.Entry<Long, MigratingWindow> oldest = migratingWindows.firstEntry();
-    if (oldest != null && oldest.getKey() < closingSeq) {
+    Map.Entry<Long, MigratingWindow> oldest;
+    while ((oldest = migratingWindows.firstEntry()) != null && oldest.getKey() < closingSeq) {
       if (migratingWindows.remove(oldest.getKey(), oldest.getValue())) {
         if (logger.isDebugEnabled()) {
           logger.debug("Closing migration window (seq={}) on closing seq={}", oldest.getKey(),
             closingSeq);
         }
+        return;
       }
+      // lost the race to another closer or to TTL expiry: the next oldest window is ours
     }
   }
 
@@ -138,33 +159,4 @@ final class ClusterMaintenanceCoordinator implements MaintenanceEventListener {
     }
   }
 
-  @Override
-  public void onMoving(MovingEvent e, Connection c) {
-    logger.warn("Standalone maintenance events are not supported by this controller: {} conn={}", e,
-      c);
-  }
-
-  @Override
-  public void onMigrating(MigratingEvent e, Connection c) {
-    logger.warn("Standalone maintenance events are not supported by this controller: {} conn={}", e,
-      c);
-  }
-
-  @Override
-  public void onMigrated(MigratedEvent e, Connection c) {
-    logger.warn("Standalone maintenance events are not supported by this controller: {} conn={}", e,
-      c);
-  }
-
-  @Override
-  public void onFailingOver(FailingOverEvent e, Connection c) {
-    logger.warn("Standalone maintenance events are not supported by this controller: {} conn={}", e,
-      c);
-  }
-
-  @Override
-  public void onFailedOver(FailedOverEvent e, Connection c) {
-    logger.warn("Standalone maintenance events are not supported by this controller: {} conn={}", e,
-      c);
-  }
 }

@@ -63,7 +63,7 @@ final class MaintenanceEventController
     // must precede connect(): a connect racing a maintenance operation is then visible/remapped
     registry.register(connection);
     ChainedTimeoutSource dts = connection.getTimeoutSource();
-    dts.addOverride(new ManagedTimeoutSource(this.timeoutSupplier));
+    dts.addOverride(new ManagedTimeoutSource(this.timeoutSupplier, this));
     dts.addOverride(new ExpiringTimeoutSource(relaxedTimeoutInfo));
     connection.addMaintenanceEventListener(this);
   }
@@ -72,8 +72,8 @@ final class MaintenanceEventController
   public void unregister(Connection connection) {
     connection.removeMaintenanceEventListener(this);
     ChainedTimeoutSource dts = connection.getTimeoutSource();
-    // remove ManagedTimeoutSource by identity
-    dts.removeOverride(dts.seekBy(this.timeoutSupplier));
+    // the pool-wide overlay is keyed by this controller, the per-connection one by its class
+    dts.removeOverride(dts.seekBy(this));
     dts.removeOverride(dts.seekBy(ExpiringTimeoutSource.class));
   }
 

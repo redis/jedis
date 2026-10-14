@@ -5,7 +5,6 @@ import java.net.SocketAddress;
 import java.time.Duration;
 import java.util.List;
 import java.util.function.LongSupplier;
-import java.util.function.Supplier;
 
 import redis.clients.jedis.util.ReflectionTestUtil;
 
@@ -179,17 +178,11 @@ public class ConnectionTestHelper {
 
   /**
    * Whether the pool controller's relax overlay (the pool-wide / client-wide gate, keyed by the
-   * controller's timeout supplier) is installed on the connection's timeout chain.
+   * controller that installed it) is on the connection's timeout chain.
    */
   public static boolean hasPoolRelaxOverlay(ConnectionPool pool, Connection connection) {
     MaintenanceController controller = pool.getMaintenanceController();
-    if (controller == null) {
-      return false;
-    }
-    Supplier<TimeoutSource.TimeoutInfo> gate = controller instanceof ClusterMaintenanceController
-        ? ((ClusterMaintenanceController) controller).getTimeoutSupplier()
-        : ((MaintenanceEventController) controller).getTimeoutSupplier();
-    return connection.getTimeoutSource().seekBy(gate) != null;
+    return controller != null && connection.getTimeoutSource().seekBy(controller) != null;
   }
 
   /** Whether the per-connection expiring relax overlay (standalone family only) is installed. */

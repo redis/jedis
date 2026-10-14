@@ -94,11 +94,6 @@ final class ClusterMaintenanceCoordinator {
         logger.debug("Slot migration starting: {} (seq={}) conn={}", e.slots, e.seq,
           c.toIdentityString());
       }
-      // a flood of openers whose closers never arrive must not grow without bound: the oldest
-      // windows go first, the TTL backstop would have reclaimed them anyway
-      while (migratingWindows.size() > MAX_HISTORY_OF_EVENTS) {
-        migratingWindows.pollFirstEntry();
-      }
       while (seenSMigrating.size() > MAX_HISTORY_OF_EVENTS) {
         seenSMigrating.pollFirst();
       }

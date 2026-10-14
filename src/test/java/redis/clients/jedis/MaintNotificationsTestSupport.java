@@ -49,7 +49,7 @@ public final class MaintNotificationsTestSupport {
     public final long seq;
     /** MOVING grace period or opening lead time, in seconds; -1 for closings, which carry none. */
     public final long timeSeconds;
-    /** Affected shard ids; null for MOVING. */
+    /** Affected shard ids, or slot ranges for the cluster family; null for MOVING. */
     public final String shardIds;
     /** MOVING target ("host:port"); null for a 'none' rebind and for non-MOVING events. */
     public final String target;
@@ -134,6 +134,18 @@ public final class MaintNotificationsTestSupport {
     @Override
     public void onFailedOver(FailedOverEvent e, Connection c) {
       events.add(new ReceivedEvent(PushMessageTypes.FAILED_OVER, e.seq, -1, e.shardIds, null));
+    }
+
+    @Override
+    public void onSMigrating(SMigratingEvent e, Connection c) {
+      events.add(
+        new ReceivedEvent(PushMessageTypes.SMIGRATING, e.seq, -1, String.valueOf(e.slots), null));
+    }
+
+    @Override
+    public void onSMigrated(SMigratedEvent e, Connection c) {
+      events.add(new ReceivedEvent(PushMessageTypes.SMIGRATED, e.seq, -1,
+          String.valueOf(e.migrations), null));
     }
   }
 

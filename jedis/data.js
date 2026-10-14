@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1791856251170,
+  "lastUpdate": 1791941838915,
   "repoUrl": "https://github.com/redis/jedis",
   "entries": {
     "Benchmark": [
@@ -39126,6 +39126,274 @@ window.BENCHMARK_DATA = {
           {
             "name": "redis.clients.jedis.benchmark.util.SafeEncoderBenchmark.encodeStringToBytes",
             "value": 26.572311405392508,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "Ivo Gaydazhiev",
+            "username": "ggivo",
+            "email": "ivo.gaydazhiev@redis.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "586f16ec0c9cd187e5aa6b0aae04001d77f59968",
+          "message": "[maintenance events] Add maintenance-notification scenario tests driven by the fault injector (#4707)\n\n* Add minimal fault-injector client with typed trigger catalog\n\nTwo HTTP primitives, one poll helper, and the four operations the\nmaintenance-notification scenario tests need. The read-only discovery\nenvelope is typed (Effect -> Trigger -> Requirement -> Scenario);\ndbconfigs and action outputs stay opaque maps owned by the FI, parsed\nwith LONG_OR_DOUBLE so integral fields round-trip verbatim into\ncreate_database. Framework-free (JDK HTTP + gson, no jedis imports)\nand JDK 8 compatible so it can be extracted for other JVM clients.\nWire-format and parsing covered by unit tests against a scripted\nin-process HTTP stub.\n\n* Add notification-reception scenario test (T.1.1)\n\nVerifies the client receives and parses every supported maintenance\nnotification type — MIGRATING, MIGRATED, FAILING_OVER, FAILED_OVER,\nMOVING — each delivered by a real cluster operation through the fault\ninjector (migrate, failover, conn_drop/endpoint_rebind), asserting the\nexact received sequence and payloads.\n\nThe shared scenario base creates a database per test from a fresh FI\ndiscovery — the FI generates a unique name and port per call, so every\ndatabase gets its own endpoint DNS name — waits for the endpoint to\naccept connections, builds the client from the create output, and\ndeletes the database on teardown. Events are recorded via a test\nbridge listener on a pinned pool connection; teardown closes the pool\nbefore releasing a still-pinned connection so aborted runs cannot be\nforced to dial an unreachable endpoint.\n\n* Add timeout-relaxation scenario test (T.1.2 migrate/failover)\n\nCovers timeoutRelaxedOnMigratingTest, timeoutUnrelaxedOnMigratedTest,\ntimeoutRelaxedOnFailoverTest, timeoutUnrelaxedOnFailedoverTest.\nBLPOP probes with a 3 s server-side delay prove relaxation\nbehaviorally through the public client: at base timeouts (1 s\nnon-blocking / 2 s blocking — distinct values so the blocking flag's\nrouting is visible) probes time out, and inside a maintenance window\nthey survive to the server delay; window state is asserted on a pinned\nobserver connection the probes never touch. A timeout never fires\nearlier than configured but can fire later when a push restarts the\nread window, so the assertions are contract bands, not exact\ndurations.\n\nOpens Connection.currentTimeout() to the package for the\neffectiveTimeoutMillis test bridge; the base gains pool warm-up\n(handshakes out of measured time) and an observe-while-awaiting\nhelper.\n\n* Add MOVING relaxed/unrelaxed timeout scenario test (T.1.2 MOVING)\n\nCovers timeoutRelaxedOnMovingTest and\ntimeoutUnrelaxedAfterMovingDelayTest: MOVING has no closing\nnotification, relaxation is pool-wide toward the affected node and\nends only when the ttl window expires. Probes run against\nconn_drop/endpoint_rebind, the one trigger emitting exactly [MOVING];\nafter expiry they assert without pumping the observer, whose socket\ntoward the old endpoint may be dead.\n\n* Add MOVING connection-handoff scenario test (T.2.1)\n\nconnectionHandoffOnMoving verifies the connection lifecycle across an\nendpoint rebind, parameterized over external/internal IP endpoint\ntypes: in-flight commands on a pre-MOVING connection complete\ngracefully, new connections target the notification's endpoint and get\nthe pool-wide relaxed timeout, returned pre-MOVING connections are\ndestroyed, a connection that outlives the window throws on use and is\ndestroyed on return, and the client keeps working through fresh\nconnections afterwards. Internal-IP targets unroutable from the test\nhost skip via assumption; releasing a connection is asserted to never\nfail, mid- or post-rebind.\n\nVerified green against a live FI, including with the default JVM DNS\ncache.\n\n* Share server-certificate capture and truststore creation in TlsUtil\n\nLagAwareStrategySslIT downloaded the server certificate with inline\ntrust-all socket code and wrote its truststores into the repo root.\nHoist the capture into TlsUtil for reuse, add a truststore overload\nfor already-loaded certificates (JKS, loadable without an explicit\ntruststore type), and keep generated stores under the test work\nfolder, which is now created on demand.\n\n* Add TLS connection-handoff scenario test\n\nRuns the MOVING connection-handoff lifecycle over TLS (single_tls,\nexternal FQDN) with default SslOptions, so full certificate-chain and\nhostname verification stay on through the handoff. Trust is\nbootstrapped by capturing the chain the server presents into a\ntemporary truststore, deleted on teardown. Discovery now requests\nTLS-capable requirements (include_tls) and the client keys TLS on the\ncreate-database tls flag instead of the endpoint scheme.\n\n* Stabilize scenario tests against stale DNS resolution\n\nCap the JVM DNS cache for scenario tests (positive and negative, 2s):\nthe default 30s positive cache can outlive the endpoint-rebind DNS\nrepoint, and the default 10s negative cache delays the wait for a\nfresh database's not-yet-propagated name. Set via the scenario\nfailsafe argLine (CI path) and in code for manual runs.\n\nAdd DnsDiagnostics: a TRACE-triggered sampler that follows an\nendpoint's resolution from two views (JVM InetAddress vs a direct\nsystem-resolver query), making stale client-side resolution around a\nrebind directly observable.\n\n* Assert handoff by resolved peer, not target string\n\nA handed-off connection may be routed by the mapper (stale DNS\nbridged) or by an already-repointed configured name; with a short JVM\nDNS cache the second path is the common one and the target-string\ncomparison fails despite reaching the right node. Compare the resolved\npeer IP against the MOVING target's addresses instead — valid for IP\nand FQDN targets under either routing. Mapper keying itself is pinned\nby MaintenanceEventControllerTest.\n\n* [clean up] remove redundat ssl configuration\n\n* Cover internal-FQDN TLS connection handoff (T.2.2)\n\nParameterize the TLS handoff test over external and internal FQDN so\nthe internal static-name case is exercised too; the internal run skips\nwhen the endpoint is not routable from the test host.\n\n* Cover maintenance-notifications config handshake (T.3.1/T.3.2)\n\nMaintNotificationsConfigIT asserts, via CLIENT MAINT_NOTIFICATIONS_INFO, that the handshake enables notifications (status on/off) and records the requested moving-endpoint-type. Config tests fire no fault-injector effect, so one FI database is shared per class and only the client is rebuilt per configuration.\n\nSplit MaintNotificationsScenarioBase.buildClient to take a MaintenanceNotificationsConfig and open awaitEndpointConnectable for reuse; consolidate the MaintNotifications* formatter include.\n\n* Cover none-endpoint connection handoff (connectionHandoffWithNone)\n\nOn a null-target (none) MOVING the client does not remap: it keeps serving the old node, proactively retires the affected connections at half the grace window, and the pool reconnects to the re-resolved configured endpoint on its own. connectionHandoffOnMovingNone asserts the borrowed connection stays usable through the window and after retirement, that a connection returned after grace/2 is destroyed, and that a new connection reaches the new node and works — the test never touches the pool.\n\nAdd MaintNotificationsTestSupport.isRetired to observe the grace/2 retirement.\n\n* Add traffic-continuity resiliency scenario suite\n\nMaintenanceTrafficResilienceIT drives continuous SET/GET traffic with a stock RedisClient before, during, and after each topology-change-standalone effect and asserts the change is hitless — zero command or connectivity errors.\n\nCovers the reconnect/hitless effects: conn_drop and data_movement_conn_drop endpoint rebinds, and the hitless data_movement_no_conn_drop migrate and failover. Excludes dns_resolution_change (no notifications). The data_movement_conn_drop maintenance_mode trigger is left out: it does not restore the node afterward, draining usable cluster nodes across runs.\n\nAfter the effect, traffic runs through the handoff grace tail, then stops and drains: the test confirms every submitted command was processed (submitted == processed) and records unique error signatures for troubleshooting.\n\nA negative control (trafficDisruptedWithoutMaintenance, off by default; -Dsch.negativeControl=true) runs a drop scenario with notifications DISABLED and asserts errors occur, so the hitless positive result is attributable to the feature. The positive test is parameterized over (scenario x maintenance config), today only the stock default.\n\n* Derive the minimum relaxed-probe duration from the base timeout\n\nThe minimum is now the blocking base timeout plus a named margin\ninstead of a literal, so it follows the timeout it has to exceed. The\njavadoc states that it must also stay below the probe delay. The value\nis unchanged (2500 ms).\n\n* Assert MOVING retires the whole pool and hands out a fresh connection\n\nThe handoff test relied on the single-proxy test databases without\nchecking it.\n\n- The pinned connection never reads MOVING, so asserting it is retired\n  shows MOVING reached the whole pool, not only the receiving\n  connection. It fails loudly if the endpoint ever spreads over several\n  proxies.\n- The connection borrowed after MOVING must not be a retired one.\n  assertConnectedToTarget only compares the peer address with the\n  target's current DNS resolution, so it cannot tell a fresh connection\n  from a retired one when the address sets overlap. A retired idle\n  connection handed out before the async eviction now fails with a clear\n  message.\n\n* Base the post-discard borrow assertion on the pool being full\n\nThe assertion called the borrowed connection \"the replacement\" of the\ndiscarded one, which reads as relying on how the pool creates\nconnections.\n\nWhat the test relies on is the pool size:\n- The pool allows 3 connections (maxTotal) and the test holds all of\n  them: the pinned connection, the one borrowed after MOVING and the\n  pre-MOVING one. No idle connection exists.\n- Returning the pre-MOVING connection destroys it and frees exactly one\n  slot.\n- The next borrow therefore cannot reuse anything and returns a\n  connection created after the discard, which must target the MOVING\n  endpoint.\n\nWhen the pool creates it does not matter: commons-pool2 2.13.1 creates\nit inside close(), older versions at borrow. The test now asserts the\npool is full before the discard, and the message says \"created after\nthe discard\".\n\n* Replace the single-value config stream with a named constant\n\nThe config stream held one value, so the cross-product with the\nscenarios added indirection without adding coverage.\n\nThe test now passes DEFAULT_MAINTENANCE explicitly, which keeps the\ntested config visible. runTrafficAcrossEffect still takes the config\nbecause the negative control passes DISABLED through it.\n\n* Extract a fault-injector database base and type the created database\n\nFaultInjectorScenarioBase owns the per-test database lifecycle (DNS\ncache TTL, FI client, catalog, deploy, DNS diagnostics, deletion) and\nholds no client. createDatabase returns a Database (id, endpoint,\ncredentials, tls) instead of the raw output map; an action without\noutput fails with a FaultInjectorException instead of a later NPE.\n\n* Split client ownership from the notification-observer toolkit\n\nMaintNotificationsScenarioBase now owns only the client under test:\nopenClient builds it from the database's credentials plus pinned TLS\ntrust, customiseClientConfig/customiseClientPoolConfig add a subclass's\nsettings, and tearDownClient closes it before the database is deleted.\nThe pinned observer, probes, effect threads and tuned settings move up\ninto MaintNotificationsObserverBase, so MaintenanceTrafficResilienceIT\ncan extend the client layer without them. Every test opens its client\nas openClient(deployDatabase(scenario), config).\n\n* Prove relaxation by probe success and check the timeout cause\n\nA probe that times out fails with an exception, and BLPOP returns nil\nonly when its server-side timeout expires, so an error-free nil reply\nproves the probe waited the full delay under relaxation. The duration\nlower bound on success is removed with its two constants; a BLPOP delay\nat or below the blocking base timeout is caught by a @BeforeAll\nprecondition instead.\n\nBase-timeout failures must be a JedisConnectionException caused by a\nSocketTimeoutException, so a connection failure cannot pass as a\ntimeout. Their duration bounds stay: against a real server they show\nthat a non-blocking command gets socketTimeout and a blocking one gets\nblockingSocketTimeout.\n\n* Address bot review comments\n\nMaintNotificationsReceptionIT: the settle period also counts from the\neffect's end, so a closing (MIGRATED/FAILED_OVER) that trails the fault\ninjector's success report is still collected before the sequence check.\n\nMaintNotificationsIT: the unreachable-target skip closes the pool before\nreturning the borrowed connection; returned to an open pool it would\ncreate a replacement toward the unroutable target and fail instead of\nskipping.",
+          "timestamp": "2026-10-13T15:05:21Z",
+          "url": "https://github.com/redis/jedis/commit/586f16ec0c9cd187e5aa6b0aae04001d77f59968"
+        },
+        "date": 1791941837277,
+        "tool": "jmh",
+        "benches": [
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.get",
+            "value": 8106.826484937903,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.pipelinedGet",
+            "value": 537423.2864698863,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.pipelinedSet",
+            "value": 467028.2598305882,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.set",
+            "value": 8082.307181396672,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.pubsub.PubSubPushBenchmark.publishAndReceive",
+            "value": 5400.851862264751,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.get",
+            "value": 8132.28164125571,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.pipelinedGet",
+            "value": 533716.7448923516,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.pipelinedSet",
+            "value": 468928.48650236847,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.set",
+            "value": 8020.647782647987,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.get",
+            "value": 49110.789692065606,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.pipelinedGet",
+            "value": 1662541.6542513787,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.pipelinedSet",
+            "value": 1186058.2082929933,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.set",
+            "value": 47726.73275699468,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.get",
+            "value": 31814.748055449116,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.pipelinedGet",
+            "value": 1334588.3796303892,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.pipelinedSet",
+            "value": 1006782.3061689793,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.set",
+            "value": 31299.788991718844,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.JedisPoolT1.workload",
+            "value": 7899.850683620037,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.JedisPoolT8.workload",
+            "value": 31418.67907704725,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.JedisT1.workload",
+            "value": 8021.976970918695,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientCSCT1.workload",
+            "value": 12617.103382823367,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientCSCT8.workload",
+            "value": 42716.27030454136,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientT1.workload",
+            "value": 7938.627756313561,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientT8.workload",
+            "value": 30779.44165155007,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadArray",
+            "value": 111.34055333883066,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadBulkString",
+            "value": 29.19353929964594,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadMultiBulkResponse",
+            "value": 146.03659439314373,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadSimpleString",
+            "value": 14.047009373470695,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readArray",
+            "value": 108.50752947316941,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readBulkString",
+            "value": 29.208339500292936,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readMultiBulkResponse",
+            "value": 145.33984121164363,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readSimpleString",
+            "value": 14.673824220888388,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readWith100PushMessages",
+            "value": 22484.901392124022,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readWith1PushMessage",
+            "value": 280.5933652332405,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadPushesBenchmark.drain1000Pending",
+            "value": 227310.46501481105,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadPushesBenchmark.drain1Pending",
+            "value": 246.15923568622435,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.SendCommandBenchmark.measureSendCommand",
+            "value": 103.37463309052214,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.CRC16Benchmark.getSlotBytes",
+            "value": 36.304418481334615,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.CRC16Benchmark.getSlotString",
+            "value": 104.3350391949984,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.SafeEncoderBenchmark.decodeBytesToString",
+            "value": 42.66328527249534,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.SafeEncoderBenchmark.encodeStringToBytes",
+            "value": 47.15387606550068,
             "unit": "ns/op",
             "extra": "iterations: 5\nforks: 1\nthreads: 1"
           }

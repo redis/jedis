@@ -2,7 +2,6 @@ package redis.clients.jedis.mocked;
 
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalLong;
 import java.util.Set;
 
 import org.json.JSONArray;
@@ -78,6 +77,7 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<List<Map.Entry<String, String>>> listEntryStringStringCommandObject;
   @Mock protected CommandObject<List<Map.Entry<byte[], byte[]>>> listEntryBytesBytesCommandObject;
   @Mock protected CommandObject<List<MyBean>> listMyBeanCommandObject;
+  @Mock protected CommandObject<List<Number>> listNumberCommandObject;
   @Mock protected CommandObject<List<Object>> listObjectCommandObject;
   @Mock protected CommandObject<List<StreamConsumerInfo>> listStreamConsumerInfoCommandObject;
   @Mock protected CommandObject<List<StreamConsumersInfo>> listStreamConsumersInfoCommandObject;

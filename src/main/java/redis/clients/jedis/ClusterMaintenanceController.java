@@ -1,19 +1,16 @@
 package redis.clients.jedis;
 
-import java.util.function.Supplier;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import redis.clients.jedis.TimeoutSource.TimeoutInfo;
-import redis.clients.jedis.annots.VisibleForTesting;
 
 /**
  * Per-pool controller for the cluster message family: dispatches SMIGRATING/SMIGRATED to the
  * client-wide {@link ClusterMaintenanceCoordinator} and consumes any standalone/enterprise event
  * with a warning — those must not occur on a cluster connection. Carries none of the pool-local
- * machinery of {@link MaintenanceEventController}: no registry, no marking scheduler, no retirement
- * — Case-2 teardown is pool-level.
+ * machinery of {@link MaintenanceEventController}: no registry, no marking scheduler, no
+ * retirement. When a migration changes the endpoints (a source node leaves the cluster, e.g. during
+ * a rolling upgrade) the whole pool of that node is dropped by {@link JedisClusterInfoCache}, so
+ * nothing is retired per connection.
  */
 final class ClusterMaintenanceController
     implements MaintenanceController, MaintenanceEventListener {
@@ -29,12 +26,6 @@ final class ClusterMaintenanceController
   @Override
   public MaintenanceNotificationsConfig getConfig() {
     return coordinator.getConfig();
-  }
-
-  /** The client-wide relax gate this controller installs on its connections. */
-  @VisibleForTesting
-  Supplier<TimeoutInfo> getTimeoutSupplier() {
-    return coordinator.getTimeoutSupplier();
   }
 
   @Override

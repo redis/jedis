@@ -12,7 +12,6 @@ import java.util.function.Supplier;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.TimeoutSource.TimeoutInfo;
@@ -22,7 +21,6 @@ import redis.clients.jedis.TimeoutSource.TimeoutInfo;
  * what {@link MaintenanceEventController#register} installs on a connection, what
  * {@link MaintenanceEventController#unregister} tears down. No sockets: the connections are bare.
  */
-@Tag("unit")
 public class MaintenanceEventControllerRegistrationTest {
 
   private static final int SO_TIMEOUT_MS = 2000;

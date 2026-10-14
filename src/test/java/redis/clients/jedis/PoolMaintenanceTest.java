@@ -18,7 +18,6 @@ import static org.mockito.Mockito.when;
 
 import org.apache.commons.pool2.impl.EvictionPolicy;
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.mockito.MockedConstruction;
 
@@ -26,7 +25,6 @@ import org.mockito.MockedConstruction;
  * Unit tests for {@link PoolMaintenance}: what each family contributes to its pool — controller
  * identity, factory knobs, pool-side reactions — and the controller lifetime the kit owns.
  */
-@Tag("unit")
 public class PoolMaintenanceTest {
 
   private static final HostAndPort NODE = new HostAndPort("127.0.0.1", 6379);

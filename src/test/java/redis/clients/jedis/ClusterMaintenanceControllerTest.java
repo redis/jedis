@@ -17,7 +17,6 @@ import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -29,7 +28,6 @@ import org.mockito.junit.jupiter.MockitoExtension;
  * dispatch of each event family. The connection under test is a bare, unconnected
  * {@link Connection}: its timeout chain and listener set are usable without a socket.
  */
-@Tag("unit")
 @ExtendWith(MockitoExtension.class)
 public class ClusterMaintenanceControllerTest {
 

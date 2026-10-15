@@ -157,6 +157,10 @@ public class Connection implements Closeable {
   protected RedisProtocol protocol;
   private final JedisSocketFactory socketFactory;
   private Socket socket;
+  // Target the current socket was opened against. The factory's own target can move afterwards
+  // (JedisSentinelPool re-points a shared factory on +switch-master), so it is captured per
+  // connect() instead of being read back through the factory.
+  private HostAndPort connectedHostAndPort;
   private RedisOutputStream outputStream;
   private RedisInputStream inputStream;
 
@@ -350,11 +354,16 @@ public class Connection implements Closeable {
   }
 
   /**
-   * Returns the host and port of the Redis server this connection is connected to.
+   * Returns the host and port of the Redis server this connection is connected to. Once a socket
+   * has been opened this is the address it was opened against, even if the socket factory has
+   * since been re-pointed elsewhere.
    *
    * @return the host and port, or null if not available
    */
   public final HostAndPort getHostAndPort() {
+    if (connectedHostAndPort != null) {
+      return connectedHostAndPort;
+    }
     return ((DefaultJedisSocketFactory) socketFactory).getHostAndPort();
   }
 
@@ -559,7 +568,13 @@ public class Connection implements Closeable {
   public void connect() throws JedisConnectionException {
     if (!isConnected()) {
       try {
+        // Snapshot before opening the socket so a concurrent re-point can only make this
+        // connection look stale, never make a stale one look current.
+        HostAndPort target = socketFactory instanceof DefaultJedisSocketFactory
+            ? ((DefaultJedisSocketFactory) socketFactory).getHostAndPort()
+            : null;
         socket = socketFactory.createSocket();
+        connectedHostAndPort = target;
         // Fresh socket: the broken flag and the cached identity describe the previous socket;
         // reset both before anything logs. Any failure below re-marks the connection broken.
         broken = false;

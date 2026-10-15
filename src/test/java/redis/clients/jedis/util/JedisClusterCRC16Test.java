@@ -68,6 +68,49 @@ public class JedisClusterCRC16Test {
   }
 
   @Test
+  public void testHashtagGetSlotMatchesEncodedBytesUnderUtf8() {
+    String[] testKeys = new String[] {
+      "foo{bar}zap",
+      "{user1000}.following",
+      "{user1000}.followers",
+      "foo{{bar}}zap",
+      "foo{bar}{zap}",
+      "foo{}{bar}",
+      "plainkey",
+      "",
+      "测试{tag}测试",
+      "ユーザー{user}データ"
+    };
+
+    for (String key : testKeys) {
+      assertEquals(JedisClusterCRC16.getSlot(SafeEncoder.encode(key)),
+        JedisClusterCRC16.getSlot(key));
+    }
+  }
+
+  @Test
+  public void testHashtagGetSlotMatchesEncodedBytesUnderShiftJisAndBig5() {
+    Charset original = SafeEncoder.DEFAULT_CHARSET;
+    try {
+      // Shift_JIS: 0x81 0x7B and 0x81 0x7D are bracket characters whose trail bytes collide with '{' and '}'
+      SafeEncoder.DEFAULT_CHARSET = Charset.forName("Shift_JIS");
+      byte[] sjisBytes = new byte[] { (byte) 0x81, 0x7B, 0x41, (byte) 0x81, 0x7D };
+      String sjisKey = new String(sjisBytes, SafeEncoder.DEFAULT_CHARSET);
+      assertEquals(JedisClusterCRC16.getSlot(SafeEncoder.encode(sjisKey)),
+        JedisClusterCRC16.getSlot(sjisKey));
+
+      // Big5: 0xA4 0x7B and 0xA4 0x7D have trail bytes colliding with '{' and '}'
+      SafeEncoder.DEFAULT_CHARSET = Charset.forName("Big5");
+      byte[] big5Bytes = new byte[] { (byte) 0xA4, 0x7B, 0x41, (byte) 0xA4, 0x7D };
+      String big5Key = new String(big5Bytes, SafeEncoder.DEFAULT_CHARSET);
+      assertEquals(JedisClusterCRC16.getSlot(SafeEncoder.encode(big5Key)),
+        JedisClusterCRC16.getSlot(big5Key));
+    } finally {
+      SafeEncoder.DEFAULT_CHARSET = original;
+    }
+  }
+
+  @Test
   public void testBinaryHashtagGetSlot() {
     assertEquals(JedisClusterCRC16.getSlot("{bar".getBytes()),
       JedisClusterCRC16.getSlot("{bar".getBytes()));

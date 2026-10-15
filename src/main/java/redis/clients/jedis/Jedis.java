@@ -24,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.Protocol.*;
-import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.commands.*;
 import redis.clients.jedis.util.CompareCondition;
@@ -10936,7 +10935,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  @Experimental
   public boolean vadd(String key, float[] vector, String element, int reduceDim) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vadd(key, vector, element, reduceDim));
@@ -10949,7 +10947,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  @Experimental
   public boolean vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, reduceDim));
@@ -10974,7 +10971,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  @Experimental
   public Map<String, Double> vsimWithScores(String key, float[] vector) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vsimWithScores(key, vector));
@@ -10987,7 +10983,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  @Experimental
   public Map<String, VSimScoreAttribs> vsimWithScoresAndAttribs(String key, float[] vector) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vsimWithScoresAndAttribs(key, vector));
@@ -11012,7 +11007,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  @Experimental
   public Map<String, Double> vsimByElementWithScores(String key, String element) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vsimByElementWithScores(key, element));
@@ -11025,7 +11019,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  @Experimental
   public Map<String, VSimScoreAttribs> vsimByElementWithScoresAndAttribs(String key, String element) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element));
@@ -11141,7 +11134,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  @Experimental
   public boolean vadd(byte[] key, float[] vector, byte[] element, int reduceDim) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vadd(key, vector, element, reduceDim));
@@ -11154,7 +11146,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  @Experimental
   public boolean vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vaddFP32(key, vectorBlob, element, reduceDim));
@@ -11179,7 +11170,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  @Experimental
   public Map<byte[], Double> vsimWithScores(byte[] key, float[] vector) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vsimWithScores(key, vector));
@@ -11192,7 +11182,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  @Experimental
   public Map<byte[], VSimScoreAttribs> vsimWithScoresAndAttribs(byte[] key, float[] vector) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vsimWithScoresAndAttribs(key, vector));
@@ -11217,7 +11206,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  @Experimental
   public Map<byte[], Double> vsimByElementWithScores(byte[] key, byte[] element) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vsimByElementWithScores(key, element));
@@ -11230,7 +11218,6 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  @Experimental
   public Map<byte[], VSimScoreAttribs> vsimByElementWithScoresAndAttribs(byte[] key, byte[] element) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element));

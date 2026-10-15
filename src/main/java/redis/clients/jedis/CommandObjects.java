@@ -5453,7 +5453,7 @@ public class CommandObjects {
   // Vector Set commands
   public final CommandObject<Boolean> vadd(String key, float[] vector, String element) {
 
-    return vadd(key, vector, element, null);
+    return vadd(key, vector, element, new VAddParams());
   }
 
   public final CommandObject<Boolean> vadd(String key, float[] vector, String element, VAddParams params) {
@@ -5465,7 +5465,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Boolean> vaddFP32(String key, byte[] vectorBlob, String element) {
-    return vaddFP32(key, vectorBlob, element, null);
+    return vaddFP32(key, vectorBlob, element, new VAddParams());
   }
 
   public final CommandObject<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, VAddParams params) {
@@ -5476,7 +5476,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Boolean> vadd(byte[] key, float[] vector, byte[] element) {
-    return vadd(key, vector, element, null);
+    return vadd(key, vector, element, new VAddParams());
   }
 
   public final CommandObject<Boolean> vadd(byte[] key, float[] vector, byte[] element, VAddParams params) {
@@ -5488,7 +5488,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element) {
-    return vaddFP32(key, vectorBlob, element, null);
+    return vaddFP32(key, vectorBlob, element, new VAddParams());
   }
 
   public final CommandObject<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, VAddParams params) {
@@ -5502,9 +5502,8 @@ public class CommandObjects {
    * Add a new element into the vector set with dimension reduction.
    * @since 8.1
    */
-  @Experimental
   public final CommandObject<Boolean> vadd(String key, float[] vector, String element, int reduceDim) {
-    return vadd(key, vector, element, reduceDim, null);
+    return vadd(key, vector, element, reduceDim, new VAddParams());
   }
 
   public final CommandObject<Boolean> vadd(String key, float[] vector, String element, int reduceDim, VAddParams params) {
@@ -5520,9 +5519,8 @@ public class CommandObjects {
    * Add a new element into the vector set using FP32 binary format with dimension reduction.
    * @since 8.1
    */
-  @Experimental
   public final CommandObject<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim) {
-    return vaddFP32(key, vectorBlob, element, reduceDim, null);
+    return vaddFP32(key, vectorBlob, element, reduceDim, new VAddParams());
   }
 
   public final CommandObject<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim, VAddParams params) {
@@ -5537,9 +5535,8 @@ public class CommandObjects {
    * Add a new element into the vector set with dimension reduction.
    * @since 8.1
    */
-  @Experimental
   public final CommandObject<Boolean> vadd(byte[] key, float[] vector, byte[] element, int reduceDim) {
-    return vadd(key, vector, element, reduceDim, null);
+    return vadd(key, vector, element, reduceDim, new VAddParams());
   }
 
   public final CommandObject<Boolean> vadd(byte[] key, float[] vector, byte[] element, int reduceDim, VAddParams params) {
@@ -5568,9 +5565,8 @@ public class CommandObjects {
    * Add a new element into the vector set using FP32 binary format with dimension reduction.
    * @since 8.1
    */
-  @Experimental
   public final CommandObject<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim) {
-    return vaddFP32(key, vectorBlob, element, reduceDim, null);
+    return vaddFP32(key, vectorBlob, element, reduceDim, new VAddParams());
   }
 
   public final CommandObject<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim, VAddParams params) {
@@ -5583,7 +5579,7 @@ public class CommandObjects {
 
   public final CommandObject<List<String>> vsim(String key, float[] vector) {
 
-    return vsim(key, vector, null);
+    return vsim(key, vector, new VSimParams());
   }
 
   public final CommandObject<List<String>> vsim(String key, float[] vector, VSimParams params) {
@@ -5603,9 +5599,8 @@ public class CommandObjects {
    * Return elements similar to a given vector with their similarity scores.
    * @since 8.1
    */
-  @Experimental
   public final CommandObject<Map<String, Double>> vsimWithScores(String key, float[] vector) {
-    return vsimWithScores(key, vector, null);
+    return vsimWithScores(key, vector, new VSimParams());
   }
 
   public final CommandObject<Map<String, Double>> vsimWithScores(String key, float[] vector, VSimParams params) {
@@ -5620,9 +5615,8 @@ public class CommandObjects {
    * Return elements similar to a given vector with their similarity scores and attributes.
    * @since 8.1
    */
-  @Experimental
   public final CommandObject<Map<String, VSimScoreAttribs>> vsimWithScoresAndAttribs(String key, float[] vector) {
-    return vsimWithScoresAndAttribs(key, vector, null);
+    return vsimWithScoresAndAttribs(key, vector, new VSimParams());
   }
 
   public final CommandObject<Map<String, VSimScoreAttribs>> vsimWithScoresAndAttribs(String key, float[] vector, VSimParams params) {
@@ -5635,7 +5629,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<String>> vsimByElement(String key, String element) {
-    return vsimByElement(key, element, null);
+    return vsimByElement(key, element, new VSimParams());
   }
 
   public final CommandObject<List<String>> vsimByElement(String key, String element, VSimParams params) {
@@ -5649,9 +5643,8 @@ public class CommandObjects {
    * Return elements similar to a given element with their similarity scores.
    * @since 8.1
    */
-  @Experimental
   public final CommandObject<Map<String, Double>> vsimByElementWithScores(String key, String element) {
-    return vsimByElementWithScores(key, element, null);
+    return vsimByElementWithScores(key, element, new VSimParams());
   }
 
   public final CommandObject<Map<String, Double>> vsimByElementWithScores(String key, String element, VSimParams params) {
@@ -5666,9 +5659,8 @@ public class CommandObjects {
    * Return elements similar to a given element with their similarity scores and attributes.
    * @since 8.1
    */
-  @Experimental
   public final CommandObject<Map<String, VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(String key, String element) {
-    return vsimByElementWithScoresAndAttribs(key, element, null);
+    return vsimByElementWithScoresAndAttribs(key, element, new VSimParams());
   }
 
   public final CommandObject<Map<String, VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(String key, String element, VSimParams params) {
@@ -5681,7 +5673,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<byte[]>> vsim(byte[] key, float[] vector) {
-    return vsim(key, vector, null);
+    return vsim(key, vector, new VSimParams());
   }
 
   public final CommandObject<List<byte[]>> vsim(byte[] key, float[] vector, VSimParams params) {
@@ -5695,9 +5687,8 @@ public class CommandObjects {
    * Return elements similar to a given vector with their similarity scores.
    * @since 8.1
    */
-  @Experimental
   public final CommandObject<Map<byte[], Double>> vsimWithScores(byte[] key, float[] vector) {
-    return vsimWithScores(key, vector, null);
+    return vsimWithScores(key, vector, new VSimParams());
   }
 
   public final CommandObject<Map<byte[], Double>> vsimWithScores(byte[] key, float[] vector, VSimParams params) {
@@ -5712,9 +5703,8 @@ public class CommandObjects {
    * Return elements similar to a given vector with their similarity scores and attributes.
    * @since 8.1
    */
-  @Experimental
   public final CommandObject<Map<byte[], VSimScoreAttribs>> vsimWithScoresAndAttribs(byte[] key, float[] vector) {
-    return vsimWithScoresAndAttribs(key, vector, null);
+    return vsimWithScoresAndAttribs(key, vector, new VSimParams());
   }
 
   public final CommandObject<Map<byte[], VSimScoreAttribs>> vsimWithScoresAndAttribs(byte[] key, float[] vector, VSimParams params) {
@@ -5727,7 +5717,7 @@ public class CommandObjects {
   }
 
   public final CommandObject<List<byte[]>> vsimByElement(byte[] key, byte[] element) {
-    return vsimByElement(key, element, null);
+    return vsimByElement(key, element, new VSimParams());
   }
 
   public final CommandObject<List<byte[]>> vsimByElement(byte[] key, byte[] element, VSimParams params) {
@@ -5741,9 +5731,8 @@ public class CommandObjects {
    * Return elements similar to a given element with their similarity scores.
    * @since 8.1
    */
-  @Experimental
   public final CommandObject<Map<byte[], Double>> vsimByElementWithScores(byte[] key, byte[] element) {
-    return vsimByElementWithScores(key, element, null);
+    return vsimByElementWithScores(key, element, new VSimParams());
   }
 
   public final CommandObject<Map<byte[], Double>> vsimByElementWithScores(byte[] key, byte[] element, VSimParams params) {
@@ -5758,9 +5747,8 @@ public class CommandObjects {
    * Return elements similar to a given element with their similarity scores and attributes.
    * @since 8.1
    */
-  @Experimental
   public final CommandObject<Map<byte[], VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(byte[] key, byte[] element) {
-    return vsimByElementWithScoresAndAttribs(key, element, null);
+    return vsimByElementWithScoresAndAttribs(key, element, new VSimParams());
   }
 
   public final CommandObject<Map<byte[], VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(byte[] key, byte[] element, VSimParams params) {

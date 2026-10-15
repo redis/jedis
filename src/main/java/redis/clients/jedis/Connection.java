@@ -478,6 +478,17 @@ public class Connection implements Closeable {
   }
 
   public <T> T executeCommand(final CommandObject<T> commandObject) {
+    Object reply = executeCommandRaw(commandObject);
+    return commandObject.getBuilder().build(reply);
+  }
+
+  /**
+   * Execute a command with its hooks and timeout handling, before applying its response builder.
+   * @param commandObject command to execute
+   * @return the reply decoded by the protocol reader
+   * @since 8.1
+   */
+  protected Object executeCommandRaw(final CommandObject<?> commandObject) {
     himportSendPendingDiscards();
     List<Consumer<Connection>> preProcessHooks = commandObject.getPreProcessHooks();
     if (!preProcessHooks.isEmpty()) {
@@ -500,7 +511,7 @@ public class Connection implements Closeable {
       }
     }
 
-    return commandObject.getBuilder().build(reply);
+    return reply;
   }
 
   public void sendCommand(final ProtocolCommand cmd) {

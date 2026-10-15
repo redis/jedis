@@ -1248,9 +1248,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     // Add 4D vector with dimension reduction to 2D
     float[] vector4D = { 1.0f, 2.0f, 3.0f, 4.0f };
-    VAddParams params = new VAddParams();
 
-    boolean result = jedis.vadd(testKey, vector4D, "element_reduced", 2, params);
+    boolean result = jedis.vadd(testKey, vector4D, "element_reduced", 2);
     assertTrue(result);
 
     // VDIM should return the reduced dimension (2), not the original (4)
@@ -1472,21 +1471,20 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     setupVSimTestSet(testKey);
 
     // Test vsim with vector and scores
-    VSimParams params = new VSimParams();
     Map<String, Double> similarWithScores = jedis.vsimWithScores(testKey,
-      new float[] { 0.15f, 0.25f, 0.35f }, params);
+      new float[] { 0.15f, 0.25f, 0.35f });
     assertThat(similarWithScores.keySet(), hasItems("element1", "element2", "element3"));
     assertThat(similarWithScores.values(), everyItem(greaterThanOrEqualTo(0.0)));
 
     // Test vsim with element and scores
-    similarWithScores = jedis.vsimByElementWithScores(testKey, "element1", params);
+    similarWithScores = jedis.vsimByElementWithScores(testKey, "element1");
     assertThat(similarWithScores.keySet(), hasItems("element1", "element2", "element3"));
     assertThat(similarWithScores.get("element1"), closeTo(1, 0.01));
     assertThat(similarWithScores.get("element4"), closeTo(0, 0.01));
     assertEquals(1.0, similarWithScores.get("element1"), 0.001);
 
     // Test with count parameter
-    params = new VSimParams().count(2);
+    VSimParams params = new VSimParams().count(2);
     similarWithScores = jedis.vsimWithScores(testKey, new float[] { 0.15f, 0.25f, 0.35f }, params);
     assertThat(similarWithScores.keySet(), hasItems("element1", "element2"));
     assertThat(similarWithScores.values(), everyItem(greaterThan(0.0)));
@@ -1520,9 +1518,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     // Add element without attributes
     jedis.vadd(testKey, new float[] { 0.9f, 0.8f, 0.7f }, "element3");
 
-    VSimParams params = new VSimParams();
     Map<String, VSimScoreAttribs> similarWithScoresAndAttribs = jedis
-        .vsimWithScoresAndAttribs(testKey, new float[] { 0.15f, 0.25f, 0.35f }, params);
+        .vsimWithScoresAndAttribs(testKey, new float[] { 0.15f, 0.25f, 0.35f });
     assertNotNull(similarWithScoresAndAttribs);
     assertThat(similarWithScoresAndAttribs, is(not(anEmptyMap())));
 
@@ -1564,9 +1561,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     VAddParams addParams3 = new VAddParams().setAttr("type=different,quality=low");
     jedis.vadd(testKey, new float[] { 0.9f, 0.8f, 0.7f }, "different", addParams3);
 
-    VSimParams params = new VSimParams();
     Map<String, VSimScoreAttribs> similarWithScoresAndAttribs = jedis
-        .vsimByElementWithScoresAndAttribs(testKey, "reference", params);
+        .vsimByElementWithScoresAndAttribs(testKey, "reference");
     assertNotNull(similarWithScoresAndAttribs);
     assertThat(similarWithScoresAndAttribs, is(not(anEmptyMap())));
 
@@ -1626,9 +1622,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     setupVSimTestSetBinary(testKey);
 
     // Test vsim with vector and scores (binary)
-    VSimParams params = new VSimParams();
     Map<byte[], Double> similarWithScores = jedis.vsimWithScores(testKey,
-      new float[] { 0.15f, 0.25f, 0.35f }, params);
+      new float[] { 0.15f, 0.25f, 0.35f });
     assertNotNull(similarWithScores);
     assertThat(similarWithScores, is(not(anEmptyMap())));
 
@@ -1640,7 +1635,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     }
 
     // Test vsim with element and scores (binary)
-    similarWithScores = jedis.vsimByElementWithScores(testKey, "element1".getBytes(), params);
+    similarWithScores = jedis.vsimByElementWithScores(testKey, "element1".getBytes());
     assertNotNull(similarWithScores);
     assertThat(similarWithScores, is(not(anEmptyMap())));
 
@@ -1650,7 +1645,7 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertThat(element1Score, is(closeTo(1.0, 0.001)));
 
     // Test with count parameter (binary)
-    params = new VSimParams().count(2);
+    VSimParams params = new VSimParams().count(2);
     similarWithScores = jedis.vsimWithScores(testKey, new float[] { 0.15f, 0.25f, 0.35f }, params);
     assertNotNull(similarWithScores);
     assertThat(similarWithScores.size(), is(2));
@@ -1690,9 +1685,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     setupVSimTestSetBinaryWithAttribs(testKey);
 
     // Test vsim with vector, scores and attributes (binary)
-    VSimParams params = new VSimParams();
     Map<byte[], VSimScoreAttribs> similarWithScoresAndAttribs = jedis
-        .vsimWithScoresAndAttribs(testKey, new float[] { 0.15f, 0.25f, 0.35f }, params);
+        .vsimWithScoresAndAttribs(testKey, new float[] { 0.15f, 0.25f, 0.35f });
     assertNotNull(similarWithScoresAndAttribs);
     assertThat(similarWithScoresAndAttribs, is(not(anEmptyMap())));
 
@@ -1741,9 +1735,8 @@ public abstract class VectorSetCommandsTestBase extends UnifiedJedisCommandsTest
     VAddParams addParams3 = new VAddParams().setAttr("type=different,quality=low");
     jedis.vadd(testKey, new float[] { 0.9f, 0.8f, 0.7f }, "different".getBytes(), addParams3);
 
-    VSimParams params = new VSimParams();
     Map<byte[], VSimScoreAttribs> similarWithScoresAndAttribs = jedis
-        .vsimByElementWithScoresAndAttribs(testKey, referenceElement, params);
+        .vsimByElementWithScoresAndAttribs(testKey, referenceElement);
     assertNotNull(similarWithScoresAndAttribs);
     assertThat(similarWithScoresAndAttribs, is(not(anEmptyMap())));
 

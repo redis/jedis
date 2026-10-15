@@ -103,7 +103,9 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<Map<String, String>> mapStringStringCommandObject;
   @Mock protected CommandObject<Map<String, TSMGetElement>> mapStringTsmGetElementCommandObject;
   @Mock protected CommandObject<Map<String, TSMRangeElements>> mapStringTsmRangeElementsCommandObject;
+  @Mock protected CommandObject<Map<String, VSimScoreAttribs>> mapStringVSimScoreAttribsCommandObject;
   @Mock protected CommandObject<Map<byte[], byte[]>> mapBytesBytesCommandObject;
+  @Mock protected CommandObject<Map<byte[], VSimScoreAttribs>> mapBytesVSimScoreAttribsCommandObject;
   @Mock protected CommandObject<MyBean> myBeanCommandObject;
   @Mock protected CommandObject<Object> objectCommandObject;
   @Mock protected CommandObject<ScanResult<Map.Entry<String, String>>> scanResultEntryStringStringCommandObject;

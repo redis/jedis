@@ -556,6 +556,7 @@
                         <include>src/test/java/redis/clients/jedis/ConnectionHelloAuthTest.java</include>
                         <include>src/test/java/redis/clients/jedis/ConnectionErrorHandlingTest.java</include>
 						<include>**/VectorSet*.java</include>
+						<include>src/test/java/redis/clients/jedis/mocked/pipeline/PipeliningBaseVectorSetCommandsTest.java</include>
 						<include>**/VectorTestUtils.java</include>
 						<include>**/VAddParams.java</include>
 						<include>**/VSimParams.java</include>

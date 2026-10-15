@@ -14,7 +14,7 @@ public final class Scenario {
     this.requirement = requirement;
   }
 
-  public StandaloneEffect effect() {
+  public EffectType effect() {
     return trigger.effect();
   }
 

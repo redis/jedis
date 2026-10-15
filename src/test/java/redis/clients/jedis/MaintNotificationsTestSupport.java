@@ -2,12 +2,19 @@ package redis.clients.jedis;
 
 import java.net.InetSocketAddress;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.function.IntConsumer;
+
+import redis.clients.jedis.providers.ClusterConnectionProvider;
+import redis.clients.jedis.providers.ClusterConnectionProviderTestSupport;
 
 /**
- * Test bridge to package-private maintenance-notification internals of {@link Connection}:
- * recording dispatched events and reading the effective (relaxed-aware) socket timeout.
+ * Test bridge to package-private maintenance-notification internals of {@link Connection} and of
+ * the cluster client: recording dispatched events, reading the effective (relaxed-aware) socket
+ * timeout, and inspecting the cluster slot map and migration windows.
  */
 public final class MaintNotificationsTestSupport {
 
@@ -41,6 +48,66 @@ public final class MaintNotificationsTestSupport {
     return events;
   }
 
+  // --- cluster client ---
+
+  /** The node the client currently routes {@code slot} to. */
+  public static HostAndPort slotOwner(RedisClusterClient client, int slot) {
+    return provider(client).getNode(slot);
+  }
+
+  /** True while the client has a SMIGRATING window open (SMIGRATED not yet seen, TTL unexpired). */
+  public static boolean hasActiveMigration(RedisClusterClient client) {
+    ClusterMaintenanceCoordinator coordinator = coordinator(client);
+    return coordinator != null && coordinator.hasActiveMigration();
+  }
+
+  /** Migration windows currently tracked by the client; 0 once every SMIGRATED was applied. */
+  public static int openMigrationWindows(RedisClusterClient client) {
+    ClusterMaintenanceCoordinator coordinator = coordinator(client);
+    return coordinator == null ? 0 : coordinator.openMigrationWindows();
+  }
+
+  private static ClusterConnectionProvider provider(RedisClusterClient client) {
+    return (ClusterConnectionProvider) client.provider;
+  }
+
+  private static ClusterMaintenanceCoordinator coordinator(RedisClusterClient client) {
+    return ClusterConnectionProviderTestSupport.cache(provider(client)).maintenanceCoordinator();
+  }
+
+  /**
+   * One SMIGRATED entry: the slots moved from {@code src} to {@code dest}. This type is just for
+   * visibility of migration info in test context.
+   */
+  public static final class SlotMove {
+    private SlotMigration migration;
+
+    SlotMove(SlotMigration migration) {
+      this.migration = migration;
+    }
+
+    public HostAndPort src() {
+      return migration.src;
+    }
+
+    public HostAndPort dest() {
+      return migration.dest;
+    }
+
+    public boolean contains(int slot) {
+      return migration.slots.contains(slot);
+    }
+
+    public void forEachSlot(IntConsumer action) {
+      migration.slots.forEachSlot(action);
+    }
+
+    @Override
+    public String toString() {
+      return migration.src + " -> " + migration.dest + " [" + migration.slots + "]";
+    }
+  }
+
   /** One received maintenance event with its parsed payload, as dispatched to the connection. */
   public static final class ReceivedEvent {
 
@@ -53,14 +120,22 @@ public final class MaintNotificationsTestSupport {
     public final String shardIds;
     /** MOVING target ("host:port"); null for a 'none' rebind and for non-MOVING events. */
     public final String target;
+    /** SMIGRATED entries; empty for every other type. */
+    public final List<SlotMove> moves;
     public final long atNanos = System.nanoTime();
 
     ReceivedEvent(String type, long seq, long timeSeconds, String shardIds, String target) {
+      this(type, seq, timeSeconds, shardIds, target, Collections.emptyList());
+    }
+
+    ReceivedEvent(String type, long seq, long timeSeconds, String shardIds, String target,
+        List<SlotMove> moves) {
       this.type = type;
       this.seq = seq;
       this.timeSeconds = timeSeconds;
       this.shardIds = shardIds;
       this.target = target;
+      this.moves = Collections.unmodifiableList(moves);
     }
 
     @Override
@@ -94,7 +169,15 @@ public final class MaintNotificationsTestSupport {
       return received(PushMessageTypes.MIGRATED) || received(PushMessageTypes.FAILED_OVER);
     }
 
-    private boolean received(String type) {
+    public boolean sMigratingReceived() {
+      return received(PushMessageTypes.SMIGRATING);
+    }
+
+    public boolean sMigratedReceived() {
+      return received(PushMessageTypes.SMIGRATED);
+    }
+
+    public boolean received(String type) {
       for (ReceivedEvent event : events) {
         if (type.equals(event.type)) {
           return true;
@@ -144,8 +227,12 @@ public final class MaintNotificationsTestSupport {
 
     @Override
     public void onSMigrated(SMigratedEvent e, Connection c) {
+      List<SlotMove> moves = new ArrayList<>(e.migrations.size());
+      for (SlotMigration migration : e.migrations) {
+        moves.add(new SlotMove(migration));
+      }
       events.add(new ReceivedEvent(PushMessageTypes.SMIGRATED, e.seq, -1,
-          String.valueOf(e.migrations), null));
+          String.valueOf(e.migrations), null, moves));
     }
   }
 

@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.Internal;
+import redis.clients.jedis.annots.VisibleForTesting;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.exceptions.JedisException;
@@ -71,6 +72,11 @@ public class JedisClusterInfoCache {
   private final Set<HostAndPort> startNodes;
   /** The client-wide SMIGRATING/SMIGRATED coordinator; non-null iff cluster maintenance is on. */
   private final ClusterMaintenanceCoordinator maintenanceCoordinator;
+
+  @VisibleForTesting
+  ClusterMaintenanceCoordinator maintenanceCoordinator() {
+    return maintenanceCoordinator;
+  }
 
   private static final int MASTER_NODE_INDEX = 2;
 

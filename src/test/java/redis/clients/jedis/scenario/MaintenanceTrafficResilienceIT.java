@@ -61,11 +61,13 @@ public class MaintenanceTrafficResilienceIT extends MaintNotificationsScenarioBa
 
   static Stream<Scenario> scenarios() {
     return Stream.of(
-      CATALOG.effect(StandaloneEffect.CONN_DROP).trigger("endpoint_rebind").scenario(),
-      CATALOG.effect(StandaloneEffect.DATA_MOVEMENT_CONN_DROP).trigger("endpoint_rebind")
+      STANDALONE_CATALOG.effect(StandaloneEffect.CONN_DROP).trigger("endpoint_rebind").scenario(),
+      STANDALONE_CATALOG.effect(StandaloneEffect.DATA_MOVEMENT_CONN_DROP).trigger("endpoint_rebind")
           .scenario(),
-      CATALOG.effect(StandaloneEffect.DATA_MOVEMENT_NO_CONN_DROP).trigger("migrate").scenario(),
-      CATALOG.effect(StandaloneEffect.DATA_MOVEMENT_NO_CONN_DROP).trigger("failover").scenario());
+      STANDALONE_CATALOG.effect(StandaloneEffect.DATA_MOVEMENT_NO_CONN_DROP).trigger("migrate")
+          .scenario(),
+      STANDALONE_CATALOG.effect(StandaloneEffect.DATA_MOVEMENT_NO_CONN_DROP).trigger("failover")
+          .scenario());
   }
 
   @ParameterizedTest(name = "{0}")
@@ -91,8 +93,8 @@ public class MaintenanceTrafficResilienceIT extends MaintNotificationsScenarioBa
   @Timeout(420)
   void trafficDisruptedWithoutMaintenance() {
     assumeTrue(Boolean.getBoolean("sch.negativeControl"), "run with -Dsch.negativeControl=true");
-    Scenario scenario = CATALOG.effect(StandaloneEffect.CONN_DROP).trigger("endpoint_rebind")
-        .scenario();
+    Scenario scenario = STANDALONE_CATALOG.effect(StandaloneEffect.CONN_DROP)
+        .trigger("endpoint_rebind").scenario();
     TrafficRunner traffic = runTrafficAcrossEffect(scenario,
       MaintenanceNotificationsConfig.DISABLED);
     assertTrue(traffic.errorCount() > 0,
@@ -117,7 +119,7 @@ public class MaintenanceTrafficResilienceIT extends MaintNotificationsScenarioBa
 
       // during: run the effect to completion while traffic keeps flowing
       long submittedBeforeEffect = traffic.submittedCount();
-      faultInjector.triggerEffect(database.id(), scenario.effect(), scenario.trigger().name());
+      faultInjector.triggerEffect(database, scenario);
 
       // after: keep traffic flowing through the handoff grace tail
       long submittedAtCompletion = traffic.submittedCount();

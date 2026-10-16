@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static redis.clients.jedis.ConnectionTestHelper.getSocketSoTimeout;
+import static redis.clients.jedis.ConnectionTestHelper.isRelaxedTimeoutActive;
 
 import java.net.SocketException;
 import java.time.Duration;
@@ -34,13 +36,13 @@ public class ClusterRelaxedTimeoutMockTest extends AbstractClusterMaintenanceMoc
     openDefaultClient();
     try (Connection a = client.getConnectionFromSlot(A_FROM)) {
       assertTrue(a.ping());
-      assertEquals(SO_TIMEOUT_MS, soTimeout(a));
+      assertEquals(SO_TIMEOUT_MS, getSocketSoTimeout(a));
 
       serverA.sendPushMessageToAll(migrating(1L, "0-100"));
       assertTrue(a.ping());
 
-      assertTrue(relaxed(a));
-      assertEquals(RELAXED_TIMEOUT_MS, soTimeout(a));
+      assertTrue(isRelaxedTimeoutActive(a));
+      assertEquals(RELAXED_TIMEOUT_MS, getSocketSoTimeout(a));
     }
   }
 
@@ -52,19 +54,19 @@ public class ClusterRelaxedTimeoutMockTest extends AbstractClusterMaintenanceMoc
 
     try (Connection b = client.getConnectionFromSlot(B_FROM)) {
       assertTrue(b.ping());
-      assertTrue(relaxed(b), "B never received a push: the gate is client-wide");
-      assertEquals(RELAXED_TIMEOUT_MS, soTimeout(b));
+      assertTrue(isRelaxedTimeoutActive(b), "B never received a push: the gate is client-wide");
+      assertEquals(RELAXED_TIMEOUT_MS, getSocketSoTimeout(b));
 
       // the closer arrives on B only
       serverB.sendPushMessageToAll(neutralCloser(2L));
       assertTrue(b.ping());
-      assertFalse(relaxed(b));
-      assertEquals(SO_TIMEOUT_MS, soTimeout(b));
+      assertFalse(isRelaxedTimeoutActive(b));
+      assertEquals(SO_TIMEOUT_MS, getSocketSoTimeout(b));
     }
     try (Connection a = client.getConnectionFromSlot(A_FROM)) {
       assertTrue(a.ping());
-      assertFalse(relaxed(a), "A reverts without having seen the closer itself");
-      assertEquals(SO_TIMEOUT_MS, soTimeout(a));
+      assertFalse(isRelaxedTimeoutActive(a), "A reverts without having seen the closer itself");
+      assertEquals(SO_TIMEOUT_MS, getSocketSoTimeout(a));
     }
   }
 
@@ -75,21 +77,63 @@ public class ClusterRelaxedTimeoutMockTest extends AbstractClusterMaintenanceMoc
     Connection a1 = client.getConnectionFromSlot(A_FROM);
     Connection a2 = client.getConnectionFromSlot(A_FROM);
     Connection a3 = client.getConnectionFromSlot(A_FROM);
+    List<Connection> all = Arrays.asList(a1, a2, a3);
     try {
-      serverA.sendPushMessageToAll(migrating(1L, "0-100")); // one copy per connection
-      for (Connection a : Arrays.asList(a1, a2, a3)) {
+      // two overlapping migrations; every push below arrives as one copy per connection
+      serverA.sendPushMessageToAll(migrating(1L, "0-100"));
+      assertTrue(a1.ping());
+      assertTrue(isRelaxedTimeoutActive(a2),
+        "the window opened by the copy read on a1 did not relax a2: the gate is not client-wide");
+      serverA.sendPushMessageToAll(migrating(3L, "200-300"));
+      for (Connection a : all) {
         assertTrue(a.ping());
-        assertTrue(relaxed(a));
-        assertEquals(RELAXED_TIMEOUT_MS, soTimeout(a));
+        assertTrue(isRelaxedTimeoutActive(a));
+        assertEquals(RELAXED_TIMEOUT_MS, getSocketSoTimeout(a));
       }
 
-      serverA.sendPushMessageToAll(neutralCloser(2L)); // one copy per connection
+      // a closer concludes exactly one window; the second window is what makes a duplicate copy
+      // observable: were it applied again, it would conclude that one too and unrelax everything
+      serverA.sendPushMessageToAll(neutralCloser(5L));
       assertTrue(a1.ping());
-      assertFalse(relaxed(a1), "the first copy closes the window");
+      assertTrue(isRelaxedTimeoutActive(a1), "the first copy of the closer concluded both windows");
       for (Connection a : Arrays.asList(a2, a3)) {
         assertTrue(a.ping());
-        assertFalse(relaxed(a), "later copies neither reopen nor fail");
-        assertEquals(SO_TIMEOUT_MS, soTimeout(a));
+        assertTrue(isRelaxedTimeoutActive(a),
+          "a later copy of the same closer concluded the remaining window");
+        assertEquals(RELAXED_TIMEOUT_MS, getSocketSoTimeout(a));
+      }
+
+      // a real server does not deliver the same closer twice; this exercises idempotence: the
+      // remaining window has a lower seq, so a re-applied copy would conclude it
+      serverA.sendPushMessageToAll(neutralCloser(5L));
+      assertTrue(a2.ping());
+      assertTrue(isRelaxedTimeoutActive(a2),
+        "a re-delivered closer concluded the remaining window although it was already applied");
+      for (Connection a : Arrays.asList(a1, a3)) {
+        assertTrue(a.ping());
+        assertTrue(isRelaxedTimeoutActive(a),
+          "a re-delivered copy of the closer concluded the remaining window");
+        assertEquals(RELAXED_TIMEOUT_MS, getSocketSoTimeout(a));
+      }
+
+      // a distinct closer concludes the remaining window
+      serverA.sendPushMessageToAll(neutralCloser(6L));
+      assertTrue(a1.ping());
+      assertFalse(isRelaxedTimeoutActive(a2),
+        "a2 is still relaxed after the closer read on a1 concluded the last window");
+      for (Connection a : all) {
+        assertTrue(a.ping());
+        assertFalse(isRelaxedTimeoutActive(a));
+        assertEquals(SO_TIMEOUT_MS, getSocketSoTimeout(a));
+      }
+
+      // copies of an opener already seen do not reopen its closed window
+      serverA.sendPushMessageToAll(migrating(1L, "0-100"));
+      for (Connection a : all) {
+        assertTrue(a.ping());
+        assertFalse(isRelaxedTimeoutActive(a),
+          "a re-delivered copy of an already seen opener reopened its closed window");
+        assertEquals(SO_TIMEOUT_MS, getSocketSoTimeout(a));
       }
     } finally {
       a1.close();
@@ -112,13 +156,13 @@ public class ClusterRelaxedTimeoutMockTest extends AbstractClusterMaintenanceMoc
     try (Connection a = client.getConnectionFromSlot(A_FROM)) {
       serverA.sendPushMessageToAll(migrating(1L, "0-100"));
       assertTrue(a.ping());
-      assertEquals(RELAXED_TIMEOUT_MS, soTimeout(a));
+      assertEquals(RELAXED_TIMEOUT_MS, getSocketSoTimeout(a));
 
       now.addAndGet(TimeUnit.SECONDS.toNanos(3));
       assertTrue(a.ping());
 
-      assertFalse(relaxed(a));
-      assertEquals(SO_TIMEOUT_MS, soTimeout(a));
+      assertFalse(isRelaxedTimeoutActive(a));
+      assertEquals(SO_TIMEOUT_MS, getSocketSoTimeout(a));
     }
   }
 
@@ -146,8 +190,9 @@ public class ClusterRelaxedTimeoutMockTest extends AbstractClusterMaintenanceMoc
     try (Connection a = client.getConnectionFromSlot(A_FROM)) {
       serverA.sendPushMessageToAll(migrating(1L, "0-100"));
       assertTrue(a.ping());
-      assertTrue(relaxed(a), "the window is open...");
-      assertEquals(largeSoTimeoutMs, soTimeout(a), "...but the looser configured value wins");
+      assertTrue(isRelaxedTimeoutActive(a), "the window is open...");
+      assertEquals(largeSoTimeoutMs, getSocketSoTimeout(a),
+        "...but the looser configured value wins");
     }
   }
 
@@ -158,8 +203,8 @@ public class ClusterRelaxedTimeoutMockTest extends AbstractClusterMaintenanceMoc
     try (Connection a = client.getConnectionFromSlot(A_FROM)) {
       serverA.sendPushMessageToAll(migrating(1L, "0-100"));
       assertTrue(a.ping());
-      assertTrue(relaxed(a));
-      assertEquals(0, soTimeout(a), "infinite is the loosest; it stays");
+      assertTrue(isRelaxedTimeoutActive(a));
+      assertEquals(0, getSocketSoTimeout(a), "infinite is the loosest; it stays");
     }
   }
 }

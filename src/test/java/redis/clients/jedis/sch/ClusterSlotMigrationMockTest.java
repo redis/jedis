@@ -4,9 +4,11 @@ import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static redis.clients.jedis.ConnectionTestHelper.getSocketSoTimeout;
 import static redis.clients.jedis.ConnectionTestHelper.hasClusterMaintenanceController;
 import static redis.clients.jedis.ConnectionTestHelper.hasPoolRelaxOverlay;
-import static redis.clients.jedis.ConnectionTestHelper.isListenerOfPoolController;
+import static redis.clients.jedis.ConnectionTestHelper.hasPoolControllerListener;
+import static redis.clients.jedis.ConnectionTestHelper.isRelaxedTimeoutActive;
 
 import java.net.SocketException;
 import java.time.Duration;
@@ -99,7 +101,7 @@ public class ClusterSlotMigrationMockTest extends AbstractClusterMaintenanceMock
     ConnectionPool poolC = poolOf(nodeC);
     assertTrue(hasClusterMaintenanceController(poolC));
     try (Connection c = client.getConnectionFromSlot(A_FROM)) {
-      assertTrue(isListenerOfPoolController(poolC, c));
+      assertTrue(hasPoolControllerListener(poolC, c));
       assertTrue(hasPoolRelaxOverlay(poolC, c));
     }
     assertFalse(hasNode(nodeA));
@@ -139,13 +141,13 @@ public class ClusterSlotMigrationMockTest extends AbstractClusterMaintenanceMock
     try (Connection a = client.getConnectionFromSlot(A_FROM)) {
       serverA.sendPushMessageToAll(migrating(1L, "0-8191"));
       assertTrue(a.ping());
-      assertTrue(relaxed(a));
+      assertTrue(isRelaxedTimeoutActive(a));
 
       serverA.sendPushMessageToAll(neutralCloser(2L)); // no entries
       assertTrue(a.ping());
 
-      assertFalse(relaxed(a), "the window is closed");
-      assertEquals(SO_TIMEOUT_MS, soTimeout(a));
+      assertFalse(isRelaxedTimeoutActive(a), "the window is closed");
+      assertEquals(SO_TIMEOUT_MS, getSocketSoTimeout(a));
     }
     client.set(keyOnA(), "v");
     assertEquals(1, handlerA.commands("SET").size(), "routing unchanged");
@@ -166,8 +168,8 @@ public class ClusterSlotMigrationMockTest extends AbstractClusterMaintenanceMock
         MaintenanceEventMessages.entry(nodeA.toString(), nodeB.toString(), "100-0")));
 
       assertTrue(a.ping(), "all three frames were consumed, the reply is aligned");
-      assertFalse(relaxed(a), "a malformed opener opens no window");
-      assertEquals(SO_TIMEOUT_MS, soTimeout(a));
+      assertFalse(isRelaxedTimeoutActive(a), "a malformed opener opens no window");
+      assertEquals(SO_TIMEOUT_MS, getSocketSoTimeout(a));
     }
     client.set(keyOnA(), "v");
     assertEquals(1, handlerA.commands("SET").size(), "routing unchanged");
@@ -191,8 +193,8 @@ public class ClusterSlotMigrationMockTest extends AbstractClusterMaintenanceMock
       try (Connection b = client.getConnectionFromSlot(B_FROM)) {
         serverB.sendPushMessageToAll(migrated(2L, nodeA, nodeB, "0-8191"));
         assertTrue(b.ping(), "the delta is queued behind the refresh, the read does not block");
-        assertTrue(relaxed(b), "B8: relaxed while a delta is pending");
-        assertEquals(RELAXED_TIMEOUT_MS, soTimeout(b));
+        assertTrue(isRelaxedTimeoutActive(b), "B8: relaxed while a delta is pending");
+        assertEquals(RELAXED_TIMEOUT_MS, getSocketSoTimeout(b));
       }
       assertTrue(hasNode(nodeA), "not applied yet: A's pool is still there");
     } finally {
@@ -208,8 +210,8 @@ public class ClusterSlotMigrationMockTest extends AbstractClusterMaintenanceMock
     assertFalse(hasNode(nodeA));
     try (Connection b = client.getConnectionFromSlot(B_FROM)) {
       assertTrue(b.ping());
-      assertFalse(relaxed(b), "nothing pending, no window: back to the baseline");
-      assertEquals(SO_TIMEOUT_MS, soTimeout(b));
+      assertFalse(isRelaxedTimeoutActive(b), "nothing pending, no window: back to the baseline");
+      assertEquals(SO_TIMEOUT_MS, getSocketSoTimeout(b));
     }
   }
 
@@ -252,14 +254,14 @@ public class ClusterSlotMigrationMockTest extends AbstractClusterMaintenanceMock
     assertEquals(2, handlerA.clusterSlotsCalls(), "bootstrap + the MOVED-triggered refresh");
     try (Connection b = client.getConnectionFromSlot(A_FROM)) {
       assertTrue(b.ping());
-      assertTrue(relaxed(b), "the window is still open");
+      assertTrue(isRelaxedTimeoutActive(b), "the window is still open");
     }
 
     now.addAndGet(TimeUnit.SECONDS.toNanos(3));
     try (Connection b = client.getConnectionFromSlot(A_FROM)) {
       assertTrue(b.ping());
-      assertFalse(relaxed(b), "the TTL backstop closed it");
-      assertEquals(SO_TIMEOUT_MS, soTimeout(b));
+      assertFalse(isRelaxedTimeoutActive(b), "the TTL backstop closed it");
+      assertEquals(SO_TIMEOUT_MS, getSocketSoTimeout(b));
     }
   }
 
@@ -334,8 +336,9 @@ public class ClusterSlotMigrationMockTest extends AbstractClusterMaintenanceMock
     assertEquals(1, handlerA.commands("SET").size());
     try (Connection a = client.getConnectionFromSlot(A_FROM)) {
       assertTrue(a.ping());
-      assertTrue(relaxed(a), "the window is client-wide: the new connection is relaxed at once");
-      assertEquals(RELAXED_TIMEOUT_MS, soTimeout(a));
+      assertTrue(isRelaxedTimeoutActive(a),
+        "the window is client-wide: the new connection is relaxed at once");
+      assertEquals(RELAXED_TIMEOUT_MS, getSocketSoTimeout(a));
     }
   }
 }

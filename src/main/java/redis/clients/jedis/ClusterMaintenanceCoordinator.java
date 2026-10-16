@@ -86,7 +86,9 @@ final class ClusterMaintenanceCoordinator {
     return migratingWindows.size();
   }
 
-  void onSMigrating(SMigratingEvent e, Connection c) {
+  // synchronized because dedup and publishing the window are two steps: a duplicate copy losing the
+  // dedup must not evaluate its timeout before the window exists
+  synchronized void onSMigrating(SMigratingEvent e, Connection c) {
     if (seenSMigrating.add(e.seq)) {
       long deadline = NanoClock.INSTANCE.getAsLong() + maxRelaxedDurationNanos;
       migratingWindows.put(e.seq, new MigratingWindow(e.seq, deadline));
@@ -102,17 +104,19 @@ final class ClusterMaintenanceCoordinator {
   }
 
   /**
-   * The winning {@code putIfAbsent} is the only delivery of a seq that closes a window and applies
-   * the delta; every delivery re-evaluates its connection's timeout, since another connection's
-   * copy may have closed the window meanwhile. A closer without entries only ends the window: no
-   * slot is rerouted and no pool is touched.
+   * Only the winning {@code putIfAbsent} applies the delta and closes a window; every delivery
+   * re-evaluates its connection's timeout. The delta goes first so the relax gate always sees
+   * either the open window or the pending delta. An empty closer only ends the window.
    */
   void onSMigrated(SMigratedEvent e, Connection c) {
     if (seenSMigrated.putIfAbsent(e.seq, e) == null) {
       logger.debug("Slot migration done (seq={}, entries={})", e.seq, e.migrations.size());
-      closeMigrationWindow(e.seq);
-      if (!e.migrations.isEmpty()) {
-        cache.applySlotMigration(e.migrations);
+      try {
+        if (!e.migrations.isEmpty()) {
+          cache.applySlotMigration(e.migrations);
+        }
+      } finally {
+        closeMigrationWindow(e.seq); // a failed delta must not leave the window to the TTL
       }
       while (seenSMigrated.size() > MAX_HISTORY_OF_EVENTS) {
         seenSMigrated.pollFirstEntry();

@@ -8,13 +8,10 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
-import java.util.function.Supplier;
 
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import redis.clients.jedis.TimeoutSource.TimeoutInfo;
 
 /**
  * Unit tests for the {@link MaintenanceController} surface of {@link MaintenanceEventController}:
@@ -49,8 +46,8 @@ public class MaintenanceEventControllerRegistrationTest {
 
     assertTrue(conn.getMaintenanceEventListeners().contains(controller));
     ChainedTimeoutSource chain = conn.getTimeoutSource();
-    assertInstanceOf(ManagedTimeoutSource.class, chain.seekBy(controller.getTimeoutSupplier()),
-      "the pool-wide MOVING rebind overlay is keyed by the controller's supplier");
+    assertInstanceOf(ManagedTimeoutSource.class, chain.seekBy(controller),
+      "the pool-wide MOVING rebind overlay is keyed by the installing controller");
     assertInstanceOf(ExpiringTimeoutSource.class, chain.seekBy(ExpiringTimeoutSource.class),
       "the per-connection MIGRATING/FAILING_OVER window overlay");
     assertFalse(ConnectionTestHelper.isRelaxedTimeoutActive(conn), "nothing open yet");
@@ -75,7 +72,7 @@ public class MaintenanceEventControllerRegistrationTest {
 
     assertFalse(conn.getMaintenanceEventListeners().contains(controller));
     ChainedTimeoutSource chain = conn.getTimeoutSource();
-    assertNull(chain.seekBy(controller.getTimeoutSupplier()));
+    assertNull(chain.seekBy(controller));
     assertNull(chain.seekBy(ExpiringTimeoutSource.class));
     assertEquals(SO_TIMEOUT_MS, chain.get().timeout);
   }
@@ -83,13 +80,13 @@ public class MaintenanceEventControllerRegistrationTest {
   @Test
   public void unregisterPreservesOverlaysInstalledByOthers() {
     controller.register(conn);
-    Supplier<TimeoutInfo> foreignGate = () -> null;
-    ManagedTimeoutSource foreign = new ManagedTimeoutSource(foreignGate);
+    Object foreignOwner = new Object();
+    ManagedTimeoutSource foreign = new ManagedTimeoutSource(() -> null, foreignOwner);
     conn.getTimeoutSource().addOverride(foreign);
 
     controller.unregister(conn);
 
-    assertSame(foreign, conn.getTimeoutSource().seekBy(foreignGate));
+    assertSame(foreign, conn.getTimeoutSource().seekBy(foreignOwner));
   }
 
 }

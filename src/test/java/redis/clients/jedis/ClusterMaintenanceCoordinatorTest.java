@@ -4,9 +4,11 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.anyList;
 import static org.mockito.Mockito.doAnswer;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.timeout;
@@ -177,6 +179,48 @@ public class ClusterMaintenanceCoordinatorTest {
   }
 
   @Test
+  public void duplicateCloserStaysRelaxedDuringDelta() throws Exception {
+    // winner parked inside the cache: a duplicate copy must still find the window open
+    CountDownLatch applying = new CountDownLatch(1);
+    CountDownLatch release = new CountDownLatch(1);
+    SMigratedEvent closer = migrated(2, "0-100");
+    doAnswer(inv -> {
+      applying.countDown();
+      release.await(5, TimeUnit.SECONDS);
+      return null;
+    }).when(cache).applySlotMigration(closer.migrations);
+    AtomicReference<TimeoutInfo> seenByDuplicate = new AtomicReference<>();
+    doAnswer(inv -> {
+      seenByDuplicate.set(coordinator.getTimeoutSupplier().get());
+      return null;
+    }).when(otherConn).applyCurrentTimeout();
+    coordinator.onSMigrating(migrating(1, "0-100"), conn);
+
+    Thread winner = new Thread(() -> coordinator.onSMigrated(closer, conn));
+    winner.start();
+    assertTrue(applying.await(5, TimeUnit.SECONDS));
+
+    coordinator.onSMigrated(closer, otherConn); // broadcast copy while the delta is in the cache
+    assertNotNull(seenByDuplicate.get(), "the window must stay open until the delta is applied");
+
+    release.countDown();
+    winner.join(5000);
+    assertFalse(winner.isAlive());
+    assertFalse(coordinator.hasActiveMigration(), "the winner closes the window after the delta");
+    verify(cache, times(1)).applySlotMigration(closer.migrations);
+  }
+
+  @Test
+  public void failingDeltaClosesWindow() {
+    SMigratedEvent closer = migrated(2, "0-100");
+    doThrow(new IllegalStateException("boom")).when(cache).applySlotMigration(closer.migrations);
+    coordinator.onSMigrating(migrating(1, "0-100"), conn);
+
+    assertThrows(IllegalStateException.class, () -> coordinator.onSMigrated(closer, conn));
+    assertFalse(coordinator.hasActiveMigration(), "a failed delta must not leave the window open");
+  }
+
+  @Test
   public void concurrentCopiesOfOneCloserApplyExactlyOnce() throws Exception {
     SMigratedEvent closer = migrated(2, "0-100");
     int copies = 8;
@@ -263,9 +307,8 @@ public class ClusterMaintenanceCoordinatorTest {
   }
 
   @Test
-  public void duplicateOpenerArrivingBeforeTheWindowIsPublishedWaitsForIt() throws Exception {
-    // park the winning copy between seenSMigrating.add and migratingWindows.put: the clock is read
-    // exactly there, so a duplicate copy arriving now must not evaluate its timeout yet
+  public void duplicateOpenerWaitsForWindow() throws Exception {
+    // winner parked in the clock read between dedup and publish: a duplicate copy must block
     CountDownLatch inGap = new CountDownLatch(1);
     CountDownLatch releaseWinner = new CountDownLatch(1);
     NanoClock.INSTANCE = () -> {

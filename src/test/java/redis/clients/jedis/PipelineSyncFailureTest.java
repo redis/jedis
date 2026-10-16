@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.anyInt;
+import static org.mockito.Mockito.doThrow;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 
 /**
  * {@link Pipeline#sync()} propagates a lost connection to the caller. Its buffered responses must
@@ -52,6 +54,32 @@ class PipelineSyncFailureTest {
 
     assertSame(failure, assertThrows(JedisConnectionException.class, pipeline::syncAndReturnAll));
     assertSame(failure, assertThrows(JedisConnectionException.class, reply::get));
+    assertFalse(pipeline.hasPipelinedResponse());
+  }
+
+  @Test
+  void nonConnectionFailureIsRethrownAndCompletesTheResponses() {
+    IllegalStateException bug = new IllegalStateException("push consumer failed");
+    doThrow(bug).when(connection).getMany(anyInt());
+    Pipeline pipeline = new Pipeline(connection);
+    Response<String> reply = pipeline.set("foo", "bar");
+
+    assertSame(bug, assertThrows(IllegalStateException.class, pipeline::sync));
+    JedisException lost = assertThrows(JedisException.class, reply::get);
+    assertFalse(lost instanceof JedisConnectionException);
+    assertSame(bug, lost.getCause());
+    assertFalse(pipeline.hasPipelinedResponse());
+  }
+
+  @Test
+  void errorIsRethrownAndReportedByTheResponsesAsTheCause() {
+    Error error = new Error("out of memory");
+    doThrow(error).when(connection).getMany(anyInt());
+    Pipeline pipeline = new Pipeline(connection);
+    Response<String> reply = pipeline.set("foo", "bar");
+
+    assertSame(error, assertThrows(Error.class, pipeline::sync));
+    assertSame(error, assertThrows(JedisException.class, reply::get).getCause());
     assertFalse(pipeline.hasPipelinedResponse());
   }
 }

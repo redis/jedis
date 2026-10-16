@@ -7,9 +7,7 @@ import java.util.List;
 import java.util.Queue;
 
 import redis.clients.jedis.commands.DatabasePipelineCommands;
-import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.KeyValue;
@@ -141,24 +139,22 @@ public class Pipeline extends AbstractPipeline implements DatabasePipelineComman
   }
 
   /**
-   * Reads the replies for the buffered commands. A lost connection completes every buffered
-   * response with the error before it is propagated, so that {@link Response#get()} reports the
-   * lost reply rather than an unsynced response, and the pipeline does not try to read those
-   * replies again on a later {@code sync()}.
+   * Reads the replies for all buffered commands. If the read fails, every buffered response is
+   * completed with the failure and removed from the buffer, then the failure is rethrown.
    */
   private List<Object> readPipelinedReplies() {
     try {
       return connection.getMany(pipelinedResponses.size());
-    } catch (JedisConnectionException jce) {
-      failPipelinedResponses(jce);
-      throw jce;
+    } catch (Throwable t) {
+      failPipelinedResponses(t);
+      throw t;
     }
   }
 
-  private void failPipelinedResponses(JedisException failure) {
+  private void failPipelinedResponses(Throwable failure) {
     QueuedResponse<?> response;
     while ((response = pipelinedResponses.poll()) != null) {
-      response.setFailure(failure);
+      response.completeExceptionally(failure);
     }
   }
 

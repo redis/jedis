@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.SafeEncoder;
@@ -155,5 +157,106 @@ class MultiNodePipelineSyncTest {
     when(provider.getConnection(NODE_A)).thenReturn(connA2);
     pipeline.set(KEY_A, "2");
     verify(connA2).sendCommand(any(CommandArguments.class));
+  }
+
+  /**
+   * A keyless command is pipelined under a {@code null} node key. Its failure must be tracked and
+   * reported like any other, and must not leave the pipeline stuck in the syncing state.
+   */
+  @Test
+  void keylessCommandFailureIsReportedAndPipelineStaysUsable() {
+    Connection keyless = mock(Connection.class);
+    when(provider.getConnection((HostAndPort) null)).thenReturn(keyless);
+
+    JedisConnectionException failure = new JedisConnectionException("random node went away");
+    when(keyless.getMany(anyInt())).thenThrow(failure);
+
+    ClusterPipeline pipeline = pipeline();
+    Response<Object> reply = pipeline.eval("return 1");
+
+    assertSame(failure, assertThrows(JedisConnectionException.class, pipeline::sync));
+    assertSame(failure, assertThrows(JedisConnectionException.class, reply::get));
+    verify(keyless).close();
+
+    // A wedged pipeline would turn this sync() into a no-op and leave the response unset.
+    Connection keyless2 = mock(Connection.class);
+    when(provider.getConnection((HostAndPort) null)).thenReturn(keyless2);
+    when(keyless2.getMany(1)).thenReturn(Collections.singletonList(1L));
+    Response<Object> reply2 = pipeline.eval("return 1");
+    pipeline.sync();
+    assertEquals(1L, reply2.get());
+  }
+
+  @Test
+  void keylessCommandFailureOnTheWorkerPathIsReported() {
+    Connection connA = mock(Connection.class);
+    Connection keyless = mock(Connection.class);
+    when(provider.getConnection(NODE_A)).thenReturn(connA);
+    when(provider.getConnection((HostAndPort) null)).thenReturn(keyless);
+
+    JedisConnectionException failure = new JedisConnectionException("random node went away");
+    when(connA.getMany(1)).thenReturn(Collections.singletonList(SafeEncoder.encode("OK")));
+    when(keyless.getMany(1)).thenThrow(failure);
+
+    ClusterPipeline pipeline = pipeline();
+    Response<String> replyA = pipeline.set(KEY_A, "1");
+    Response<Object> reply = pipeline.eval("return 1");
+
+    assertSame(failure, assertThrows(JedisConnectionException.class, pipeline::sync));
+    assertEquals("OK", replyA.get());
+    assertSame(failure, assertThrows(JedisConnectionException.class, reply::get));
+    verify(keyless).close();
+  }
+
+  /**
+   * A failure other than a lost connection is rethrown unchanged from {@code sync()}; the
+   * responses carry it as the cause of a {@link JedisException}, not as a connection error.
+   */
+  @Test
+  void nonConnectionFailureIsRethrownAndCompletesTheResponses() {
+    Connection connA = mock(Connection.class);
+    Connection connB = mock(Connection.class);
+    when(provider.getConnection(NODE_A)).thenReturn(connA);
+    when(provider.getConnection(NODE_B)).thenReturn(connB);
+
+    IllegalStateException bug = new IllegalStateException("push consumer failed");
+    when(connA.getMany(1)).thenThrow(bug);
+    when(connB.getMany(1)).thenReturn(Collections.singletonList(SafeEncoder.encode("OK")));
+
+    ClusterPipeline pipeline = pipeline();
+    Response<String> replyA = pipeline.set(KEY_A, "1");
+    Response<String> replyB = pipeline.set(KEY_B, "1");
+
+    assertSame(bug, assertThrows(IllegalStateException.class, pipeline::sync));
+    assertEquals("OK", replyB.get());
+    JedisException lost = assertThrows(JedisException.class, replyA::get);
+    assertFalse(lost instanceof JedisConnectionException);
+    assertSame(bug, lost.getCause());
+    verify(connA).close();
+  }
+
+  @Test
+  void errorInAWorkerIsReported() {
+    Connection connA = mock(Connection.class);
+    Connection connB = mock(Connection.class);
+    when(provider.getConnection(NODE_A)).thenReturn(connA);
+    when(provider.getConnection(NODE_B)).thenReturn(connB);
+
+    JedisConnectionException nodeAFailure = new JedisConnectionException("node-a went away");
+    Error nodeBError = new Error("node-b worker failed");
+    when(connA.getMany(1)).thenThrow(nodeAFailure);
+    when(connB.getMany(1)).thenThrow(nodeBError);
+
+    ClusterPipeline pipeline = pipeline();
+    Response<String> replyA = pipeline.set(KEY_A, "1");
+    Response<String> replyB = pipeline.set(KEY_B, "1");
+
+    JedisConnectionException thrown = assertThrows(JedisConnectionException.class, pipeline::sync);
+    assertSame(nodeAFailure, thrown);
+    assertArrayEquals(new Throwable[] { nodeBError }, thrown.getSuppressed());
+
+    assertSame(nodeAFailure, assertThrows(JedisConnectionException.class, replyA::get));
+    // An Error is not rethrown from get(); the response reports it as the cause instead.
+    assertSame(nodeBError, assertThrows(JedisException.class, replyB::get).getCause());
   }
 }

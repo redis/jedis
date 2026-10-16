@@ -1,13 +1,14 @@
 package redis.clients.jedis;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executor;
 import java.util.concurrent.ExecutorService;
@@ -16,7 +17,7 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.IOUtils;
 
 public abstract class MultiNodePipelineBase extends AbstractPipeline {
@@ -108,86 +109,95 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
       return;
     }
     syncing = true;
+    try {
+      boolean multiNode = pipelinedResponses.size() > 1;
+      Executor executor;
+      ExecutorService executorService = null;
+      if (multiNode) {
+        executorService = getPipelineExecutor();
+        executor = executorService;
+      } else {
+        executor = Runnable::run;
+      }
+      CountDownLatch countDownLatch = multiNode
+          ? new CountDownLatch(pipelinedResponses.size())
+          : null;
 
-    boolean multiNode = pipelinedResponses.size() > 1;
-    Executor executor;
-    ExecutorService executorService = null;
-    if (multiNode) {
-      executorService = getPipelineExecutor();
-      executor = executorService;
-    } else {
-      executor = Runnable::run;
-    }
-    CountDownLatch countDownLatch = multiNode
-        ? new CountDownLatch(pipelinedResponses.size())
-        : null;
+      // Read failure of each failed node; the key is null for keyless commands.
+      Map<HostAndPort, Throwable> failures = Collections.synchronizedMap(new HashMap<>());
 
-    // The read error of each failed node, recorded by its worker. The bookkeeping cleanup is
-    // deferred to this thread: a worker runs while this thread may still be iterating
-    // pipelinedResponses, where remove() acts on whichever entry this thread last returned
-    // rather than on the worker's node.
-    Map<HostAndPort, JedisConnectionException> failures = new ConcurrentHashMap<>();
+      for (Map.Entry<HostAndPort, Queue<Response<?>>> entry : pipelinedResponses.entrySet()) {
+        HostAndPort nodeKey = entry.getKey();
+        Queue<Response<?>> queue = entry.getValue();
+        Connection connection = connections.get(nodeKey);
+        executor.execute(() -> {
+          try {
+            List<Object> unformatted = connection.getMany(queue.size());
+            for (Object o : unformatted) {
+              queue.poll().set(o);
+            }
+          } catch (Throwable t) {
+            // Throwable: anything escaping would die in the executor unreported.
+            log.error("Error with connection to " + nodeKey, t);
+            queue.forEach(response -> response.completeExceptionally(t));
+            failures.put(nodeKey, t);
+            IOUtils.closeQuietly(connection);
+          } finally {
+            if (multiNode) {
+              countDownLatch.countDown();
+            }
+          }
+        });
+      }
 
-    for (Map.Entry<HostAndPort, Queue<Response<?>>> entry : pipelinedResponses.entrySet()) {
-      HostAndPort nodeKey = entry.getKey();
-      Queue<Response<?>> queue = entry.getValue();
-      Connection connection = connections.get(nodeKey);
-      executor.execute(() -> {
+      if (multiNode) {
         try {
-          List<Object> unformatted = connection.getMany(queue.size());
-          for (Object o : unformatted) {
-            queue.poll().set(o);
-          }
-        } catch (JedisConnectionException jce) {
-          log.error("Error with connection to " + nodeKey, jce);
-          // getMany discards the replies it had already read, so none of this node's responses
-          // is set. Complete them with the error, otherwise get() reports them as not synced and
-          // the caller cannot tell which commands were left in doubt.
-          queue.forEach(response -> response.setFailure(jce));
-          failures.put(nodeKey, jce);
-          IOUtils.closeQuietly(connection);
-        } finally {
-          if (multiNode) {
-            countDownLatch.countDown();
-          }
+          countDownLatch.await();
+        } catch (InterruptedException e) {
+          log.error("Thread is interrupted during sync.", e);
         }
-      });
-    }
 
-    if (multiNode) {
-      try {
-        countDownLatch.await();
-      } catch (InterruptedException e) {
-        log.error("Thread is interrupted during sync.", e);
+        releasePipelineExecutor(executorService);
       }
 
-      releasePipelineExecutor(executorService);
+      if (!failures.isEmpty()) {
+        rethrow(dropFailedNodes(failures));
+      }
+    } finally {
+      syncing = false;
     }
+  }
 
-    // Drop the failed nodes so the next command routed to one of them obtains a fresh connection,
-    // keeping both maps in step. Reporting follows pipeline order, not completion order.
-    JedisConnectionException failure = null;
-    if (!failures.isEmpty()) {
-      for (HostAndPort nodeKey : new ArrayList<>(pipelinedResponses.keySet())) {
-        JedisConnectionException nodeFailure = failures.get(nodeKey);
-        if (nodeFailure == null) {
-          continue;
-        }
-        pipelinedResponses.remove(nodeKey);
-        connections.remove(nodeKey);
-        if (failure == null) {
-          failure = nodeFailure;
-        } else {
-          failure.addSuppressed(nodeFailure);
-        }
+  /**
+   * Removes the failed nodes, so their next command takes a fresh connection. Returns the first
+   * failure in pipeline order, with the others attached as suppressed.
+   */
+  private Throwable dropFailedNodes(Map<HostAndPort, Throwable> failures) {
+    Throwable failure = null;
+    for (HostAndPort nodeKey : new ArrayList<>(pipelinedResponses.keySet())) {
+      Throwable nodeFailure = failures.get(nodeKey);
+      if (nodeFailure == null) {
+        continue;
+      }
+      pipelinedResponses.remove(nodeKey);
+      connections.remove(nodeKey);
+      if (failure == null) {
+        failure = nodeFailure;
+      } else {
+        failure.addSuppressed(nodeFailure);
       }
     }
+    return failure;
+  }
 
-    syncing = false;
-
-    if (failure != null) {
-      throw failure;
+  private static void rethrow(Throwable t) {
+    if (t instanceof RuntimeException) {
+      throw (RuntimeException) t;
     }
+    if (t instanceof Error) {
+      throw (Error) t;
+    }
+    throw new JedisException(t);
   }
 
   /**

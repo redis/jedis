@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
@@ -104,6 +105,9 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
     openObserver(deployDatabase(scenario));
     openVerificationClient(database);
     Set<String> before = nodeKeys(client);
+    // the pools themselves, not just their keys: a pool the delta drops from the node map must also
+    // be destroyed, and after settle it is no longer reachable through the client
+    Map<String, ConnectionPool> poolsBefore = new LinkedHashMap<>(client.getClusterNodes());
     HostAndPort[] ownerBefore = ownersBySlot(client);
     verification.refreshClusterTopology();
     assertEquals(nodeKeys(verification), before, "observer and server disagree before the effect");
@@ -213,7 +217,7 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
       case REMOVE:
         obs.check("S3.4 one node removed",
           () -> assertEquals(1, removed.size(), "removed: " + removed));
-        checkRemovedNode(obs, removed, sources, ownerAfter);
+        checkRemovedNode(obs, removed, sources, ownerAfter, poolsBefore);
         break;
       case REMOVE_ADD:
         obs.check("S3.3/S3.4 one node swapped", () -> {
@@ -221,7 +225,7 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
           assertEquals(1, added.size(), "added: " + added);
         });
         checkAddedNode(obs, added, destinations, poolsAfter);
-        checkRemovedNode(obs, removed, sources, ownerAfter);
+        checkRemovedNode(obs, removed, sources, ownerAfter, poolsBefore);
         break;
       default:
         throw new IllegalStateException(effect.toString());
@@ -261,7 +265,10 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
     // 7. lifecycle (S10): the client closes with every pool, nothing left behind
     releasePinned();
     client.close();
-    obs.check("S10 every pool closed on client.close()", () -> poolsAfter
+    // every pool the client ever had: the ones it holds now and the ones the deltas dropped
+    Map<String, ConnectionPool> everyPool = new LinkedHashMap<>(poolsBefore);
+    everyPool.putAll(poolsAfter);
+    obs.check("S10 every pool closed on client.close()", () -> everyPool
         .forEach((node, pool) -> assertTrue(pool.isClosed(), "pool still open: " + node)));
     client = null;
 
@@ -316,13 +323,24 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
    * returns cleanly.
    */
   private void checkRemovedNode(Observations obs, Set<String> removed, Set<String> sources,
-      HostAndPort[] ownerAfter) {
+      HostAndPort[] ownerAfter, Map<String, ConnectionPool> poolsBefore) {
     obs.check("S3.4 removed node is a SMIGRATED src owning no slot", () -> {
       assertTrue(sources.containsAll(removed), "removed " + removed + " not among srcs " + sources);
       for (HostAndPort owner : ownerAfter) {
         assertFalse(removed.contains(nodeKey(owner)), "removed node still owns a slot: " + owner);
       }
     });
+    for (String node : removed) {
+      ConnectionPool pool = poolsBefore.get(node);
+      // destroyed, not merely forgotten: the pool the client handed out before the effect is
+      // closed and refuses a borrow, so no connection to the departed node can be obtained again
+      obs.check("S3.4 pool of removed " + node + " is destroyed", () -> {
+        assertNotNull(pool, "no pool existed before the effect");
+        assertTrue(pool.isClosed(), "pool of removed node still open");
+        assertThrows(JedisException.class, pool::getResource,
+          "destroyed pool handed out a connection");
+      });
+    }
     for (Map.Entry<HostAndPort, Connection> entry : pinned.entrySet()) {
       if (!removed.contains(nodeKey(entry.getKey()))) {
         continue;

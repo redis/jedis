@@ -233,7 +233,7 @@ and how Jedis returns to a preferred database once it recovers:
 | Grace period                         | `gracePeriod`                    | 60000 ms (1 min)     | How long a database stays disabled after it is marked unhealthy or its circuit breaker trips. During this period it is not considered for failover or failback, even if health checks report it healthy.                                                  |
 | Fast failover                        | `fastFailover`                   | `false`              | When enabled, all open connections to the previously active database are forcefully closed on a switch, so in-flight operations fail immediately instead of waiting for their socket timeouts.                                                            |
 | Retry on failover                    | `retryOnFailover`                | `false`              | When enabled, a command that fails on a database that has just been switched away from is re-executed on the new active database instead of surfacing the failure to the caller.                                                                        |
-| Max number of failover attempts      | `maxNumFailoverAttempts`         | 10                   | How many times Jedis reports the "no healthy database" condition as temporary before it is treated as permanent. See [When no database is available](#when-no-database-is-available).                                                                     |
+| Max number of failover attempts      | `maxNumFailoverAttempts`         | 10                   | How many times Jedis reports the "no healthy database" condition as temporary before it is treated as permanent. Automatic recovery is not guaranteed after that. See [When no database is available](#when-no-database-is-available).                                                                     |
 | Delay in between failover attempts   | `delayInBetweenFailoverAttempts` | 12000 ms             | Minimum time between two counted failover attempts while no healthy database is available.                                                                                                                                                              |
 | Initialization policy                | `initializationPolicy`           | `MAJORITY_AVAILABLE` | Decides when `MultiDbClient.builder().build()` may return based on the initial health check results. See [Initialization policy](#initialization-policy).                                                                                                 |
 
@@ -277,8 +277,17 @@ If a failover is triggered but no other healthy database exists, the command fai
 - `JedisFailoverException.JedisPermanentlyNotAvailableException` once that limit has been exceeded.
 
 The attempt counter resets as soon as a switch to a healthy database succeeds.
-Applications can catch the temporary variant to back off and retry, and treat the permanent variant as a signal
-to alert or shut down.
+
+#### While the failure is temporary
+
+Jedis keeps trying and recovers on its own. Applications can catch the temporary variant to back off and retry.
+
+#### Once the failure is permanent
+
+**Jedis gives no guarantee of automatic recovery after `JedisPermanentlyNotAvailableException`.** The client may resume
+if a database comes back, but you must not rely on it. User action is required. For example, alert on the exception and
+check the databases and the network. Recreating the client (create a new one and close the old one) is the recommended
+way to recover.
 
 ### Health Check Configuration and Customization
 
@@ -548,7 +557,7 @@ MultiDbClient client = MultiDbClient.builder()
 | `SwitchReason`    | Triggered by                                                                                   |
 |-------------------|------------------------------------------------------------------------------------------------|
 | `CIRCUIT_BREAKER` | The active database's circuit breaker tripped                                                  |
-| `HEALTH_CHECK`    | A health check reported the active database as unhealthy                                       |
+| `HEALTH_CHECK`    | The active database is unhealthy                                                               |
 | `FAILBACK`        | The periodic failback check found a healthy database with a higher weight                      |
 | `FORCED`          | `setActiveDatabase()`, `forceActiveDatabase()`, or removal of the active database via `removeDatabase()` |
 
@@ -915,6 +924,17 @@ MultiDbConfig multiConfig = MultiDbConfig.builder()
         .gracePeriod(10000)                // Shorter grace period
         .build();
 ```
+
+#### JedisPermanentlyNotAvailableException
+
+**Cause:** no database was usable for longer than the configured tolerance (`maxNumFailoverAttempts` counted attempts,
+at most one every `delayInBetweenFailoverAttempts`).
+
+**Solutions:**
+- Jedis gives no guarantee of automatic recovery after this exception. Recreating the client (create a new one and close
+  the old one) is the recommended way to recover. Checking the databases and the network is a good first step.
+- To ride out longer outages without recreating the client, increase `maxNumFailoverAttempts` and
+  `delayInBetweenFailoverAttempts`. See [When no database is available](#when-no-database-is-available).
 
 ## Need help or have questions?
 For assistance with this automatic failover and failback feature,

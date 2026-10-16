@@ -39,3 +39,18 @@ jobs:
       - name: Run doctests
         run: |
           mvn -Pdoctests clean compile test
+      - name: Collect Redis server logs
+        if: always()
+        run: |
+          mkdir -p redis-logs
+          docker logs ${{ job.services.redis.id }} > redis-logs/redis-server.log 2>&1
+      - name: Upload Redis logs and test reports
+        if: always()
+        uses: actions/upload-artifact@v5
+        with:
+          name: doctests-redis-logs-${{ github.run_attempt }}
+          path: |
+            redis-logs/
+            target/surefire-reports/
+          if-no-files-found: warn
+          retention-days: 14

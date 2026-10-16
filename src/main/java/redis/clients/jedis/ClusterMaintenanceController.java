@@ -31,7 +31,7 @@ final class ClusterMaintenanceController
   @Override
   public void register(Connection connection) {
     connection.getTimeoutSource()
-        .addOverride(new ManagedTimeoutSource(coordinator.getTimeoutSupplier()));
+        .addOverride(new ManagedTimeoutSource(coordinator.getTimeoutSupplier(), this));
     connection.addMaintenanceEventListener(this);
   }
 
@@ -39,7 +39,7 @@ final class ClusterMaintenanceController
   public void unregister(Connection connection) {
     connection.removeMaintenanceEventListener(this);
     ChainedTimeoutSource cts = connection.getTimeoutSource();
-    cts.removeOverride(cts.seekBy(coordinator.getTimeoutSupplier()));
+    cts.removeOverride(cts.seekBy(this));
   }
 
   @Override

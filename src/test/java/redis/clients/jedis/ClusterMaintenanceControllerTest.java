@@ -65,8 +65,8 @@ public class ClusterMaintenanceControllerTest {
     controller.register(conn);
 
     assertTrue(conn.getMaintenanceEventListeners().contains(controller));
-    ChainedTimeoutSource overlay = conn.getTimeoutSource().seekBy(coordinator.getTimeoutSupplier());
-    assertNotNull(overlay, "the overlay is keyed by the coordinator's supplier for teardown");
+    ChainedTimeoutSource overlay = conn.getTimeoutSource().seekBy(controller);
+    assertNotNull(overlay, "the overlay is keyed by the installing controller for teardown");
     assertInstanceOf(ManagedTimeoutSource.class, overlay);
     // no per-connection expiring overlay: cluster relaxation is purely client-wide
     assertNull(conn.getTimeoutSource().seekBy(ExpiringTimeoutSource.class));
@@ -103,7 +103,7 @@ public class ClusterMaintenanceControllerTest {
     controller.unregister(conn);
 
     assertFalse(conn.getMaintenanceEventListeners().contains(controller));
-    assertNull(conn.getTimeoutSource().seekBy(coordinator.getTimeoutSupplier()));
+    assertNull(conn.getTimeoutSource().seekBy(controller));
     coordinator.onSMigrating(new SMigratingEvent(1L, HashSlotRanges.parse("0-100")), eventConn);
     assertFalse(ConnectionTestHelper.isRelaxedTimeoutActive(conn),
       "an unregistered connection no longer follows the client-wide gate");

@@ -156,6 +156,55 @@ public class ConnectionTestHelper {
     return connection.getBlockingSoTimeout();
   }
 
+  // ---- Pool-level maintenance wiring (standalone and cluster families) ----------------------
+
+  /** Whether the pool runs with a maintenance controller at all (any family). */
+  public static boolean hasMaintenanceController(ConnectionPool pool) {
+    return pool.getMaintenanceController() != null;
+  }
+
+  /**
+   * Whether the pool's controller is the cluster family's ({@link ClusterMaintenanceController}).
+   */
+  public static boolean hasClusterMaintenanceController(ConnectionPool pool) {
+    return pool.getMaintenanceController() instanceof ClusterMaintenanceController;
+  }
+
+  /** Whether the pool's controller is registered as a maintenance listener on the connection. */
+  public static boolean isListenerOfPoolController(ConnectionPool pool, Connection connection) {
+    MaintenanceController controller = pool.getMaintenanceController();
+    return controller != null && connection.getMaintenanceEventListeners().contains(controller);
+  }
+
+  /**
+   * Whether the pool controller's relax overlay (the pool-wide / client-wide gate, keyed by the
+   * controller that installed it) is on the connection's timeout chain.
+   */
+  public static boolean hasPoolRelaxOverlay(ConnectionPool pool, Connection connection) {
+    MaintenanceController controller = pool.getMaintenanceController();
+    return controller != null && connection.getTimeoutSource().seekBy(controller) != null;
+  }
+
+  /** Whether the per-connection expiring relax overlay (standalone family only) is installed. */
+  public static boolean hasExpiringRelaxOverlay(Connection connection) {
+    return connection.getTimeoutSource().seekBy(ExpiringTimeoutSource.class) != null;
+  }
+
+  /** Whether a {@link MaintenanceEventConsumer} is on the connection's push consumer chain. */
+  public static boolean hasMaintenanceEventConsumer(Connection connection) {
+    for (PushConsumer consumer : connection.getPushConsumers()) {
+      if (isMaintenanceEventConsumer(consumer)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** Whether the connection's retirement deadline has passed (see {@code Connection#retireAt}). */
+  public static boolean isRetired(Connection connection) {
+    return connection.isRetired();
+  }
+
   private ConnectionTestHelper() {
     // Utility class - prevent instantiation
   }

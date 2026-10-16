@@ -6,24 +6,23 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * A client-observable outcome of {@code topology_change_standalone} with the triggers that produce
- * it — the typed, read-only envelope of one discovery response. Dbconfigs inside stay opaque maps;
- * their schema belongs to the FI / Redis Enterprise.
+ * One discovered effect: the triggers that produce it, each with the database requirements it can
+ * run under. Typed envelope of a discovery response; the dbconfigs inside stay opaque.
  */
 public final class Effect {
 
-  private final StandaloneEffect type;
+  private final EffectType type;
   private final int clusterNodes;
   private final List<Trigger> triggers;
 
-  private Effect(StandaloneEffect type, int clusterNodes, List<Trigger> triggers) {
+  private Effect(EffectType type, int clusterNodes, List<Trigger> triggers) {
     this.type = type;
     this.clusterNodes = clusterNodes;
     this.triggers = Collections.unmodifiableList(triggers);
   }
 
   @SuppressWarnings("unchecked")
-  static Effect parse(StandaloneEffect type, Map<String, Object> response) {
+  static Effect parse(EffectType type, Map<String, Object> response) {
     Map<String, Object> cluster = (Map<String, Object>) response.get("cluster");
     int nodes = cluster == null ? 0 : ((Number) cluster.get("nodes")).intValue();
 
@@ -34,7 +33,21 @@ public final class Effect {
     return new Effect(type, nodes, triggers);
   }
 
-  public StandaloneEffect type() {
+  /**
+   * The same effect discovered through several routes (e.g. {@code asm=false} and {@code asm=true}
+   * of {@code /slot-migrate}, which list disjoint triggers) folded into one trigger list.
+   */
+  static Effect merge(Effect first, Effect second) {
+    List<Trigger> triggers = new ArrayList<>(first.triggers);
+    for (Trigger trigger : second.triggers) {
+      if (first.triggers.stream().noneMatch(t -> t.name().equals(trigger.name()))) {
+        triggers.add(trigger);
+      }
+    }
+    return new Effect(first.type, Math.max(first.clusterNodes, second.clusterNodes), triggers);
+  }
+
+  public EffectType type() {
     return type;
   }
 

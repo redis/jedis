@@ -64,6 +64,20 @@ Set<String> setBack = sose.get();
 ```
 For more explanations see code comments in the transaction section.
 
+### Connection errors during `sync()`
+
+If a connection is lost while `sync()` is reading replies, it throws `JedisConnectionException`.
+The replies that were already read are discarded with it, so every response of the affected
+connection is completed with that error and `Response.get()` rethrows it; the application decides
+which of those commands to re-issue, since the server may or may not have applied them.
+
+A cluster pipeline reads every node before reporting: the healthy nodes' responses are set as
+usual, and only the failed nodes are dropped from the pipeline, so it can be closed or reused with
+the next command for such a node taking a fresh connection. When more than one node fails, the
+first failure in pipeline order is thrown and the others are attached to it as suppressed
+exceptions. Note that the pipeline does not refresh the slot cache, so after a failover the slot
+keeps routing to the old address until the topology is refreshed elsewhere.
+
 ### Avoiding pool waits with cluster pipelines
 
 A cluster pipeline keeps one connection borrowed from every node it targets until `sync()` or `close()`. Concurrent pipelines that target nodes in different orders can exhaust small per-node pools and wait on one another indefinitely when the pool uses its default unbounded wait.

@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Queue;
 
 import redis.clients.jedis.commands.DatabasePipelineCommands;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.KeyValue;
@@ -104,7 +106,7 @@ public class Pipeline extends AbstractPipeline implements DatabasePipelineComman
   @Override
   public void sync() {
     if (!hasPipelinedResponse()) return;
-    List<Object> unformatted = connection.getMany(pipelinedResponses.size());
+    List<Object> unformatted = readPipelinedReplies();
     for (Object rawReply : unformatted) {
       pipelinedResponses.poll().set(rawReply);
     }
@@ -118,7 +120,7 @@ public class Pipeline extends AbstractPipeline implements DatabasePipelineComman
    */
   public List<Object> syncAndReturnAll() {
     if (hasPipelinedResponse()) {
-      List<Object> unformatted = connection.getMany(pipelinedResponses.size());
+      List<Object> unformatted = readPipelinedReplies();
       List<Object> formatted = new ArrayList<>();
       for (Object rawReply : unformatted) {
         QueuedResponse<?> response = pipelinedResponses.poll();
@@ -135,6 +137,28 @@ public class Pipeline extends AbstractPipeline implements DatabasePipelineComman
       return formatted;
     } else {
       return java.util.Collections.<Object> emptyList();
+    }
+  }
+
+  /**
+   * Reads the replies for the buffered commands. A lost connection completes every buffered
+   * response with the error before it is propagated, so that {@link Response#get()} reports the
+   * lost reply rather than an unsynced response, and the pipeline does not try to read those
+   * replies again on a later {@code sync()}.
+   */
+  private List<Object> readPipelinedReplies() {
+    try {
+      return connection.getMany(pipelinedResponses.size());
+    } catch (JedisConnectionException jce) {
+      failPipelinedResponses(jce);
+      throw jce;
+    }
+  }
+
+  private void failPipelinedResponses(JedisException failure) {
+    QueuedResponse<?> response;
+    while ((response = pipelinedResponses.poll()) != null) {
+      response.setFailure(failure);
     }
   }
 

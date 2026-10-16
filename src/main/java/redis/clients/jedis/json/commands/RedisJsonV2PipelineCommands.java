@@ -62,6 +62,20 @@ public interface RedisJsonV2PipelineCommands {
 
   Response<Object> jsonNumIncrBy(String key, Path2 path, Number value);
 
+  /**
+   * <b><a href="https://redis.io/commands/json.numincrby">JSON.NUMINCRBY Command</a></b> Increments
+   * the number value stored at path by value, returning each incremented value as a {@literal Long}
+   * or {@literal Double}.
+   * @param key the key holding the JSON document
+   * @param path the JSONPath to the array(s)
+   * @param value the number value to increment
+   * @return the incremented value as a {@link Long} or {@link Double}, one per matched path, or
+   *         {@code null} for a matched value that is not a number. Missing paths return an empty
+   *         list
+   * @since 8.1
+   */
+  Response<List<Number>> jsonNumIncrByAsNumbers(String key, Path2 path, Number value);
+
   Response<List<Long>> jsonArrAppend(String key, Path2 path, Object... objects);
 
   Response<List<Long>> jsonArrAppendWithEscape(String key, Path2 path, Object... objects);
@@ -77,6 +91,19 @@ public interface RedisJsonV2PipelineCommands {
   Response<List<Object>> jsonArrPop(String key, Path2 path);
 
   Response<List<Object>> jsonArrPop(String key, Path2 path, int index);
+
+  /**
+   * <b><a href="https://redis.io/commands/json.arrpop">JSON.ARRPOP Command</a></b> Removes and
+   * returns an element from the index in the array, returning each popped element as the raw JSON
+   * text sent by the server.
+   * @param key the key holding the JSON document
+   * @param path the JSONPath to the array(s)
+   * @param index the position in the array to pop from; negative values count from the end
+   * @return the popped elements as raw JSON text, one per matched path, or {@code null} for a
+   *         matched value that is not an array or is an empty array
+   * @since 8.1
+   */
+  Response<List<String>> jsonArrPopRaw(String key, Path2 path, int index);
 
   Response<List<Long>> jsonArrLen(String key, Path2 path);
 

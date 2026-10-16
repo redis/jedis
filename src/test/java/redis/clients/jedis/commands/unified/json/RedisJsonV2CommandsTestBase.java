@@ -1,6 +1,9 @@
 package redis.clients.jedis.commands.unified.json;
 
 import static java.util.Collections.singletonList;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
@@ -10,7 +13,9 @@ import static redis.clients.jedis.json.JsonObjects.*;
 import com.google.gson.Gson;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeAll;
@@ -433,6 +438,36 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
   }
 
   @Test
+  public void arrPopRaw() {
+    Map<String, Object> doc = new HashMap<>();
+    doc.put("numbers", new int[] { 1, 2, 3 });
+    doc.put("strings", new String[] { "a", "b", "c" });
+
+    String key = keys.key("raw");
+    jedis.jsonSet(key, ROOT_PATH, gson.toJson(doc));
+
+    assertEquals(singletonList("3"), jedis.jsonArrPopRaw(key, new Path2("numbers"), -1));
+    assertEquals(singletonList("1"), jedis.jsonArrPopRaw(key, new Path2("numbers"), 0));
+    assertEquals(singletonList("\"b\""), jedis.jsonArrPopRaw(key, new Path2("strings"), 1));
+  }
+
+  @Test
+  public void arrPopRaw_NotAnArrayOrEmptyArray() {
+    Map<String, Object> doc = new HashMap<>();
+    doc.put("empty_arrays", new int[][] { {}, {} });
+    doc.put("string", "a");
+
+    String key = keys.key("raw");
+    jedis.jsonSet(key, ROOT_PATH, gson.toJson(doc));
+
+    List<String> popFromEmptyArrays = jedis.jsonArrPopRaw(key, new Path2("$.empty_arrays[*]"), 0);
+    List<String> popFromString = jedis.jsonArrPopRaw(key, new Path2("$.string"), 0);
+
+    assertThat(popFromEmptyArrays, contains(nullValue(), nullValue()));
+    assertThat(popFromString, contains(nullValue()));
+  }
+
+  @Test
   public void arrTrim() {
     jedis.jsonSet("arr", ROOT_PATH, new JSONArray(new int[] { 0, 1, 2, 3, 4 }));
     assertEquals(singletonList(3L), jedis.jsonArrTrim("arr", ROOT_PATH, 1, 3));
@@ -552,6 +587,33 @@ public abstract class RedisJsonV2CommandsTestBase extends UnifiedJedisCommandsTe
     List<?> resultList3 = (List<?>) result3;
     assertInstanceOf(Double.class, resultList3.get(0), "Should remain Double");
     assertEquals(151.5, resultList3.get(0));
+  }
+
+  @Test
+  public void numIncrByNumber() {
+    String key = keys.key("doc");
+    jedis.jsonSet(key, ROOT_PATH, "{\"int\":10,\"dec\":10.5}");
+
+    // integer + integer stays a Long
+    assertEquals(singletonList(15L), jedis.jsonNumIncrByAsNumbers(key, Path2.of("$.int"), 5));
+    // decimal values come back as Double
+    assertEquals(singletonList(13.0), jedis.jsonNumIncrByAsNumbers(key, Path2.of("$.dec"), 2.5));
+    // integer + decimal converts to Double
+    assertEquals(singletonList(15.5), jedis.jsonNumIncrByAsNumbers(key, Path2.of("$.int"), 0.5));
+  }
+
+  @Test
+  public void numIncrByNumber_NonExistingPathOrNotANumber() {
+    String key = keys.key("doc");
+    jedis.jsonSet(key, ROOT_PATH, "{\"str\":\"a\",\"nums\":[1,\"b\",2]}");
+
+    assertEquals(Collections.emptyList(),
+      jedis.jsonNumIncrByAsNumbers(key, Path2.of("$.missing"), 1));
+    assertEquals(singletonList((Number) null),
+      jedis.jsonNumIncrByAsNumbers(key, Path2.of("$.str"), 1));
+    // mixed matches: non-number entries are null, numbers are incremented
+    assertEquals(Arrays.asList(2L, null, 3L),
+      jedis.jsonNumIncrByAsNumbers(key, Path2.of("$.nums[*]"), 1));
   }
 
   @Test

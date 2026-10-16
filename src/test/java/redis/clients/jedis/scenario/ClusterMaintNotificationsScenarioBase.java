@@ -192,27 +192,57 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
     return live;
   }
 
-  /**
-   * Observes every live pinned connection via a PING round-trip: buffered pushes are consumed
-   * inline during the reply read, dispatching maintenance events on this thread. A connection the
-   * server closed is recorded in {@link #dropped}; that is expected only for a departing node after
-   * the SMIGRATED that removed it was seen somewhere — a drop before any SMIGRATED fails the test.
-   */
+  /** Observes every live pinned connection once; see {@link #observe}. */
   void observeAll() {
     for (Map.Entry<HostAndPort, Connection> entry : livePinned().entrySet()) {
-      try {
-        entry.getValue().executeCommand(Protocol.Command.PING);
-      } catch (JedisConnectionException e) {
-        dropped.add(entry.getKey());
-        if (!anyRecorded(ReceivedEvents::sMigratedReceived)) {
-          fail("pinned connection to " + entry.getKey() + " dropped before any SMIGRATED; events: "
-              + allEvents() + ", cause: " + e);
-        }
-        logger.info(
-          "pinned connection to {} dropped after SMIGRATED (expected for a departing node)",
-          entry.getKey());
+      observe(entry.getKey(), entry.getValue());
+    }
+  }
+
+  /**
+   * Observes the live pinned connections one at a time and stops right after the first one that
+   * recorded a SMIGRATING, so the others are left unread since their previous observation. Returns
+   * whether one did.
+   */
+  private boolean observeUntilSMigrating() {
+    for (Map.Entry<HostAndPort, Connection> entry : livePinned().entrySet()) {
+      observe(entry.getKey(), entry.getValue());
+      if (recorded.get(entry.getKey()).sMigratingReceived()) {
+        return true;
       }
     }
+    return false;
+  }
+
+  /**
+   * Observes one pinned connection via a PING round-trip: buffered pushes are consumed inline
+   * during the reply read, dispatching maintenance events on this thread. A connection the server
+   * closed is recorded in {@link #dropped}; that is expected only for a departing node after the
+   * SMIGRATED that removed it was seen somewhere — a drop before any SMIGRATED fails the test.
+   */
+  private void observe(HostAndPort node, Connection connection) {
+    try {
+      connection.executeCommand(Protocol.Command.PING);
+    } catch (JedisConnectionException e) {
+      dropped.add(node);
+      if (!anyRecorded(ReceivedEvents::sMigratedReceived)) {
+        fail("pinned connection to " + node + " dropped before any SMIGRATED; events: "
+            + allEvents() + ", cause: " + e);
+      }
+      logger.info("pinned connection to {} dropped after SMIGRATED (expected for a departing node)",
+        node);
+    }
+  }
+
+  /** Pinned connections that have not read a SMIGRATING themselves. */
+  Set<HostAndPort> pinnedWithoutSMigrating() {
+    Set<HostAndPort> unread = new LinkedHashSet<>();
+    recorded.forEach((node, events) -> {
+      if (!events.sMigratingReceived()) {
+        unread.add(node);
+      }
+    });
+    return unread;
   }
 
   boolean anyRecorded(Predicate<ReceivedEvents> condition) {
@@ -235,19 +265,21 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
     return last;
   }
 
-  /** Pumps the pinned connections until any of them recorded a SMIGRATING. */
+  /**
+   * Pumps the pinned connections one at a time until one of them recorded a SMIGRATING and stops
+   * there, so the other connections have not read their own copy of the push yet: the state the
+   * client-wide gate check (S2.1) needs. Fails when the effect completes without one.
+   */
   void awaitFirstSMigrating() {
     long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(FIRST_PUSH_TIMEOUT_MS);
     while (System.nanoTime() < deadline) {
-      observeAll();
-      if (anyRecorded(ReceivedEvents::sMigratingReceived)) {
+      if (observeUntilSMigrating()) {
         return;
       }
       if (effectDone()) {
         assertEffectSucceeded();
         // the effect finished without a push being read yet: give the stream one more pass
-        observeAll();
-        if (anyRecorded(ReceivedEvents::sMigratingReceived)) {
+        if (observeUntilSMigrating()) {
           return;
         }
         fail("effect completed but no SMIGRATING was received on any pinned connection: "

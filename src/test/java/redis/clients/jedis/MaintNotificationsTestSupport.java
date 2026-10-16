@@ -5,6 +5,7 @@ import java.net.InetSocketAddress;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.function.IntConsumer;
 
@@ -76,11 +77,12 @@ public final class MaintNotificationsTestSupport {
   }
 
   /**
-   * One SMIGRATED entry: the slots moved from {@code src} to {@code dest}. This type is just for
-   * visibility of migration info in test context.
+   * One SMIGRATED entry as a test sees it: the slots moved from {@code src} to {@code dest}. A
+   * value type: the same push reaches every connection of the client, so the entries recorded on
+   * two connections are equal and a collection of them can be de-duplicated with {@link #equals}.
    */
   public static final class SlotMove {
-    private SlotMigration migration;
+    private final SlotMigration migration;
 
     SlotMove(SlotMigration migration) {
       this.migration = migration;
@@ -103,8 +105,25 @@ public final class MaintNotificationsTestSupport {
     }
 
     @Override
+    public boolean equals(Object o) {
+      if (!(o instanceof SlotMove)) {
+        return false;
+      }
+      SlotMove other = (SlotMove) o;
+      // slots compared in wire form: equal pushes carry the identical string
+      return migration.src.equals(other.migration.src)
+          && migration.dest.equals(other.migration.dest)
+          && migration.slots.toString().equals(other.migration.slots.toString());
+    }
+
+    @Override
+    public int hashCode() {
+      return Objects.hash(migration.src, migration.dest, migration.slots.toString());
+    }
+
+    @Override
     public String toString() {
-      return migration.src + " -> " + migration.dest + " [" + migration.slots + "]";
+      return migration.toString();
     }
   }
 

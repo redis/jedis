@@ -29,8 +29,9 @@ the [chosen combinations](#chosen-effect-x-trigger-x-variant-combinations).)
 [`ClusterMaintNotificationsIT.effectTriggerCombinations()`](ClusterMaintNotificationsIT.java):
 both Case 2 directions (endpoint set changes) on every trigger, plus the endpoint-stable Case 1 on
 the trigger with the shortest window. `hostname` runs where the node identity carried by
-`SMIGRATED` matters most, one non-ASM and one ASM row; `ip` elsewhere. An ASM row is left out
-with a warning when the FI does not offer `reshard`; `-Dsch.skipAsm=true` skips ASM rows.
+`SMIGRATED` matters most, one non-ASM and one ASM row; `ip` elsewhere. Every row must be offered
+by the FI: a missing trigger or variant fails the method rather than shrinking the matrix
+silently; `-Dsch.skipAsm=true` is the one explicit way to skip the ASM rows.
 
 | Row | Effect | Trigger | Variant | Endpoint delta | What it isolates |
 |---|---|---|---|---|---|
@@ -61,7 +62,7 @@ asserted where a client requirement rests on it.
 
 | Id | Expected | Where |
 |---|---|---|
-| S2.1 | Right after the first `SMIGRATING` is read on any one pinned connection, every pinned connection is relaxed (`isRelaxedTimeoutActive`, effective timeout 30 000) after its next PING, including nodes whose own push has not been read yet. Mock B1 to B4. | `migrationIsHandled`, step 3 |
+| S2.1 | Right after the first `SMIGRATING` is read on any one pinned connection, and before any other pinned connection reads anything: `hasActiveMigration` is true, at least one window is open, and every pinned connection is relaxed (`isRelaxedTimeoutActive`, effective timeout 30 000; both read without a round-trip), including those whose own push is still unread (named in the observation; only the gate can have relaxed them). Not observable when `SMIGRATED` was buffered behind the same reply as the first `SMIGRATING` (a sub-second window): logged and skipped for that row. Mock B1 to B4. | `migrationIsHandled`, step 3 |
 | S2.2 | After the settle rule: no active migration, zero open windows, and every surviving pinned connection is back at the 1000 ms base on its next command. | `migrationIsHandled`, after step 5 |
 | S2.3 | Behavioural proof of relaxation: a blocking command with a 3 s server-side delay on a slot that is not moving succeeds inside a long window and times out at the 2 s blocking base after it. Needs a window longer than the probe (`remove-add` / `migrate`). | planned, `ClusterMaintNotificationsTimeoutIT` |
 | S2.4 | Relaxation never tightens: a client configured with a 60 000 ms socket timeout keeps it during the window. Mock B7. | planned, `ClusterMaintNotificationsTimeoutIT` |
@@ -74,7 +75,7 @@ asserted where a client requirement rests on it.
 | S3.2 | `slot-shuffle`: the node set equals the one before the effect and no pool was closed. Mock C3. | row 2 |
 | S3.3 | `add` and the added side of `remove-add`: the node set gained exactly one key, equal to a `dest`; its pool carries the cluster maintenance controller and serves a PING. Mock C4. | rows 1, 3, 5 |
 | S3.4 | `remove` and the removed side of `remove-add`: the node set lost exactly one key, equal to a `src` that owns no slot afterwards; its pool is closed; the pinned connection to it completed the PING that carried the push and returns to its destroyed pool without throwing. Mock C2, F2. | rows 1, 4, 6 |
-| S3.5 | What the application sees, with no assumption about the DMC's post-`SMIGRATED` forwarding grace: through the observer (`maxAttempts(1)`), one `SET` + `GET` per moved range and per surviving node's unmoved range each reach a definitive outcome, a value or a visible `JedisClusterOperationException` / connection exception, never a hang. The counts of `MOVED`-driven exceptions and failed connections are logged, not asserted; only "unexpected exception type" fails. The verification client's node set must equal the observer's. | `migrationIsHandled`, step 6 |
+| S3.5 | What the application sees after the settle rule: through the observer (`maxAttempts(1)`), one `SET` + `GET` per moved range and per surviving node's unmoved range each return the value. Zero `MOVED`, zero failed connections, zero other exceptions, asserted separately so the report names the kind. A `MOVED` here means the slot map was not applied (S3.1), a failed connection that a pool is unusable (S3.3); the DMC's post-`SMIGRATED` forwarding grace can hide such a defect but never cause one, so the case does not depend on it. The verification client's node set must equal the observer's. | `migrationIsHandled`, step 6 |
 | S3.6 | Repeated migrations on one client and one database: `seq` monotonic per connection across runs, S3.1 / S3.2 hold after each, windows back to zero each time. | planned, `ClusterMaintNotificationsFeatureInteractionIT` |
 | S3.7 | Periodic topology refresh (2 s) interleaving with deltas: every command gets a definitive outcome, final owners equal a fresh `CLUSTER SLOTS`. Mock C8, C11. | planned, same class |
 | S3.8 | Client-side cache: a value cached before the move is re-read from the server after the delta. Mock C9. | planned, same class |
@@ -169,9 +170,11 @@ on top of [`FaultInjectorScenarioBase`](FaultInjectorScenarioBase.java):
 - **One pinned connection per node.** `pinOneConnectionPerNode()` borrows a connection from every
   node's pool and keeps it, each with a `ReceivedEvents` recorder
   ([`MaintNotificationsTestSupport`](../MaintNotificationsTestSupport.java)). Pushes are only
-  consumed on a read, so `observeAll()` PINGs each pinned connection. A pinned connection the
-  server closes is recorded in `dropped`; that is expected only for a departing node after its
-  `SMIGRATED` was read somewhere, and fails the test otherwise.
+  consumed on a read, so `observeAll()` PINGs each pinned connection; `awaitFirstSMigrating()`
+  PINGs them one at a time and stops at the first that recorded `SMIGRATING`, leaving the others
+  unread for the S2.1 gate check. A pinned connection the server closes is recorded in `dropped`;
+  that is expected only for a departing node after its `SMIGRATED` was read somewhere, and fails
+  the test otherwise.
 - **Effect on a background thread.** `startEffect(scenario)` fires the FI route and awaits the
   action on its own thread; `effectFailures` collects FI errors for `assertEffectSucceeded()`.
 - **Settle rule.** `awaitEffectSettled(expectedNodes)` ends a row in three steps that must stay

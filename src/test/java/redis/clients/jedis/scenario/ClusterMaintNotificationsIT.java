@@ -5,16 +5,18 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.TreeMap;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.redis.test.fi.Scenario;
@@ -62,8 +64,9 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
    * add/migrate and remove/failover isolate the create and the drop; slot-shuffle/failover is the
    * endpoint-stable case with the most nodes and a sub-second window; add/reshard and
    * remove/reshard are the ASM cascades in each direction. The hostname variant runs where the node
-   * identity in SMIGRATED matters most (one non-ASM, one ASM row); ip elsewhere. An ASM row is left
-   * out when the FI does not offer the reshard trigger.
+   * identity in SMIGRATED matters most (one non-ASM, one ASM row); ip elsewhere. Every row must be
+   * offered by the FI: a missing trigger or variant fails the whole method instead of silently
+   * shrinking the matrix.
    */
   static Stream<Scenario> effectTriggerCombinations() {
     List<Scenario> rows = new ArrayList<>();
@@ -76,16 +79,16 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
     return rows.stream();
   }
 
-  /** Adds the row when the FI offers the trigger and variant; logs the omission otherwise. */
+  /** Adds the row; fails when the FI does not offer the trigger or the variant. */
   private static void row(List<Scenario> rows, SlotMigrateEffect effect, String trigger,
       String config) {
     Optional<Trigger> offered = CLUSTER_CATALOG.effect(effect).triggers().stream()
         .filter(t -> t.name().equals(trigger)).findFirst();
-    if (offered.isPresent() && offered.get().offers(config)) {
-      rows.add(offered.get().scenario(config));
-    } else {
-      log.warn("FI does not offer {}/{}[{}]; row left out", effect, trigger, config);
+    if (!offered.isPresent() || !offered.get().offers(config)) {
+      fail("FI does not offer " + effect + "/" + trigger + "[" + config + "]; offered: "
+          + CLUSTER_CATALOG.effect(effect).triggers());
     }
+    rows.add(offered.get().scenario(config));
   }
 
   @ParameterizedTest(name = "{0}")
@@ -110,16 +113,21 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
     // 2. fire
     startEffect(scenario);
 
-    // 3. opening: the first SMIGRATING read anywhere relaxes every connection (client-wide gate)
+    // 3. opening (S2.1): the first SMIGRATING read on any one connection opens the client-wide
+    // gate. Checked before any other connection reads anything: a connection whose own push is
+    // still unread can only be relaxed by the gate.
     awaitFirstSMigrating();
-    observeAll();
-    for (Map.Entry<HostAndPort, Connection> entry : livePinned().entrySet()) {
-      Connection conn = entry.getValue();
-      obs.check("S2.1 relaxed on " + entry.getKey(), () -> {
-        assertTrue(ConnectionTestHelper.isRelaxedTimeoutActive(conn), "relaxation not active");
-        assertEquals(MaintNotificationsObserverBase.RELAXED_TIMEOUT_MS,
-          MaintNotificationsTestSupport.effectiveTimeoutMillis(conn), "effective timeout");
-      });
+    Set<HostAndPort> ownPushUnread = pinnedWithoutSMigrating();
+    if (anyRecorded(ReceivedEvents::sMigratedReceived)) {
+      // SMIGRATED was buffered behind the same reply as the SMIGRATING: the window closed as it
+      // opened (sub-second triggers), so there is no open gate to observe
+      log.warn("{}: S2.1 not observable, SMIGRATED read in the same pass as the first SMIGRATING",
+        scenario);
+    } else {
+      log.info("{}: S2.1 first SMIGRATING read; own push still unread on {}", scenario,
+        ownPushUnread);
+      checkGateOpen(obs);
+      checkAllPinnedRelaxed(obs, ownPushUnread);
     }
 
     // 5. closing: FI done, stream drained, node set converged
@@ -128,9 +136,9 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
     Map<String, ConnectionPool> poolsAfter = new LinkedHashMap<>(client.getClusterNodes());
     HostAndPort[] ownerAfter = ownersBySlot(client);
     List<ReceivedEvent> events = allEvents();
-    Map<Long, SlotMove> movesBySeq = distinctMoves(events);
+    List<SlotMove> distinctMoves = distinctMoves(events);
     logReception(scenario);
-    log.info("{}: nodes after = {}, moves = {}", scenario, after, movesBySeq.values());
+    log.info("{}: nodes after = {}, moves = {}", scenario, after, distinctMoves);
 
     // S1.1 reception: at least one connection saw each message; duplicates are the client's job
     obs.check("S1.1 SMIGRATING received",
@@ -150,7 +158,7 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
     });
     // S1.3 identity: SMIGRATED names nodes in the same form the client keys its pools by
     obs.check("S1.3 src/dest host form matches node keys", () -> {
-      for (SlotMove move : movesBySeq.values()) {
+      for (SlotMove move : distinctMoves) {
         assertTrue(before.contains(nodeKey(move.src())),
           "SMIGRATED src " + move.src() + " is not a node key the client knew before: " + before);
         assertTrue(after.contains(nodeKey(move.dest())),
@@ -162,7 +170,7 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
     obs.check("S3.1 slot owners follow the deltas", () -> {
       List<String> mismatches = new ArrayList<>();
       boolean[] moved = new boolean[ownerBefore.length];
-      for (SlotMove move : movesBySeq.values()) {
+      for (SlotMove move : distinctMoves) {
         move.forEachSlot(slot -> {
           moved[slot] = true;
           if (!nodeKey(move.dest()).equals(nodeKey(ownerAfter[slot]))) {
@@ -188,7 +196,7 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
     added.removeAll(before);
     Set<String> sources = new LinkedHashSet<>();
     Set<String> destinations = new LinkedHashSet<>();
-    movesBySeq.values().forEach(move -> {
+    distinctMoves.forEach(move -> {
       sources.add(nodeKey(move.src()));
       destinations.add(nodeKey(move.dest()));
     });
@@ -237,10 +245,14 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
       });
     }
 
-    // 6. verify: what the application sees (S3.5, reported), and the server-side truth
-    CommandOutcomes outcomes = probeCommands(movesBySeq.values(), ownerAfter, after);
+    // 6. verify (S3.5): what the application sees after settle, and the server-side truth
+    CommandOutcomes outcomes = probeCommands(distinctMoves, ownerAfter, after);
     log.info("{}: S3.5 outcomes: {}", scenario, outcomes);
-    obs.check("S3.5 every command reached a definitive outcome",
+    obs.check("S3.5 no MOVED after settle",
+      () -> assertEquals(0, outcomes.moved, "MOVED redirects: " + outcomes));
+    obs.check("S3.5 no failed connection after settle",
+      () -> assertEquals(0, outcomes.connectionFailed, "failed connections: " + outcomes));
+    obs.check("S3.5 no unexpected exception",
       () -> assertEquals(0, outcomes.other, "unexpected exceptions: " + outcomes.firstOther));
     verification.refreshClusterTopology();
     obs.check("server truth matches the client's node set",
@@ -254,6 +266,31 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
     client = null;
 
     obs.assertAllPassed();
+  }
+
+  /** S2.1, client side: the coordinator holds an open window after the first SMIGRATING. */
+  private void checkGateOpen(Observations obs) {
+    obs.check("S2.1 gate open after the first SMIGRATING", () -> {
+      assertTrue(MaintNotificationsTestSupport.hasActiveMigration(client), "no active migration");
+      assertTrue(MaintNotificationsTestSupport.openMigrationWindows(client) > 0, "no open window");
+    });
+  }
+
+  /**
+   * S2.1, connection side: every live pinned connection is relaxed, read without a round-trip so
+   * the check itself consumes no push. A connection in {@code ownPushUnread} has not read its own
+   * SMIGRATING, so only the client-wide gate can have relaxed it; its observation says so.
+   */
+  private void checkAllPinnedRelaxed(Observations obs, Set<HostAndPort> ownPushUnread) {
+    for (Map.Entry<HostAndPort, Connection> entry : livePinned().entrySet()) {
+      Connection conn = entry.getValue();
+      String how = ownPushUnread.contains(entry.getKey()) ? " (own SMIGRATING unread)" : "";
+      obs.check("S2.1 relaxed on " + entry.getKey() + how, () -> {
+        assertTrue(ConnectionTestHelper.isRelaxedTimeoutActive(conn), "relaxation not active");
+        assertEquals(MaintNotificationsObserverBase.RELAXED_TIMEOUT_MS,
+          MaintNotificationsTestSupport.effectiveTimeoutMillis(conn), "effective timeout");
+      });
+    }
   }
 
   /** Mock C4: the destination's pool exists, carries the cluster controller, and serves. */
@@ -297,19 +334,13 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
   }
 
   /**
-   * SMIGRATED entries across all connections, one per seq: the same push reaches every connection.
+   * Every SMIGRATED entry read on any pinned connection, once each and in seq order. The same push
+   * reaches every connection, so the recordings repeat each entry once per connection that read it.
    */
-  private static Map<Long, SlotMove> distinctMoves(List<ReceivedEvent> events) {
-    Map<Long, SlotMove> moves = new TreeMap<>();
-    for (ReceivedEvent event : events) {
-      if (PushMessageTypes.SMIGRATED.equals(event.type)) {
-        for (int i = 0; i < event.moves.size(); i++) {
-          // several entries in one SMIGRATED share the seq; key by seq and entry index
-          moves.put(event.seq * 1000 + i, event.moves.get(i));
-        }
-      }
-    }
-    return moves;
+  private static List<SlotMove> distinctMoves(List<ReceivedEvent> events) {
+    return events.stream().filter(event -> PushMessageTypes.SMIGRATED.equals(event.type))
+        .sorted(Comparator.comparingLong(event -> event.seq)).flatMap(event -> event.moves.stream())
+        .distinct().collect(Collectors.toList());
   }
 
   private void logReception(Scenario scenario) {
@@ -325,9 +356,10 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
 
   /**
    * One SET + GET per moved range and one per surviving node's unmoved range, through the observer
-   * ({@code maxAttempts(1)}): every command must end in a value or a visible exception. Counts what
-   * the application would have seen; nothing here assumes the DMC's post-SMIGRATED forwarding
-   * grace.
+   * ({@code maxAttempts(1)}), so every outcome is what the application would have seen. After the
+   * settle rule a MOVED means the slot map was not applied (S3.1) and a failed connection means a
+   * pool is unusable (S3.3); the DMC's post-SMIGRATED forwarding grace can hide such a defect but
+   * never cause one, so nothing here depends on it.
    */
   private CommandOutcomes probeCommands(Iterable<SlotMove> moves, HostAndPort[] ownerAfter,
       Set<String> nodesAfter) {

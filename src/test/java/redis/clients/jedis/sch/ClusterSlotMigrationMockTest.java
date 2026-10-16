@@ -14,6 +14,9 @@ import java.net.SocketException;
 import java.time.Duration;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -184,11 +187,10 @@ public class ClusterSlotMigrationMockTest extends AbstractClusterMaintenanceMock
     CountDownLatch entered = new CountDownLatch(1);
     CountDownLatch release = new CountDownLatch(1);
     handlerA.gateClusterSlots(entered, release);
-    Thread refresh = new Thread(client::refreshClusterTopology, "refresh");
-    refresh.start();
-    assertTrue(entered.await(5, TimeUnit.SECONDS), "the refresh is parked mid-query on A");
-
+    ExecutorService refresher = Executors.newSingleThreadExecutor();
+    Future<?> refresh = refresher.submit(client::refreshClusterTopology);
     try {
+      assertTrue(entered.await(5, TimeUnit.SECONDS), "the refresh is parked mid-query on A");
       topology.assign(A_FROM, A_TO, nodeB);
       try (Connection b = client.getConnectionFromSlot(B_FROM)) {
         serverB.sendPushMessageToAll(migrated(2L, nodeA, nodeB, "0-8191"));
@@ -199,9 +201,9 @@ public class ClusterSlotMigrationMockTest extends AbstractClusterMaintenanceMock
       assertTrue(hasNode(nodeA), "not applied yet: A's pool is still there");
     } finally {
       release.countDown();
+      refresher.shutdown();
     }
-    refresh.join(5000);
-    assertFalse(refresh.isAlive());
+    refresh.get(5, TimeUnit.SECONDS); // rethrows anything the refresh threw behind the gate
 
     // the refresh answered with the pre-move table; the delta landed on top of it
     client.set(keyOnA(), "v");

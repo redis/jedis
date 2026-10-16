@@ -86,7 +86,9 @@ final class ClusterMaintenanceCoordinator {
     return migratingWindows.size();
   }
 
-  void onSMigrating(SMigratingEvent e, Connection c) {
+  // synchronized because dedup and publishing the window are two steps: a duplicate copy losing the
+  // dedup must not evaluate its timeout before the window exists
+  synchronized void onSMigrating(SMigratingEvent e, Connection c) {
     if (seenSMigrating.add(e.seq)) {
       long deadline = NanoClock.INSTANCE.getAsLong() + maxRelaxedDurationNanos;
       migratingWindows.put(e.seq, new MigratingWindow(e.seq, deadline));

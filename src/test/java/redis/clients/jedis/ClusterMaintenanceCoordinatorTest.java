@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -259,6 +260,57 @@ public class ClusterMaintenanceCoordinatorTest {
     // one closer is enough: a second window for the same seq would linger until the TTL
     coordinator.onSMigrated(migrated(2, "0-100"), conn);
     assertFalse(coordinator.hasActiveMigration());
+  }
+
+  @Test
+  public void duplicateOpenerArrivingBeforeTheWindowIsPublishedWaitsForIt() throws Exception {
+    // park the winning copy between seenSMigrating.add and migratingWindows.put: the clock is read
+    // exactly there, so a duplicate copy arriving now must not evaluate its timeout yet
+    CountDownLatch inGap = new CountDownLatch(1);
+    CountDownLatch releaseWinner = new CountDownLatch(1);
+    NanoClock.INSTANCE = () -> {
+      inGap.countDown();
+      try {
+        releaseWinner.await(5, TimeUnit.SECONDS);
+      } catch (InterruptedException ex) {
+        Thread.currentThread().interrupt();
+      }
+      return 0L;
+    };
+    try {
+      SMigratingEvent opener = migrating(1, "0-100");
+      AtomicReference<TimeoutInfo> seenByDuplicate = new AtomicReference<>();
+      CountDownLatch duplicateDone = new CountDownLatch(1);
+      doAnswer(inv -> {
+        seenByDuplicate.set(coordinator.getTimeoutSupplier().get());
+        return null;
+      }).when(otherConn).applyCurrentTimeout();
+
+      Thread winner = new Thread(() -> coordinator.onSMigrating(opener, conn));
+      winner.start();
+      assertTrue(inGap.await(5, TimeUnit.SECONDS));
+
+      Thread duplicate = new Thread(() -> {
+        coordinator.onSMigrating(opener, otherConn); // broadcast copy of the parked opener
+        duplicateDone.countDown();
+      });
+      duplicate.start();
+      assertFalse(duplicateDone.await(200, TimeUnit.MILLISECONDS),
+        "the duplicate must wait until the winner has published its window");
+      assertNull(seenByDuplicate.get());
+
+      releaseWinner.countDown();
+      assertTrue(duplicateDone.await(5, TimeUnit.SECONDS));
+      winner.join(5000);
+      duplicate.join(5000);
+
+      assertNotNull(seenByDuplicate.get(),
+        "the duplicate evaluates its timeout against the window");
+      assertEquals(1, coordinator.openMigrationWindows());
+      assertTrue(coordinator.hasActiveMigration());
+    } finally {
+      NanoClock.INSTANCE = System::nanoTime;
+    }
   }
 
   @Test

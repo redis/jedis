@@ -58,7 +58,7 @@ Implemented in [`ClusterRelaxedTimeoutMockTest`](ClusterRelaxedTimeoutMockTest.j
 | B5 | SMIGRATING without a closer, clock advanced past `relaxedWindowMaxDuration` | Next command runs at the baseline again | [`windowWithALostCloserRevertsAtTheTtlBackstop`](ClusterRelaxedTimeoutMockTest.java#L149) |
 | B6 | `BLPOP` whose reply takes longer than the configured blocking timeout but less than the relaxed one | Succeeds while a window is open; after the closer the same delay times out (control) | [`relaxedBlockingTimeoutAppliesDuringABlockingCommand`](ClusterRelaxedTimeoutMockTest.java#L171) |
 | B7 | Configured timeout larger than the relaxed one, or infinite | Relaxation never tightens: 20000 stays 20000, 0 stays 0 | [`relaxationNeverTightensALargerConfiguredTimeout`](ClusterRelaxedTimeoutMockTest.java#L187), [`relaxationKeepsAnInfiniteConfiguredTimeout`](ClusterRelaxedTimeoutMockTest.java#L201) |
-| B8 | Relaxed while a delta waits behind a refresh | Covered together with C8 in [`ClusterSlotMigrationMockTest`](ClusterSlotMigrationMockTest.java) | [`deltaArrivingDuringARefreshIsAppliedAfterItAndRelaxesMeanwhile`](ClusterSlotMigrationMockTest.java#L182) |
+| B8 | Relaxed while a delta waits behind a refresh | Covered together with C8 in [`ClusterSlotMigrationMockTest`](ClusterSlotMigrationMockTest.java) | [`deltaArrivingDuringARefreshIsAppliedAfterItAndRelaxesMeanwhile`](ClusterSlotMigrationMockTest.java#L185) |
 
 ## C. Slot delta application
 
@@ -66,17 +66,17 @@ Implemented in [`ClusterRelaxedTimeoutMockTest`](ClusterRelaxedTimeoutMockTest.j
 
 | ID | Scenario | Expected | Test |
 |---|---|---|---|
-| C1 | SMIGRATED `[[A, B, "0-8191"]]` after the server side moved the range | The next command for the range reaches B; no `CLUSTER SLOTS`, no `MOVED` | [`sMigratedReroutesInPlaceAndDropsTheDepartedSource`](ClusterSlotMigrationMockTest.java#L42) |
-| C2 | Source left without slots | A disappears from the node map, its pool is closed, the server sees its connections go | [`sMigratedReroutesInPlaceAndDropsTheDepartedSource`](ClusterSlotMigrationMockTest.java#L42) |
-| C3 | Source still owning slots | A stays; moved slots route to B, the rest to A | [`sourceStillOwningSlotsIsKept`](ClusterSlotMigrationMockTest.java#L69) |
-| C4 | Destination never seen in `CLUSTER SLOTS` | A pool for C is created on demand; its connections get the handshake and the client-wide overlay | [`neverSeenDestinationGetsAPoolAndTheHandshake`](ClusterSlotMigrationMockTest.java#L90) |
-| C5 | SMIGRATED without entries | A valid closer: the relax window ends; no slot is rerouted, no pool is dropped, no refresh | [`emptySMigratedOnlyEndsTheRelaxWindow`](ClusterSlotMigrationMockTest.java#L138) |
-| C6 | Copies of one SMIGRATED on three connections to A | Applied once; A's pool destroyed once; no error | [`duplicateClosersOnSeveralConnectionsApplyOnce`](ClusterSlotMigrationMockTest.java#L112) |
-| C7 | Malformed frames: unparseable slots, invalid port, inverted range | Dropped; the connection stays usable; topology and timeouts unchanged | [`malformedClusterFramesAreDroppedAndTheConnectionStaysUsable`](ClusterSlotMigrationMockTest.java#L161) |
-| C8 / B8 | Delta arriving while a refresh holds the slot table | Connections are relaxed while the delta is pending; after the (stale) refresh the delta is applied on top | [`deltaArrivingDuringARefreshIsAppliedAfterItAndRelaxesMeanwhile`](ClusterSlotMigrationMockTest.java#L182) |
-| C9 | Client-side cache enabled | A delta flushes the cache: the next read goes to the server even though the key's slot did not move | [`clientSideCacheIsFlushedWhenADeltaIsApplied`](ClusterSlotMigrationMockTest.java#L220) |
-| C10 | Opener delivered, closer lost, server side moved | The client self-heals through `MOVED` + refresh; the window still expires on the TTL backstop | [`lostCloserSelfHealsThroughMovedAndTheTtlBackstop`](ClusterSlotMigrationMockTest.java#L241) |
-| C11 | Periodic topology refresh running while deltas keep arriving | Every command lands on the current owner, exactly one attempt each, no exception | [`deltasAndPeriodicRefreshesConverge`](ClusterSlotMigrationMockTest.java#L270) |
+| C1 | SMIGRATED `[[A, B, "0-8191"]]` after the server side moved the range | The next command for the range reaches B; no `CLUSTER SLOTS`, no `MOVED` | [`sMigratedReroutesInPlaceAndDropsTheDepartedSource`](ClusterSlotMigrationMockTest.java#L45) |
+| C2 | Source left without slots | A disappears from the node map, its pool is closed, the server sees its connections go | [`sMigratedReroutesInPlaceAndDropsTheDepartedSource`](ClusterSlotMigrationMockTest.java#L45) |
+| C3 | Source still owning slots | A stays; moved slots route to B, the rest to A | [`sourceStillOwningSlotsIsKept`](ClusterSlotMigrationMockTest.java#L72) |
+| C4 | Destination never seen in `CLUSTER SLOTS` | A pool for C is created on demand; its connections get the handshake and the client-wide overlay | [`neverSeenDestinationGetsAPoolAndTheHandshake`](ClusterSlotMigrationMockTest.java#L93) |
+| C5 | SMIGRATED without entries | A valid closer: the relax window ends; no slot is rerouted, no pool is dropped, no refresh | [`emptySMigratedOnlyEndsTheRelaxWindow`](ClusterSlotMigrationMockTest.java#L141) |
+| C6 | Copies of one SMIGRATED on three connections to A | Applied once; A's pool destroyed once; no error | [`duplicateClosersOnSeveralConnectionsApplyOnce`](ClusterSlotMigrationMockTest.java#L115) |
+| C7 | Malformed frames: unparseable slots, invalid port, inverted range | Dropped; the connection stays usable; topology and timeouts unchanged | [`malformedClusterFramesAreDroppedAndTheConnectionStaysUsable`](ClusterSlotMigrationMockTest.java#L164) |
+| C8 / B8 | Delta arriving while a refresh holds the slot table | Connections are relaxed while the delta is pending; after the (stale) refresh the delta is applied on top | [`deltaArrivingDuringARefreshIsAppliedAfterItAndRelaxesMeanwhile`](ClusterSlotMigrationMockTest.java#L185) |
+| C9 | Client-side cache enabled | A delta flushes the cache: the next read goes to the server even though the key's slot did not move | [`clientSideCacheIsFlushedWhenADeltaIsApplied`](ClusterSlotMigrationMockTest.java#L222) |
+| C10 | Opener delivered, closer lost, server side moved | The client self-heals through `MOVED` + refresh; the window still expires on the TTL backstop | [`lostCloserSelfHealsThroughMovedAndTheTtlBackstop`](ClusterSlotMigrationMockTest.java#L243) |
+| C11 | Periodic topology refresh running while deltas keep arriving | Every command lands on the current owner, exactly one attempt each, no exception | [`deltasAndPeriodicRefreshesConverge`](ClusterSlotMigrationMockTest.java#L272) |
 
 ## D. Standalone family on a cluster connection
 
@@ -105,9 +105,9 @@ Implemented in [`ClusterSlotMigrationMockTest`](ClusterSlotMigrationMockTest.jav
 
 | ID | Scenario | Expected | Test |
 |---|---|---|---|
-| F1 | `client.close()` | Every node pool closed; all server-side connections gone | [`closingTheClientClosesEveryPoolAndConnection`](ClusterSlotMigrationMockTest.java#L306) |
-| F2 | Pool destroyed by a delta while one of its connections is borrowed | The in-flight command completes, returning the connection does not throw, the connection is not reused | [`sMigratedReroutesInPlaceAndDropsTheDepartedSource`](ClusterSlotMigrationMockTest.java#L42) |
-| F3 | Server drops all connections during an open window | Reconnected connections re-handshake and are relaxed immediately | [`connectionsReopenedDuringAnOpenWindowAreRelaxedFromTheHandshake`](ClusterSlotMigrationMockTest.java#L325) |
+| F1 | `client.close()` | Every node pool closed; all server-side connections gone | [`closingTheClientClosesEveryPoolAndConnection`](ClusterSlotMigrationMockTest.java#L308) |
+| F2 | Pool destroyed by a delta while one of its connections is borrowed | The in-flight command completes, returning the connection does not throw, the connection is not reused | [`sMigratedReroutesInPlaceAndDropsTheDepartedSource`](ClusterSlotMigrationMockTest.java#L45) |
+| F3 | Server drops all connections during an open window | Reconnected connections re-handshake and are relaxed immediately | [`connectionsReopenedDuringAnOpenWindowAreRelaxedFromTheHandshake`](ClusterSlotMigrationMockTest.java#L327) |
 
 ## G. Pub/Sub
 

@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.argThat;
@@ -12,6 +13,7 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import redis.clients.jedis.util.SafeEncoder;
 
 import java.io.IOException;
@@ -20,6 +22,9 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.BuilderFactory;
+import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.ConnectionPoolConfig;
@@ -29,11 +34,13 @@ import redis.clients.jedis.DefaultJedisSocketFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.PushConsumer;
 import redis.clients.jedis.sch.AbstractMaintenanceEventHandlingTest;
 import redis.clients.jedis.sch.MaintenanceEventTestSupport;
 import redis.clients.jedis.sch.AbstractMaintenanceHandshakeTest;
 import redis.clients.jedis.sch.AbstractRelaxedTimeoutBehaviorTest;
+import redis.clients.jedis.util.server.RespResponse;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 /**
@@ -152,6 +159,66 @@ public class CacheConnectionMockTest {
       }
     }
 
+  }
+
+  /**
+   * Entries are evicted through their recorded Redis keys, so a command whose arguments carry no
+   * recorded key (built with {@code add()} instead of {@code key()}, as the generic
+   * {@code sendCommand}/{@code executeCommand} paths do) can never be invalidated by the server and
+   * must not be cached.
+   */
+  @Nested
+  class KeyTrackingTests {
+
+    private final AtomicInteger serverGets = new AtomicInteger();
+
+    @BeforeEach
+    public void countGets() {
+      mockServer.setCommandHandler((args, clientId) -> {
+        if (Protocol.Command.GET.equals(args.getCommand())) {
+          serverGets.incrementAndGet();
+          return RespResponse.bulkString("v");
+        }
+        return null;
+      });
+    }
+
+    @Test
+    public void commandWithoutRecordedKeysIsNotCached() {
+      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().resp3().build();
+      DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(
+          new HostAndPort("localhost", mockServer.getPort()), config);
+
+      try (CacheConnection conn = new CacheConnection(socketFactory, config, cache)) {
+        CommandObject<String> get = new CommandObject<>(
+            new CommandArguments(Protocol.Command.GET).add("k"), BuilderFactory.STRING);
+
+        assertEquals("v", conn.executeCommand(get));
+        assertEquals("v", conn.executeCommand(get));
+
+        assertEquals(2, serverGets.get(), "every call must reach the server");
+        assertEquals(0, cache.getSize());
+        assertEquals(2, cache.getStats().getNonCacheableCount());
+      }
+    }
+
+    @Test
+    public void commandWithRecordedKeyIsCached() {
+      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().resp3().build();
+      DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(
+          new HostAndPort("localhost", mockServer.getPort()), config);
+
+      try (CacheConnection conn = new CacheConnection(socketFactory, config, cache)) {
+        CommandObject<String> get = new CommandObject<>(
+            new CommandArguments(Protocol.Command.GET).key("k"), BuilderFactory.STRING);
+
+        assertEquals("v", conn.executeCommand(get));
+        assertEquals("v", conn.executeCommand(get));
+
+        assertEquals(1, serverGets.get(), "second call must be served from the cache");
+        assertEquals(1, cache.getSize());
+      }
+    }
   }
 
   /**

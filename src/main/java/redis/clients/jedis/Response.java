@@ -5,6 +5,12 @@ import redis.clients.jedis.exceptions.JedisDataException;
 
 public class Response<T> implements Supplier<T> {
   protected T response = null;
+
+  /**
+   * @deprecated This field remains protected for 8.x compatibility and will become private in Jedis
+   *             9.0. Use {@link #get()} to read the response and surface server errors.
+   */
+  @Deprecated
   protected JedisDataException exception = null;
 
   private boolean building = false;
@@ -43,6 +49,11 @@ public class Response<T> implements Supplier<T> {
     return response;
   }
 
+  /**
+   * @deprecated Jedis has had no internal callers for this method since 4.0. It is scheduled for
+   *             removal in Jedis 9.0.
+   */
+  @Deprecated
   public void setDependency(Response<?> dependency) {
     this.dependency = dependency;
   }

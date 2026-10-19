@@ -1,5 +1,6 @@
 package redis.clients.jedis.mcf;
 
+import static redis.clients.jedis.mcf.MultiDbConnectionProviderHelper.activeConnectionPool;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
@@ -27,7 +28,6 @@ import redis.clients.jedis.search.aggr.Reducers;
 import redis.clients.jedis.search.aggr.Row;
 import redis.clients.jedis.search.schemafields.NumericField;
 import redis.clients.jedis.search.schemafields.TextField;
-import redis.clients.jedis.util.ClientTestUtil;
 import redis.clients.jedis.util.TestKeyRegistry;
 
 /**
@@ -82,11 +82,6 @@ public class MultiDbAggregateIterationIT {
     }
   }
 
-  private ConnectionPool activePool() {
-    MultiDbConnectionProvider p = ClientTestUtil.getConnectionProvider(client);
-    return p.getDatabase().getConnectionPool();
-  }
-
   private static AggregationBuilder aggregation() {
     return new AggregationBuilder().groupBy("@name", Reducers.sum("@count").as("sum")).cursor(2,
       10000);
@@ -95,7 +90,7 @@ public class MultiDbAggregateIterationIT {
   /** Regression test for #4799: ftAggregateIteration must return its pooled connection. */
   @Test
   public void ftAggregateIteration_releasesConnection() {
-    ConnectionPool pool = activePool();
+    ConnectionPool pool = activeConnectionPool(client);
 
     List<Row> rows = new ArrayList<>(
         client.ftAggregateIteration(index, aggregation()).collect(new ArrayList<>()));
@@ -107,7 +102,7 @@ public class MultiDbAggregateIterationIT {
   /** Regression test for #4799: ftAggregateIterator must return its pooled connection. */
   @Test
   public void ftAggregateIterator_releasesConnection() {
-    ConnectionPool pool = activePool();
+    ConnectionPool pool = activeConnectionPool(client);
 
     int rows = 0;
     try (AggregateIterator iterator = client.ftAggregateIterator(index, aggregation())) {

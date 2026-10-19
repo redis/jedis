@@ -1,5 +1,6 @@
 package redis.clients.jedis.mcf;
 
+import static redis.clients.jedis.mcf.MultiDbConnectionProviderHelper.activeConnectionPool;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
@@ -17,7 +18,6 @@ import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.MultiDbClient;
 import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
-import redis.clients.jedis.util.ClientTestUtil;
 import redis.clients.jedis.util.TestKeyRegistry;
 
 /**
@@ -56,18 +56,13 @@ public class MultiDbScanIterationIT {
     }
   }
 
-  private ConnectionPool activePool() {
-    MultiDbConnectionProvider p = ClientTestUtil.getConnectionProvider(client);
-    return p.getDatabase().getConnectionPool();
-  }
-
   /** Regression test for #4799: scanIteration must return its pooled connection. */
   @Test
   public void scanIteration_releasesConnection() {
     for (int i = 0; i < 50; i++) {
       client.set(keys.key("key" + i), "v");
     }
-    ConnectionPool pool = activePool();
+    ConnectionPool pool = activeConnectionPool(client);
 
     List<String> found = new ArrayList<>(
         client.scanIteration(10, keys.name("*")).collect(new ArrayList<>()));

@@ -3,7 +3,6 @@ package redis.clients.jedis.sch;
 import static org.awaitility.Awaitility.await;
 
 import java.io.IOException;
-import java.net.SocketException;
 import java.time.Duration;
 import java.util.Collections;
 
@@ -216,15 +215,6 @@ public abstract class AbstractClusterMaintenanceMockTest {
   }
 
   // ---- observation ------------------------------------------------------------------------
-
-  /** The {@code SO_TIMEOUT} currently applied to the connection's socket. */
-  protected static int soTimeout(Connection connection) throws SocketException {
-    return ConnectionTestHelper.getSocket(connection).getSoTimeout();
-  }
-
-  protected static boolean relaxed(Connection connection) {
-    return ConnectionTestHelper.isRelaxedTimeoutActive(connection);
-  }
 
   /** Server-side connection counts move asynchronously to the client's close(). */
   protected static void awaitConnections(TcpMockServer server, int expected) {

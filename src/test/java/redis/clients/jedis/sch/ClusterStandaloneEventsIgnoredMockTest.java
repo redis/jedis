@@ -3,6 +3,8 @@ package redis.clients.jedis.sch;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static redis.clients.jedis.ConnectionTestHelper.getSocketSoTimeout;
+import static redis.clients.jedis.ConnectionTestHelper.isRelaxedTimeoutActive;
 
 import java.net.SocketException;
 import java.util.Collections;
@@ -36,8 +38,8 @@ public class ClusterStandaloneEventsIgnoredMockTest extends AbstractClusterMaint
       serverA.sendPushMessageToAll(MaintenanceEventMessages.failedOver(5, shards));
 
       assertTrue(a.ping(), "all five frames consumed, the reply is aligned");
-      assertFalse(relaxed(a), "no relaxation from the standalone family");
-      assertEquals(SO_TIMEOUT_MS, soTimeout(a));
+      assertFalse(isRelaxedTimeoutActive(a), "no relaxation from the standalone family");
+      assertEquals(SO_TIMEOUT_MS, getSocketSoTimeout(a));
       assertFalse(ConnectionTestHelper.isRetired(a), "no retirement from MOVING");
     }
 

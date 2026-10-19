@@ -8,8 +8,10 @@ import static redis.clients.jedis.ConnectionTestHelper.hasClusterMaintenanceCont
 import static redis.clients.jedis.ConnectionTestHelper.hasExpiringRelaxOverlay;
 import static redis.clients.jedis.ConnectionTestHelper.hasMaintenanceController;
 import static redis.clients.jedis.ConnectionTestHelper.hasMaintenanceEventConsumer;
+import static redis.clients.jedis.ConnectionTestHelper.getConfiguredMaintenanceMode;
 import static redis.clients.jedis.ConnectionTestHelper.hasPoolRelaxOverlay;
-import static redis.clients.jedis.ConnectionTestHelper.isListenerOfPoolController;
+import static redis.clients.jedis.ConnectionTestHelper.hasPoolControllerListener;
+import static redis.clients.jedis.ConnectionTestHelper.isRelaxedTimeoutActive;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -37,7 +39,7 @@ public class ClusterMaintenanceHandshakeMockTest extends AbstractClusterMaintena
   /** Case A1, section A, in ClusterMaintenanceIT.md. */
   @Test
   public void autoOverResp3WiresEveryPooledConnection() {
-    openDefaultClient();
+    openClient(defaultClientConfig(), maintConfig(Mode.AUTO));
     client.set(keyOnA(), "v");
     client.set(keyOnB(), "v");
 
@@ -55,7 +57,7 @@ public class ClusterMaintenanceHandshakeMockTest extends AbstractClusterMaintena
   @Test
   public void autoWithARejectingNodeIsQuietlyOffForThatNodeOnly() {
     handlerA.rejectMaintNotifications(true);
-    openDefaultClient();
+    openClient(defaultClientConfig(), maintConfig(Mode.AUTO));
 
     client.set(keyOnA(), "v"); // no exception: AUTO degrades per connection
     client.set(keyOnB(), "v");
@@ -137,6 +139,8 @@ public class ClusterMaintenanceHandshakeMockTest extends AbstractClusterMaintena
 
     assertEquals(1, handlerA.maintNotificationsHandshakes().size());
     assertTrue(hasClusterMaintenanceController(poolOf(nodeA)));
+    // the handshake and the controller alone would look the same under ENABLED
+    assertEquals(Mode.AUTO, getConfiguredMaintenanceMode(poolOf(nodeA)));
   }
 
   /** Case E4, section E, in ClusterMaintenanceIT.md. */
@@ -163,12 +167,12 @@ public class ClusterMaintenanceHandshakeMockTest extends AbstractClusterMaintena
     ConnectionPool pool = poolOf(node);
     assertTrue(hasClusterMaintenanceController(pool));
     try (Connection connection = client.getConnectionFromSlot(slot)) {
-      assertTrue(isListenerOfPoolController(pool, connection));
+      assertTrue(hasPoolControllerListener(pool, connection));
       assertTrue(hasPoolRelaxOverlay(pool, connection));
       assertFalse(hasExpiringRelaxOverlay(connection),
         "no per-connection window in the cluster family");
       assertTrue(hasMaintenanceEventConsumer(connection));
-      assertFalse(relaxed(connection), "nothing open yet");
+      assertFalse(isRelaxedTimeoutActive(connection), "nothing open yet");
     }
   }
 
@@ -176,7 +180,7 @@ public class ClusterMaintenanceHandshakeMockTest extends AbstractClusterMaintena
     ConnectionPool pool = poolOf(node);
     try (Connection connection = client.getConnectionFromSlot(slot)) {
       assertTrue(connection.ping(), "the connection is usable");
-      assertFalse(isListenerOfPoolController(pool, connection));
+      assertFalse(hasPoolControllerListener(pool, connection));
       assertFalse(hasPoolRelaxOverlay(pool, connection));
       assertFalse(hasExpiringRelaxOverlay(connection));
       assertFalse(hasMaintenanceEventConsumer(connection));

@@ -128,33 +128,27 @@ public final class MaintNotificationsTestSupport {
   }
 
   /** One received maintenance event with its parsed payload, as dispatched to the connection. */
-  public static final class ReceivedEvent {
+  public static class ReceivedEvent {
 
     /** One of the maintenance {@link PushMessageTypes} constants. */
     public final String type;
     public final long seq;
     /** MOVING grace period or opening lead time, in seconds; -1 for closings, which carry none. */
     public final long timeSeconds;
-    /** Affected shard ids, or slot ranges for the cluster family; null for MOVING. */
+    /**
+     * Affected shard ids; null for MOVING and for cluster events ({@link ReceivedClusterEvent}).
+     */
     public final String shardIds;
     /** MOVING target ("host:port"); null for a 'none' rebind and for non-MOVING events. */
     public final String target;
-    /** SMIGRATED entries; empty for every other type. */
-    public final List<SlotMove> moves;
     public final long atNanos = System.nanoTime();
 
     ReceivedEvent(String type, long seq, long timeSeconds, String shardIds, String target) {
-      this(type, seq, timeSeconds, shardIds, target, Collections.emptyList());
-    }
-
-    ReceivedEvent(String type, long seq, long timeSeconds, String shardIds, String target,
-        List<SlotMove> moves) {
       this.type = type;
       this.seq = seq;
       this.timeSeconds = timeSeconds;
       this.shardIds = shardIds;
       this.target = target;
-      this.moves = Collections.unmodifiableList(moves);
     }
 
     @Override
@@ -162,6 +156,26 @@ public final class MaintNotificationsTestSupport {
       return type + "(seq=" + seq + (timeSeconds >= 0 ? ", time=" + timeSeconds : "")
           + (shardIds != null ? ", shards=" + shardIds : "")
           + (target != null ? ", target=" + target : "") + ")";
+    }
+  }
+
+  /**
+   * A received cluster-family event (SMIGRATING / SMIGRATED): no lead time, no shard ids, the
+   * payload is the affected slots.
+   */
+  public static final class ReceivedClusterEvent extends ReceivedEvent {
+
+    /** SMIGRATED entries (none for a bare closer); empty for SMIGRATING. */
+    public final List<SlotMove> moves;
+
+    ReceivedClusterEvent(String type, long seq, List<SlotMove> moves) {
+      super(type, seq, -1, null, null);
+      this.moves = Collections.unmodifiableList(moves);
+    }
+
+    @Override
+    public String toString() {
+      return type + "(seq=" + seq + ", moves=" + moves + ")";
     }
   }
 
@@ -241,7 +255,7 @@ public final class MaintNotificationsTestSupport {
     @Override
     public void onSMigrating(SMigratingEvent e, Connection c) {
       events.add(
-        new ReceivedEvent(PushMessageTypes.SMIGRATING, e.seq, -1, String.valueOf(e.slots), null));
+        new ReceivedClusterEvent(PushMessageTypes.SMIGRATING, e.seq, Collections.emptyList()));
     }
 
     @Override
@@ -250,8 +264,7 @@ public final class MaintNotificationsTestSupport {
       for (SlotMigration migration : e.migrations) {
         moves.add(new SlotMove(migration));
       }
-      events.add(new ReceivedEvent(PushMessageTypes.SMIGRATED, e.seq, -1,
-          String.valueOf(e.migrations), null, moves));
+      events.add(new ReceivedClusterEvent(PushMessageTypes.SMIGRATED, e.seq, moves));
     }
   }
 

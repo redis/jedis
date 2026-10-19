@@ -3,6 +3,8 @@ package redis.clients.jedis.sch;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static redis.clients.jedis.ConnectionTestHelper.getSocketSoTimeout;
+import static redis.clients.jedis.ConnectionTestHelper.isRelaxedTimeoutActive;
 
 import java.util.Arrays;
 import java.util.List;
@@ -59,12 +61,13 @@ public class ClusterMaintenancePubSubMockTest extends AbstractClusterMaintenance
     assertEquals(Arrays.asList("first", "second"), messages);
     try (Connection b = client.getConnectionFromSlot(B_FROM)) {
       assertTrue(b.ping());
-      assertTrue(relaxed(b), "the opener consumed inline opened the client-wide gate");
-      assertEquals(RELAXED_TIMEOUT_MS, soTimeout(b));
+      assertTrue(isRelaxedTimeoutActive(b),
+        "the opener consumed inline opened the client-wide gate");
+      assertEquals(RELAXED_TIMEOUT_MS, getSocketSoTimeout(b));
     }
     try (Connection a = client.getConnectionFromSlot(A_FROM)) {
       assertTrue(a.ping(), "the former subscription connection is back in service");
-      assertTrue(relaxed(a));
+      assertTrue(isRelaxedTimeoutActive(a));
     }
   }
 }

@@ -2,6 +2,7 @@ package redis.clients.jedis.commands;
 
 import java.util.List;
 import java.util.Set;
+import redis.clients.jedis.args.BlessFlag;
 
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.MigrateParams;
@@ -627,4 +628,82 @@ public interface KeyCommands {
    */
   String randomKey();
 
+  /**
+   * <b><a href="https://redis.io/commands/bless-set">BLESS SET Command</a></b>
+   * Turns the given protection flag on for an existing key. A key blessed with
+   * {@link BlessFlag#NO_EVICT} is never chosen as a {@code maxmemory} eviction victim. The
+   * blessing survives value overwrites and is removed only by {@code BLESS CLEAR} or by deleting
+   * the key.
+   * <p>
+   * The key must exist, otherwise the server replies with {@code ERR no such key}. The command is
+   * {@code DENYOOM}: it is rejected while the server is over {@code maxmemory}.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the key to protect
+   * @param flag the protection flag to turn on
+   * @return 1 if the flag was turned on, 0 if the key already carried it
+   * @since 8.1
+   */
+  long blessSet(String key, BlessFlag flag);
+
+  /**
+   * <b><a href="https://redis.io/commands/bless-clear">BLESS CLEAR Command</a></b>
+   * Turns the given protection flag off for an existing key. Unlike {@code BLESS SET}, this
+   * command is allowed while the server is over {@code maxmemory}, so it can be used to recover
+   * memory held by blessed keys.
+   * <p>
+   * The key must exist, otherwise the server replies with {@code ERR no such key}.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the key to unprotect
+   * @param flag the protection flag to turn off
+   * @return 1 if the flag was turned off, 0 if the key did not carry it
+   * @since 8.1
+   */
+  long blessClear(String key, BlessFlag flag);
+
+  /**
+   * <b><a href="https://redis.io/commands/bless-get">BLESS GET Command</a></b>
+   * Returns the protection flags active on an existing key, as the server's wire tokens
+   * (e.g. {@code NO-EVICT}). An unblessed key yields an empty list.
+   * <p>
+   * The key must exist, otherwise the server replies with {@code ERR no such key}.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the key to query
+   * @return the active flag tokens; empty if the key is not blessed
+   * @since 8.1
+   */
+  List<String> blessGet(String key);
+
+  /**
+   * <b><a href="https://redis.io/commands/bless-scan">BLESS SCAN Command</a></b>
+   * Incrementally iterates the keys of the current database that carry the given flag, with the
+   * same cursor contract as {@code SCAN}: start with cursor {@code "0"} and call again with the
+   * returned cursor until it is {@code "0"}. Keys may be returned more than once and in no
+   * particular order.
+   * <p>
+   * The command is keyless and only iterates the node it is sent to; in cluster mode use
+   * {@code UnifiedJedis#blessScanIteration(int, BlessFlag)}, which iterates every node.
+   * <p>
+   * Time complexity: O(1) for every call. O(N) for a complete iteration, where N is the number of
+   * blessed keys.
+   * @param cursor the cursor, {@code "0"} to start an iteration
+   * @param flag the flag to filter on
+   * @return the next cursor and a batch of keys
+   * @since 8.1
+   */
+  ScanResult<String> blessScan(String cursor, BlessFlag flag);
+
+  /**
+   * <b><a href="https://redis.io/commands/bless-scan">BLESS SCAN Command</a></b>
+   * Same as {@link #blessScan(String, BlessFlag)}, sending {@code COUNT count}. The count is a
+   * hint for how many index entries to visit per call; a call may return more or fewer keys.
+   * @param cursor the cursor, {@code "0"} to start an iteration
+   * @param flag the flag to filter on
+   * @param count the COUNT hint, must be at least 1
+   * @return the next cursor and a batch of keys
+   * @since 8.1
+   */
+  ScanResult<String> blessScan(String cursor, BlessFlag flag, int count);
 }

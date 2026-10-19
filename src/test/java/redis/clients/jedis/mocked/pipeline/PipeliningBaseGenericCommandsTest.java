@@ -10,6 +10,7 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.args.BlessFlag;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.MigrateParams;
 import redis.clients.jedis.params.RestoreParams;
@@ -1168,4 +1169,113 @@ public class PipeliningBaseGenericCommandsTest extends PipeliningBaseMockedTestB
     assertThat(response, is(predefinedResponse));
   }
 
+  @Test
+  public void testBlessSet() {
+    when(commandObjects.blessSet("key", BlessFlag.NO_EVICT)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.blessSet("key", BlessFlag.NO_EVICT);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testBlessSetBinary() {
+    byte[] key = "key".getBytes();
+
+    when(commandObjects.blessSet(key, BlessFlag.NO_EVICT)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.blessSet(key, BlessFlag.NO_EVICT);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testBlessClear() {
+    when(commandObjects.blessClear("key", BlessFlag.NO_EVICT)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.blessClear("key", BlessFlag.NO_EVICT);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testBlessClearBinary() {
+    byte[] key = "key".getBytes();
+
+    when(commandObjects.blessClear(key, BlessFlag.NO_EVICT)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.blessClear(key, BlessFlag.NO_EVICT);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testBlessGet() {
+    when(commandObjects.blessGet("key")).thenReturn(listStringCommandObject);
+
+    Response<List<String>> response = pipeliningBase.blessGet("key");
+
+    assertThat(commands, contains(listStringCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testBlessGetBinary() {
+    byte[] key = "key".getBytes();
+
+    when(commandObjects.blessGet(key)).thenReturn(listBytesCommandObject);
+
+    Response<List<byte[]>> response = pipeliningBase.blessGet(key);
+
+    assertThat(commands, contains(listBytesCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testBlessScan() {
+    when(commandObjects.blessScan("0", BlessFlag.NO_EVICT)).thenReturn(scanResultStringCommandObject);
+
+    Response<ScanResult<String>> response = pipeliningBase.blessScan("0", BlessFlag.NO_EVICT);
+
+    assertThat(commands, contains(scanResultStringCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testBlessScanCount() {
+    when(commandObjects.blessScan("0", BlessFlag.NO_EVICT, 10)).thenReturn(scanResultStringCommandObject);
+
+    Response<ScanResult<String>> response = pipeliningBase.blessScan("0", BlessFlag.NO_EVICT, 10);
+
+    assertThat(commands, contains(scanResultStringCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testBlessScanBinary() {
+    byte[] cursor = "0".getBytes();
+
+    when(commandObjects.blessScan(cursor, BlessFlag.NO_EVICT)).thenReturn(scanResultBytesCommandObject);
+
+    Response<ScanResult<byte[]>> response = pipeliningBase.blessScan(cursor, BlessFlag.NO_EVICT);
+
+    assertThat(commands, contains(scanResultBytesCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testBlessScanCountBinary() {
+    byte[] cursor = "0".getBytes();
+
+    when(commandObjects.blessScan(cursor, BlessFlag.NO_EVICT, 10)).thenReturn(scanResultBytesCommandObject);
+
+    Response<ScanResult<byte[]>> response = pipeliningBase.blessScan(cursor, BlessFlag.NO_EVICT, 10);
+
+    assertThat(commands, contains(scanResultBytesCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
 }

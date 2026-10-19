@@ -1,5 +1,6 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.args.BlessFlag;
 import redis.clients.jedis.params.IParams;
 import redis.clients.jedis.params.MSetExParams;
 import redis.clients.jedis.params.ScanParams;
@@ -73,6 +74,29 @@ public class ClusterCommandObjects extends CommandObjects {
       throw new IllegalArgumentException(SCAN_PATTERN_MESSAGE);
     }
     return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params).addHashSlotKey(match).add(TYPE).add(type), BuilderFactory.SCAN_BINARY_RESPONSE);
+  }
+
+  private static final String BLESS_SCAN_MESSAGE = "BLESS SCAN iterates a single node and its cursor"
+      + " is only valid on that node; use blessScanIteration in cluster mode.";
+
+  @Override
+  public final CommandObject<ScanResult<String>> blessScan(String cursor, BlessFlag flag) {
+    throw new UnsupportedOperationException(BLESS_SCAN_MESSAGE);
+  }
+
+  @Override
+  public final CommandObject<ScanResult<String>> blessScan(String cursor, BlessFlag flag, int count) {
+    throw new UnsupportedOperationException(BLESS_SCAN_MESSAGE);
+  }
+
+  @Override
+  public final CommandObject<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag) {
+    throw new UnsupportedOperationException(BLESS_SCAN_MESSAGE);
+  }
+
+  @Override
+  public final CommandObject<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag, int count) {
+    throw new UnsupportedOperationException(BLESS_SCAN_MESSAGE);
   }
 
   @Override

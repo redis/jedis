@@ -89,6 +89,14 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
   private final HealthStatusManager healthStatusManager = new HealthStatusManager();
 
+  @VisibleForTesting
+  HealthStatusManager getHealthStatusManager() {
+    return healthStatusManager;
+  }
+
+  // kept so the very same instance can be unregistered; a fresh method reference never matches
+  private final HealthStatusListener healthStatusListener = this::onHealthStatusChange;
+
   // Flag to control when handleHealthStatusChange should process events (only after initialization)
   private volatile boolean initializationComplete = false;
 
@@ -295,7 +303,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       }
 
       // Remove from health status manager first
-      healthStatusManager.unregisterListener(endpoint, this::onHealthStatusChange);
+      healthStatusManager.unregisterListener(endpoint, healthStatusListener);
       healthStatusManager.remove(endpoint);
 
       // Remove from database map
@@ -352,7 +360,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       HealthCheckStrategy hcs = strategySupplier.get(hostPort(config.getEndpoint()),
         config.getJedisClientConfig());
       // Register listeners BEFORE adding databases to avoid missing events
-      healthStatusManager.registerListener(config.getEndpoint(), this::onHealthStatusChange);
+      healthStatusManager.registerListener(config.getEndpoint(), healthStatusListener);
       HealthCheck hc = healthStatusManager.add(config.getEndpoint(), hcs);
       database = new Database(config.getEndpoint(), pool, retry, hc, circuitBreaker,
           config.getWeight(), multiDbConfig);

@@ -89,6 +89,11 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
   private final HealthStatusManager healthStatusManager = new HealthStatusManager();
 
+  @VisibleForTesting
+  HealthStatusManager getHealthStatusManager() {
+    return healthStatusManager;
+  }
+
   // kept so the very same instance can be unregistered; a fresh method reference never matches
   private final HealthStatusListener healthStatusListener = this::onHealthStatusChange;
 

@@ -209,8 +209,8 @@ class MultiNodePipelineSyncTest {
   }
 
   /**
-   * A failure other than a lost connection is rethrown unchanged from {@code sync()}; the
-   * responses carry it as the cause of a {@link JedisException}, not as a connection error.
+   * A failure other than a lost connection is rethrown unchanged from {@code sync()}; the responses
+   * carry it as the cause of a {@link JedisException}, not as a connection error.
    */
   @Test
   void nonConnectionFailureIsRethrownAndCompletesTheResponses() {

@@ -813,6 +813,11 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     return Collections.singletonMap(connectionPool.getFactory(), connectionPool);
   }
 
+  @Override
+  public Map<?, Pool<Connection>> getPrimaryNodesConnectionMap() {
+    return getConnectionMap();
+  }
+
   public Database getDatabase() {
     return activeDatabase;
   }

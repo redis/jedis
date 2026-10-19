@@ -32,8 +32,12 @@ public abstract class JedisCommandIterationBase<B, D> {
   private boolean iterationCompleted;
 
   protected JedisCommandIterationBase(ConnectionProvider connectionProvider, Builder<B> responseBuilder) {
-    Map connectionMap = connectionProvider.getConnectionMap();
-    ArrayList<Map.Entry> connectionList = new ArrayList<>(connectionMap.entrySet());
+    // Iterate over the primary nodes only. A replica holds the same data as its primary,
+    // so visiting it too would return every entry once per copy; in a cluster with one
+    // replica per shard a SCAN would yield each key twice. Providers without replicas
+    // report the same map for both methods, so non-cluster behavior is unchanged.
+    Map primaryMap = connectionProvider.getPrimaryNodesConnectionMap();
+    ArrayList<Map.Entry> connectionList = new ArrayList<>(primaryMap.entrySet());
     Collections.shuffle(connectionList);
     this.connections = new LinkedList<>(connectionList);
     this.builder = responseBuilder;

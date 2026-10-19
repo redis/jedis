@@ -1120,7 +1120,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     when(connection.executeCommand(any(CommandArguments.class)))
         .thenReturn(Arrays.asList(cursor.getBytes(), Arrays.asList(key1.getBytes(), key2.getBytes())));
 
-    when(connectionProvider.getConnectionMap()).thenAnswer(new Answer<Map<?, ?>>() {
+    when(connectionProvider.getPrimaryNodesConnectionMap()).thenAnswer(new Answer<Map<?, ?>>() {
       @Override
       public Map<?, ?> answer(InvocationOnMock invocationOnMock) {
         return Collections.singletonMap("c", connection);
@@ -1133,7 +1133,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     assertThat(batch.getCursor(), equalTo(cursor));
     assertThat(batch.getResult(), contains(key1, key2));
 
-    verify(connectionProvider).getConnectionMap();
+    verify(connectionProvider).getPrimaryNodesConnectionMap();
   }
 
   @Test
@@ -1146,7 +1146,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     when(connection.executeCommand(any(CommandArguments.class)))
         .thenReturn(Arrays.asList(cursor.getBytes(), Arrays.asList(key1.getBytes(), key2.getBytes())));
 
-    when(connectionProvider.getConnectionMap()).thenAnswer(new Answer<Map<?, ?>>() {
+    when(connectionProvider.getPrimaryNodesConnectionMap()).thenAnswer(new Answer<Map<?, ?>>() {
       @Override
       public Map<?, ?> answer(InvocationOnMock invocationOnMock) {
         return Collections.singletonMap("c", connection);
@@ -1159,7 +1159,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     assertThat(batch.getCursor(), equalTo(cursor));
     assertThat(batch.getResult(), contains(key1, key2));
 
-    verify(connectionProvider).getConnectionMap();
+    verify(connectionProvider).getPrimaryNodesConnectionMap();
   }
 
   @Test

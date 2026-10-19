@@ -37,6 +37,7 @@ import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.ConnectionTestHelper;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.MaintNotificationsTestSupport;
+import redis.clients.jedis.MaintNotificationsTestSupport.ReceivedClusterEvent;
 import redis.clients.jedis.MaintNotificationsTestSupport.ReceivedEvent;
 import redis.clients.jedis.MaintNotificationsTestSupport.ReceivedEvents;
 import redis.clients.jedis.MaintNotificationsTestSupport.SlotMove;
@@ -154,8 +155,8 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
     // S1.2 payload: every event parsed into a usable payload
     obs.check("S1.2 payloads parsed", () -> {
       for (ReceivedEvent event : events) {
-        assertNotNull(event.shardIds, "event without slots: " + event);
-        for (SlotMove move : event.moves) {
+        assertTrue(event instanceof ReceivedClusterEvent, "non-cluster event recorded: " + event);
+        for (SlotMove move : ((ReceivedClusterEvent) event).moves) {
           assertNotEquals(nodeKey(move.src()), nodeKey(move.dest()), "src == dest in " + move);
         }
       }
@@ -357,8 +358,9 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
    */
   private static List<SlotMove> distinctMoves(List<ReceivedEvent> events) {
     return events.stream().filter(event -> PushMessageTypes.SMIGRATED.equals(event.type))
-        .sorted(Comparator.comparingLong(event -> event.seq)).flatMap(event -> event.moves.stream())
-        .distinct().collect(Collectors.toList());
+        .sorted(Comparator.comparingLong(event -> event.seq))
+        .flatMap(event -> ((ReceivedClusterEvent) event).moves.stream()).distinct()
+        .collect(Collectors.toList());
   }
 
   private void logReception(Scenario scenario) {

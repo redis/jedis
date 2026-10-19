@@ -6,6 +6,13 @@ import redis.clients.jedis.exceptions.JedisException;
 
 public class Response<T> implements Supplier<T> {
   protected T response = null;
+
+  /**
+   * @deprecated the error reply kept here will be merged with the read failure kept by
+   * {@code completeExceptionally(Throwable)} into a single private {@link JedisException} field in
+   * Jedis 9.0. Subclasses must stop reading or writing this field.
+   */
+  @Deprecated
   protected JedisDataException exception = null;
   // The failure that stopped the reply from being read; kept apart from the error reply above,
   // whose protected type subclasses may rely on.
@@ -67,6 +74,12 @@ public class Response<T> implements Supplier<T> {
     return response;
   }
 
+  /**
+   * @deprecated has had no caller since the Jedis 4 rewrite dropped {@code MULTI} in a pipeline,
+   * and will be removed in Jedis 9.0 together with the {@code dependency} field and the branch it
+   * drives in {@link #get()}. Nothing replaces it.
+   */
+  @Deprecated
   public void setDependency(Response<?> dependency) {
     this.dependency = dependency;
   }

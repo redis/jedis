@@ -10,14 +10,12 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.util.ArrayList;
-import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import com.redis.test.fi.Scenario;
@@ -82,8 +80,7 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
   }
 
   /** Adds the row; fails when the FI does not offer the trigger or the variant. */
-  private static void row(List<Scenario> rows, SlotMigrateEffect effect, String trigger,
-      String config) {
+  static void row(List<Scenario> rows, SlotMigrateEffect effect, String trigger, String config) {
     Optional<Trigger> offered = CLUSTER_CATALOG.effect(effect).triggers().stream()
         .filter(t -> t.name().equals(trigger)).findFirst();
     if (!offered.isPresent() || !offered.get().offers(config)) {
@@ -173,23 +170,7 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
 
     // S3.1 owners: every moved slot routes to dest, every other slot is unchanged
     obs.check("S3.1 slot owners follow the deltas", () -> {
-      List<String> mismatches = new ArrayList<>();
-      boolean[] moved = new boolean[ownerBefore.length];
-      for (SlotMove move : distinctMoves) {
-        move.forEachSlot(slot -> {
-          moved[slot] = true;
-          if (!nodeKey(move.dest()).equals(nodeKey(ownerAfter[slot]))) {
-            mismatches
-                .add("slot " + slot + " -> " + ownerAfter[slot] + ", expected " + move.dest());
-          }
-        });
-      }
-      for (int slot = 0; slot < ownerBefore.length; slot++) {
-        if (!moved[slot] && !nodeKey(ownerBefore[slot]).equals(nodeKey(ownerAfter[slot]))) {
-          mismatches.add("unmoved slot " + slot + " changed owner " + ownerBefore[slot] + " -> "
-              + ownerAfter[slot]);
-        }
-      }
+      List<String> mismatches = ownerMismatches(ownerBefore, ownerAfter, distinctMoves);
       assertTrue(mismatches.isEmpty(), mismatches.size() + " owner mismatches, first: "
           + mismatches.subList(0, Math.min(5, mismatches.size())));
     });
@@ -350,17 +331,6 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
       obs.check("S3.4 pinned connection to removed " + entry.getKey() + " returns cleanly",
         conn::close);
     }
-  }
-
-  /**
-   * Every SMIGRATED entry read on any pinned connection, once each and in seq order. The same push
-   * reaches every connection, so the recordings repeat each entry once per connection that read it.
-   */
-  private static List<SlotMove> distinctMoves(List<ReceivedEvent> events) {
-    return events.stream().filter(event -> PushMessageTypes.SMIGRATED.equals(event.type))
-        .sorted(Comparator.comparingLong(event -> event.seq))
-        .flatMap(event -> ((ReceivedClusterEvent) event).moves.stream()).distinct()
-        .collect(Collectors.toList());
   }
 
   private void logReception(Scenario scenario) {

@@ -1,10 +1,12 @@
 package redis.clients.jedis.scenario;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -12,10 +14,13 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.IntPredicate;
 import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import com.redis.test.fi.Database;
+import com.redis.test.fi.Scenario;
 import com.redis.test.fi.SlotMigrateEffect;
 import com.redis.test.fi.TriggerCatalog;
 
@@ -32,12 +37,17 @@ import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClusterInfoCache;
 import redis.clients.jedis.MaintNotificationsTestSupport;
+import redis.clients.jedis.MaintNotificationsTestSupport.ReceivedClusterEvent;
 import redis.clients.jedis.MaintNotificationsTestSupport.ReceivedEvent;
 import redis.clients.jedis.MaintNotificationsTestSupport.ReceivedEvents;
+import redis.clients.jedis.MaintNotificationsTestSupport.SlotMove;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.PushMessageTypes;
 import redis.clients.jedis.RedisClusterClient;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.SslOptions;
+import redis.clients.jedis.builders.ClusterClientBuilder;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
@@ -69,6 +79,8 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
   RedisClusterClient client;
   /** Maintenance notifications off; only reads {@code CLUSTER SLOTS} as the server-side truth. */
   RedisClusterClient verification;
+  /** Further clients a test opened through {@link #openClient}; closed on teardown. */
+  final List<RedisClusterClient> extraClients = new ArrayList<>();
 
   /** One borrowed connection per node, keyed by node; pushes are read through these. */
   final Map<HostAndPort, Connection> pinned = new LinkedHashMap<>();
@@ -90,14 +102,55 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
    * silent retry.
    */
   RedisClusterClient openObserver(Database database) {
+    return openObserver(database, config -> {
+    }, builder -> {
+    });
+  }
+
+  /**
+   * As {@link #openObserver(Database)}, with a test's own additions applied last: to the client
+   * config (e.g. a larger socket timeout) and to the builder (e.g. a periodic refresh or a cache).
+   */
+  RedisClusterClient openObserver(Database database,
+      Consumer<DefaultJedisClientConfig.Builder> clientConfig,
+      Consumer<ClusterClientBuilder<RedisClusterClient>> builder) {
     GenericObjectPoolConfig<Connection> poolConfig = new GenericObjectPoolConfig<>();
     poolConfig.setMaxTotal(3);
-    DefaultJedisClientConfig.Builder config = clientConfig(database);
-    MaintNotificationsObserverBase.observerClientConfig(config);
-    client = RedisClusterClient.builder().nodes(seed(database)).clientConfig(config.build())
-        .poolConfig(poolConfig).maintenanceNotifications(observerMaintenance()).maxAttempts(1)
-        .build();
+    client = build(database, observerMaintenance(), config -> {
+      MaintNotificationsObserverBase.observerClientConfig(config);
+      clientConfig.accept(config);
+    }, b -> {
+      b.poolConfig(poolConfig).maxAttempts(1);
+      builder.accept(b);
+    });
     return client;
+  }
+
+  /**
+   * Opens a further client on the database and registers it for teardown. RESP3 (the notifications
+   * need it) plus the database credentials and TLS trust; everything else is stock unless the
+   * consumers add it. Used for stock traffic clients and the handshake matrix.
+   */
+  RedisClusterClient openClient(Database database, MaintenanceNotificationsConfig maintenance,
+      Consumer<DefaultJedisClientConfig.Builder> clientConfig,
+      Consumer<ClusterClientBuilder<RedisClusterClient>> builder) {
+    RedisClusterClient opened = build(database, maintenance, config -> {
+      config.protocol(RedisProtocol.RESP3);
+      clientConfig.accept(config);
+    }, builder);
+    extraClients.add(opened);
+    return opened;
+  }
+
+  private RedisClusterClient build(Database database, MaintenanceNotificationsConfig maintenance,
+      Consumer<DefaultJedisClientConfig.Builder> clientConfig,
+      Consumer<ClusterClientBuilder<RedisClusterClient>> builder) {
+    DefaultJedisClientConfig.Builder config = clientConfig(database);
+    clientConfig.accept(config);
+    ClusterClientBuilder<RedisClusterClient> b = RedisClusterClient.builder().nodes(seed(database))
+        .clientConfig(config.build()).maintenanceNotifications(maintenance);
+    builder.accept(b);
+    return b.build();
   }
 
   /** Opens the verification client: stock settings, maintenance notifications disabled. */
@@ -119,6 +172,39 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
 
   private static Set<HostAndPort> seed(Database database) {
     return Collections.singleton(new HostAndPort(database.host(), database.port()));
+  }
+
+  // --- shared databases ---
+
+  /**
+   * One catalog row from a fresh discovery. The FI names and ports every discovered dbconfig
+   * uniquely, so a database is never created from a dbconfig that already produced one.
+   */
+  static Scenario freshScenario(SlotMigrateEffect effect, String trigger, String config) {
+    return faultInjector.discover(effect).trigger(trigger).scenario(config);
+  }
+
+  /**
+   * Provisions a database a whole class shares (released by the class, not by the per-test
+   * teardown, which only knows {@link #database}).
+   */
+  static Database provisionShared(Scenario scenario) {
+    Database shared = faultInjector.provision(scenario);
+    awaitEndpointConnectable(shared.endpoint());
+    return shared;
+  }
+
+  /**
+   * Gate for a method on a shared database: the previous method's effect must be over on the
+   * server. A fresh client's own state cannot tell (it has read no push), so the FI is asked.
+   */
+  static void assertNoEffectRunning(String actionId) {
+    if (actionId == null) {
+      return;
+    }
+    String status = faultInjector.actionStatus(actionId);
+    assertFalse("running".equals(status) || "pending".equals(status),
+      "the previous effect (" + actionId + ") is still " + status);
   }
 
   // --- topology snapshots ---
@@ -163,6 +249,75 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
     }
   }
 
+  /**
+   * The maximal runs of consecutive slots with one owner, as inclusive {@code [from, to]} pairs:
+   * the shard layout as the client sees it. One key or channel per range reaches every shard.
+   */
+  static List<int[]> ownerRanges(HostAndPort[] owners) {
+    List<int[]> ranges = new ArrayList<>();
+    int from = 0;
+    for (int slot = 1; slot <= owners.length; slot++) {
+      if (slot == owners.length || !sameNode(owners[slot], owners[from])) {
+        ranges.add(new int[] { from, slot - 1 });
+        from = slot;
+      }
+    }
+    return ranges;
+  }
+
+  private static boolean sameNode(HostAndPort a, HostAndPort b) {
+    return a == null ? b == null : b != null && nodeKey(a).equals(nodeKey(b));
+  }
+
+  /** One key per owner range, so a round over them touches every shard. */
+  static List<String> keysAcrossRanges(String prefix, HostAndPort[] owners) {
+    List<String> keys = new ArrayList<>();
+    int i = 0;
+    for (int[] range : ownerRanges(owners)) {
+      keys.add(keyInSlots(prefix + ":" + i++, slot -> slot >= range[0] && slot <= range[1]));
+    }
+    return keys;
+  }
+
+  // --- deltas ---
+
+  /**
+   * Every SMIGRATED entry read on any recorded connection, once each and in seq order. The same
+   * push reaches every connection, so the recordings repeat each entry once per connection that
+   * read it.
+   */
+  static List<SlotMove> distinctMoves(List<ReceivedEvent> events) {
+    return events.stream().filter(event -> PushMessageTypes.SMIGRATED.equals(event.type))
+        .sorted(Comparator.comparingLong(event -> event.seq))
+        .flatMap(event -> ((ReceivedClusterEvent) event).moves.stream()).distinct()
+        .collect(Collectors.toList());
+  }
+
+  /**
+   * S3.1: every slot of every delta must route to the delta's destination, and every other slot
+   * must keep its owner. Returns the violations, empty when the slot map followed the deltas.
+   */
+  static List<String> ownerMismatches(HostAndPort[] ownerBefore, HostAndPort[] ownerAfter,
+      List<SlotMove> moves) {
+    List<String> mismatches = new ArrayList<>();
+    boolean[] moved = new boolean[ownerBefore.length];
+    for (SlotMove move : moves) {
+      move.forEachSlot(slot -> {
+        moved[slot] = true;
+        if (!nodeKey(move.dest()).equals(nodeKey(ownerAfter[slot]))) {
+          mismatches.add("slot " + slot + " -> " + ownerAfter[slot] + ", expected " + move.dest());
+        }
+      });
+    }
+    for (int slot = 0; slot < ownerBefore.length; slot++) {
+      if (!moved[slot] && !nodeKey(ownerBefore[slot]).equals(nodeKey(ownerAfter[slot]))) {
+        mismatches.add("unmoved slot " + slot + " changed owner " + ownerBefore[slot] + " -> "
+            + ownerAfter[slot]);
+      }
+    }
+    return mismatches;
+  }
+
   // --- pinned connections ---
 
   /**
@@ -204,14 +359,31 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
    * recorded a SMIGRATING, so the others are left unread since their previous observation. Returns
    * whether one did.
    */
-  private boolean observeUntilSMigrating() {
+  private boolean observeUntilSMigrating(long seqFloor) {
     for (Map.Entry<HostAndPort, Connection> entry : livePinned().entrySet()) {
       observe(entry.getKey(), entry.getValue());
-      if (recorded.get(entry.getKey()).sMigratingReceived()) {
+      if (recordedSMigratingAfter(recorded.get(entry.getKey()), seqFloor)) {
         return true;
       }
     }
     return false;
+  }
+
+  private static boolean recordedSMigratingAfter(ReceivedEvents events, long seqFloor) {
+    return events.all().stream()
+        .anyMatch(e -> PushMessageTypes.SMIGRATING.equals(e.type) && e.seq > seqFloor);
+  }
+
+  /** The highest seq recorded on any pinned connection, or -1 before the first push. */
+  long maxSeqRecorded() {
+    return allEvents().stream().mapToLong(e -> e.seq).max().orElse(-1);
+  }
+
+  /**
+   * The recorded events with a seq above {@code seqFloor}: one firing's worth on a reused client.
+   */
+  List<ReceivedEvent> eventsAfter(long seqFloor) {
+    return allEvents().stream().filter(e -> e.seq > seqFloor).collect(Collectors.toList());
   }
 
   /**
@@ -271,15 +443,23 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
    * client-wide gate check (S2.1) needs. Fails when the effect completes without one.
    */
   void awaitFirstSMigrating() {
+    awaitSMigratingAfter(-1);
+  }
+
+  /**
+   * As {@link #awaitFirstSMigrating()} for a later firing on the same client: a push newer than
+   * {@code seqFloor}.
+   */
+  void awaitSMigratingAfter(long seqFloor) {
     long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(FIRST_PUSH_TIMEOUT_MS);
     while (System.nanoTime() < deadline) {
-      if (observeUntilSMigrating()) {
+      if (observeUntilSMigrating(seqFloor)) {
         return;
       }
       if (effectDone()) {
         assertEffectSucceeded();
         // the effect finished without a push being read yet: give the stream one more pass
-        if (observeUntilSMigrating()) {
+        if (observeUntilSMigrating(seqFloor)) {
           return;
         }
         fail("effect completed but no SMIGRATING was received on any pinned connection: "
@@ -357,9 +537,20 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
           client = null;
         }
       } finally {
-        if (verification != null) {
-          verification.close();
-          verification = null;
+        try {
+          if (verification != null) {
+            verification.close();
+            verification = null;
+          }
+        } finally {
+          for (RedisClusterClient extra : extraClients) {
+            try {
+              extra.close();
+            } catch (RuntimeException e) {
+              logger.warn("closing an extra client threw", e);
+            }
+          }
+          extraClients.clear();
         }
       }
     }

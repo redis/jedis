@@ -12,13 +12,13 @@ to the mock cases (`C2`, `C4`, `F2`, ...) of the mock plan where a scenario case
 | Section | Topic | Test class |
 |---|---|---|
 | [S1](#s1-reception-and-payload) | Reception and payload | [`ClusterMaintNotificationsIT`](ClusterMaintNotificationsIT.java) |
-| [S2](#s2-relaxed-timeouts) | Relaxed timeouts, client-wide | [`ClusterMaintNotificationsIT`](ClusterMaintNotificationsIT.java) (S2.1, S2.2); S2.3, S2.4 planned |
-| [S3](#s3-slot-map-and-pools) | Slot map and pools follow the deltas | [`ClusterMaintNotificationsIT`](ClusterMaintNotificationsIT.java) (S3.1 to S3.5); S3.6 to S3.8 planned |
-| [S4](#s4-connections-opened-during-a-window) | Connections opened during a window | planned |
-| [S5](#s5-traffic-continuity) | Traffic continuity, black box | planned |
-| [S6](#s6-tls) | TLS | planned |
-| [S8](#s8-configuration-and-handshake) | Configuration and handshake | planned |
-| [S9](#s9-pubsub) | Sharded pub/sub across a migration | planned |
+| [S2](#s2-relaxed-timeouts) | Relaxed timeouts, client-wide | [`ClusterMaintNotificationsIT`](ClusterMaintNotificationsIT.java) (S2.1, S2.2); [`ClusterMaintNotificationsTimeoutIT`](ClusterMaintNotificationsTimeoutIT.java) (S2.3, S2.4) |
+| [S3](#s3-slot-map-and-pools) | Slot map and pools follow the deltas | [`ClusterMaintNotificationsIT`](ClusterMaintNotificationsIT.java) (S3.1 to S3.5); [`ClusterMaintNotificationsFeatureInteractionIT`](ClusterMaintNotificationsFeatureInteractionIT.java) (S3.6 to S3.8) |
+| [S4](#s4-connections-opened-during-a-window) | Connections opened during a window | [`ClusterMaintNotificationsTimeoutIT`](ClusterMaintNotificationsTimeoutIT.java) |
+| [S5](#s5-traffic-continuity) | Traffic continuity, black box | [`ClusterMaintenanceTrafficResilienceIT`](ClusterMaintenanceTrafficResilienceIT.java) |
+| [S6](#s6-tls) | TLS | [`ClusterMaintNotificationsTlsIT`](ClusterMaintNotificationsTlsIT.java) |
+| [S8](#s8-configuration-and-handshake) | Configuration and handshake | [`ClusterMaintNotificationsConfigIT`](ClusterMaintNotificationsConfigIT.java) |
+| [S9](#s9-pubsub) | Sharded pub/sub across a migration | [`ClusterMaintNotificationsFeatureInteractionIT`](ClusterMaintNotificationsFeatureInteractionIT.java) |
 | [S10](#s10-lifecycle) | Lifecycle | [`ClusterMaintNotificationsIT`](ClusterMaintNotificationsIT.java) |
 
 (S7, endpoint-type variants, is not a section of its own: it is the `ip` / `hostname` column of
@@ -64,8 +64,8 @@ asserted where a client requirement rests on it.
 |---|---|---|
 | S2.1 | Right after the first `SMIGRATING` is read on any one pinned connection, and before any other pinned connection reads anything: `hasActiveMigration` is true, at least one window is open, and every pinned connection is relaxed (`isRelaxedTimeoutActive`, effective timeout 30 000; both read without a round-trip), including those whose own push is still unread (named in the observation; only the gate can have relaxed them). Not observable when `SMIGRATED` was buffered behind the same reply as the first `SMIGRATING` (a sub-second window): logged and skipped for that row. Mock B1 to B4. | `migrationIsHandled`, step 3 |
 | S2.2 | After the settle rule: no active migration, zero open windows, and every surviving pinned connection is back at the 1000 ms base on its next command. | `migrationIsHandled`, after step 5 |
-| S2.3 | Behavioural proof of relaxation: a blocking command with a 3 s server-side delay on a slot that is not moving succeeds inside a long window and times out at the 2 s blocking base after it. Needs a window longer than the probe (`remove-add` / `migrate`). | planned, `ClusterMaintNotificationsTimeoutIT` |
-| S2.4 | Relaxation never tightens: a client configured with a 60 000 ms socket timeout keeps it during the window. Mock B7. | planned, `ClusterMaintNotificationsTimeoutIT` |
+| S2.3 | Behavioural proof of relaxation: a blocking command with a 3 s server-side delay on a slot that is not moving succeeds inside a long window and times out at the 2 s blocking base after it. Needs a window longer than the probe (`remove-add` / `migrate`); skipped by assumption when the window had already closed when the first `SMIGRATING` was read. | `ClusterMaintNotificationsTimeoutIT.blockingCommandSucceedsInsideTheWindow` |
+| S2.4 | Relaxation never tightens: a client configured with a 60 000 ms socket timeout keeps it before, during and after the window. Mock B7. | `ClusterMaintNotificationsTimeoutIT.relaxationNeverTightensALargerTimeout` |
 
 ### S3. Slot map and pools
 
@@ -76,46 +76,46 @@ asserted where a client requirement rests on it.
 | S3.3 | `add` and the added side of `remove-add`: the node set gained exactly one key, equal to a `dest`; its pool carries the cluster maintenance controller and serves a PING. Mock C4. | rows 1, 3, 5 |
 | S3.4 | `remove` and the removed side of `remove-add`: the node set lost exactly one key, equal to a `src` that owns no slot afterwards; its pool is closed; the pinned connection to it completed the PING that carried the push and returns to its destroyed pool without throwing. Mock C2, F2. | rows 1, 4, 6 |
 | S3.5 | What the application sees after the settle rule: through the observer (`maxAttempts(1)`), one `SET` + `GET` per moved range and per surviving node's unmoved range each return the value. Zero `MOVED`, zero failed connections, zero other exceptions, asserted separately so the report names the kind. A `MOVED` here means the slot map was not applied (S3.1), a failed connection that a pool is unusable (S3.3); the DMC's post-`SMIGRATED` forwarding grace can hide such a defect but never cause one, so the case does not depend on it. The verification client's node set must equal the observer's. | `migrationIsHandled`, step 6 |
-| S3.6 | Repeated migrations on one client and one database: `seq` monotonic per connection across runs, S3.1 / S3.2 hold after each, windows back to zero each time. | planned, `ClusterMaintNotificationsFeatureInteractionIT` |
-| S3.7 | Periodic topology refresh (2 s) interleaving with deltas: every command gets a definitive outcome, final owners equal a fresh `CLUSTER SLOTS`. Mock C8, C11. | planned, same class |
-| S3.8 | Client-side cache: a value cached before the move is re-read from the server after the delta. Mock C9. | planned, same class |
+| S3.6 | Three migrations on one client, one database and one set of pinned connections: each run's deltas are applied on top of the previous state (S3.1), the node set never changes (S3.2), no window is left open after each run, and the `seq` a connection reads only ever increases. | `ClusterMaintNotificationsFeatureInteractionIT.repeatedMigrationsOnOneClient` |
+| S3.7 | Periodic topology refresh (2 s) interleaving with deltas: every `SET` / `GET` issued during the effect through the `maxAttempts(1)` observer succeeds (one attempt, no `MOVED`, no failed connection), and the final owners equal a fresh `CLUSTER SLOTS`. Mock C8, C11. | `ClusterMaintNotificationsFeatureInteractionIT.deltasInterleaveWithPeriodicRefresh` |
+| S3.8 | Client-side cache: a `GET` cached before the move (a hit on the second read) is gone after the delta: the cache's flush count rose, its size is 0, and the next read is a cache miss served by the server. Mock C9. | `ClusterMaintNotificationsFeatureInteractionIT.clientSideCacheIsFlushedByADelta` |
 
 ### S4. Connections opened during a window
 
 | Id | Expected | Where |
 |---|---|---|
-| S4.1 | Connections created while a window is open are relaxed from their first command (handshake under the gate), including one to the departing node, which after `SMIGRATED` returns to its destroyed pool without throwing. Whether the server also sends `SMIGRATING` to the late connection is logged. Mock A6, F3. | planned, `ClusterMaintNotificationsTimeoutIT`, `remove-add` / `migrate` |
+| S4.1 | Connections created while a window is open are relaxed from their first command (handshake under the gate), including one to the departing node, which after `SMIGRATED` returns to its destroyed pool without throwing. Whether the server also sends `SMIGRATING` to the late connection is logged. The pinned connection already holds a pool's only idle connection, so the extra borrow creates a new one. Mock A6, F3. | `ClusterMaintNotificationsTimeoutIT.connectionsOpenedDuringTheWindow`, `remove-add` / `migrate` |
 
 ### S5. Traffic continuity
 
 | Id | Expected | Where |
 |---|---|---|
-| S5.1 | A stock `RedisClusterClient` (AUTO mode, default retries) with worker threads doing `SET` / `GET` over every shard across the effect sees zero command errors; every key written is readable afterwards; no worker left in flight. | planned, `ClusterMaintenanceTrafficResilienceIT` |
-| S5.2 | The same traffic through a `maxAttempts(1)` client reports how many commands the application would have seen fail without retries. Report only. | planned, same class |
-| S5.3 | Negative control (opt-in `-Dsch.negativeControl=true`): traffic with notifications disabled and `maxAttempts(1)` is expected to see `MOVED` failures, showing what the notifications bought. | planned, same class |
+| S5.1 | A stock `RedisClusterClient` (RESP3, AUTO mode, default retries) with worker threads doing `SET` / `GET` on one key per owner range across the effect sees zero command errors; every key written exists afterwards; no worker left in flight. Rows: `remove-add` / `migrate`, `slot-shuffle` / `failover`, `remove` / `reshard`. | `ClusterMaintenanceTrafficResilienceIT.trafficContinues` |
+| S5.2 | The same traffic through a `maxAttempts(1)` client on the same database reports how many commands the application would have seen fail without retries. Report only. | same method |
+| S5.3 | Negative control (opt-in `-Dsch.negativeControl=true`): traffic with notifications disabled and `maxAttempts(1)` across `remove-add` / `migrate` is expected to see failures, showing what the notifications bought. | `ClusterMaintenanceTrafficResilienceIT.trafficDisruptedWithoutMaintenance` |
 
 ### S6. TLS
 
 | Id | Expected | Where |
 |---|---|---|
-| S6.1 | S1.1, S1.3, S2.1, S2.2, S3.1, S3.3, S3.4 hold over `rediss://` with the truststore pinned to the server chain and default hostname verification, on `remove-add` / `migrate` with the `hostname` variant (the FQDN in `SMIGRATED` is verified against the new node's certificate). | planned, `ClusterMaintNotificationsTlsIT` |
+| S6.1 | S1.1, S1.3, S2.1, S2.2, S3.1, S3.3, S3.4 hold over `rediss://` with the truststore pinned to the server chain and default hostname verification, on `remove-add` / `migrate` with the `hostname` variant (the FQDN in `SMIGRATED` is verified against the new node's certificate). The class inherits `migrationIsHandled` from `ClusterMaintNotificationsIT` and supplies the one TLS row as its parameter source. | `ClusterMaintNotificationsTlsIT` |
 
 ### S8. Configuration and handshake
 
 | Id | Expected | Where |
 |---|---|---|
-| S8.1 | ENABLED and AUTO over RESP3: `CLIENT MAINT_NOTIFICATIONS_INFO` reports enabled on every node; every pool has the cluster maintenance controller. | planned, `ClusterMaintNotificationsConfigIT` |
-| S8.2 | DISABLED: reports disabled on every node; no pool has a controller. | planned, same class |
-| S8.3 | DISABLED during a real migration: no event recorded, timeouts unchanged, commands still succeed through `MOVED` handling and refresh. | planned, same class |
-| S8.4 | AUTO over RESP2: no handshake, commands work. | planned, same class |
-| S8.5 | ENABLED over RESP2: fails at build or first command with a clear exception. | planned, same class |
+| S8.1 | ENABLED and AUTO over RESP3: `CLIENT MAINT_NOTIFICATIONS_INFO` reports `on` on every node; every pool has the cluster maintenance controller. | `ClusterMaintNotificationsConfigIT.enabledAndAutoActivateNotificationsOnEveryNode` |
+| S8.2 | DISABLED: reports `off` on every node; no pool has a controller. | `ClusterMaintNotificationsConfigIT.disabledDoesNotActivateNotificationsAnywhere` |
+| S8.3 | DISABLED during a real migration: no push dispatched to its connections, timeouts unchanged, `SET` / `GET` over every range still succeed through the stock `MOVED` handling and refresh. | `ClusterMaintNotificationsConfigIT.disabledClientIsUnaffectedByARealMigration` |
+| S8.4 | AUTO over RESP2: no push consumer on any connection, commands work. | `ClusterMaintNotificationsConfigIT.autoOverResp2SendsNoHandshakeAndWorks` |
+| S8.5 | ENABLED over RESP2: fails at build or first command with a `JedisException`. | `ClusterMaintNotificationsConfigIT.enabledOverResp2Fails` |
 
 ### S9. Pub/Sub
 
 | Id | Expected | Where |
 |---|---|---|
-| S9.1 | A `JedisShardedPubSub` subscription on channels whose slots do not move consumes `SMIGRATING` / `SMIGRATED` inline; messages published before and after the move are delivered in order; the client-wide gate opens from the subscribed connection's push. Channel selection pins the FI's `source_node` and subscribes one channel per shard of that node plus one elsewhere, so which channels are non-moving is known after the fact. Mock G1. | planned, `ClusterMaintNotificationsFeatureInteractionIT` |
-| S9.2 | The one subscribed channel that turned out to be in the moved shard: behaviour documented, no assertion until the contract is agreed. | planned, same class |
+| S9.1 | One `JedisShardedPubSub` subscription per owner range, each on its own connection borrowed from the observer and recorded. Messages published before and after the move arrive in order on every channel whose slot did not move; at least one subscribed connection recorded `SMIGRATING` and `SMIGRATED` (consumed inline, between messages); the client-wide gate opens from a subscribed connection's push (no pinned connection is pumped) and no window is left once the closers were consumed. Which channel moved is known after the fact from the recorded deltas: exactly one shard moves, so all but one channel are provably non-moving. Mock G1. | `ClusterMaintNotificationsFeatureInteractionIT.shardedPubSubSurvivesAMigration` |
+| S9.2 | The one subscribed channel that turned out to be in the moved shard: its messages are logged, not asserted, until the contract is agreed. | same method |
 
 ### S10. Lifecycle
 

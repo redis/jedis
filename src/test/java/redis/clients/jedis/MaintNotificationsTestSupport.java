@@ -165,17 +165,44 @@ public final class MaintNotificationsTestSupport {
    */
   public static final class ReceivedClusterEvent extends ReceivedEvent {
 
+    /** The announced slots in wire form ({@code "123,456,789-1000"}); for SMIGRATED, per entry. */
+    public final String slots;
     /** SMIGRATED entries (none for a bare closer); empty for SMIGRATING. */
     public final List<SlotMove> moves;
+    private final HashSlotRanges announced;
 
-    ReceivedClusterEvent(String type, long seq, List<SlotMove> moves) {
-      super(type, seq, -1, null, null);
+    /** A SMIGRATING: the range announced as about to move. */
+    ReceivedClusterEvent(long seq, HashSlotRanges announced) {
+      super(PushMessageTypes.SMIGRATING, seq, -1, null, null);
+      this.announced = announced;
+      this.slots = announced.toString();
+      this.moves = Collections.emptyList();
+    }
+
+    /** A SMIGRATED: its entries, possibly none for a bare closer. */
+    ReceivedClusterEvent(long seq, List<SlotMove> moves) {
+      super(PushMessageTypes.SMIGRATED, seq, -1, null, null);
+      this.announced = null;
+      this.slots = String.valueOf(moves);
       this.moves = Collections.unmodifiableList(moves);
+    }
+
+    /** Whether the event names {@code slot}: in a SMIGRATING's range, or in a SMIGRATED entry. */
+    public boolean contains(int slot) {
+      if (announced != null) {
+        return announced.contains(slot);
+      }
+      for (SlotMove move : moves) {
+        if (move.contains(slot)) {
+          return true;
+        }
+      }
+      return false;
     }
 
     @Override
     public String toString() {
-      return type + "(seq=" + seq + ", moves=" + moves + ")";
+      return type + "(seq=" + seq + ", slots=" + slots + ")";
     }
   }
 
@@ -254,8 +281,7 @@ public final class MaintNotificationsTestSupport {
 
     @Override
     public void onSMigrating(SMigratingEvent e, Connection c) {
-      events.add(
-        new ReceivedClusterEvent(PushMessageTypes.SMIGRATING, e.seq, Collections.emptyList()));
+      events.add(new ReceivedClusterEvent(e.seq, e.slots));
     }
 
     @Override
@@ -264,7 +290,7 @@ public final class MaintNotificationsTestSupport {
       for (SlotMigration migration : e.migrations) {
         moves.add(new SlotMove(migration));
       }
-      events.add(new ReceivedClusterEvent(PushMessageTypes.SMIGRATED, e.seq, moves));
+      events.add(new ReceivedClusterEvent(e.seq, moves));
     }
   }
 

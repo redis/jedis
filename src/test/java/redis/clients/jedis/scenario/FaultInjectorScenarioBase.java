@@ -153,7 +153,11 @@ abstract class FaultInjectorScenarioBase {
    * otherwise auto-select (slot-migrate: {@code source_node}, {@code target_node}, ...).
    */
   void startEffect(Scenario scenario, Map<String, Object> extra) {
-    Database target = database;
+    startEffect(database, scenario, extra);
+  }
+
+  /** As {@link #startEffect(Scenario, Map)} on a database other than the per-test one. */
+  void startEffect(Database target, Scenario scenario, Map<String, Object> extra) {
     long budget = faultInjector.effectTimeout(scenario).toMillis() + EFFECT_JOIN_GRACE_MS;
     effectJoinTimeoutMillis = Math.max(effectJoinTimeoutMillis, budget);
     Thread thread = new Thread(() -> {

@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.IntFunction;
 
 import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.util.JedisClusterCRC16;
 
 /**
  * Fixed pool of workers issuing individual SET/GET commands on per-worker keys through any
@@ -39,7 +40,37 @@ final class TrafficRunner {
   private final AtomicReference<Throwable> firstError = new AtomicReference<>();
   // unique error signature (type: message) -> occurrence count, for troubleshooting
   private final Map<String, AtomicLong> uniqueErrors = new ConcurrentHashMap<>();
+  // every failed command with its key, for per-slot classification by the test
+  private final List<Failure> failures = Collections.synchronizedList(new ArrayList<>());
   private volatile boolean running = true;
+
+  /** One failed command: the key it addressed, that key's slot and the exception as thrown. */
+  static final class Failure {
+    final String key;
+    final int slot;
+    final Throwable error;
+
+    Failure(String key, Throwable error) {
+      this.key = key;
+      this.slot = JedisClusterCRC16.getSlot(key);
+      this.error = error;
+    }
+
+    /** The innermost cause: the reply or socket failure behind the client's wrapper. */
+    Throwable rootCause() {
+      Throwable cause = error;
+      while (cause.getCause() != null) {
+        cause = cause.getCause();
+      }
+      return cause;
+    }
+
+    @Override
+    public String toString() {
+      return key + " (slot " + slot + "): " + errorSignature(error) + " <- "
+          + errorSignature(rootCause());
+    }
+  }
 
   /** One key per worker, {@code traffic:<worker>}. */
   TrafficRunner(UnifiedJedis client, int workers) {
@@ -68,22 +99,25 @@ final class TrafficRunner {
               break;
             }
             final long value = n++;
-            runCommand(() -> client.set(key, Long.toString(value)));
-            runCommand(() -> client.get(key));
+            runCommand(key, () -> client.set(key, Long.toString(value)));
+            runCommand(key, () -> client.get(key));
           }
         }
       });
     }
   }
 
-  /** Runs one command, counting it as submitted then processed; records any error. */
-  private void runCommand(Runnable command) {
+  /**
+   * Runs one command on {@code key}, counting it as submitted then processed; records any error.
+   */
+  private void runCommand(String key, Runnable command) {
     submitted.incrementAndGet();
     try {
       command.run();
     } catch (RuntimeException e) {
       errors.incrementAndGet();
       firstError.compareAndSet(null, e);
+      failures.add(new Failure(key, e));
       uniqueErrors.computeIfAbsent(errorSignature(e), k -> new AtomicLong()).incrementAndGet();
     } finally {
       processed.incrementAndGet();
@@ -137,6 +171,11 @@ final class TrafficRunner {
 
   Throwable firstError() {
     return firstError.get();
+  }
+
+  /** Every failed command, in the order the failures were recorded. */
+  List<Failure> failures() {
+    return new ArrayList<>(failures);
   }
 
   String summary() {

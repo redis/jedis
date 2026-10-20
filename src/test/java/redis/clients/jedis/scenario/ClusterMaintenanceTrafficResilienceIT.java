@@ -25,6 +25,8 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.RedisClusterClient;
+import redis.clients.jedis.exceptions.JedisMovedDataException;
+import redis.clients.jedis.scenario.TrafficRunner.Failure;
 
 /**
  * S5, the black-box guarantee: a stock {@link RedisClusterClient} (RESP3, maintenance notifications
@@ -32,8 +34,9 @@ import redis.clients.jedis.RedisClusterClient;
  * after a slot migration and sees zero command errors, with every key written readable afterwards.
  * No notification or timeout is asserted; the functional suite does that. A second client with
  * {@code maxAttempts(1)} runs alongside and reports how many commands the application would have
- * seen fail without retries (S5.2, report only). One effect per trigger, same rows as the first
- * three of {@link ClusterMaintNotificationsIT}.
+ * seen fail without retries (S5.2: only destroyed-pool borrows and, on ASM rows, MOVED are
+ * accepted, both on moved slots only). One effect per trigger, same rows as the first three of
+ * {@link ClusterMaintNotificationsIT}.
  */
 @Tag("scenario")
 public class ClusterMaintenanceTrafficResilienceIT extends ClusterMaintNotificationsScenarioBase {
@@ -90,8 +93,45 @@ public class ClusterMaintenanceTrafficResilienceIT extends ClusterMaintNotificat
       assertTrue(stock.exists(key), "key written during the effect is gone: " + key);
     }
     assertEquals("PONG", stock.ping(), "stock client must be healthy after the effect");
-    // S5.2, reported: what an application without retries would have seen
-    log.info("{}: maxAttempts(1) client {}", scenario, metered.summary());
+    // S5.2: what an application without retries saw; only the two accepted kinds may appear
+    HostAndPort[] ownersAfter = ownersBySlot(stock);
+    List<Failure> unexpected = new ArrayList<>();
+    int exemptMoved = 0;
+    int exemptPool = 0;
+    for (Failure failure : metered.failures()) {
+      boolean movedSlot = !owners[failure.slot].equals(ownersAfter[failure.slot]);
+      if (movedSlot && isDestroyedPoolBorrow(failure)) {
+        exemptPool++;
+      } else if (movedSlot && scenario.requirement().asm() && isMoved(failure)) {
+        exemptMoved++;
+      } else {
+        unexpected.add(failure);
+      }
+    }
+    log.info(
+      "{}: maxAttempts(1) client {}; exempt: {} MOVED on moved slots (ASM), {} borrows from"
+          + " a destroyed pool on moved slots; unexpected: {}",
+      scenario, metered.summary(), exemptMoved, exemptPool, unexpected);
+    if (!unexpected.isEmpty()) {
+      fail("S5.2: failures without retries that the design does not account for: " + unexpected,
+        unexpected.get(0).error);
+    }
+  }
+
+  /** A redirect the client ran out of attempts to follow. */
+  private static boolean isMoved(Failure failure) {
+    for (Throwable t = failure.error; t != null; t = t.getCause()) {
+      if (t instanceof JedisMovedDataException) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** A borrow from the pool of a node the delta had just dropped (commons-pool "Pool not open"). */
+  private static boolean isDestroyedPoolBorrow(Failure failure) {
+    Throwable root = failure.rootCause();
+    return root instanceof IllegalStateException && "Pool not open".equals(root.getMessage());
   }
 
   /**

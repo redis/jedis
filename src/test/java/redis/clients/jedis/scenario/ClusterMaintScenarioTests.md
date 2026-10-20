@@ -92,7 +92,7 @@ asserted where a client requirement rests on it.
 | Id | Expected | Where |
 |---|---|---|
 | S5.1 | A stock `RedisClusterClient` (RESP3, AUTO mode, default retries) with worker threads doing `SET` / `GET` on one key per owner range across the effect sees zero command errors; every key written exists afterwards; no worker left in flight. Rows: `remove-add` / `migrate`, `slot-shuffle` / `failover`, `remove` / `reshard`. | `ClusterMaintenanceTrafficResilienceIT.trafficContinues` |
-| S5.2 | The same traffic through a `maxAttempts(1)` client on the same database reports how many commands the application would have seen fail without retries. Report only. | same method |
+| S5.2 | The same traffic through a `maxAttempts(1)` client on the same database: what an application without retries sees. Every failure is classified by the key's slot (moved or not, from the owner map before and after the effect) and by its cause. Two kinds are accepted and only counted: a borrow from the destroyed pool of a departed node for a key in a moved slot (all rows), and a `MOVED` for a key in a moved slot on ASM rows (the shard answers the redirect itself at the switch instant). Any other failure fails the row: timeouts, connections cut by the server, `MOVED` on unmoved slots or on non-ASM rows, destroyed-pool borrows on unmoved slots. | same method |
 | S5.3 | Negative control (opt-in `-Dsch.negativeControl=true`): traffic with notifications disabled and `maxAttempts(1)` across `remove-add` / `migrate` is expected to see failures, showing what the notifications bought. | `ClusterMaintenanceTrafficResilienceIT.trafficDisruptedWithoutMaintenance` |
 
 ### S6. TLS

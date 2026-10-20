@@ -2,6 +2,7 @@ package redis.clients.jedis.util;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
 import static org.mockito.Mockito.mock;
@@ -103,6 +104,58 @@ public class JedisCommandIterationBaseTest {
     ScanIteration iteration = new ScanIteration(connectionProvider, 10, "*");
     assertEquals(Collections.singletonList("only-key"), new ArrayList<>(iteration.nextBatchList()));
     assertThrows(NoSuchElementException.class, iteration::nextBatch);
+  }
+
+  /**
+   * A custom provider that only overrides getConnectionMap() must keep working: the primary-nodes
+   * default delegates to getConnectionMap() instead of opening a single connection through
+   * getConnection(), which the iteration would never close.
+   */
+  @Test
+  public void scanIterationUsesCustomConnectionMap() {
+    ConnectionPool firstPool = mock(ConnectionPool.class);
+    ConnectionPool secondPool = mock(ConnectionPool.class);
+    Connection firstConnection = mock(Connection.class);
+    Connection secondConnection = mock(Connection.class);
+    when(firstPool.getResource()).thenReturn(firstConnection);
+    when(secondPool.getResource()).thenReturn(secondConnection);
+    when(firstConnection.executeCommand(any(CommandArguments.class)))
+        .thenReturn(scanReply("first-key"));
+    when(secondConnection.executeCommand(any(CommandArguments.class)))
+        .thenReturn(scanReply("second-key"));
+
+    Map<String, ConnectionPool> customMap = new LinkedHashMap<>();
+    customMap.put("node-a", firstPool);
+    customMap.put("node-b", secondPool);
+
+    ConnectionProvider connectionProvider = new ConnectionProvider() {
+
+      @Override
+      public Connection getConnection() {
+        throw new AssertionError("must not open an unmanaged connection");
+      }
+
+      @Override
+      public Connection getConnection(CommandArguments args) {
+        throw new AssertionError("must not open an unmanaged connection");
+      }
+
+      @Override
+      public Map<?, ?> getConnectionMap() {
+        return customMap;
+      }
+
+      @Override
+      public void close() {
+      }
+    };
+
+    List<String> keys = new ArrayList<>();
+    new ScanIteration(connectionProvider, 10, "*").collect(keys);
+
+    assertEquals(2, keys.size());
+    assertTrue(keys.contains("first-key"), "keys: " + keys);
+    assertTrue(keys.contains("second-key"), "keys: " + keys);
   }
 
   /**

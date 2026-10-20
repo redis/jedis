@@ -31,7 +31,8 @@ public abstract class JedisCommandIterationBase<B, D> {
   private boolean roundRobinCompleted;
   private boolean iterationCompleted;
 
-  protected JedisCommandIterationBase(ConnectionProvider connectionProvider, Builder<B> responseBuilder) {
+  protected JedisCommandIterationBase(ConnectionProvider connectionProvider,
+      Builder<B> responseBuilder) {
     // Iterate over the primary nodes only. A replica holds the same data as its primary,
     // so visiting it too would return every entry once per copy; in a cluster with one
     // replica per shard a SCAN would yield each key twice. Providers without replicas

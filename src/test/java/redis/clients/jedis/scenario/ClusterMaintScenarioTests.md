@@ -20,6 +20,7 @@ to the mock cases (`C2`, `C4`, `F2`, ...) of the mock plan where a scenario case
 | [S8](#s8-configuration-and-handshake) | Configuration and handshake | [`ClusterMaintNotificationsConfigIT`](ClusterMaintNotificationsConfigIT.java) |
 | [S9](#s9-pubsub) | Sharded pub/sub across a migration | [`ClusterMaintNotificationsFeatureInteractionIT`](ClusterMaintNotificationsFeatureInteractionIT.java) |
 | [S10](#s10-lifecycle) | Lifecycle | [`ClusterMaintNotificationsIT`](ClusterMaintNotificationsIT.java) |
+| [E1](#e1-replica-exposure-environment-check) | Replica exposure (environment check) | [`ClusterReplicaExposureIT`](ClusterReplicaExposureIT.java) |
 
 (S7, endpoint-type variants, is not a section of its own: it is the `ip` / `hostname` column of
 the [chosen combinations](#chosen-effect-x-trigger-x-variant-combinations).)
@@ -62,9 +63,9 @@ asserted where a client requirement rests on it.
 
 | Id | Expected | Where |
 |---|---|---|
-| S2.1 | Right after the first `SMIGRATING` is read on any one pinned connection, and before any other pinned connection reads anything: `hasActiveMigration` is true, at least one window is open, and every pinned connection is relaxed (`isRelaxedTimeoutActive`, effective timeout 30 000; both read without a round-trip), including those whose own push is still unread (named in the observation; only the gate can have relaxed them). Not observable when `SMIGRATED` was buffered behind the same reply as the first `SMIGRATING` (a sub-second window): logged and skipped for that row. Mock B1 to B4. | `migrationIsHandled`, step 3 |
+| S2.1 | Right after the first `SMIGRATING` is read on any one pinned connection, and before any other pinned connection reads anything: `hasActiveMigration` is true, at least one window is open, and every pinned connection is relaxed (`isRelaxedTimeoutActive`, effective timeout 30 000; both read without a round-trip), including those whose own push is still unread (named in the observation; only the gate can have relaxed them). A window that closed before it could be observed (`SMIGRATED` buffered behind the same reply as the first `SMIGRATING`) fails the row: it is asserted on every row, never skipped. Mock B1 to B4. | `migrationIsHandled`, step 3 |
 | S2.2 | After the settle rule: no active migration, zero open windows, and every surviving pinned connection is back at the 1000 ms base on its next command. | `migrationIsHandled`, after step 5 |
-| S2.3 | Behavioural proof of relaxation: a blocking command with a 3 s server-side delay on a slot that is not moving succeeds inside a long window and times out at the 2 s blocking base after it. Needs a window longer than the probe (`remove-add` / `migrate`); skipped by assumption when the window had already closed when the first `SMIGRATING` was read. | `ClusterMaintNotificationsTimeoutIT.blockingCommandSucceedsInsideTheWindow` |
+| S2.3 | Behavioural proof of relaxation: a blocking command with a 3 s server-side delay on a slot that is not moving succeeds inside a long window and times out at the 2 s blocking base after it. Needs a window longer than the probe (`remove-add` / `migrate`); the window must be open when the probe starts (record and gate), asserted, never skipped. A warm-up command precedes each probe so connection creation stays out of the timing. | `ClusterMaintNotificationsTimeoutIT.blockingCommandSucceedsInsideTheWindow` |
 | S2.4 | Relaxation never tightens: a client configured with a 60 000 ms socket timeout keeps it before, during and after the window. Mock B7. | `ClusterMaintNotificationsTimeoutIT.relaxationNeverTightensALargerTimeout` |
 
 ### S3. Slot map and pools
@@ -84,7 +85,7 @@ asserted where a client requirement rests on it.
 
 | Id | Expected | Where |
 |---|---|---|
-| S4.1 | Connections created while a window is open are relaxed from their first command (handshake under the gate), including one to the departing node, which after `SMIGRATED` returns to its destroyed pool without throwing. Whether the server also sends `SMIGRATING` to the late connection is logged. The pinned connection already holds a pool's only idle connection, so the extra borrow creates a new one. Mock A6, F3. | `ClusterMaintNotificationsTimeoutIT.connectionsOpenedDuringTheWindow`, `remove-add` / `migrate` |
+| S4.1 | Connections created while a window is open are relaxed from their first command (handshake under the gate), including one to the departing node, which after `SMIGRATED` returns to its destroyed pool without throwing. Whether the server also sends `SMIGRATING` to the late connection is logged. The borrow necessarily creates a connection: the only pooled connection ever returned idle before it is the seed node's discovery connection, which the pinned borrow took. The window must be open at the borrow, asserted, never skipped. Mock A6, F3. | `ClusterMaintNotificationsTimeoutIT.connectionsOpenedDuringTheWindow`, `remove-add` / `migrate` |
 
 ### S5. Traffic continuity
 
@@ -114,14 +115,24 @@ asserted where a client requirement rests on it.
 
 | Id | Expected | Where |
 |---|---|---|
-| S9.1 | One `JedisShardedPubSub` subscription per owner range, each on its own connection borrowed from the observer and recorded. Messages published before and after the move arrive in order on every channel whose slot did not move; at least one subscribed connection recorded `SMIGRATING` and `SMIGRATED` (consumed inline, between messages); the client-wide gate opens from a subscribed connection's push (no pinned connection is pumped) and no window is left once the closers were consumed. Which channel moved is known after the fact from the recorded deltas: exactly one shard moves, so all but one channel are provably non-moving. Mock G1. | `ClusterMaintNotificationsFeatureInteractionIT.shardedPubSubSurvivesAMigration` |
-| S9.2 | The one subscribed channel that turned out to be in the moved shard: its messages are logged, not asserted, until the contract is agreed. | same method |
+| S9.1 | One `JedisShardedPubSub` subscription per owner range, each on its own connection borrowed from the observer and recorded. Messages published before and after the move arrive in order on every channel whose slot did not move; at least one subscribed connection recorded `SMIGRATING` and `SMIGRATED` (consumed inline, between messages); the client-wide gate is seen open while the effect runs (polled every 10 ms; missing it fails, no pinned connection is pumped so only a subscribed connection can have opened it) and no window is left once the closers were consumed. Which channel moved is known after the fact from the recorded deltas: exactly one shard moves, so all but one channel are provably non-moving. A heartbeat publisher on the verification client (a separate client; a subscribed connection cannot publish) sends `hb` on every channel once a second so the subscribed connections keep reading inside the observer's 2 s blocking timeout; heartbeats are counted per channel and excluded from the message assertions. Mock G1. | `ClusterMaintNotificationsFeatureInteractionIT.shardedPubSubSurvivesAMigration` |
+| S9.2 | The one subscribed channel in the moved shard is the single casualty, asserted as such: the server closes its subscribed connection at or before `SMIGRATED` (observed 2026-10-20 on RE: `Unexpected end of stream`, `SMIGRATING` recorded on it but no `SMIGRATED`), Jedis has no resubscription for application pub/sub, so that channel got `before` only, its subscriber ended with a `JedisConnectionException`, exactly one channel sat in the moved range, and it is the only one that missed `after`. If the server starts keeping the connection or sending `sunsubscribe`, or Jedis gains resubscription, these observations fail and name which changed. | same method |
 
 ### S10. Lifecycle
 
 | Id | Expected | Where |
 |---|---|---|
 | S10 | `client.close()` after the effect closes every node pool; pinned connections were returned first; the database is released only after every client is closed. Mock F1. | `migrationIsHandled`, step 7 |
+
+### E1. Replica exposure (environment check)
+
+Not a maintenance-notification case: it pins down what the RE OSS Cluster API tells a cluster
+client about replicas, so the suite's assumptions about node sets (every pool is a master) rest on
+an asserted fact rather than on folklore. No effect is fired.
+
+| Id | Expected | Where |
+|---|---|---|
+| E1 | On a replicated database (`slot-shuffle` / `failover`, 6 shards, replication on), the same `CLUSTER SLOTS` the client's discovery sends, issued on every node the client found, covers all 16384 slots with one node entry per range and no replica entries; `CLUSTER SHARDS` lists only `role=master` and `CLUSTER NODES` only master flags; `INFO replication` on each node still reports `role:master` with `connected_slaves` above zero (the replicas exist behind the proxy). The client's node set equals the masters named by `CLUSTER SLOTS`, and a client built with `readOnlyForRedisClusterReplicas()` has no pool beyond them (its replica reads fall back to the master). If RE starts exposing replicas, the first assertion fails and prints the entries. | `ClusterReplicaExposureIT.replicasAreNotExposedByTheClusterApi` |
 
 ## Vocabulary
 

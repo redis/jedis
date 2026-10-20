@@ -2,8 +2,10 @@ package redis.clients.jedis.scenario;
 
 import static org.awaitility.Awaitility.await;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -13,6 +15,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.redis.test.fi.Database;
@@ -39,6 +42,7 @@ import redis.clients.jedis.MaintNotificationsTestSupport.ReceivedEvents;
 import redis.clients.jedis.MaintNotificationsTestSupport.SlotMove;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
+import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
@@ -134,7 +138,7 @@ public class ClusterMaintNotificationsFeatureInteractionIT
       assertTrue(mismatches.isEmpty(), "run " + run + ": " + mismatches);
       assertEquals(nodes, nodeKeys(client), "run " + run + ": node set changed");
       assertEquals(0, MaintNotificationsTestSupport.openMigrationWindows(client),
-        "run " + run + ": windows left open");
+        "run " + run + ": a window was left to the TTL (closer lost)");
       assertFalse(MaintNotificationsTestSupport.hasActiveMigration(client),
         "run " + run + ": migration still active");
       recorded.forEach((node, events) -> assertSeqIncreasing(node, events.all()));
@@ -227,7 +231,15 @@ public class ClusterMaintNotificationsFeatureInteractionIT
    * are recorded. Messages published before and after the move must both arrive, in order, on every
    * channel whose slot did not move; the gate opens from a subscribed connection's push (no pinned
    * connection is pumped here); and no window is left once the closers were consumed. The one
-   * channel in the moved range (S9.2) has its messages logged, not asserted.
+   * channel in the moved range (S9.2) is asserted to be the single casualty: the server closes its
+   * subscribed connection after SMIGRATED and nothing in Jedis resubscribes, so it got 'before'
+   * only, ended with a connection exception, and is the only channel that missed 'after'.
+   * <p>
+   * The observer's connections carry its 2 s blocking timeout, which a subscription inherits as its
+   * read timeout, so an idle subscribed connection would be dropped as broken before the first push
+   * arrives. A {@link Heartbeat} from the verification client publishes on every channel once a
+   * second for the whole case; heartbeats are counted per channel and kept out of the message
+   * assertions.
    */
   @Test
   @Timeout(600)
@@ -240,20 +252,23 @@ public class ClusterMaintNotificationsFeatureInteractionIT
       subscribers.add(new Subscriber(
           keyInSlots("chan:" + subscribers.size(), s -> s >= range[0] && s <= range[1])));
     }
+    Heartbeat heartbeat = new Heartbeat(subscribers);
     try {
       for (Subscriber subscriber : subscribers) {
         subscriber.start();
       }
+      heartbeat.start();
       publishAndAwait(subscribers, "before");
 
       fire();
       awaitGateOpenedByASubscriber();
       awaitEffectSettled(nodes.size());
+      // count before gate: the gate check reclaims TTL-expired windows, the count does not
       await().atMost(GATE_TIMEOUT).pollInterval(Duration.ofMillis(100))
-          .until(() -> !MaintNotificationsTestSupport.hasActiveMigration(client)
-              && MaintNotificationsTestSupport.openMigrationWindows(client) == 0);
+          .until(() -> MaintNotificationsTestSupport.openMigrationWindows(client) == 0
+              && !MaintNotificationsTestSupport.hasActiveMigration(client));
 
-      publishAndAwait(subscribers, "after");
+      List<Subscriber> missingAfter = publishAndCollectMissing(subscribers, "after");
 
       List<ReceivedEvent> events = new ArrayList<>();
       subscribers.forEach(s -> events.addAll(s.events.all()));
@@ -261,22 +276,99 @@ public class ClusterMaintNotificationsFeatureInteractionIT
       assertFalse(moves.isEmpty(), "no subscribed connection recorded a SMIGRATED");
       assertTrue(subscribers.stream().anyMatch(s -> s.events.sMigratingReceived()),
         "no subscribed connection recorded a SMIGRATING");
+
+      List<Subscriber> movedSubscribers = new ArrayList<>();
+      Observations obs = new Observations();
       for (Subscriber subscriber : subscribers) {
         boolean moved = moves.stream().anyMatch(m -> m.contains(subscriber.slot));
-        log.info("channel {} (slot {}{}): messages {}, pushes {}", subscriber.channel,
-          subscriber.slot, moved ? ", moved" : "", subscriber.messages, subscriber.events.all());
-        if (!moved) {
-          assertEquals(Arrays.asList("before", "after"), new ArrayList<>(subscriber.messages),
-            "S9.1 channel " + subscriber.channel);
+        log.info("channel {} (slot {}{}): messages {}, heartbeats {}, ended with {}, pushes {}",
+          subscriber.channel, subscriber.slot, moved ? ", moved" : "", subscriber.messages,
+          subscriber.heartbeats.get(), subscriber.failure.get(), subscriber.events.all());
+        if (moved) {
+          movedSubscribers.add(subscriber);
+          // S9.2: the server closes the subscribed connection whose slot left; nothing resubscribes
+          obs.check("S9.2 moved channel " + subscriber.channel + " got only 'before'",
+            () -> assertEquals(Arrays.asList("before"), new ArrayList<>(subscriber.messages)));
+          obs.check("S9.2 moved channel " + subscriber.channel + " lost its connection",
+            () -> assertTrue(subscriber.failure.get() instanceof JedisConnectionException,
+              "expected the server to drop the subscribed connection, got "
+                  + subscriber.failure.get()));
+        } else {
+          obs.check("S9.1 channel " + subscriber.channel + " got 'before' and 'after' in order",
+            () -> assertEquals(Arrays.asList("before", "after"),
+              new ArrayList<>(subscriber.messages)));
+          obs.check("S9.1 channel " + subscriber.channel + " kept its connection",
+            () -> assertNull(subscriber.failure.get(), "subscriber ended with"));
         }
       }
+      obs.check("exactly one subscribed channel sat in the moved range",
+        () -> assertEquals(1, movedSubscribers.size(), "moved channels: " + movedSubscribers));
+      obs.check("the moved channel is the only one that missed 'after'",
+        () -> assertEquals(movedSubscribers, missingAfter));
+      obs.assertAllPassed();
     } finally {
-      for (Subscriber subscriber : subscribers) {
-        subscriber.stop();
+      try {
+        heartbeat.close();
+      } finally {
+        for (Subscriber subscriber : subscribers) {
+          subscriber.stop();
+        }
       }
     }
   }
 
+  /** Payload of the keep-alive publishes; never counted as a message. */
+  private static final String HEARTBEAT = "hb";
+
+  /**
+   * Publishes {@value #HEARTBEAT} on every subscribed channel once a second from the verification
+   * client, so the subscribed connections always have something to read inside the observer's
+   * blocking timeout. Publish failures (a MOVED mid-move the stock client could not follow in time)
+   * are counted and logged, never asserted: the heartbeat is scaffolding, not the subject.
+   */
+  private final class Heartbeat implements AutoCloseable {
+    private final Thread thread;
+    private volatile boolean running = true;
+    private final AtomicInteger published = new AtomicInteger();
+    private final AtomicInteger failed = new AtomicInteger();
+
+    Heartbeat(List<Subscriber> subscribers) {
+      thread = new Thread(() -> {
+        while (running) {
+          for (Subscriber subscriber : subscribers) {
+            try {
+              verification.spublish(subscriber.channel, HEARTBEAT);
+              published.incrementAndGet();
+            } catch (RuntimeException e) {
+              failed.incrementAndGet();
+              log.debug("heartbeat publish on {} failed: {}", subscriber.channel, e.toString());
+            }
+          }
+          sleepQuietly(1_000);
+        }
+      }, "spublish-heartbeat");
+      thread.setDaemon(true);
+    }
+
+    void start() {
+      thread.start();
+    }
+
+    @Override
+    public void close() throws InterruptedException {
+      running = false;
+      thread.interrupt();
+      thread.join(TimeUnit.SECONDS.toMillis(5));
+      log.info("heartbeat publisher stopped: {} published, {} failed", published.get(),
+        failed.get());
+    }
+  }
+
+  /**
+   * The gate must be seen open while the effect runs; only a subscribed connection can have opened
+   * it, since no other connection of the observer reads anything here. Polled every 10 ms so a
+   * window of a few seconds cannot slip between two polls; missing it is a failure.
+   */
   private void awaitGateOpenedByASubscriber() {
     long deadline = System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(FIRST_PUSH_TIMEOUT_MS);
     while (System.nanoTime() < deadline) {
@@ -285,27 +377,44 @@ public class ClusterMaintNotificationsFeatureInteractionIT
         return;
       }
       if (effectDone()) {
-        // the window opened and closed between two polls (sub-second move): nothing to see here
-        log.info("effect finished before the open gate could be observed");
-        return;
+        fail("the effect finished without the gate ever being seen open: no subscribed connection"
+            + " read a SMIGRATING while the window was open; effect failures: " + effectFailures);
       }
-      sleepQuietly(50);
+      sleepQuietly(10);
+    }
+    fail("the gate did not open within " + FIRST_PUSH_TIMEOUT_MS + " ms; effect failures: "
+        + effectFailures);
+  }
+
+  /** Publishes one message on every channel and waits for its delivery on each. */
+  private void publishAndAwait(List<Subscriber> subscribers, String message) {
+    List<Subscriber> missing = publishAndCollectMissing(subscribers, message);
+    if (!missing.isEmpty()) {
+      fail("channels " + missing + " did not deliver '" + message + "' within 10 s");
     }
   }
 
-  private void publishAndAwait(List<Subscriber> subscribers, String message) {
+  /**
+   * Publishes one message on every channel and waits up to 10 s for its delivery on each; returns
+   * the subscribers that did not get it, in subscription order, so the caller decides which misses
+   * are expected (the moved channel after the effect) and which are failures.
+   */
+  private List<Subscriber> publishAndCollectMissing(List<Subscriber> subscribers, String message) {
     for (Subscriber subscriber : subscribers) {
       verification.spublish(subscriber.channel, message);
     }
+    List<Subscriber> missing = new ArrayList<>();
     for (Subscriber subscriber : subscribers) {
       try {
         await().atMost(Duration.ofSeconds(10)).pollInterval(Duration.ofMillis(50))
             .until(() -> subscriber.messages.contains(message));
       } catch (RuntimeException e) {
-        log.warn("channel {} did not deliver '{}' within 10 s; received {}", subscriber.channel,
+        log.info("channel {} did not deliver '{}' within 10 s; received {}", subscriber.channel,
           message, subscriber.messages);
+        missing.add(subscriber);
       }
     }
+    return missing;
   }
 
   private static void assertSeqIncreasing(HostAndPort node, List<ReceivedEvent> events) {
@@ -320,6 +429,8 @@ public class ClusterMaintNotificationsFeatureInteractionIT
     final String channel;
     final int slot;
     final List<String> messages = Collections.synchronizedList(new ArrayList<>());
+    /** Keep-alive publishes delivered on this channel; counted, not asserted. */
+    final AtomicInteger heartbeats = new AtomicInteger();
     final CountDownLatch subscribed = new CountDownLatch(1);
     final AtomicReference<Throwable> failure = new AtomicReference<>();
     Connection connection;
@@ -328,6 +439,10 @@ public class ClusterMaintNotificationsFeatureInteractionIT
     final JedisShardedPubSub pubSub = new JedisShardedPubSub() {
       @Override
       public void onSMessage(String channel, String message) {
+        if (HEARTBEAT.equals(message)) {
+          heartbeats.incrementAndGet();
+          return;
+        }
         messages.add(message);
       }
 
@@ -340,6 +455,11 @@ public class ClusterMaintNotificationsFeatureInteractionIT
     Subscriber(String channel) {
       this.channel = channel;
       this.slot = JedisClusterCRC16.getSlot(channel);
+    }
+
+    @Override
+    public String toString() {
+      return channel + " (slot " + slot + ")";
     }
 
     void start() throws InterruptedException {
@@ -358,7 +478,12 @@ public class ClusterMaintNotificationsFeatureInteractionIT
 
     void stop() throws InterruptedException {
       if (pubSub.isSubscribed()) {
-        pubSub.sunsubscribe();
+        try {
+          pubSub.sunsubscribe();
+        } catch (JedisConnectionException e) {
+          // a connection the server already closed: report it, never mask the test's own failure
+          log.warn("subscriber {}: sunsubscribe on a broken connection: {}", channel, e.toString());
+        }
       }
       if (thread != null) {
         thread.join(TimeUnit.SECONDS.toMillis(10));

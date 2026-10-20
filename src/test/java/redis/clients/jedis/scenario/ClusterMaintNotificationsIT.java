@@ -117,20 +117,13 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
 
     // 3. opening (S2.1): the first SMIGRATING read on any one connection opens the client-wide
     // gate. Checked before any other connection reads anything: a connection whose own push is
-    // still unread can only be relaxed by the gate.
+    // still unread can only be relaxed by the gate. A window that closed before it could be
+    // observed fails the row; it is never skipped.
     awaitFirstSMigrating();
     Set<HostAndPort> ownPushUnread = pinnedWithoutSMigrating();
-    if (anyRecorded(ReceivedEvents::sMigratedReceived)) {
-      // SMIGRATED was buffered behind the same reply as the SMIGRATING: the window closed as it
-      // opened (sub-second triggers), so there is no open gate to observe
-      log.warn("{}: S2.1 not observable, SMIGRATED read in the same pass as the first SMIGRATING",
-        scenario);
-    } else {
-      log.info("{}: S2.1 first SMIGRATING read; own push still unread on {}", scenario,
-        ownPushUnread);
-      checkGateOpen(obs);
-      checkAllPinnedRelaxed(obs, ownPushUnread);
-    }
+    log.info("{}: first SMIGRATING read; own push still unread on {}", scenario, ownPushUnread);
+    obs.check("S2.1 window open after the first SMIGRATING", () -> assertWindowOpen("S2.1"));
+    checkAllPinnedRelaxed(obs, ownPushUnread);
 
     // 5. closing: FI done, stream drained, node set converged
     awaitEffectSettled(before.size() + effect.endpointDelta());
@@ -215,8 +208,9 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
 
     // S2.2 unrelaxed: no window left, surviving connections back at the base timeout
     obs.check("S2.2 no active migration", () -> {
+      assertEquals(0, MaintNotificationsTestSupport.openMigrationWindows(client),
+        "a window was left to the TTL (closer lost)");
       assertFalse(MaintNotificationsTestSupport.hasActiveMigration(client), "active migration");
-      assertEquals(0, MaintNotificationsTestSupport.openMigrationWindows(client), "open windows");
     });
     for (Map.Entry<HostAndPort, Connection> entry : livePinned().entrySet()) {
       if (removed.contains(nodeKey(entry.getKey()))) {
@@ -255,14 +249,6 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
     client = null;
 
     obs.assertAllPassed();
-  }
-
-  /** S2.1, client side: the coordinator holds an open window after the first SMIGRATING. */
-  private void checkGateOpen(Observations obs) {
-    obs.check("S2.1 gate open after the first SMIGRATING", () -> {
-      assertTrue(MaintNotificationsTestSupport.hasActiveMigration(client), "no active migration");
-      assertTrue(MaintNotificationsTestSupport.openMigrationWindows(client) > 0, "no open window");
-    });
   }
 
   /**

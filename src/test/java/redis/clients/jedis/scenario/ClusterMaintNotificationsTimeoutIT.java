@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 import java.net.SocketTimeoutException;
 import java.util.LinkedHashMap;
@@ -71,9 +70,9 @@ public class ClusterMaintNotificationsTimeoutIT extends ClusterMaintNotification
    * S2.3. BLPOP on a missing key in a slot that is not moving returns nil only when its server-side
    * delay expires: inside the window the relaxed blocking timeout (30 s) lets it wait the full 3 s,
    * where the 2 s base would have failed it; after the window the base is back and the same probe
-   * times out on the socket between 2 and 3 s. The client-side window stays open until a connection
-   * reads the SMIGRATED, and none does while the probe runs, so the probe is not raced by the
-   * server finishing early.
+   * times out on the socket between 2 and 3 s. The probe's own connection may read the SMIGRATED
+   * inline while blocked, which is harmless: its socket timeout was set when the command started,
+   * so the probe's success is the proof and the gate state afterwards is only logged.
    */
   @Test
   @Timeout(600)
@@ -86,13 +85,16 @@ public class ClusterMaintNotificationsTimeoutIT extends ClusterMaintNotification
 
     startEffect(scenario);
     awaitFirstSMigrating();
-    assumeFalse(anyRecorded(ReceivedEvents::sMigratedReceived),
-      "window closed as it opened; the probe needs it open for " + PROBE_DELAY_SECONDS + " s");
+    assertWindowOpen("S2.3 precondition");
     String key = keyOutsideAnnouncedSlots(ownerBefore);
+    warm(key);
 
     Probe inside = runBlockingProbe(key);
-    log.info("{}: probe inside the window: {}", scenario, inside);
-    assertNull(inside.error, "inside the window the probe must not time out: " + inside);
+    boolean stillOpen = MaintNotificationsTestSupport.hasActiveMigration(client);
+    log.info("{}: probe inside the window: {}; window still open afterwards: {}", scenario, inside,
+      stillOpen);
+    assertNull(inside.error, "inside the window the probe must not time out (gate open at start,"
+        + " still open afterwards: " + stillOpen + "): " + inside);
     assertNull(inside.reply, "nil proves the server held the probe for its full delay: " + inside);
     assertTrue(
       inside.durationMillis >= MaintNotificationsObserverBase.CLIENT_BLOCKING_SOCKET_TIMEOUT_MS,
@@ -100,6 +102,7 @@ public class ClusterMaintNotificationsTimeoutIT extends ClusterMaintNotification
 
     awaitEffectSettled(before.size());
     assertFalse(MaintNotificationsTestSupport.hasActiveMigration(client), "window still open");
+    warm(key);
 
     Probe after = runBlockingProbe(key);
     log.info("{}: probe after the window: {}", scenario, after);
@@ -139,12 +142,13 @@ public class ClusterMaintNotificationsTimeoutIT extends ClusterMaintNotification
   }
 
   /**
-   * S4.1, mock A6 and F3. While the window is open, one more connection per node is borrowed. The
-   * pinned connection already holds the only idle connection a pool can have at that point, so the
-   * borrow creates a new one, whose handshake runs under the open gate: it is relaxed from its
-   * first command. Whether the server also sends it the SMIGRATING is logged, not asserted. After
-   * the effect the one to the departing node returns to its destroyed pool without throwing and the
-   * others are back at the base.
+   * S4.1, mock A6 and F3. While the window is open, one more connection per node is borrowed, and
+   * that borrow necessarily creates a connection: before it, the only pooled connection ever
+   * returned idle is the seed node's discovery connection (every other pool is created lazily and
+   * {@code minIdle} is 0), and the pinned borrow took it. Its handshake therefore runs under the
+   * open gate: it is relaxed from its first command. Whether the server also sends it the
+   * SMIGRATING is logged, not asserted. After the effect the one to the departing node returns to
+   * its destroyed pool without throwing and the others are back at the base.
    */
   @Test
   @Timeout(600)
@@ -158,8 +162,7 @@ public class ClusterMaintNotificationsTimeoutIT extends ClusterMaintNotification
 
     startEffect(scenario);
     awaitFirstSMigrating();
-    assumeFalse(anyRecorded(ReceivedEvents::sMigratedReceived),
-      "window closed before a connection could be opened in it");
+    assertWindowOpen("S4.1 precondition");
 
     Map<String, Connection> fresh = new LinkedHashMap<>();
     Map<String, ReceivedEvents> freshEvents = new LinkedHashMap<>();
@@ -220,6 +223,14 @@ public class ClusterMaintNotificationsTimeoutIT extends ClusterMaintNotification
       assertEquals(expected, MaintNotificationsTestSupport.effectiveTimeoutMillis(entry.getValue()),
         when + ": effective timeout on " + entry.getKey());
     }
+  }
+
+  /**
+   * One non-blocking command on the probe's slot, so a pool connection that has to be created (or
+   * replaced after a timeout broke the previous one) is created here and not inside the timing.
+   */
+  private void warm(String key) {
+    client.get(key);
   }
 
   /** BLPOP through the observer, flagged blocking so the blocking timeouts apply. */

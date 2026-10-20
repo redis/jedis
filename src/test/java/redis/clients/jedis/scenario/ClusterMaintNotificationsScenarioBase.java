@@ -2,6 +2,7 @@ package redis.clients.jedis.scenario;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.ArrayList;
@@ -74,6 +75,8 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
   /** Node-set convergence after the stream drained (ASM scale effects trail the last push). */
   static final long CONVERGE_TIMEOUT_MS = 120_000;
   private static final long PUMP_INTERVAL_MS = 100;
+  /** While waiting for the opener: short enough to read it before its closer is buffered too. */
+  private static final long FIRST_PUSH_POLL_MS = 10;
 
   /** The observer client under test; closed on teardown before the database is released. */
   RedisClusterClient client;
@@ -161,7 +164,11 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
     return verification;
   }
 
-  private DefaultJedisClientConfig.Builder clientConfig(Database database) {
+  /**
+   * Credentials and pinned TLS trust for {@code database}; protocol and timeouts left to the
+   * caller.
+   */
+  DefaultJedisClientConfig.Builder clientConfig(Database database) {
     DefaultJedisClientConfig.Builder config = database.clientConfig();
     SslOptions ssl = pinnedSslOptions(database);
     if (ssl != null) {
@@ -465,10 +472,26 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
         fail("effect completed but no SMIGRATING was received on any pinned connection: "
             + allEvents());
       }
-      sleepQuietly(PUMP_INTERVAL_MS);
+      sleepQuietly(FIRST_PUSH_POLL_MS);
     }
     fail("no SMIGRATING within " + FIRST_PUSH_TIMEOUT_MS + " ms; effect failures: " + effectFailures
         + ", events: " + allEvents());
+  }
+
+  /**
+   * The window the first SMIGRATING opened must still be open, on the record (no closer read yet)
+   * and on the gate (what actually relaxes the connections). A closed window at this point is a
+   * failure, never a reason to skip: every row this is used on produces a window of seconds or
+   * more, so missing it means the FI, the server or the client's push handling misbehaved.
+   */
+  void assertWindowOpen(String what) {
+    assertTrue(anyRecorded(ReceivedEvents::sMigratingReceived),
+      what + ": no SMIGRATING recorded; events: " + allEvents());
+    assertFalse(anyRecorded(ReceivedEvents::sMigratedReceived), what
+        + ": a SMIGRATED was already read, the window closed before it could be observed; events: "
+        + allEvents());
+    assertTrue(MaintNotificationsTestSupport.hasActiveMigration(client),
+      what + ": the client-wide gate is not open; events: " + allEvents());
   }
 
   /**

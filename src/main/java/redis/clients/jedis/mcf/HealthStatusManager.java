@@ -1,11 +1,14 @@
 package redis.clients.jedis.mcf;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import redis.clients.jedis.Endpoint;
+import redis.clients.jedis.annots.VisibleForTesting;
 
 public class HealthStatusManager {
 
@@ -80,6 +83,17 @@ public class HealthStatusManager {
 
   public boolean hasHealthCheck(Endpoint endpoint) {
     return healthChecks.get(endpoint) != null;
+  }
+
+  /**
+   * Returns the listeners currently registered for the endpoint, in registration order. The list is
+   * a snapshot and cannot be modified.
+   */
+  @VisibleForTesting
+  List<HealthStatusListener> getListeners(Endpoint endpoint) {
+    List<HealthStatusListener> forEndpoint = endpointListeners.get(endpoint);
+    return forEndpoint == null ? Collections.emptyList()
+        : Collections.unmodifiableList(new ArrayList<>(forEndpoint));
   }
 
   public long getMaxWaitFor(Endpoint endpoint) {

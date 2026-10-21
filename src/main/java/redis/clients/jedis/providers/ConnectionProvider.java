@@ -16,8 +16,11 @@ public interface ConnectionProvider extends AutoCloseable {
     return Collections.singletonMap(c.toString(), c);
   }
 
+  /**
+   * Connection map of the primary nodes only. Defaults to {@link #getConnectionMap()}, for
+   * providers that do not distinguish primaries from replicas.
+   */
   default Map<?, ?> getPrimaryNodesConnectionMap() {
-    final Connection c = getConnection();
-    return Collections.singletonMap(c.toString(), c);
+    return getConnectionMap();
   }
 }

@@ -14,28 +14,33 @@ public final class JedisClusterHashTag {
     return extractHashTag(key, true);
   }
 
-  public static boolean isClusterCompliantMatchPattern(byte[] matchPattern) {
-    return isClusterCompliantMatchPattern(SafeEncoder.encode(matchPattern));
-  }
-
-  public static boolean isClusterCompliantMatchPattern(String matchPattern) {
-    String tag = extractHashTag(matchPattern, false);
-    return tag != null && !tag.isEmpty() && !containsGlobCharacter(tag);
-  }
-
   /**
-   * A glob character or an escape inside the hash tag lets the pattern match keys with other hash
-   * tags, which live in other slots. The server's patternHashSlot() does not compute a slot for
-   * such a pattern either.
+   * The hash tag is located on the bytes, the same way as {@link JedisClusterCRC16#getSlot(byte[])}
+   * and the server do. A glob character or an escape inside the tag lets the pattern match keys
+   * with other hash tags, which live in other slots, so such a pattern is not compliant. The
+   * server's patternHashSlot() does not compute a slot for it either.
    */
-  private static boolean containsGlobCharacter(String tag) {
-    for (int i = 0; i < tag.length(); i++) {
-      char c = tag.charAt(i);
-      if (c == '*' || c == '?' || c == '[' || c == '\\') {
-        return true;
+  public static boolean isClusterCompliantMatchPattern(byte[] matchPattern) {
+    int s = -1;
+    for (int i = 0; i < matchPattern.length; i++) {
+      byte b = matchPattern[i];
+      if (s == -1) {
+        if (b == '{') {
+          s = i;
+        }
+      } else if (b == '}') {
+        return i > s + 1;
+      } else if (b == '*' || b == '?' || b == '[' || b == '\\') {
+        return false;
       }
     }
     return false;
+  }
+
+  public static boolean isClusterCompliantMatchPattern(String matchPattern) {
+    // Check the encoded bytes: under a DBCS default charset (GBK, Shift_JIS, Big5) a trail byte can
+    // be a brace or a glob character while the corresponding char is not.
+    return isClusterCompliantMatchPattern(SafeEncoder.encode(matchPattern));
   }
 
   private static String extractHashTag(String key, boolean returnKeyOnAbsence) {

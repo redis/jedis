@@ -684,4 +684,26 @@ public class ClusterCommandObjectsTest {
     assertEquals(Collections.singleton(JedisClusterCRC16.getSlot("user")),
       clusterCommandObjects.scan(SafeEncoder.encode("0"), params).getArguments().getKeyHashSlots());
   }
+
+  /**
+   * The hash tag has to be found on the bytes sent to the server. In GBK U+2586 encodes as A8 7D,
+   * so the 0x7D byte closes the tag and the {@code [xy]} after it is outside the tag.
+   */
+  @Test
+  public void testScanLooksForGlobCharactersInTheEncodedHashTag() {
+    Charset original = SafeEncoder.DEFAULT_CHARSET;
+    try {
+      SafeEncoder.DEFAULT_CHARSET = Charset.forName("GBK");
+      ScanParams params = new ScanParams().match("{\u2586[xy]}:*");
+      int slotOnTheWire = JedisClusterCRC16.getSlot(params.binaryMatch());
+
+      assertEquals(Collections.singleton(slotOnTheWire),
+        clusterCommandObjects.scan("0", params).getArguments().getKeyHashSlots());
+      assertEquals(Collections.singleton(slotOnTheWire),
+        clusterCommandObjects.scan(SafeEncoder.encode("0"), params).getArguments()
+            .getKeyHashSlots());
+    } finally {
+      SafeEncoder.DEFAULT_CHARSET = original;
+    }
+  }
 }

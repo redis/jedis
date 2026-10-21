@@ -9,6 +9,7 @@ import static redis.clients.jedis.ConnectionTestHelper.hasClusterMaintenanceCont
 import static redis.clients.jedis.ConnectionTestHelper.hasPoolRelaxOverlay;
 import static redis.clients.jedis.ConnectionTestHelper.hasPoolControllerListener;
 import static redis.clients.jedis.ConnectionTestHelper.isRelaxedTimeoutActive;
+import static redis.clients.jedis.util.ClusterKeyRegistry.keyInRange;
 
 import java.net.SocketException;
 import java.time.Duration;
@@ -71,8 +72,8 @@ public class ClusterSlotMigrationMockTest extends AbstractClusterMaintenanceMock
   @Test
   public void sourceStillOwningSlotsIsKept() {
     openDefaultClient();
-    String low = keyInSlots(0, 100);
-    String high = keyInSlots(101, A_TO);
+    String low = keyInRange(0, 100, "low");
+    String high = keyInRange(101, A_TO, "high");
 
     topology.assign(0, 100, nodeB);
     deliver(serverA, 0, migrated(2L, nodeA, nodeB, "0-100"));
@@ -222,8 +223,8 @@ public class ClusterSlotMigrationMockTest extends AbstractClusterMaintenanceMock
   public void clientSideCacheIsFlushedWhenADeltaIsApplied() {
     client = clientBuilder(defaultClientConfig(), maintConfig(Mode.AUTO))
         .cacheConfig(CacheConfig.builder().maxSize(100).build()).build();
-    String key = keyInSlots(0, 3999);
-    String other = keyInSlots(4000, 7999);
+    String key = keyInRange(0, 3999, "cached");
+    String other = keyInRange(4000, 7999, "other");
     client.set(key, "v");
     assertEquals("v", client.get(key));
     assertEquals("v", client.get(key));

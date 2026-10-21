@@ -4,6 +4,8 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static redis.clients.jedis.JedisClusterInfoCache.getNodeKey;
+import static redis.clients.jedis.util.ClusterKeyRegistry.keyInRange;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
-import redis.clients.jedis.JedisClusterInfoCache;
 import redis.clients.jedis.MaintNotificationsTestSupport;
 import redis.clients.jedis.MaintNotificationsTestSupport.ReceivedClusterEvent;
 import redis.clients.jedis.MaintNotificationsTestSupport.ReceivedEvent;
@@ -50,7 +51,6 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.SslOptions;
 import redis.clients.jedis.builders.ClusterClientBuilder;
 import redis.clients.jedis.exceptions.JedisConnectionException;
-import redis.clients.jedis.util.JedisClusterCRC16;
 
 /**
  * Toolkit for scenario tests that observe SMIGRATING / SMIGRATED on a {@link RedisClusterClient}
@@ -230,30 +230,14 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
     return owners;
   }
 
-  static String nodeKey(HostAndPort node) {
-    return JedisClusterInfoCache.getNodeKey(node);
-  }
-
   /** The first slot the owner table routes to {@code node}, or -1. */
   static int slotOwnedBy(HostAndPort[] owners, String nodeKey, IntPredicate exclude) {
     for (int slot = 0; slot < owners.length; slot++) {
-      if (owners[slot] != null && nodeKey.equals(nodeKey(owners[slot])) && !exclude.test(slot)) {
+      if (owners[slot] != null && nodeKey.equals(getNodeKey(owners[slot])) && !exclude.test(slot)) {
         return slot;
       }
     }
     return -1;
-  }
-
-  /**
-   * A key whose hash slot satisfies {@code slotMatches}; distinct predicates give distinct keys.
-   */
-  static String keyInSlots(String prefix, IntPredicate slotMatches) {
-    for (int i = 0;; i++) {
-      String key = prefix + ":" + i;
-      if (slotMatches.test(JedisClusterCRC16.getSlot(key))) {
-        return key;
-      }
-    }
   }
 
   /**
@@ -273,15 +257,17 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
   }
 
   private static boolean sameNode(HostAndPort a, HostAndPort b) {
-    return a == null ? b == null : b != null && nodeKey(a).equals(nodeKey(b));
+    return a == null ? b == null : b != null && getNodeKey(a).equals(getNodeKey(b));
   }
 
-  /** One key per owner range, so a round over them touches every shard. */
-  static List<String> keysAcrossRanges(String prefix, HostAndPort[] owners) {
+  /**
+   * One key per owner range, so a round over them touches every shard. The range's registered key
+   * carries {@code name}, so callers with different names get distinct keys in the same slots.
+   */
+  static List<String> keysAcrossRanges(String name, HostAndPort[] owners) {
     List<String> keys = new ArrayList<>();
-    int i = 0;
     for (int[] range : ownerRanges(owners)) {
-      keys.add(keyInSlots(prefix + ":" + i++, slot -> slot >= range[0] && slot <= range[1]));
+      keys.add(keyInRange(range[0], range[1], name));
     }
     return keys;
   }
@@ -311,13 +297,13 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
     for (SlotMove move : moves) {
       move.forEachSlot(slot -> {
         moved[slot] = true;
-        if (!nodeKey(move.dest()).equals(nodeKey(ownerAfter[slot]))) {
+        if (!getNodeKey(move.dest()).equals(getNodeKey(ownerAfter[slot]))) {
           mismatches.add("slot " + slot + " -> " + ownerAfter[slot] + ", expected " + move.dest());
         }
       });
     }
     for (int slot = 0; slot < ownerBefore.length; slot++) {
-      if (!moved[slot] && !nodeKey(ownerBefore[slot]).equals(nodeKey(ownerAfter[slot]))) {
+      if (!moved[slot] && !getNodeKey(ownerBefore[slot]).equals(getNodeKey(ownerAfter[slot]))) {
         mismatches.add("unmoved slot " + slot + " changed owner " + ownerBefore[slot] + " -> "
             + ownerAfter[slot]);
       }

@@ -6,6 +6,8 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static redis.clients.jedis.JedisClusterInfoCache.getNodeKey;
+import static redis.clients.jedis.util.ClusterKeyRegistry.keyInRange;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -186,7 +188,7 @@ public class ClusterMaintNotificationsFeatureInteractionIT
     HostAndPort[] serverOwners = ownersBySlot(verification);
     HostAndPort[] clientOwners = ownersBySlot(client);
     for (int slot = 0; slot < clientOwners.length; slot++) {
-      assertEquals(nodeKey(serverOwners[slot]), nodeKey(clientOwners[slot]),
+      assertEquals(getNodeKey(serverOwners[slot]), getNodeKey(clientOwners[slot]),
         "owner of slot " + slot + " differs from a fresh CLUSTER SLOTS");
     }
   }
@@ -249,8 +251,7 @@ public class ClusterMaintNotificationsFeatureInteractionIT
     Set<String> nodes = nodeKeys(client);
     List<Subscriber> subscribers = new ArrayList<>();
     for (int[] range : ownerRanges(ownersBySlot(client))) {
-      subscribers.add(new Subscriber(
-          keyInSlots("chan:" + subscribers.size(), s -> s >= range[0] && s <= range[1])));
+      subscribers.add(new Subscriber(keyInRange(range[0], range[1], "chan")));
     }
     Heartbeat heartbeat = new Heartbeat(subscribers);
     try {

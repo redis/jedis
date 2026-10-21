@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static redis.clients.jedis.util.ClusterKeyRegistry.keyMatching;
 
 import java.net.SocketTimeoutException;
 import java.util.LinkedHashMap;
@@ -214,8 +215,9 @@ public class ClusterMaintNotificationsTimeoutIT extends ClusterMaintNotification
     List<ReceivedClusterEvent> openings = allEvents().stream()
         .filter(e -> PushMessageTypes.SMIGRATING.equals(e.type)).map(e -> (ReceivedClusterEvent) e)
         .collect(Collectors.toList());
-    return keyInSlots("probe", slot -> ownerBefore[slot] != null
-        && openings.stream().noneMatch(opening -> opening.contains(slot)));
+    return keyMatching(slot -> ownerBefore[slot] != null
+        && openings.stream().noneMatch(opening -> opening.contains(slot)),
+      "probe");
   }
 
   private void assertEffectiveTimeoutEverywhere(int expected, String when) {

@@ -8,6 +8,9 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
+import static redis.clients.jedis.JedisClusterInfoCache.getNodeKey;
+import static redis.clients.jedis.util.ClusterKeyRegistry.keyForSlot;
+import static redis.clients.jedis.util.ClusterKeyRegistry.keyMatching;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -147,16 +150,17 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
       for (ReceivedEvent event : events) {
         assertTrue(event instanceof ReceivedClusterEvent, "non-cluster event recorded: " + event);
         for (SlotMove move : ((ReceivedClusterEvent) event).moves) {
-          assertNotEquals(nodeKey(move.src()), nodeKey(move.dest()), "src == dest in " + move);
+          assertNotEquals(getNodeKey(move.src()), getNodeKey(move.dest()),
+            "src == dest in " + move);
         }
       }
     });
     // S1.3 identity: SMIGRATED names nodes in the same form the client keys its pools by
     obs.check("S1.3 src/dest host form matches node keys", () -> {
       for (SlotMove move : distinctMoves) {
-        assertTrue(before.contains(nodeKey(move.src())),
+        assertTrue(before.contains(getNodeKey(move.src())),
           "SMIGRATED src " + move.src() + " is not a node key the client knew before: " + before);
-        assertTrue(after.contains(nodeKey(move.dest())),
+        assertTrue(after.contains(getNodeKey(move.dest())),
           "SMIGRATED dest " + move.dest() + " is not a node key the client has after: " + after);
       }
     });
@@ -176,8 +180,8 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
     Set<String> sources = new LinkedHashSet<>();
     Set<String> destinations = new LinkedHashSet<>();
     distinctMoves.forEach(move -> {
-      sources.add(nodeKey(move.src()));
-      destinations.add(nodeKey(move.dest()));
+      sources.add(getNodeKey(move.src()));
+      destinations.add(getNodeKey(move.dest()));
     });
     switch (effect) {
       case SLOT_SHUFFLE:
@@ -213,7 +217,7 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
       assertFalse(MaintNotificationsTestSupport.hasActiveMigration(client), "active migration");
     });
     for (Map.Entry<HostAndPort, Connection> entry : livePinned().entrySet()) {
-      if (removed.contains(nodeKey(entry.getKey()))) {
+      if (removed.contains(getNodeKey(entry.getKey()))) {
         continue;
       }
       Connection conn = entry.getValue();
@@ -295,7 +299,8 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
     obs.check("S3.4 removed node is a SMIGRATED src owning no slot", () -> {
       assertTrue(sources.containsAll(removed), "removed " + removed + " not among srcs " + sources);
       for (HostAndPort owner : ownerAfter) {
-        assertFalse(removed.contains(nodeKey(owner)), "removed node still owns a slot: " + owner);
+        assertFalse(removed.contains(getNodeKey(owner)),
+          "removed node still owns a slot: " + owner);
       }
     });
     for (String node : removed) {
@@ -310,7 +315,7 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
       });
     }
     for (Map.Entry<HostAndPort, Connection> entry : pinned.entrySet()) {
-      if (!removed.contains(nodeKey(entry.getKey()))) {
+      if (!removed.contains(getNodeKey(entry.getKey()))) {
         continue;
       }
       Connection conn = entry.getValue();
@@ -344,13 +349,13 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
     int i = 0;
     for (SlotMove move : moves) {
       move.forEachSlot(slot -> moved[slot] = true);
-      probe(outcomes, keyInSlots("moved" + i++, move::contains));
+      // one key per delta, also when a cascade moves the same slots twice
+      probe(outcomes, keyMatching(move::contains, "moved" + i++));
     }
     for (String node : nodesAfter) {
       int slot = slotOwnedBy(ownerAfter, node, s -> moved[s]);
       if (slot >= 0) {
-        int unmovedSlot = slot;
-        probe(outcomes, keyInSlots("unmoved", s -> s == unmovedSlot));
+        probe(outcomes, keyForSlot(slot, "unmoved"));
       }
     }
     return outcomes;

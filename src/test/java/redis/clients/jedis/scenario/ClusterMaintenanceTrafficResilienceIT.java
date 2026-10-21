@@ -7,6 +7,7 @@ import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.stream.Stream;
 
@@ -164,27 +165,33 @@ public class ClusterMaintenanceTrafficResilienceIT extends ClusterMaintNotificat
   }
 
   /**
-   * Starts the runners, checks the baseline is error-free, runs the effect to completion while
-   * traffic keeps flowing, keeps it flowing through the post-effect tail, then stops and drains so
-   * every submitted command reached a terminal state.
+   * Starts the runners, checks the {@code primary} runner's baseline is error-free, runs the effect
+   * to completion while traffic keeps flowing, keeps it flowing through the post-effect tail, then
+   * stops and drains every runner so every submitted command reached a terminal state. The
+   * {@code observers} (the {@code maxAttempts(1)} meter) only run alongside; the test classifies
+   * their failures afterwards, so they gate nothing here.
    */
-  private void runAcrossEffect(Scenario scenario, TrafficRunner... runners) {
+  private void runAcrossEffect(Scenario scenario, TrafficRunner primary,
+      TrafficRunner... observers) {
+    List<TrafficRunner> runners = new ArrayList<>();
+    runners.add(primary);
+    runners.addAll(Arrays.asList(observers));
     for (TrafficRunner runner : runners) {
       runner.start();
     }
     try {
-      runners[0].awaitSubmitted(BASELINE_COMMANDS);
-      assertEquals(0, runners[0].errorCount(), "errors before the effect: " + runners[0].summary());
+      primary.awaitSubmitted(BASELINE_COMMANDS);
+      assertEquals(0, primary.errorCount(), "errors before the effect: " + primary.summary());
 
-      long submittedBefore = runners[0].submittedCount();
+      long submittedBefore = primary.submittedCount();
       faultInjector.triggerEffect(database, scenario);
 
-      long submittedAtCompletion = runners[0].submittedCount();
+      long submittedAtCompletion = primary.submittedCount();
       sleepQuietly(POST_EFFECT_TRAFFIC_MS);
-      assertTrue(runners[0].submittedCount() > submittedAtCompletion,
+      assertTrue(primary.submittedCount() > submittedAtCompletion,
         "no traffic after the effect completed");
       log.info("{}: commands submitted before / at completion / final = {} / {} / {}", scenario,
-        submittedBefore, submittedAtCompletion, runners[0].submittedCount());
+        submittedBefore, submittedAtCompletion, primary.submittedCount());
     } finally {
       for (TrafficRunner runner : runners) {
         runner.stop();

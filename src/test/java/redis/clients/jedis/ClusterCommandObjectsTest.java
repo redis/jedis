@@ -15,6 +15,8 @@ import java.util.Map;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.params.ScanParams;
@@ -652,5 +654,34 @@ public class ClusterCommandObjectsTest {
     } finally {
       SafeEncoder.DEFAULT_CHARSET = original;
     }
+  }
+
+  /**
+   * A glob character or an escape inside the hash tag lets the pattern match keys with different
+   * hash tags, which live in other slots, so routing by the tag would silently miss them.
+   */
+  @ParameterizedTest
+  @ValueSource(strings = { "{user*}:*", "{user?}:a", "{user[12]}:a", "{user\\*}:a" })
+  public void testScanRejectsGlobCharactersInsideHashTag(String match) {
+    ScanParams params = new ScanParams().match(match);
+
+    assertThrows(IllegalArgumentException.class, () -> clusterCommandObjects.scan("0", params));
+    assertThrows(IllegalArgumentException.class,
+      () -> clusterCommandObjects.scan("0", params, "string"));
+    assertThrows(IllegalArgumentException.class,
+      () -> clusterCommandObjects.scan(SafeEncoder.encode("0"), params));
+    assertThrows(IllegalArgumentException.class, () -> clusterCommandObjects
+        .scan(SafeEncoder.encode("0"), params, SafeEncoder.encode("string")));
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = { "{user}:*", "{user}:[ab]", "a{user}*", "*{user}*" })
+  public void testScanIsRoutedByHashTagWithoutGlobCharacters(String match) {
+    ScanParams params = new ScanParams().match(match);
+
+    assertEquals(Collections.singleton(JedisClusterCRC16.getSlot("user")),
+      clusterCommandObjects.scan("0", params).getArguments().getKeyHashSlots());
+    assertEquals(Collections.singleton(JedisClusterCRC16.getSlot("user")),
+      clusterCommandObjects.scan(SafeEncoder.encode("0"), params).getArguments().getKeyHashSlots());
   }
 }

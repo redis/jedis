@@ -27,7 +27,8 @@ public class ClusterCommandObjects extends CommandObjects {
   }
 
   private static final String SCAN_PATTERN_MESSAGE = "Cluster mode only supports SCAN command"
-      + " with MATCH pattern containing hash-tag ( curly-brackets enclosed string )";
+      + " with MATCH pattern containing hash-tag"
+      + " ( curly-brackets enclosed string without *, ?, [ or \\ )";
 
   @Override
   public final CommandObject<ScanResult<String>> scan(String cursor) {

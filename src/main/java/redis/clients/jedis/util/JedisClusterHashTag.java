@@ -20,7 +20,22 @@ public final class JedisClusterHashTag {
 
   public static boolean isClusterCompliantMatchPattern(String matchPattern) {
     String tag = extractHashTag(matchPattern, false);
-    return tag != null && !tag.isEmpty();
+    return tag != null && !tag.isEmpty() && !containsGlobCharacter(tag);
+  }
+
+  /**
+   * A glob character or an escape inside the hash tag lets the pattern match keys with other hash
+   * tags, which live in other slots. The server's patternHashSlot() does not compute a slot for
+   * such a pattern either.
+   */
+  private static boolean containsGlobCharacter(String tag) {
+    for (int i = 0; i < tag.length(); i++) {
+      char c = tag.charAt(i);
+      if (c == '*' || c == '?' || c == '[' || c == '\\') {
+        return true;
+      }
+    }
+    return false;
   }
 
   private static String extractHashTag(String key, boolean returnKeyOnAbsence) {

@@ -98,9 +98,19 @@ final class TrafficRunner {
             if (!running) {
               break;
             }
-            final long value = n++;
-            runCommand(key, () -> client.set(key, Long.toString(value)));
-            runCommand(key, () -> client.get(key));
+            final String value = Long.toString(n++);
+            // the GET is checked against the SET only when the SET was accepted: after a failed
+            // SET the old value is the correct answer, not a stale read
+            if (runCommand(key, () -> client.set(key, value))) {
+              runCommand(key, () -> {
+                String read = client.get(key);
+                if (!value.equals(read)) {
+                  throw new StaleReadException(key, value, read);
+                }
+              });
+            } else {
+              runCommand(key, () -> client.get(key));
+            }
           }
         }
       });
@@ -109,18 +119,32 @@ final class TrafficRunner {
 
   /**
    * Runs one command on {@code key}, counting it as submitted then processed; records any error.
+   * Returns whether the command completed without one.
    */
-  private void runCommand(String key, Runnable command) {
+  private boolean runCommand(String key, Runnable command) {
     submitted.incrementAndGet();
     try {
       command.run();
+      return true;
     } catch (RuntimeException e) {
       errors.incrementAndGet();
       firstError.compareAndSet(null, e);
       failures.add(new Failure(key, e));
       uniqueErrors.computeIfAbsent(errorSignature(e), k -> new AtomicLong()).incrementAndGet();
+      return false;
     } finally {
       processed.incrementAndGet();
+    }
+  }
+
+  /**
+   * A GET that did not return what the preceding SET on the same key wrote: a routing or data
+   * transfer defect that surfaced as a wrong answer instead of an exception. Each key has one
+   * writer, so there is no other explanation.
+   */
+  static final class StaleReadException extends RuntimeException {
+    StaleReadException(String key, String expected, String actual) {
+      super("stale read on " + key + ": expected " + expected + ", got " + actual);
     }
   }
 

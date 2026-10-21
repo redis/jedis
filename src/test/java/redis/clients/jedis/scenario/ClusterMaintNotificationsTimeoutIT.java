@@ -132,10 +132,9 @@ public class ClusterMaintNotificationsTimeoutIT extends ClusterMaintNotification
 
     startEffect(scenario);
     awaitFirstSMigrating();
-    boolean windowOpen = MaintNotificationsTestSupport.hasActiveMigration(client);
-    log.info("{}: window open after the first SMIGRATING: {}", scenario, windowOpen);
-    assertEffectiveTimeoutEverywhere(LARGE_SOCKET_TIMEOUT_MS,
-      windowOpen ? "inside the window" : "right after the first SMIGRATING");
+    assertEffectiveTimeoutEverywhere(LARGE_SOCKET_TIMEOUT_MS, "inside the window");
+    // the value above was read under an open window: no closer consumed yet, gate still open
+    assertWindowOpen("S2.4");
 
     awaitEffectSettled(before.size());
     observeAll();

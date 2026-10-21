@@ -11,6 +11,7 @@ import java.nio.file.Path;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
@@ -61,7 +62,9 @@ abstract class FaultInjectorScenarioBase {
 
   Database database;
   private DnsDiagnostics dnsDiag;
-  private Path serverTruststore;
+  /** Pinned trust per TLS endpoint, so every client of one database shares one truststore. */
+  private final Map<URI, SslOptions> pinnedSslByEndpoint = new LinkedHashMap<>();
+  private final List<Path> serverTruststores = new ArrayList<>();
 
   final List<Thread> effectThreads = new ArrayList<>();
   final List<Throwable> effectFailures = Collections.synchronizedList(new ArrayList<>());
@@ -109,36 +112,43 @@ abstract class FaultInjectorScenarioBase {
    * plaintext database. Bootstraps trust by downloading the certificate chain the server presents
    * and saving a truststore containing only that chain, so the client trusts exactly this server
    * and nothing else; every other {@link SslOptions} default is kept, so the client performs full
-   * chain and hostname verification. The store is a temp file deleted on teardown.
+   * chain and hostname verification. The store is a temp file deleted on teardown. The chain is
+   * captured once per endpoint: the observer, the verification client and any further client of the
+   * same database share one store, so none is overwritten and leaked.
    */
   SslOptions pinnedSslOptions(Database database) {
     if (!database.tls()) {
       return null;
     }
-    URI endpoint = database.endpoint();
+    return pinnedSslByEndpoint.computeIfAbsent(database.endpoint(), this::capturePinnedSsl);
+  }
+
+  private SslOptions capturePinnedSsl(URI endpoint) {
+    Path truststore;
     try {
       X509Certificate[] chain = TlsUtil.captureServerChain(endpoint.getHost(), endpoint.getPort());
       logger.info("Pinning server chain of {}: subject={}, SANs={}", endpoint,
         chain[0].getSubjectX500Principal(), chain[0].getSubjectAlternativeNames());
-      serverTruststore = TlsUtil.createAndSaveTruststore(chain,
-        TlsUtil.tempTruststorePath("sch-pinned"), TRUSTSTORE_PASSWORD);
+      truststore = TlsUtil.createAndSaveTruststore(chain, TlsUtil.tempTruststorePath("sch-pinned"),
+        TRUSTSTORE_PASSWORD);
     } catch (Exception e) {
       throw new IllegalStateException("TLS trust bootstrap failed for " + endpoint, e);
     }
-    return SslOptions.builder()
-        .truststore(serverTruststore.toFile(), TRUSTSTORE_PASSWORD.toCharArray()).build();
+    serverTruststores.add(truststore);
+    return SslOptions.builder().truststore(truststore.toFile(), TRUSTSTORE_PASSWORD.toCharArray())
+        .build();
   }
 
-  private void deleteServerTruststore() {
-    if (serverTruststore == null) {
-      return;
+  private void deleteServerTruststores() {
+    for (Path truststore : serverTruststores) {
+      try {
+        Files.deleteIfExists(truststore);
+      } catch (IOException e) {
+        logger.warn("Failed to delete truststore {}", truststore, e);
+      }
     }
-    try {
-      Files.deleteIfExists(serverTruststore);
-    } catch (IOException e) {
-      logger.warn("Failed to delete truststore {}", serverTruststore, e);
-    }
-    serverTruststore = null;
+    serverTruststores.clear();
+    pinnedSslByEndpoint.clear();
   }
 
   // --- effects ---
@@ -204,7 +214,7 @@ abstract class FaultInjectorScenarioBase {
 
   /**
    * Runs after every subclass {@code @AfterEach} closed its clients: an in-flight effect is joined
-   * so the database is never released under it, then the pinned truststore and the database go.
+   * so the database is never released under it, then the pinned truststores and the database go.
    */
   @AfterEach
   final void tearDownDatabase() {
@@ -218,7 +228,7 @@ abstract class FaultInjectorScenarioBase {
         }
       } finally {
         try {
-          deleteServerTruststore();
+          deleteServerTruststores();
         } finally {
           database = releaseIfPresent(database);
           effectThreads.clear();

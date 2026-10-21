@@ -197,7 +197,17 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
    */
   static Database provisionShared(Scenario scenario) {
     Database shared = faultInjector.provision(scenario);
-    awaitEndpointConnectable(shared.endpoint());
+    try {
+      awaitEndpointConnectable(shared.endpoint());
+    } catch (RuntimeException e) {
+      // the caller never gets the handle, so its @AfterAll cannot release the database
+      try {
+        faultInjector.release(shared);
+      } catch (RuntimeException releaseFailure) {
+        e.addSuppressed(releaseFailure);
+      }
+      throw e;
+    }
     return shared;
   }
 

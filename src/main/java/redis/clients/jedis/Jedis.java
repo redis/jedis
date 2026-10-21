@@ -420,7 +420,15 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
 
   // Legacy
   public Pipeline pipelined() {
-    pipeline = new Pipeline(this);
+    pipeline = new Pipeline(this) {
+      @Override
+      public Response<String> select(final int index) {
+        Response<String> response = super.select(index);
+        // JedisFactory.activateObject relies on db to restore the pool's database on next borrow
+        db = index;
+        return response;
+      }
+    };
     return pipeline;
   }
 

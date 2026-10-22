@@ -36,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.Connection;
+import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.MaintNotificationsTestSupport;
@@ -87,6 +88,10 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
 
   /** One borrowed connection per node, keyed by node; pushes are read through these. */
   final Map<HostAndPort, Connection> pinned = new LinkedHashMap<>();
+  /**
+   * The pool each pinned connection came from, kept because a departed node's pool leaves the map.
+   */
+  final Map<HostAndPort, ConnectionPool> pinnedPools = new LinkedHashMap<>();
   final Map<HostAndPort, ReceivedEvents> recorded = new LinkedHashMap<>();
   /** Pinned connections the server closed (expected for a departing node after SMIGRATED). */
   final Set<HostAndPort> dropped = new LinkedHashSet<>();
@@ -352,6 +357,7 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
       Connection connection = client.getConnectionFromSlot(slot);
       HostAndPort key = owners[slot];
       pinned.put(key, connection);
+      pinnedPools.put(key, client.getClusterNodes().get(node));
       recorded.put(key, MaintNotificationsTestSupport.record(connection));
     }
     logger.info("pinned one connection per node: {}", pinned.keySet());
@@ -407,7 +413,9 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
    * Observes one pinned connection via a PING round-trip: buffered pushes are consumed inline
    * during the reply read, dispatching maintenance events on this thread. A connection the server
    * closed is recorded in {@link #dropped}; that is expected only for a departing node after the
-   * SMIGRATED that removed it was seen somewhere — a drop before any SMIGRATED fails the test.
+   * SMIGRATED that removed it: a SMIGRATED must have been read somewhere, and the node's own pool
+   * must already be destroyed (the delta is applied inline, so a legitimate drop always finds it
+   * closed). A drop on a node that is still in the cluster fails the test.
    */
   private void observe(HostAndPort node, Connection connection) {
     try {
@@ -418,8 +426,11 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
         fail("pinned connection to " + node + " dropped before any SMIGRATED; events: "
             + allEvents() + ", cause: " + e);
       }
-      logger.info("pinned connection to {} dropped after SMIGRATED (expected for a departing node)",
-        node);
+      assertTrue(pinnedPools.get(node).isClosed(),
+        "pinned connection to " + node
+            + " dropped while its pool is still open (the node did not leave); events: "
+            + allEvents() + ", cause: " + e);
+      logger.info("pinned connection to {} dropped after its node left (pool destroyed)", node);
     }
   }
 
@@ -555,6 +566,7 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
       }
     }
     pinned.clear();
+    pinnedPools.clear();
     recorded.clear();
     dropped.clear();
   }

@@ -200,8 +200,9 @@ on top of [`FaultInjectorScenarioBase`](FaultInjectorScenarioBase.java):
   consumed on a read, so `observeAll()` PINGs each pinned connection; `awaitFirstSMigrating()`
   PINGs them one at a time and stops at the first that recorded `SMIGRATING`, leaving the others
   unread for the S2.1 gate check. A pinned connection the server closes is recorded in `dropped`;
-  that is expected only for a departing node after its `SMIGRATED` was read somewhere, and fails
-  the test otherwise.
+  that is accepted only if a `SMIGRATED` was read somewhere and the node's own pool is already
+  destroyed (the delta removed it); a drop before any `SMIGRATED`, or on a node still in the
+  cluster, fails the test.
 - **Effect on a background thread.** `startEffect(scenario)` fires the FI route and awaits the
   action on its own thread; `effectFailures` collects FI errors for `assertEffectSucceeded()`.
 - **Settle rule.** `awaitEffectSettled(expectedNodes)` ends a row in three steps that must stay

@@ -251,32 +251,46 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
   }
 
   /**
-   * The maximal runs of consecutive slots with one owner, as inclusive {@code [from, to]} pairs:
-   * the shard layout as the client sees it. One key or channel per range reaches every shard.
+   * The slot ranges of every shard, one per shard, as inclusive {@code [from, to]} pairs in slot
+   * order. Computed from the database's {@code shards_count} with RE's even split (boundary
+   * {@code i} at {@code round(i * 16384 / n)}) and checked against the client's owner table: every
+   * slot where the owner changes must be one of those boundaries, otherwise the layout is not the
+   * assumed split and the test fails rather than probing the wrong shards. The server cannot be
+   * asked directly: on RE both {@code CLUSTER SLOTS} and {@code CLUSTER SHARDS} report contiguous
+   * ranges per node, so adjacent shards owned by one node appear as a single entry (probed
+   * 2026-10-21: six single-shard entries on a fresh 6-shard database, then one rladmin migrate of
+   * {@code 10923-13652} onto the node owning {@code 8192-10922} turned them into one entry
+   * {@code 8192-13652} in both commands, while SMIGRATED named the moved shard alone).
    */
-  static List<int[]> ownerRanges(HostAndPort[] owners) {
+  static List<int[]> shardRanges(Scenario scenario, RedisClusterClient client) {
+    int shards = ((Number) scenario.requirement().dbConfig().get("shards_count")).intValue();
     List<int[]> ranges = new ArrayList<>();
-    int from = 0;
-    for (int slot = 1; slot <= owners.length; slot++) {
-      if (slot == owners.length || !sameNode(owners[slot], owners[from])) {
-        ranges.add(new int[] { from, slot - 1 });
-        from = slot;
+    Set<Integer> starts = new HashSet<>();
+    for (int i = 0; i < shards; i++) {
+      int from = (int) Math.round(i * (double) Protocol.CLUSTER_HASHSLOTS / shards);
+      int to = (int) Math.round((i + 1) * (double) Protocol.CLUSTER_HASHSLOTS / shards) - 1;
+      ranges.add(new int[] { from, to });
+      starts.add(from);
+    }
+    HostAndPort[] owners = ownersBySlot(client);
+    for (int slot = 1; slot < owners.length; slot++) {
+      if (!getNodeKey(owners[slot]).equals(getNodeKey(owners[slot - 1]))) {
+        assertTrue(starts.contains(slot), "owner changes at slot " + slot
+            + ", which is not a shard boundary of the even " + shards + "-shard split");
       }
     }
+    logger.info("shard ranges ({} shards): {}", shards,
+      ranges.stream().map(range -> range[0] + "-" + range[1]).collect(Collectors.toList()));
     return ranges;
   }
 
-  private static boolean sameNode(HostAndPort a, HostAndPort b) {
-    return a == null ? b == null : b != null && getNodeKey(a).equals(getNodeKey(b));
-  }
-
   /**
-   * One key per owner range, so a round over them touches every shard. The range's registered key
+   * One key per shard range, so a round over them touches every shard. The range's registered key
    * carries {@code name}, so callers with different names get distinct keys in the same slots.
    */
-  static List<String> keysAcrossRanges(String name, HostAndPort[] owners) {
+  static List<String> keysAcrossRanges(String name, List<int[]> shardRanges) {
     List<String> keys = new ArrayList<>();
-    for (int[] range : ownerRanges(owners)) {
+    for (int[] range : shardRanges) {
       keys.add(keyInRange(range[0], range[1], name));
     }
     return keys;

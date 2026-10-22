@@ -162,7 +162,7 @@ public class ClusterMaintNotificationsFeatureInteractionIT
     openVerificationClient(shared);
     pinOneConnectionPerNode();
     Set<String> nodes = nodeKeys(client);
-    List<String> keys = keysAcrossRanges("refresh", ownersBySlot(client));
+    List<String> keys = keysAcrossRanges("refresh", shardRanges(sharedScenario, client));
 
     fire();
     int commands = 0;
@@ -250,7 +250,7 @@ public class ClusterMaintNotificationsFeatureInteractionIT
     openVerificationClient(shared);
     Set<String> nodes = nodeKeys(client);
     List<Subscriber> subscribers = new ArrayList<>();
-    for (int[] range : ownerRanges(ownersBySlot(client))) {
+    for (int[] range : shardRanges(sharedScenario, client)) {
       subscribers.add(new Subscriber(keyInRange(range[0], range[1], "chan")));
     }
     Heartbeat heartbeat = new Heartbeat(subscribers);

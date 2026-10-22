@@ -5,10 +5,12 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static redis.clients.jedis.JedisClusterInfoCache.getNodeKey;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Stream;
 
 import com.redis.test.fi.Scenario;
@@ -35,9 +37,9 @@ import redis.clients.jedis.scenario.TrafficRunner.Failure;
  * after a slot migration and sees zero command errors, with every key written readable afterwards.
  * No notification or timeout is asserted; the functional suite does that. A second client with
  * {@code maxAttempts(1)} runs alongside and reports how many commands the application would have
- * seen fail without retries (S5.2: only destroyed-pool borrows and, on ASM rows, MOVED are
- * accepted, both on moved slots only). One effect per trigger, same rows as the first three of
- * {@link ClusterMaintNotificationsIT}.
+ * seen fail without retries (S5.2: accepted are a borrow from the destroyed pool of a node that
+ * left, and on ASM rows a MOVED on a slot that moved). One effect per trigger, same rows as the
+ * first three of {@link ClusterMaintNotificationsIT}.
  */
 @Tag("scenario")
 public class ClusterMaintenanceTrafficResilienceIT extends ClusterMaintNotificationsScenarioBase {
@@ -77,11 +79,12 @@ public class ClusterMaintenanceTrafficResilienceIT extends ClusterMaintNotificat
     RedisClusterClient meter = openClient(database, DEFAULT_MAINTENANCE, config -> {
     }, builder -> builder.maxAttempts(1));
     HostAndPort[] owners = ownersBySlot(stock);
+    List<int[]> shards = shardRanges(scenario, stock);
 
     TrafficRunner traffic = new TrafficRunner(stock, WORKERS,
-        worker -> keysAcrossRanges("traffic:" + worker, owners));
+        worker -> keysAcrossRanges("traffic:" + worker, shards));
     TrafficRunner metered = new TrafficRunner(meter, METER_WORKERS,
-        worker -> keysAcrossRanges("meter:" + worker, owners));
+        worker -> keysAcrossRanges("meter:" + worker, shards));
     runAcrossEffect(scenario, traffic, metered);
 
     // S5.1
@@ -94,16 +97,21 @@ public class ClusterMaintenanceTrafficResilienceIT extends ClusterMaintNotificat
       assertTrue(stock.exists(key), "key written during the effect is gone: " + key);
     }
     assertEquals("PONG", stock.ping(), "stock client must be healthy after the effect");
-    // S5.2: what an application without retries saw; only the two accepted kinds may appear
+    // S5.2: what an application without retries saw. Two kinds of failure are accepted:
+    // - a borrow from the destroyed pool of a node that left the cluster (its slots all moved)
+    // - on ASM rows, a MOVED for a key whose slot moved
     HostAndPort[] ownersAfter = ownersBySlot(stock);
+    Set<String> nodesAfter = nodeKeys(stock);
     List<Failure> unexpected = new ArrayList<>();
     int exemptMoved = 0;
     int exemptPool = 0;
     for (Failure failure : metered.failures()) {
-      boolean movedSlot = !owners[failure.slot].equals(ownersAfter[failure.slot]);
-      if (movedSlot && isDestroyedPoolBorrow(failure)) {
+      HostAndPort ownerBefore = owners[failure.slot];
+      boolean slotMoved = !ownerBefore.equals(ownersAfter[failure.slot]);
+      boolean ownerLeft = !nodesAfter.contains(getNodeKey(ownerBefore));
+      if (ownerLeft && isDestroyedPoolBorrow(failure)) {
         exemptPool++;
-      } else if (movedSlot && scenario.requirement().asm() && isMoved(failure)) {
+      } else if (slotMoved && scenario.requirement().asm() && isMoved(failure)) {
         exemptMoved++;
       } else {
         unexpected.add(failure);
@@ -111,7 +119,7 @@ public class ClusterMaintenanceTrafficResilienceIT extends ClusterMaintNotificat
     }
     log.info(
       "{}: maxAttempts(1) client {}; exempt: {} MOVED on moved slots (ASM), {} borrows from"
-          + " a destroyed pool on moved slots; unexpected: {}",
+          + " the destroyed pool of a departed node; unexpected: {}",
       scenario, metered.summary(), exemptMoved, exemptPool, unexpected);
     if (!unexpected.isEmpty()) {
       fail("S5.2: failures without retries that the design does not account for: " + unexpected,
@@ -152,10 +160,10 @@ public class ClusterMaintenanceTrafficResilienceIT extends ClusterMaintNotificat
     RedisClusterClient unaware = openClient(database, MaintenanceNotificationsConfig.DISABLED,
       config -> {
       }, builder -> builder.maxAttempts(1));
-    HostAndPort[] owners = ownersBySlot(unaware);
+    List<int[]> shards = shardRanges(scenario, unaware);
 
     TrafficRunner traffic = new TrafficRunner(unaware, WORKERS,
-        worker -> keysAcrossRanges("control:" + worker, owners));
+        worker -> keysAcrossRanges("control:" + worker, shards));
     runAcrossEffect(scenario, traffic);
 
     log.info("{}: negative control {}", scenario, traffic.summary());

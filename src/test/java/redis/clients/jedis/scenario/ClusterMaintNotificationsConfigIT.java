@@ -149,7 +149,7 @@ public class ClusterMaintNotificationsConfigIT extends ClusterMaintNotifications
         assertEquals(MaintNotificationsObserverBase.CLIENT_SOCKET_TIMEOUT_MS,
           MaintNotificationsTestSupport.effectiveTimeoutMillis(connection), "timeout on " + node);
       });
-      for (String key : keysAcrossRanges("disabled", owners)) {
+      for (String key : keysAcrossRanges("disabled", shardRanges(sharedScenario, c))) {
         c.set(key, "v");
         assertEquals("v", c.get(key), "stock MOVED handling must still serve " + key);
       }

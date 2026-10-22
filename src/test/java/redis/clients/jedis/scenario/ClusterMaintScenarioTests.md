@@ -91,7 +91,7 @@ asserted where a client requirement rests on it.
 
 | Id | Expected | Where |
 |---|---|---|
-| S5.1 | A stock `RedisClusterClient` (RESP3, AUTO mode, default retries) with worker threads doing `SET` / `GET` on one key per shard (ranges from the database's `shards_count`, RE's even slot split, checked against the owner table; `CLUSTER SLOTS` and `CLUSTER SHARDS` merge adjacent shards owned by one node and cannot be used) across the effect sees zero command errors; every key written exists afterwards; no worker left in flight. Rows: `remove-add` / `migrate`, `slot-shuffle` / `failover`, `remove` / `reshard`. | `ClusterMaintenanceTrafficResilienceIT.trafficContinues` |
+| S5.1 | A stock `RedisClusterClient` (RESP3, AUTO mode, default retries) with worker threads doing `SET` / `GET` on one key per shard (see [Fixture](#fixture)) across the effect sees zero command errors and every `GET` returns what the preceding `SET` wrote (a stale or null read is a failure); every key written exists afterwards; no worker left in flight. Rows: `remove-add` / `migrate`, `slot-shuffle` / `failover`, `remove` / `reshard`. | `ClusterMaintenanceTrafficResilienceIT.trafficContinues` |
 | S5.2 | The same traffic through a `maxAttempts(1)` client on the same database: what an application without retries sees. Every failure is classified by the key's slot (moved or not, from the owner map before and after the effect), by whether the slot's owner before the effect is still a node afterwards, and by its cause. Two kinds are accepted and only counted: a borrow from the destroyed pool of a departed node for a key in a moved slot (all rows), and a `MOVED` for a key in a moved slot on ASM rows (the shard answers the redirect itself at the switch instant). Any other failure fails the row: timeouts, connections cut by the server, `MOVED` on unmoved slots or on non-ASM rows, destroyed-pool borrows on unmoved slots. | same method |
 | S5.3 | Negative control (opt-in `-Dsch.negativeControl=true`): traffic with notifications disabled and `maxAttempts(1)` across `remove-add` / `migrate` is expected to see failures, showing what the notifications bought. | `ClusterMaintenanceTrafficResilienceIT.trafficDisruptedWithoutMaintenance` |
 
@@ -107,7 +107,7 @@ asserted where a client requirement rests on it.
 |---|---|---|
 | S8.1 | ENABLED and AUTO over RESP3: `CLIENT MAINT_NOTIFICATIONS_INFO` reports `on` on every node; every pool has the cluster maintenance controller. | `ClusterMaintNotificationsConfigIT.enabledAndAutoActivateNotificationsOnEveryNode` |
 | S8.2 | DISABLED: reports `off` on every node; no pool has a controller. | `ClusterMaintNotificationsConfigIT.disabledDoesNotActivateNotificationsAnywhere` |
-| S8.3 | DISABLED during a real migration: no push dispatched to its connections, timeouts unchanged, `SET` / `GET` on one key per shard (ranges as in S5.1) still succeed through the stock `MOVED` handling and refresh. | `ClusterMaintNotificationsConfigIT.disabledClientIsUnaffectedByARealMigration` |
+| S8.3 | DISABLED during a real migration: no push dispatched to its connections, timeouts unchanged, `SET` / `GET` on one key per shard (see [Fixture](#fixture)) still succeed through the stock `MOVED` handling and refresh. | `ClusterMaintNotificationsConfigIT.disabledClientIsUnaffectedByARealMigration` |
 | S8.4 | AUTO over RESP2: no push consumer on any connection, commands work. | `ClusterMaintNotificationsConfigIT.autoOverResp2SendsNoHandshakeAndWorks` |
 | S8.5 | ENABLED over RESP2: fails at build or first command with a `JedisException`. | `ClusterMaintNotificationsConfigIT.enabledOverResp2Fails` |
 
@@ -115,14 +115,14 @@ asserted where a client requirement rests on it.
 
 | Id | Expected | Where |
 |---|---|---|
-| S9.1 | One `JedisShardedPubSub` subscription per shard (ranges as in S5.1), each on its own recorded observer connection. Every channel whose slot did not move receives `before` and `after` in order and keeps its connection; at least one subscribed connection consumed `SMIGRATING` and `SMIGRATED` inline; the client-wide gate is seen open during the effect and no window is left after it. A heartbeat per channel per second (published from the verification client) keeps the subscriptions inside the 2 s blocking timeout and is excluded from the assertions. Mock G1. | `ClusterMaintNotificationsFeatureInteractionIT.shardedPubSubSurvivesAMigration` |
+| S9.1 | One `JedisShardedPubSub` subscription per shard (see [Fixture](#fixture)), each on its own recorded observer connection. Every channel whose slot did not move receives `before` and `after` in order and keeps its connection; at least one subscribed connection consumed `SMIGRATING` and `SMIGRATED` inline; the client-wide gate is seen open during the effect and no window is left after it. A heartbeat per channel per second (published from the verification client) keeps the subscriptions inside the 2 s blocking timeout and is excluded from the assertions. Mock G1. | `ClusterMaintNotificationsFeatureInteractionIT.shardedPubSubSurvivesAMigration` |
 | S9.2 | The one subscribed channel in the moved shard is the single casualty, asserted as such: the server closes its subscribed connection at or before `SMIGRATED` (observed 2026-10-20 on RE: `Unexpected end of stream`, `SMIGRATING` recorded on it but no `SMIGRATED`), Jedis has no resubscription for application pub/sub, so that channel got `before` only, its subscriber ended with a `JedisConnectionException`, exactly one channel sat in the moved range, and it is the only one that missed `after`. If the server starts keeping the connection or sending `sunsubscribe`, or Jedis gains resubscription, these observations fail and name which changed. | same method |
 
 ### S10. Lifecycle
 
 | Id | Expected | Where |
 |---|---|---|
-| S10 | `client.close()` after the effect closes every node pool; pinned connections were returned first; the database is released only after every client is closed. Mock F1. | `migrationIsHandled`, step 7 |
+| S10 | `client.close()` after the effect closes every node pool, including the pools the deltas had already dropped; pinned connections were returned first; the database is released only after every client is closed. Mock F1. | `migrationIsHandled`, step 7 |
 
 ### E1. Replica exposure (environment check)
 
@@ -177,7 +177,23 @@ on top of [`FaultInjectorScenarioBase`](FaultInjectorScenarioBase.java):
   relaxed and restored timeouts are directly observable); `maxAttempts(1)` so every redirect and
   failed connection surfaces to the test as an exception it can count instead of a silent retry;
   no periodic topology refresh; pool `maxTotal` 3 per node. TLS trust is pinned to the chain the
-  database presents when the row is a TLS one.
+  database presents when the row is a TLS one; the chain is captured once per database and the
+  truststore shared by every client the test opens on it.
+- **Shard ranges.** `shardRanges(scenario, client)` computes one `[from, to]` range per shard from
+  the database's `shards_count` with RE's even split (boundary `i` at `round(i * 16384 / n)`) and
+  fails the test if the client's owner table changes owner at any other slot. The server cannot be
+  asked: on RE both `CLUSTER SLOTS` and `CLUSTER SHARDS` report contiguous ranges per node, so
+  adjacent shards owned by one node appear as one entry (probed 2026-10-22: six single-shard
+  entries, then one `rladmin migrate` onto a neighbour's node made them five).
+- **Keys.** [`ClusterKeyRegistry`](../util/ClusterKeyRegistry.java) hands out `{tag}:name` keys:
+  the registered tag pins the slot, the caller's name keeps keys of different tests and workers in
+  the same slot apart. `keysAcrossRanges(name, ranges)` gives one such key per shard.
+- **Traffic.** [`TrafficRunner`](TrafficRunner.java) workers issue `SET` then `GET` on their keys
+  and check every `GET` against the value the preceding accepted `SET` wrote; a mismatch is a
+  `StaleReadException`, recorded like any other failure.
+- **Shared database.** Classes whose methods fire on one database (`provisionShared`) release it
+  in `@AfterAll`; if the endpoint never becomes connectable the database is released before the
+  error propagates, so nothing is left on the FI.
 - **One pinned connection per node.** `pinOneConnectionPerNode()` borrows a connection from every
   node's pool and keeps it, each with a `ReceivedEvents` recorder
   ([`MaintNotificationsTestSupport`](../MaintNotificationsTestSupport.java)). Pushes are only

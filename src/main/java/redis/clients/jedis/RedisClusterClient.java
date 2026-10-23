@@ -476,8 +476,14 @@ public class RedisClusterClient extends UnifiedJedis {
    * {@inheritDoc}
    * <p>
    * This override automatically splits the key-value pairs by hash slot and executes MSETEX
-   * on each shard with the provided parameters.
+   * on each shard with the provided parameters. It returns {@code true} only if every shard set
+   * its keys.
    * </p>
+   *
+   * <p><b>Atomicity:</b> MSETEX is atomic only within one hash slot. When the keys span several
+   * slots, the NX or XX condition is checked for each slot separately, so {@code false} does not
+   * mean that no key was set: the slots where the condition held are still written. Use keys with
+   * the same hash tag when all or none of them must be set.</p>
    */
   @Override
   public boolean msetex(MSetExParams params, String... keysvalues) {
@@ -488,8 +494,14 @@ public class RedisClusterClient extends UnifiedJedis {
    * {@inheritDoc}
    * <p>
    * This override automatically splits the key-value pairs by hash slot and executes MSETEX
-   * on each shard with the provided parameters.
+   * on each shard with the provided parameters. It returns {@code true} only if every shard set
+   * its keys.
    * </p>
+   *
+   * <p><b>Atomicity:</b> MSETEX is atomic only within one hash slot. When the keys span several
+   * slots, the NX or XX condition is checked for each slot separately, so {@code false} does not
+   * mean that no key was set: the slots where the condition held are still written. Use keys with
+   * the same hash tag when all or none of them must be set.</p>
    */
   @Override
   public boolean msetex(MSetExParams params, byte[]... keysvalues) {

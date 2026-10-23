@@ -97,6 +97,12 @@ public class CommandFlagsRegistryGenerator {
     // single result FUNCTION STATS should be executed on a single node, not broadcast to all shards
     MANUAL_OVERRIDES.put("FUNCTION STATS",
       new CommandMetadata(Arrays.asList("noscript", "allow_busy"), "default", "special"));
+
+    // Override MSETEX: change response policy from ALL_SUCCEEDED to AGG_LOGICAL_AND
+    // Reason: the client splits MSETEX by hash slot and NX/XX is checked on each shard, so the
+    // result must be true only if every shard replied 1. ALL_SUCCEEDED returns the first reply.
+    MANUAL_OVERRIDES.put("MSETEX", new CommandMetadata(
+        Arrays.asList("write", "denyoom", "movablekeys"), "multi_shard", "agg_logical_and"));
   }
 
   /**

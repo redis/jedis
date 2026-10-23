@@ -823,10 +823,10 @@ final class StaticCommandFlagsRegistryInitializer {
       EnumSet.of(CommandFlag.DENYOOM, CommandFlag.MODULE, CommandFlag.WRITE));
 
     // 1 command(s) with: denyoom, movablekeys, write; request_policy=multi_shard;
-    // response_policy=all_succeeded
+    // response_policy=agg_logical_and
     builder.register("MSETEX",
       EnumSet.of(CommandFlag.DENYOOM, CommandFlag.MOVABLEKEYS, CommandFlag.WRITE),
-      RequestPolicy.MULTI_SHARD, ResponsePolicy.ALL_SUCCEEDED);
+      RequestPolicy.MULTI_SHARD, ResponsePolicy.AGG_LOGICAL_AND);
 
     // 6 command(s) with: denyoom, movablekeys, write
     builder.register("GEORADIUS",

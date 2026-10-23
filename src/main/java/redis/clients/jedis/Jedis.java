@@ -288,6 +288,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * to "user" and "password" respectively, the database field will be set to 1. Those fields will be ignored
    * from the JedisClientConfig object.
    *
+   * The TLS settings of the JedisClientConfig, including {@link SslOptions}, are applied only when the
+   * URI scheme is "rediss://". With "redis://" the connection is plaintext and they are ignored.
+   *
    * @param uri The URI to connect to
    * @param config The JedisClientConfig object to use
    */

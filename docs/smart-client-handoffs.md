@@ -266,52 +266,6 @@ same sequence number, and Jedis applies each notification exactly once per clien
 how many connections deliver it. An `SMIGRATED` with an empty list of entries is valid: it only
 closes the relax window.
 
-On the wire, `SMIGRATING` is a three-element push frame and `SMIGRATED` carries a nested array:
-
-```text
->3
-+SMIGRATING
-:93923
-+123,456,789-1000
-
->3
-+SMIGRATED
-:93924
-*2
-  *3
-    +node-a.example.com:6789
-    +node-b.example.com:6790
-    +123,789-1000
-  *3
-    +node-a.example.com:4545
-    +node-c.example.com:4555
-    +1000-2000
-```
-
-### What a maintenance operation looks like
-
-Take a rolling upgrade in which node A is replaced by a new node A':
-
-1. The server adds A' to the cluster. The client does not notice yet: A' owns no slots.
-2. Every node sends `SMIGRATING` with the slots that are about to move. The client opens the
-   relax window, and from now on every command on every connection runs under the relaxed
-   timeouts — including commands on connections that are opened while the window is open, from
-   their handshake onwards.
-3. The server moves the slots to A' and, during the move, keeps serving the moving slots from A
-   behind the scenes, so the client sees stalls at worst, not errors. The relaxed timeouts absorb
-   the stalls.
-4. Every node sends `SMIGRATED` listing the moved slots with A as source and A' as destination.
-   The first copy to arrive updates the slot map: a connection pool for A' is created, the slots
-   are re-routed to it, and since A no longer owns any slot its pool is destroyed. The relax
-   window closes and timeouts return to normal.
-5. Commands for the moved slots go straight to A'. No `MOVED` redirect, no `CLUSTER SLOTS`
-   refresh, and no reconnect storm is needed.
-6. The server removes A from the cluster. The client has no connection to it anymore.
-
-A shard failover or a plain slot migration between existing nodes follows the same steps, except
-that no pool is created or destroyed: the destination node is already known, and the source node
-keeps its other slots.
-
 ### Relaxed timeouts are client-wide
 
 - An `SMIGRATING` received on **any** connection relaxes the timeouts of **every** connection of

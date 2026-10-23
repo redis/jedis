@@ -35,10 +35,13 @@ public class CacheEntry<T> {
     }, connection);
   }
 
+  /**
+   * Takes ownership of {@code reply}: the caller must not keep or modify it.
+   */
   CacheEntry(CacheKey<T> cacheKey, Object reply, Builder<T> builder, CacheConnection connection) {
     this.cacheKey = cacheKey;
     this.connection = new WeakReference<>(connection);
-    this.reply = Protocol.copyReply(reply);
+    this.reply = reply;
     this.builder = Objects.requireNonNull(builder);
   }
 

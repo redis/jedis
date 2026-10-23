@@ -45,9 +45,7 @@ The feature is negotiated per connection during the handshake with
 !!! note "Legacy clients"
     The legacy `Jedis`, `JedisPool`, and `JedisCluster` clients do not negotiate maintenance
     notifications. Migrate to the builder-based `RedisClient` / `RedisClusterClient` to use the
-    feature. Applications that construct a `PooledConnectionProvider` or a
-    `ClusterConnectionProvider` directly can pass a `MaintenanceNotificationsConfig` to the
-    provider constructor (since 8.1).
+    feature.
 
 ## Configuration
 

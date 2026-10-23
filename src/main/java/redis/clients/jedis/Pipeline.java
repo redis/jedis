@@ -104,7 +104,7 @@ public class Pipeline extends AbstractPipeline implements DatabasePipelineComman
   @Override
   public void sync() {
     if (!hasPipelinedResponse()) return;
-    List<Object> unformatted = connection.getMany(pipelinedResponses.size());
+    List<Object> unformatted = readPipelinedReplies();
     for (Object rawReply : unformatted) {
       pipelinedResponses.poll().set(rawReply);
     }
@@ -118,7 +118,7 @@ public class Pipeline extends AbstractPipeline implements DatabasePipelineComman
    */
   public List<Object> syncAndReturnAll() {
     if (hasPipelinedResponse()) {
-      List<Object> unformatted = connection.getMany(pipelinedResponses.size());
+      List<Object> unformatted = readPipelinedReplies();
       List<Object> formatted = new ArrayList<>();
       for (Object rawReply : unformatted) {
         QueuedResponse<?> response = pipelinedResponses.poll();
@@ -135,6 +135,26 @@ public class Pipeline extends AbstractPipeline implements DatabasePipelineComman
       return formatted;
     } else {
       return java.util.Collections.<Object> emptyList();
+    }
+  }
+
+  /**
+   * Reads the replies for all buffered commands. If the read fails, every buffered response is
+   * completed with the failure and removed from the buffer, then the failure is rethrown.
+   */
+  private List<Object> readPipelinedReplies() {
+    try {
+      return connection.getMany(pipelinedResponses.size());
+    } catch (Throwable t) {
+      failPipelinedResponses(t);
+      throw t;
+    }
+  }
+
+  private void failPipelinedResponses(Throwable failure) {
+    QueuedResponse<?> response;
+    while ((response = pipelinedResponses.poll()) != null) {
+      response.completeExceptionally(failure);
     }
   }
 

@@ -6,19 +6,40 @@ import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.lang.ref.WeakReference;
+import java.util.Objects;
 
+import redis.clients.jedis.Builder;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.exceptions.JedisCacheException;
 
 public class CacheEntry<T> {
 
   private final CacheKey<T> cacheKey;
   private final WeakReference<CacheConnection> connection;
-  private final byte[] bytes;
+  private final Object reply;
+  private final Builder<T> builder;
 
+  /**
+   * Create an entry from an already-built value. This compatibility constructor retains Java
+   * serialization; the connection's protocol-reply path does not require serializable values.
+   * @param cacheKey cache key
+   * @param value an already-built, serializable value
+   * @param connection connection that owns the entry
+   */
   public CacheEntry(CacheKey<T> cacheKey, T value, CacheConnection connection) {
+    this(cacheKey, toBytes(value), new Builder<T>() {
+      @Override
+      public T build(Object data) {
+        return toObject((byte[]) data);
+      }
+    }, connection);
+  }
+
+  CacheEntry(CacheKey<T> cacheKey, Object reply, Builder<T> builder, CacheConnection connection) {
     this.cacheKey = cacheKey;
     this.connection = new WeakReference<>(connection);
-    this.bytes = toBytes(value);
+    this.reply = Protocol.copyReply(reply);
+    this.builder = Objects.requireNonNull(builder);
   }
 
   public CacheKey<T> getCacheKey() {
@@ -26,7 +47,8 @@ public class CacheEntry<T> {
   }
 
   public T getValue() {
-    return toObject(bytes);
+    // Some builders return their input or consume it while building the result.
+    return builder.build(Protocol.copyReply(reply));
   }
 
   public CacheConnection getConnection() {
@@ -45,7 +67,8 @@ public class CacheEntry<T> {
     }
   }
 
-  private T toObject(byte[] data) {
+  @SuppressWarnings("unchecked")
+  private static <T> T toObject(byte[] data) {
     try (ByteArrayInputStream bais = new ByteArrayInputStream(data);
         ObjectInputStream ois = new ObjectInputStream(bais)) {
       return (T) ois.readObject();

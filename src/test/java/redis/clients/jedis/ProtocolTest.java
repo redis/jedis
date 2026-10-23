@@ -6,7 +6,9 @@ import redis.clients.jedis.util.FragmentedByteArrayInputStream;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.fail;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
@@ -19,10 +21,13 @@ import java.io.OutputStream;
 import java.io.PipedInputStream;
 import java.io.PipedOutputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
 import redis.clients.jedis.exceptions.JedisBusyException;
+import redis.clients.jedis.exceptions.JedisMovedDataException;
+import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
@@ -382,5 +387,56 @@ public class ProtocolTest {
 
     // Should be List, NOT PushConsumerContext
     assertInstanceOf(List.class, result);
+  }
+
+  // ==================== copyReply ====================
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void copyReplyCopiesBytesAndContainers() {
+    List<Object> original = (List<Object>) read(
+      "*3\r\n$5\r\nvalue\r\n%1\r\n+key\r\n*1\r\n:1\r\n:42\r\n");
+    List<Object> copy = (List<Object>) Protocol.copyReply(original);
+
+    ((byte[]) original.get(0))[0] = 'X';
+    KeyValue<byte[], List<Object>> entry = (KeyValue<byte[], List<Object>>) ((List<Object>) original
+        .get(1)).get(0);
+    entry.getKey()[0] = 'X';
+    entry.getValue().clear();
+
+    assertArrayEquals(SafeEncoder.encode("value"), (byte[]) copy.get(0));
+    KeyValue<byte[], List<Object>> copiedEntry = (KeyValue<byte[], List<Object>>) ((List<Object>) copy
+        .get(1)).get(0);
+    assertArrayEquals(SafeEncoder.encode("key"), copiedEntry.getKey());
+    assertEquals(Collections.singletonList(1L), copiedEntry.getValue());
+    assertEquals(42L, copy.get(2));
+  }
+
+  @Test
+  public void copyReplyKeepsEmptyMapMarker() {
+    // builders tell an empty RESP3 map from an empty array by this instance
+    assertSame(Protocol.PROTOCOL_EMPTY_MAP, Protocol.copyReply(read("%0\r\n")));
+    List<?> nested = (List<?>) Protocol.copyReply(read("*1\r\n%0\r\n"));
+    assertSame(Protocol.PROTOCOL_EMPTY_MAP, nested.get(0));
+  }
+
+  @Test
+  public void copyReplyCopiesEmbeddedErrorsKeepingTheirType() {
+    List<?> original = (List<?>) read("*1\r\n-MOVED 12 localhost:6379\r\n");
+    Object copy = ((List<?>) Protocol.copyReply(original)).get(0);
+
+    assertNotSame(original.get(0), copy);
+    assertInstanceOf(JedisMovedDataException.class, copy);
+    assertEquals(((JedisMovedDataException) original.get(0)).getMessage(),
+      ((JedisMovedDataException) copy).getMessage());
+  }
+
+  @Test
+  public void copyReplyRejectsNonProtocolValues() {
+    assertThrows(IllegalArgumentException.class, () -> Protocol.copyReply(new Object()));
+  }
+
+  private static Object read(String reply) {
+    return Protocol.read(new RedisInputStream(new ByteArrayInputStream(SafeEncoder.encode(reply))));
   }
 }

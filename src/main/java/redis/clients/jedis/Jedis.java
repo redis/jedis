@@ -288,6 +288,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
    * to "user" and "password" respectively, the database field will be set to 1. Those fields will be ignored
    * from the JedisClientConfig object.
    *
+   * The TLS settings of the JedisClientConfig, including {@link SslOptions}, are applied only when the
+   * URI scheme is "rediss://". With "redis://" the connection is plaintext and they are ignored.
+   *
    * @param uri The URI to connect to
    * @param config The JedisClientConfig object to use
    */
@@ -297,6 +300,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
         "Cannot open Redis connection due invalid URI \"%s\".", uri.toString()));
     }
     JedisClientConfig effective = sanitize(config);
+    // The URI scheme decides TLS, so SslOptions is only carried over for rediss://. A non-null
+    // SslOptions would otherwise enable TLS in DefaultJedisSocketFactory and override redis://.
+    boolean ssl = JedisURIHelper.isRedisSSLScheme(uri);
     connection = new Connection(new HostAndPort(uri.getHost(), uri.getPort()),
         DefaultJedisClientConfig.builder().autoNegotiateProtocol(false)
             .connectionTimeoutMillis(effective.getConnectionTimeoutMillis())
@@ -305,8 +311,9 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
             .user(JedisURIHelper.getUser(uri)).password(JedisURIHelper.getPassword(uri))
             .database(JedisURIHelper.getDBIndex(uri)).clientName(effective.getClientName())
             .protocol(JedisURIHelper.getRedisProtocol(uri))
-            .ssl(JedisURIHelper.isRedisSSLScheme(uri)).sslSocketFactory(effective.getSslSocketFactory())
+            .ssl(ssl).sslSocketFactory(effective.getSslSocketFactory())
             .sslParameters(effective.getSslParameters()).hostnameVerifier(effective.getHostnameVerifier())
+            .sslOptions(ssl ? effective.getSslOptions() : null)
             .build());
     commandObjects = new CommandObjects(RedisProtocol.orServerDefault(effective.getRedisProtocol()));
   }

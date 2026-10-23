@@ -324,6 +324,38 @@ public class FaultInjectorClientTest {
   }
 
   @Test
+  public void catalogWithoutDropsMatchingTriggersAndKeepsTheEffects() {
+    // SLOT_SHUFFLE: asm=false lists migrate, asm=true lists reshard; the other effects are empty
+    responses.add("{\"cluster\": {\"index\": 0, \"nodes\": 3}, \"triggers\": ["
+        + " {\"name\": \"migrate\", \"description\": \"move one shard\", \"requirements\": ["
+        + "   {\"dbconfig\": {\"name\": \"sm-ip\"}, \"cluster\": {\"min_nodes\": 3},"
+        + "    \"oss_cluster_api\": {\"ip_type\": \"external\", \"endpoint_type\": \"ip\"}}]}]}");
+    responses.add("{\"cluster\": {\"index\": 0, \"nodes\": 3}, \"triggers\": ["
+        + " {\"name\": \"reshard\", \"description\": \"ASM\", \"requirements\": ["
+        + "   {\"dbconfig\": {\"name\": \"sm-asm\"}, \"cluster\": {\"min_nodes\": 3}, \"asm\": true,"
+        + "    \"oss_cluster_api\": {\"ip_type\": \"external\", \"endpoint_type\": \"ip\"}}]}]}");
+    responses.add("{\"cluster\": {\"index\": 0, \"nodes\": 3}, \"triggers\": []}");
+    TriggerCatalog discovered = TriggerCatalog.resolve(client, SlotMigrateEffect.class);
+    ScenarioKey asmRow = ScenarioKey.of(SlotMigrateEffect.SLOT_SHUFFLE, "reshard",
+      "external/ip+asm");
+    ScenarioKey plainRow = ScenarioKey.of(SlotMigrateEffect.SLOT_SHUFFLE, "migrate", "external/ip");
+    assertTrue(discovered.offers(asmRow));
+
+    TriggerCatalog catalog = discovered
+        .without(t -> t.requirements().stream().allMatch(Requirement::asm));
+
+    assertFalse(catalog.offers(asmRow));
+    assertTrue(catalog.offers(plainRow));
+    assertEquals(1, catalog.allTriggers().size());
+    assertEquals(3, catalog.effect(SlotMigrateEffect.SLOT_SHUFFLE).clusterNodes());
+    assertEquals(0, catalog.effect(SlotMigrateEffect.ADD).triggers().size());
+    assertThrows(IllegalArgumentException.class, () -> catalog.scenario(asmRow));
+    // the discovered catalog is untouched
+    assertTrue(discovered.offers(asmRow));
+    assertEquals(2, discovered.allTriggers().size());
+  }
+
+  @Test
   public void startEffectPostsTheSlotMigrateQueryRouteWithPinnedNodes() {
     responses.add("{\"action_id\": \"s1\"}");
     Map<String, Object> output = new HashMap<>();

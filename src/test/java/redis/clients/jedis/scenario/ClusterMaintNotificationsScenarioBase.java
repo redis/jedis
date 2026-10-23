@@ -28,7 +28,9 @@ import com.redis.test.fi.Requirement;
 import com.redis.test.fi.Scenario;
 import com.redis.test.fi.ScenarioKey;
 import com.redis.test.fi.SlotMigrateEffect;
+import com.redis.test.fi.Trigger;
 import com.redis.test.fi.TriggerCatalog;
+import io.redis.test.utils.RedisVersion;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 
@@ -69,9 +71,30 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
   private static final Logger logger = LoggerFactory
       .getLogger(ClusterMaintNotificationsScenarioBase.class);
 
-  /** The full slot-migrate catalog, resolved once: effect -> triggers -> requirements. */
-  static final TriggerCatalog CLUSTER_CATALOG = TriggerCatalog.resolve(faultInjector,
+  /**
+   * The slot-migrate catalog as the FI advertises it, resolved once; see {@link #CLUSTER_CATALOG}.
+   */
+  private static final TriggerCatalog DISCOVERED = TriggerCatalog.resolve(faultInjector,
     SlotMigrateEffect.class);
+
+  /**
+   * The first {@code redis_version} whose Redis Enterprise release accepts the cluster flag the ASM
+   * rows need ({@code asm_client_maint_notifications}): RE 8.0.16 (databases report 8.4.0) rejects
+   * it, RE 8.0.22 (8.6.2) accepts it (CI runs of 2026-10-22 and 2026-10-23). Overridable with
+   * {@code -Dsch.asmMinRedisVersion=<major.minor[.patch]>} should a build move the boundary.
+   */
+  static final RedisVersion ASM_MIN_REDIS_VERSION = RedisVersion
+      .of(System.getProperty("sch.asmMinRedisVersion", "8.6"));
+
+  /**
+   * The full slot-migrate catalog: effect -> triggers -> requirements, minus the ASM triggers when
+   * the server cannot run them. The FI builds its catalog from the cluster size alone and
+   * advertises the ASM {@code reshard} trigger on every server; the one thing that tells is the
+   * server version, so it is read once here (one short-lived database) and the ASM triggers are
+   * dropped below {@link #ASM_MIN_REDIS_VERSION}. {@link #assumeOffered} then skips those rows the
+   * same way it skips anything else the FI does not offer.
+   */
+  static final TriggerCatalog CLUSTER_CATALOG = withoutUnsupportedAsm(DISCOVERED);
 
   /** No new event for this long after the FI reported the effect done = the stream is drained. */
   static final long SETTLE_MILLIS = 3_000;
@@ -212,12 +235,39 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
   }
 
   /**
-   * Rows the FI offers only on some servers: the ASM variants, which need a cluster flag that
-   * mid-cycle 8.0.x builds reject (CI run of 2026-10-22 on RE 8.0.16). The suffix is the catalog's
-   * own config naming ({@code ip/endpoint[+tls][+asm]}).
+   * Rows whose availability depends on the server: the ASM variants, which need a cluster flag that
+   * mid-cycle 8.0.x builds reject (CI run of 2026-10-22 on RE 8.0.16); the catalog drops them below
+   * {@link #ASM_MIN_REDIS_VERSION}. The suffix is the catalog's own config naming
+   * ({@code ip/endpoint[+tls][+asm]}).
    */
   private static boolean skippableWhenNotOffered(ScenarioKey key) {
     return key.config().endsWith("+asm");
+  }
+
+  /**
+   * The catalog minus the ASM-only triggers when the server is below
+   * {@link #ASM_MIN_REDIS_VERSION}. When the version cannot be read the catalog is left as
+   * advertised, so the row fails loudly on the FI's answer instead of being skipped on a guess.
+   */
+  private static TriggerCatalog withoutUnsupportedAsm(TriggerCatalog discovered) {
+    RedisVersion version = parsedServerVersion();
+    if (version == null) {
+      logger.warn("server version unknown ({}); keeping the ASM triggers the FI advertises",
+        serverVersion());
+      return discovered;
+    }
+    if (version.isGreaterThanOrEqualTo(ASM_MIN_REDIS_VERSION)) {
+      return discovered;
+    }
+    logger.warn("redis_version {} is below {}: dropping the ASM triggers the FI advertises",
+      version, ASM_MIN_REDIS_VERSION);
+    return discovered.without(ClusterMaintNotificationsScenarioBase::isAsmOnly);
+  }
+
+  /** A trigger every requirement of which is provisioned through the ASM setup path. */
+  private static boolean isAsmOnly(Trigger trigger) {
+    return !trigger.requirements().isEmpty()
+        && trigger.requirements().stream().allMatch(Requirement::asm);
   }
 
   // --- server identity ---
@@ -227,7 +277,8 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
   /**
    * The {@code redis_version} the databases of this cluster report, read once per JVM from a
    * short-lived plain database (the FI exposes no server version, and no database exists before a
-   * row runs). Only consulted when a row has to be skipped, so the green path never pays for it.
+   * row runs). Consulted when the catalog is built and in the reason of a skipped row. Never
+   * throws: an unreadable version reads {@code unknown (...)}.
    */
   static synchronized String serverVersion() {
     if (serverVersion == null) {
@@ -236,8 +287,22 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
     return serverVersion;
   }
 
+  /** {@link #serverVersion()} as a comparable version, or null when it could not be read. */
+  private static RedisVersion parsedServerVersion() {
+    String version = serverVersion();
+    if (version.startsWith("unknown")) {
+      return null;
+    }
+    try {
+      return RedisVersion.of(version);
+    } catch (RuntimeException e) {
+      logger.warn("redis_version '{}' is not a version", version, e);
+      return null;
+    }
+  }
+
   private static String readServerVersion() {
-    Requirement plain = CLUSTER_CATALOG.allTriggers().stream()
+    Requirement plain = DISCOVERED.allTriggers().stream()
         .flatMap(trigger -> trigger.requirements().stream())
         .filter(requirement -> !requirement.asm() && !requirement.tls()).findFirst().orElse(null);
     if (plain == null) {

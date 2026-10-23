@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * Preloaded catalog of one effect family: every constant of an {@link EffectType} enum resolved to
@@ -24,6 +25,17 @@ public final class TriggerCatalog {
       effects.put(type, client.discover(type));
     }
     return new TriggerCatalog(effects);
+  }
+
+  /**
+   * This catalog without the triggers matching {@code dropped}, for what the FI advertises but the
+   * server cannot run (the FI's catalog is built from the cluster size alone). Effects stay even
+   * when all their triggers are dropped, so {@link #effect} still answers for them.
+   */
+  public TriggerCatalog without(Predicate<Trigger> dropped) {
+    Map<EffectType, Effect> kept = new LinkedHashMap<>();
+    effects.forEach((type, effect) -> kept.put(type, effect.without(dropped)));
+    return new TriggerCatalog(kept);
   }
 
   /** The discovered effect; fails loudly for a type outside this catalog's family. */

@@ -35,9 +35,15 @@ the trigger with the shortest window. `hostname` runs where the node identity ca
 and each test starts with `assumeOffered(key)`, which resolves the key against the FI catalog
 (`TriggerCatalog.offers` / `scenario`). A row the FI does not offer on the current server fails
 the method, as a catalog gap it is, except for the ASM variants (`+asm`), whose availability depends
-on the server (mid-cycle 8.0.x rejects the ASM cluster flag; CI run of 2026-10-22): those are
-skipped with a reason naming the row, the server's `redis_version` (read once from a short-lived
-database, only when a row is skipped) and what the FI offers for that effect.
+on the server: mid-cycle 8.0.x rejects the ASM cluster flag (CI runs of 2026-10-22 and 2026-10-23
+on RE 8.0.16), while the FI builds its catalog from the cluster size alone and advertises `reshard`
+everywhere. The base therefore reads the server's `redis_version` once (a short-lived plain
+database, when the catalog is built) and drops the ASM-only triggers from
+`CLUSTER_CATALOG` below `ASM_MIN_REDIS_VERSION` (8.6: RE 8.0.16 reports 8.4.0 and rejects the flag,
+RE 8.0.22 reports 8.6.2 and accepts it; `-Dsch.asmMinRedisVersion` overrides it). Those rows are then
+skipped with a reason naming the row, the `redis_version` and what the FI offers for that effect.
+An unreadable version leaves the catalog as advertised, so the row fails on the FI's answer rather
+than being skipped on a guess.
 `-Dsch.skipAsm=true` skips the ASM rows the FI does offer.
 
 | Row | Effect | Trigger | Variant | Endpoint delta | What it isolates |

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Predicate;
 
 /**
  * One discovered effect: the triggers that produce it, each with the database requirements it can
@@ -45,6 +46,17 @@ public final class Effect {
       }
     }
     return new Effect(first.type, Math.max(first.clusterNodes, second.clusterNodes), triggers);
+  }
+
+  /** This effect without the triggers matching {@code dropped}; the rest keep their order. */
+  Effect without(Predicate<Trigger> dropped) {
+    List<Trigger> kept = new ArrayList<>();
+    for (Trigger trigger : triggers) {
+      if (!dropped.test(trigger)) {
+        kept.add(trigger);
+      }
+    }
+    return new Effect(type, clusterNodes, kept);
   }
 
   public EffectType type() {

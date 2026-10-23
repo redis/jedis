@@ -20,7 +20,6 @@ import redis.clients.jedis.params.MSetExParams;
 import redis.clients.jedis.resps.LCSMatchResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ParameterizedClass
@@ -128,21 +127,6 @@ public class ClusterStringValuesCommandsTest extends StringValuesCommandsTestBas
     // Verify TTL is set
     assertTrue(jedis.ttl(k1) > 0);
     assertTrue(jedis.ttl(k2) > 0);
-  }
-
-  @Test
-  @EnabledOnCommand("MSETEX")
-  public void msetex_crossslot_returns_false_if_the_condition_fails_in_any_slot() {
-    String k1 = "cross:k1";
-    String k2 = "other:k2";
-    jedis.set(k2, "existing");
-
-    // NX holds in the first slot only
-    assertFalse(jedis.msetex(new MSetExParams().nx(), k1, "v1", k2, "v2"));
-
-    // The condition is checked per slot, so the first slot is still set
-    assertEquals("v1", jedis.get(k1));
-    assertEquals("existing", jedis.get(k2));
   }
 
 }

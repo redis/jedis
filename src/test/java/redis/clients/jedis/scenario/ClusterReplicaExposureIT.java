@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.Set;
 
 import com.redis.test.fi.Scenario;
+import com.redis.test.fi.ScenarioKey;
 import com.redis.test.fi.SlotMigrateEffect;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
@@ -57,10 +58,8 @@ public class ClusterReplicaExposureIT extends ClusterMaintNotificationsScenarioB
   @Test
   @Timeout(300)
   void replicasAreNotExposedByTheClusterApi() {
-    List<Scenario> rows = new ArrayList<>();
-    ClusterMaintNotificationsIT.row(rows, SlotMigrateEffect.SLOT_SHUFFLE, "failover",
-      "external/ip");
-    Scenario scenario = rows.get(0);
+    Scenario scenario = assumeOffered(
+      ScenarioKey.of(SlotMigrateEffect.SLOT_SHUFFLE, "failover", "external/ip"));
     Map<String, Object> dbConfig = scenario.requirement().dbConfig();
     assertEquals(Boolean.TRUE, dbConfig.get("replication"),
       scenario + ": the row must be replicated for this test to mean anything");

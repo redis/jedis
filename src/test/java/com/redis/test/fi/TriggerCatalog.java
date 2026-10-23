@@ -44,4 +44,17 @@ public final class TriggerCatalog {
     return all;
   }
 
+  /**
+   * Whether the FI offers the combination on this server: effect, trigger and requirement config.
+   */
+  public boolean offers(ScenarioKey key) {
+    Effect effect = effects.get(key.effect());
+    return effect != null && effect.triggers().stream()
+        .anyMatch(t -> t.name().equals(key.trigger()) && t.offers(key.config()));
+  }
+
+  /** The runnable scenario for the key; fails loudly when the FI does not offer it. */
+  public Scenario scenario(ScenarioKey key) {
+    return effect(key.effect()).trigger(key.trigger()).scenario(key.config());
+  }
 }

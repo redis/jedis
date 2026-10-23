@@ -18,7 +18,7 @@ to the mock cases (`C2`, `C4`, `F2`, ...) of the mock plan where a scenario case
 | [S5](#s5-traffic-continuity) | Traffic continuity, black box | [`ClusterMaintenanceTrafficResilienceIT`](ClusterMaintenanceTrafficResilienceIT.java) |
 | [S6](#s6-tls) | TLS | [`ClusterMaintNotificationsTlsIT`](ClusterMaintNotificationsTlsIT.java) |
 | [S8](#s8-configuration-and-handshake) | Configuration and handshake | [`ClusterMaintNotificationsConfigIT`](ClusterMaintNotificationsConfigIT.java) |
-| [S9](#s9-pubsub) | Sharded pub/sub across a migration | [`ClusterMaintNotificationsFeatureInteractionIT`](ClusterMaintNotificationsFeatureInteractionIT.java) |
+| [S9](#s9-pubsub) | Sharded pub/sub across a migration | not run against RE (see the section); mock G1 only |
 | [S10](#s10-lifecycle) | Lifecycle | [`ClusterMaintNotificationsIT`](ClusterMaintNotificationsIT.java) |
 | [E1](#e1-replica-exposure-environment-check) | Replica exposure (environment check) | [`ClusterReplicaExposureIT`](ClusterReplicaExposureIT.java) |
 
@@ -30,9 +30,15 @@ the [chosen combinations](#chosen-effect-x-trigger-x-variant-combinations).)
 [`ClusterMaintNotificationsIT.effectTriggerCombinations()`](ClusterMaintNotificationsIT.java):
 both Case 2 directions (endpoint set changes) on every trigger, plus the endpoint-stable Case 1 on
 the trigger with the shortest window. `hostname` runs where the node identity carried by
-`SMIGRATED` matters most, one non-ASM and one ASM row; `ip` elsewhere. Every row must be offered
-by the FI: a missing trigger or variant fails the method rather than shrinking the matrix
-silently; `-Dsch.skipAsm=true` is the one explicit way to skip the ASM rows.
+`SMIGRATED` matters most, one non-ASM and one ASM row; `ip` elsewhere. The matrix lists its rows as
+`ScenarioKey`s (effect, trigger, variant: pure data, so every row exists whatever the FI offers),
+and each test starts with `assumeOffered(key)`, which resolves the key against the FI catalog
+(`TriggerCatalog.offers` / `scenario`). A row the FI does not offer on the current server fails
+the method, as a catalog gap it is, except for the ASM variants (`+asm`), whose availability depends
+on the server (mid-cycle 8.0.x rejects the ASM cluster flag; CI run of 2026-10-22): those are
+skipped with a reason naming the row, the server's `redis_version` (read once from a short-lived
+database, only when a row is skipped) and what the FI offers for that effect.
+`-Dsch.skipAsm=true` skips the ASM rows the FI does offer.
 
 | Row | Effect | Trigger | Variant | Endpoint delta | What it isolates |
 |---|---|---|---|---|---|
@@ -79,7 +85,7 @@ asserted where a client requirement rests on it.
 | S3.5 | What the application sees after the settle rule: through the observer (`maxAttempts(1)`), one `SET` + `GET` per moved range and per surviving node's unmoved range each return the value. Zero `MOVED`, zero failed connections, zero other exceptions, asserted separately so the report names the kind. A `MOVED` here means the slot map was not applied (S3.1), a failed connection that a pool is unusable (S3.3); the DMC's post-`SMIGRATED` forwarding grace can hide such a defect but never cause one, so the case does not depend on it. The verification client's node set must equal the observer's. | `migrationIsHandled`, step 6 |
 | S3.6 | Three migrations on one client, one database and one set of pinned connections: each run's deltas are applied on top of the previous state (S3.1), the node set never changes (S3.2), no window is left open after each run, and the `seq` a connection reads only ever increases. | `ClusterMaintNotificationsFeatureInteractionIT.repeatedMigrationsOnOneClient` |
 | S3.7 | Periodic topology refresh (2 s) interleaving with deltas: every `SET` / `GET` issued during the effect through the `maxAttempts(1)` observer succeeds (one attempt, no `MOVED`, no failed connection), and the final owners equal a fresh `CLUSTER SLOTS`. Mock C8, C11. | `ClusterMaintNotificationsFeatureInteractionIT.deltasInterleaveWithPeriodicRefresh` |
-| S3.8 | Client-side cache: a `GET` cached before the move (a hit on the second read) is gone after the delta: the cache's flush count rose, its size is 0, and the next read is a cache miss served by the server. Mock C9. | `ClusterMaintNotificationsFeatureInteractionIT.clientSideCacheIsFlushedByADelta` |
+| S3.8 | Client-side cache across a delta. **Not run against RE.** The DMC serves `CLIENT TRACKING` on a dedicated connection and closes it when the shard leaves (observed five times, 2026-10-19 to 10-22: the source node's tracking connection dropped before `SMIGRATED`), so a pinned tracking connection cannot observe the delta the way the harness assumes. The client-side behaviour (flush on delta, miss afterwards) is pinned by mock C9. | mock `ClusterSlotMigrationMockTest` C9 |
 
 ### S4. Connections opened during a window
 
@@ -115,8 +121,7 @@ asserted where a client requirement rests on it.
 
 | Id | Expected | Where |
 |---|---|---|
-| S9.1 | One `JedisShardedPubSub` subscription per shard (see [Fixture](#fixture)), each on its own recorded observer connection. Every channel whose slot did not move receives `before` and `after` in order and keeps its connection; at least one subscribed connection consumed `SMIGRATING` and `SMIGRATED` inline; the client-wide gate is seen open during the effect and no window is left after it. A heartbeat per channel per second (published from the verification client) keeps the subscriptions inside the 2 s blocking timeout and is excluded from the assertions. Mock G1. | `ClusterMaintNotificationsFeatureInteractionIT.shardedPubSubSurvivesAMigration` |
-| S9.2 | The one subscribed channel in the moved shard is the single casualty, asserted as such: the server closes its subscribed connection at or before `SMIGRATED` (observed 2026-10-20 on RE: `Unexpected end of stream`, `SMIGRATING` recorded on it but no `SMIGRATED`), Jedis has no resubscription for application pub/sub, so that channel got `before` only, its subscriber ended with a `JedisConnectionException`, exactly one channel sat in the moved range, and it is the only one that missed `after`. If the server starts keeping the connection or sending `sunsubscribe`, or Jedis gains resubscription, these observations fail and name which changed. | same method |
+| S9.1 | Sharded pub/sub across a migration. **Not run against RE.** The DMC serves pub/sub on dedicated connections and closes the one whose channel's shard moved (observed 2026-10-20 to 10-22: `SMIGRATING` recorded, no `SMIGRATED`, `Unexpected end of stream`), and the harness has no resubscription to observe; Jedis has none for application pub/sub. Mock G1 pins the client side. | mock `ClusterMaintenancePubSubMockTest` G1 |
 
 ### S10. Lifecycle
 

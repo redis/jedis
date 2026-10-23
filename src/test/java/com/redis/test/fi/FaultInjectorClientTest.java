@@ -264,6 +264,17 @@ public class FaultInjectorClientTest {
     assertThrows(IllegalArgumentException.class, () -> maintenance.requirement("no_such_config"));
 
     assertEquals(6, catalog.effect(StandaloneEffect.CONN_DROP).clusterNodes());
+    assertTrue(catalog.offers(
+      ScenarioKey.of(StandaloneEffect.DATA_MOVEMENT_CONN_DROP, "maintenance_mode", "single_tls")));
+    assertFalse(catalog.offers(
+      ScenarioKey.of(StandaloneEffect.DATA_MOVEMENT_CONN_DROP, "maintenance_mode", "no_such")));
+    assertFalse(
+      catalog.offers(ScenarioKey.of(StandaloneEffect.CONN_DROP, "no_such_trigger", "single")));
+    assertFalse(catalog.offers(ScenarioKey.of(SlotMigrateEffect.SLOT_SHUFFLE, "migrate", "x")));
+    assertEquals("single_tls",
+      catalog.scenario(
+        ScenarioKey.of(StandaloneEffect.DATA_MOVEMENT_CONN_DROP, "maintenance_mode", "single_tls"))
+          .requirement().config());
     assertThrows(IllegalArgumentException.class,
       () -> catalog.effect(StandaloneEffect.CONN_DROP).trigger("no_such_trigger"));
     assertThrows(IllegalArgumentException.class,

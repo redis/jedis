@@ -1,10 +1,8 @@
 package redis.clients.jedis.scenario;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.stream.Stream;
 
-import com.redis.test.fi.Scenario;
+import com.redis.test.fi.ScenarioKey;
 import com.redis.test.fi.SlotMigrateEffect;
 
 import org.junit.jupiter.api.Tag;
@@ -23,9 +21,8 @@ import org.junit.jupiter.api.Tag;
 @Tag("scenario")
 public class ClusterMaintNotificationsTlsIT extends ClusterMaintNotificationsIT {
 
-  static Stream<Scenario> effectTriggerCombinations() {
-    List<Scenario> rows = new ArrayList<>();
-    row(rows, SlotMigrateEffect.REMOVE_ADD, "migrate", "external/hostname+tls");
-    return rows.stream();
+  static Stream<ScenarioKey> effectTriggerCombinations() {
+    return Stream
+        .of(ScenarioKey.of(SlotMigrateEffect.REMOVE_ADD, "migrate", "external/hostname+tls"));
   }
 }

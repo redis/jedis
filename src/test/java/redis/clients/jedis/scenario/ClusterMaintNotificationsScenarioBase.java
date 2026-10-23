@@ -4,6 +4,7 @@ import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static redis.clients.jedis.JedisClusterInfoCache.getNodeKey;
 import static redis.clients.jedis.util.ClusterKeyRegistry.keyInRange;
 
@@ -23,7 +24,9 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import com.redis.test.fi.Database;
+import com.redis.test.fi.Requirement;
 import com.redis.test.fi.Scenario;
+import com.redis.test.fi.ScenarioKey;
 import com.redis.test.fi.SlotMigrateEffect;
 import com.redis.test.fi.TriggerCatalog;
 
@@ -39,6 +42,7 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.MaintNotificationsTestSupport;
 import redis.clients.jedis.MaintNotificationsTestSupport.ReceivedClusterEvent;
 import redis.clients.jedis.MaintNotificationsTestSupport.ReceivedEvent;
@@ -184,6 +188,87 @@ abstract class ClusterMaintNotificationsScenarioBase extends FaultInjectorScenar
 
   private static Set<HostAndPort> seed(Database database) {
     return Collections.singleton(new HostAndPort(database.host(), database.port()));
+  }
+
+  // --- matrix rows ---
+
+  /**
+   * First line of a test on a matrix row: resolves the key into the FI's scenario. A row whose
+   * availability depends on the server (see {@link #skippableWhenNotOffered}) is skipped when the
+   * FI does not offer it, with a reason naming the row, the server version and what the FI offers
+   * instead (logged as well, so the console shows it without opening the report); any other row the
+   * FI does not offer fails loudly, as a catalog gap it is.
+   */
+  static Scenario assumeOffered(ScenarioKey key) {
+    if (!CLUSTER_CATALOG.offers(key) && skippableWhenNotOffered(key)) {
+      String reason = key + " skipped: not offered by the FI for this server (redis_version "
+          + serverVersion() + ", cluster of " + CLUSTER_CATALOG.effect(key.effect()).clusterNodes()
+          + " nodes); offered for " + key.effect() + ": "
+          + CLUSTER_CATALOG.effect(key.effect()).triggers();
+      logger.warn(reason);
+      assumeTrue(false, reason);
+    }
+    return CLUSTER_CATALOG.scenario(key);
+  }
+
+  /**
+   * Rows the FI offers only on some servers: the ASM variants, which need a cluster flag that
+   * mid-cycle 8.0.x builds reject (CI run of 2026-10-22 on RE 8.0.16). The suffix is the catalog's
+   * own config naming ({@code ip/endpoint[+tls][+asm]}).
+   */
+  private static boolean skippableWhenNotOffered(ScenarioKey key) {
+    return key.config().endsWith("+asm");
+  }
+
+  // --- server identity ---
+
+  private static String serverVersion;
+
+  /**
+   * The {@code redis_version} the databases of this cluster report, read once per JVM from a
+   * short-lived plain database (the FI exposes no server version, and no database exists before a
+   * row runs). Only consulted when a row has to be skipped, so the green path never pays for it.
+   */
+  static synchronized String serverVersion() {
+    if (serverVersion == null) {
+      serverVersion = readServerVersion();
+    }
+    return serverVersion;
+  }
+
+  private static String readServerVersion() {
+    Requirement plain = CLUSTER_CATALOG.allTriggers().stream()
+        .flatMap(trigger -> trigger.requirements().stream())
+        .filter(requirement -> !requirement.asm() && !requirement.tls()).findFirst().orElse(null);
+    if (plain == null) {
+      return "unknown (the FI catalog has no plain database config)";
+    }
+    Database probe;
+    try {
+      probe = faultInjector.createDatabase(plain.dbConfig());
+    } catch (RuntimeException e) {
+      return "unknown (" + e + ")"; // a version lookup must never turn a skip into an error
+    }
+    try {
+      awaitEndpointConnectable(probe.endpoint());
+      try (Jedis jedis = new Jedis(new HostAndPort(probe.host(), probe.port()),
+          probe.clientConfig().build())) {
+        for (String line : jedis.info("server").split("\r?\n")) {
+          if (line.startsWith("redis_version:")) {
+            return line.substring("redis_version:".length()).trim();
+          }
+        }
+      }
+      return "unknown (no redis_version in INFO server)";
+    } catch (RuntimeException e) {
+      return "unknown (" + e + ")";
+    } finally {
+      try {
+        faultInjector.release(probe);
+      } catch (RuntimeException e) {
+        logger.warn("releasing the version probe database failed", e);
+      }
+    }
   }
 
   // --- shared databases ---

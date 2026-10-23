@@ -16,6 +16,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import com.redis.test.fi.Scenario;
+import com.redis.test.fi.ScenarioKey;
 import com.redis.test.fi.SlotMigrateEffect;
 
 import org.junit.jupiter.api.Tag;
@@ -58,13 +59,13 @@ public class ClusterMaintNotificationsTimeoutIT extends ClusterMaintNotification
 
   /** All shards of a node move: the longest window the rladmin triggers produce. */
   static Scenario longWindow() {
-    return CLUSTER_CATALOG.effect(SlotMigrateEffect.REMOVE_ADD).trigger("migrate")
-        .scenario("external/ip");
+    return CLUSTER_CATALOG
+        .scenario(ScenarioKey.of(SlotMigrateEffect.REMOVE_ADD, "migrate", "external/ip"));
   }
 
   static Scenario oneShard() {
-    return CLUSTER_CATALOG.effect(SlotMigrateEffect.SLOT_SHUFFLE).trigger("migrate")
-        .scenario("external/ip");
+    return CLUSTER_CATALOG
+        .scenario(ScenarioKey.of(SlotMigrateEffect.SLOT_SHUFFLE, "migrate", "external/ip"));
   }
 
   /**

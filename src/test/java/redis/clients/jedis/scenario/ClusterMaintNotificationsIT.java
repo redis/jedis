@@ -6,24 +6,21 @@ import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assertions.fail;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static redis.clients.jedis.JedisClusterInfoCache.getNodeKey;
 import static redis.clients.jedis.util.ClusterKeyRegistry.keyForSlot;
 import static redis.clients.jedis.util.ClusterKeyRegistry.keyMatching;
 
-import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
 import com.redis.test.fi.Scenario;
+import com.redis.test.fi.ScenarioKey;
 import com.redis.test.fi.SlotMigrateEffect;
-import com.redis.test.fi.Trigger;
 
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Timeout;
@@ -67,36 +64,24 @@ public class ClusterMaintNotificationsIT extends ClusterMaintNotificationsScenar
    * add/migrate and remove/failover isolate the create and the drop; slot-shuffle/failover is the
    * endpoint-stable case with the most nodes and a sub-second window; add/reshard and
    * remove/reshard are the ASM cascades in each direction. The hostname variant runs where the node
-   * identity in SMIGRATED matters most (one non-ASM, one ASM row); ip elsewhere. Every row must be
-   * offered by the FI: a missing trigger or variant fails the whole method instead of silently
-   * shrinking the matrix.
+   * identity in SMIGRATED matters most (one non-ASM, one ASM row); ip elsewhere. Every row stays in
+   * the matrix; one the FI does not offer on the current server skips itself with the reason (see
+   * {@link #assumeOffered}).
    */
-  static Stream<Scenario> effectTriggerCombinations() {
-    List<Scenario> rows = new ArrayList<>();
-    row(rows, SlotMigrateEffect.REMOVE_ADD, "migrate", "external/hostname");
-    row(rows, SlotMigrateEffect.SLOT_SHUFFLE, "failover", "external/ip");
-    row(rows, SlotMigrateEffect.ADD, "migrate", "external/ip");
-    row(rows, SlotMigrateEffect.REMOVE, "failover", "external/ip");
-    row(rows, SlotMigrateEffect.ADD, "reshard", "external/ip+asm");
-    row(rows, SlotMigrateEffect.REMOVE, "reshard", "external/hostname+asm");
-    return rows.stream();
-  }
-
-  /** Adds the row; fails when the FI does not offer the trigger or the variant. */
-  static void row(List<Scenario> rows, SlotMigrateEffect effect, String trigger, String config) {
-    Optional<Trigger> offered = CLUSTER_CATALOG.effect(effect).triggers().stream()
-        .filter(t -> t.name().equals(trigger)).findFirst();
-    if (!offered.isPresent() || !offered.get().offers(config)) {
-      fail("FI does not offer " + effect + "/" + trigger + "[" + config + "]; offered: "
-          + CLUSTER_CATALOG.effect(effect).triggers());
-    }
-    rows.add(offered.get().scenario(config));
+  static Stream<ScenarioKey> effectTriggerCombinations() {
+    return Stream.of(ScenarioKey.of(SlotMigrateEffect.REMOVE_ADD, "migrate", "external/hostname"),
+      ScenarioKey.of(SlotMigrateEffect.SLOT_SHUFFLE, "failover", "external/ip"),
+      ScenarioKey.of(SlotMigrateEffect.ADD, "migrate", "external/ip"),
+      ScenarioKey.of(SlotMigrateEffect.REMOVE, "failover", "external/ip"),
+      ScenarioKey.of(SlotMigrateEffect.ADD, "reshard", "external/ip+asm"),
+      ScenarioKey.of(SlotMigrateEffect.REMOVE, "reshard", "external/hostname+asm"));
   }
 
   @ParameterizedTest(name = "{0}")
   @MethodSource("effectTriggerCombinations")
   @Timeout(900)
-  void migrationIsHandled(Scenario scenario) {
+  void migrationIsHandled(ScenarioKey row) {
+    Scenario scenario = assumeOffered(row);
     assumeFalse(scenario.requirement().asm() && Boolean.getBoolean("sch.skipAsm"),
       "ASM rows skipped by -Dsch.skipAsm=true");
     SlotMigrateEffect effect = (SlotMigrateEffect) scenario.effect();

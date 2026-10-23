@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 import com.redis.test.fi.Scenario;
+import com.redis.test.fi.ScenarioKey;
 import com.redis.test.fi.SlotMigrateEffect;
 
 import org.junit.jupiter.api.Tag;
@@ -55,21 +56,17 @@ public class ClusterMaintenanceTrafficResilienceIT extends ClusterMaintNotificat
   private static final MaintenanceNotificationsConfig DEFAULT_MAINTENANCE = MaintenanceNotificationsConfig
       .builder().build();
 
-  static Stream<Scenario> oneEffectPerTrigger() {
-    List<Scenario> rows = new ArrayList<>();
-    ClusterMaintNotificationsIT.row(rows, SlotMigrateEffect.REMOVE_ADD, "migrate",
-      "external/hostname");
-    ClusterMaintNotificationsIT.row(rows, SlotMigrateEffect.SLOT_SHUFFLE, "failover",
-      "external/ip");
-    ClusterMaintNotificationsIT.row(rows, SlotMigrateEffect.REMOVE, "reshard",
-      "external/hostname+asm");
-    return rows.stream();
+  static Stream<ScenarioKey> oneEffectPerTrigger() {
+    return Stream.of(ScenarioKey.of(SlotMigrateEffect.REMOVE_ADD, "migrate", "external/hostname"),
+      ScenarioKey.of(SlotMigrateEffect.SLOT_SHUFFLE, "failover", "external/ip"),
+      ScenarioKey.of(SlotMigrateEffect.REMOVE, "reshard", "external/hostname+asm"));
   }
 
   @ParameterizedTest(name = "{0}")
   @MethodSource("oneEffectPerTrigger")
   @Timeout(900)
-  void trafficContinues(Scenario scenario) {
+  void trafficContinues(ScenarioKey row) {
+    Scenario scenario = assumeOffered(row);
     assumeFalse(scenario.requirement().asm() && Boolean.getBoolean("sch.skipAsm"),
       "ASM rows skipped by -Dsch.skipAsm=true");
     deployDatabase(scenario);
@@ -153,9 +150,8 @@ public class ClusterMaintenanceTrafficResilienceIT extends ClusterMaintNotificat
   @Timeout(900)
   void trafficDisruptedWithoutMaintenance() {
     assumeTrue(Boolean.getBoolean("sch.negativeControl"), "run with -Dsch.negativeControl=true");
-    List<Scenario> rows = new ArrayList<>();
-    ClusterMaintNotificationsIT.row(rows, SlotMigrateEffect.REMOVE_ADD, "migrate", "external/ip");
-    Scenario scenario = rows.get(0);
+    Scenario scenario = assumeOffered(
+      ScenarioKey.of(SlotMigrateEffect.REMOVE_ADD, "migrate", "external/ip"));
     deployDatabase(scenario);
     RedisClusterClient unaware = openClient(database, MaintenanceNotificationsConfig.DISABLED,
       config -> {

@@ -661,7 +661,9 @@
 						<include>**/ConnectionRegistry.java</include>
 						<include>**/MovingOperations.java</include>
 						<include>src/test/java/com/redis/test/fi/*.java</include>
-						<include>**/MaintNotifications*.java</include>
+						<include>**/*MaintNotifications*.java</include>
+						<include>**/TrafficRunner.java</include>
+						<include>**/*TestSupport.java</include>
 						<include>**/SocketAddress*.java</include>
 						<include>**/sch/*.java</include>
 						<include>**/ConnectionFactoryRebindTest.java</include>

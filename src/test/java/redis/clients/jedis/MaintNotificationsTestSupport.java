@@ -42,14 +42,16 @@ public final class MaintNotificationsTestSupport {
   }
 
   /** One received maintenance event with its parsed payload, as dispatched to the connection. */
-  public static final class ReceivedEvent {
+  public static class ReceivedEvent {
 
     /** One of the maintenance {@link PushMessageTypes} constants. */
     public final String type;
     public final long seq;
     /** MOVING grace period or opening lead time, in seconds; -1 for closings, which carry none. */
     public final long timeSeconds;
-    /** Affected shard ids; null for MOVING. */
+    /**
+     * Affected shard ids; null for MOVING and for cluster events ({@link ReceivedClusterEvent}).
+     */
     public final String shardIds;
     /** MOVING target ("host:port"); null for a 'none' rebind and for non-MOVING events. */
     public final String target;
@@ -68,6 +70,26 @@ public final class MaintNotificationsTestSupport {
       return type + "(seq=" + seq + (timeSeconds >= 0 ? ", time=" + timeSeconds : "")
           + (shardIds != null ? ", shards=" + shardIds : "")
           + (target != null ? ", target=" + target : "") + ")";
+    }
+  }
+
+  /**
+   * A received cluster-family event (SMIGRATING / SMIGRATED): no lead time, no shard ids, the
+   * payload is the affected slots.
+   */
+  public static final class ReceivedClusterEvent extends ReceivedEvent {
+
+    /** SMIGRATING slot ranges, or the SMIGRATED {@code [src -> dest: slots]} entries. */
+    public final String migrationSlots;
+
+    ReceivedClusterEvent(String type, long seq, String migrationSlots) {
+      super(type, seq, -1, null, null);
+      this.migrationSlots = migrationSlots;
+    }
+
+    @Override
+    public String toString() {
+      return type + "(seq=" + seq + ", slots=" + migrationSlots + ")";
     }
   }
 
@@ -134,6 +156,18 @@ public final class MaintNotificationsTestSupport {
     @Override
     public void onFailedOver(FailedOverEvent e, Connection c) {
       events.add(new ReceivedEvent(PushMessageTypes.FAILED_OVER, e.seq, -1, e.shardIds, null));
+    }
+
+    @Override
+    public void onSMigrating(SMigratingEvent e, Connection c) {
+      events.add(
+        new ReceivedClusterEvent(PushMessageTypes.SMIGRATING, e.seq, String.valueOf(e.slots)));
+    }
+
+    @Override
+    public void onSMigrated(SMigratedEvent e, Connection c) {
+      events.add(
+        new ReceivedClusterEvent(PushMessageTypes.SMIGRATED, e.seq, String.valueOf(e.migrations)));
     }
   }
 

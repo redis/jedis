@@ -658,7 +658,7 @@
 						<include>**/NanoClock.java</include>
 						<include>**/*TimeoutSource*.java</include>
 						<include>**/RebindAwareEvictionPolicy.java</include>
-						<include>**/Maintenance*.java</include>
+						<include>**/*Maintenance*.java</include>
 						<include>**/ConnectionRegistry.java</include>
 						<include>**/MovingOperations.java</include>
 						<include>src/test/java/com/redis/test/fi/*.java</include>
@@ -666,6 +666,11 @@
 						<include>**/SocketAddress*.java</include>
 						<include>**/sch/*.java</include>
 						<include>**/ConnectionFactoryRebindTest.java</include>
+						<include>**/JedisClusterInfoCache.java</include>
+						<include>**/ClusterMaintenance*.java</include>
+						<include>**/HashSlotRanges.java</include>
+						<include>**/ClusterMaintenanceEventTest.java</include>
+						<include>**/HashSlotRangesTest.java</include>
 						<include>**/scenario/EnterpriseSentinelSupport.java</include>
 						<include>**/scenario/RedisEnterpriseClusterStatus.java</include>
 						<include>**/scenario/RedisEnterpriseClusterStatusUnitTests.java</include>

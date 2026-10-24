@@ -375,4 +375,16 @@ public class StaticCommandFlagsRegistryTest {
     assertEquals(RequestPolicy.SPECIAL, startRequestPolicy,
       "HOTKEYS START should have SPECIAL request policy");
   }
+
+  /**
+   * The client splits MSETEX by hash slot and NX/XX is checked on each shard, so the shard replies
+   * are combined with a logical AND instead of returning the first one.
+   */
+  @Test
+  public void testMsetexResponsePolicyIsLogicalAnd() {
+    CommandArguments msetexArgs = new CommandArguments(Protocol.Command.MSETEX);
+
+    assertEquals(RequestPolicy.MULTI_SHARD, registry.getRequestPolicy(msetexArgs));
+    assertEquals(ResponsePolicy.AGG_LOGICAL_AND, registry.getResponsePolicy(msetexArgs));
+  }
 }

@@ -32,7 +32,8 @@ public abstract class JedisCommandIterationBase<B, D> {
   private boolean iterationCompleted;
 
   protected JedisCommandIterationBase(ConnectionProvider connectionProvider, Builder<B> responseBuilder) {
-    Map connectionMap = connectionProvider.getConnectionMap();
+    // Replicas hold copies of their primary's keys, so iterating them would repeat every key.
+    Map connectionMap = connectionProvider.getPrimaryNodesConnectionMap();
     ArrayList<Map.Entry> connectionList = new ArrayList<>(connectionMap.entrySet());
     Collections.shuffle(connectionList);
     this.connections = new LinkedList<>(connectionList);

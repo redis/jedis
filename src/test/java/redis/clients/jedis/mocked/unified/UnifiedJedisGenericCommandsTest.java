@@ -6,13 +6,16 @@ import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.lenient;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -1120,7 +1123,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     when(connection.executeCommand(any(CommandArguments.class)))
         .thenReturn(Arrays.asList(cursor.getBytes(), Arrays.asList(key1.getBytes(), key2.getBytes())));
 
-    when(connectionProvider.getConnectionMap()).thenAnswer(new Answer<Map<?, ?>>() {
+    when(connectionProvider.getPrimaryNodesConnectionMap()).thenAnswer(new Answer<Map<?, ?>>() {
       @Override
       public Map<?, ?> answer(InvocationOnMock invocationOnMock) {
         return Collections.singletonMap("c", connection);
@@ -1133,7 +1136,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     assertThat(batch.getCursor(), equalTo(cursor));
     assertThat(batch.getResult(), contains(key1, key2));
 
-    verify(connectionProvider).getConnectionMap();
+    verify(connectionProvider).getPrimaryNodesConnectionMap();
   }
 
   @Test
@@ -1146,7 +1149,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     when(connection.executeCommand(any(CommandArguments.class)))
         .thenReturn(Arrays.asList(cursor.getBytes(), Arrays.asList(key1.getBytes(), key2.getBytes())));
 
-    when(connectionProvider.getConnectionMap()).thenAnswer(new Answer<Map<?, ?>>() {
+    when(connectionProvider.getPrimaryNodesConnectionMap()).thenAnswer(new Answer<Map<?, ?>>() {
       @Override
       public Map<?, ?> answer(InvocationOnMock invocationOnMock) {
         return Collections.singletonMap("c", connection);
@@ -1159,7 +1162,42 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     assertThat(batch.getCursor(), equalTo(cursor));
     assertThat(batch.getResult(), contains(key1, key2));
 
-    verify(connectionProvider).getConnectionMap();
+    verify(connectionProvider).getPrimaryNodesConnectionMap();
+  }
+
+  @Test
+  public void testScanIterationSkipsReplicas() {
+    String cursor = "0";
+    String key1 = "key1";
+    String key2 = "key2";
+
+    Connection primary = mock(Connection.class);
+    when(primary.executeCommand(any(CommandArguments.class)))
+        .thenReturn(Arrays.asList(cursor.getBytes(), Arrays.asList(key1.getBytes(), key2.getBytes())));
+    Connection replica = mock(Connection.class);
+    lenient().when(replica.executeCommand(any(CommandArguments.class)))
+        .thenReturn(Arrays.asList(cursor.getBytes(), Arrays.asList(key1.getBytes(), key2.getBytes())));
+
+    Map<String, Connection> allNodes = new LinkedHashMap<>();
+    allNodes.put("primary", primary);
+    allNodes.put("replica", replica);
+    lenient().when(connectionProvider.getConnectionMap()).thenAnswer(new Answer<Map<?, ?>>() {
+      @Override
+      public Map<?, ?> answer(InvocationOnMock invocationOnMock) {
+        return allNodes;
+      }
+    });
+    when(connectionProvider.getPrimaryNodesConnectionMap()).thenAnswer(new Answer<Map<?, ?>>() {
+      @Override
+      public Map<?, ?> answer(InvocationOnMock invocationOnMock) {
+        return Collections.singletonMap("primary", primary);
+      }
+    });
+
+    List<String> result = new ArrayList<>();
+    jedis.scanIteration(10, "*").collect(result);
+
+    assertThat(result, contains(key1, key2));
   }
 
   @Test

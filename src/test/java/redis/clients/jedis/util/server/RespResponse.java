@@ -69,13 +69,16 @@ public class RespResponse {
    * <li>Integer → RESP integer (:123\r\n)</li>
    * <li>Long → RESP integer (:123\r\n)</li>
    * <li>String → RESP bulk string ($3\r\nabc\r\n)</li>
+   * <li>byte[] → RESP bulk string of the raw bytes</li>
+   * <li>List → nested RESP array, elements encoded recursively (e.g. CLUSTER SLOTS ranges,
+   * SMIGRATED entries)</li>
    * <li>Other → RESP bulk string via toString()</li>
    * </ul>
    * Example: array(Arrays.asList("MIGRATING", 6, 2, "[\"2\", \"4\"]"))
    * @param elements List of array elements (can be Integer, Long, String, etc.)
    * @return A RESP array response (*4\r\n...)
    */
-  public static String array(List<Object> elements) {
+  public static String array(List<?> elements) {
     if (elements == null) {
       return nullArray();
     }
@@ -125,6 +128,10 @@ public class RespResponse {
       return integer((Integer) element);
     } else if (element instanceof Long) {
       return integer((Long) element);
+    } else if (element instanceof byte[]) {
+      return bulkString((byte[]) element);
+    } else if (element instanceof List) {
+      return array((List<?>) element);
     } else {
       return bulkString(element.toString());
     }

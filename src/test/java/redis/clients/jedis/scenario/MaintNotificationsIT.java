@@ -90,14 +90,14 @@ public class MaintNotificationsIT extends MaintNotificationsObserverBase {
   private ExecutorService probeExecutor;
 
   static Stream<Scenario> noConnDropScenarios() {
-    return CATALOG.effect(StandaloneEffect.DATA_MOVEMENT_NO_CONN_DROP).triggers().stream()
-        .map(Trigger::scenario);
+    return STANDALONE_CATALOG.effect(StandaloneEffect.DATA_MOVEMENT_NO_CONN_DROP).triggers()
+        .stream().map(Trigger::scenario);
   }
 
   static Stream<Scenario> movingScenarios() {
     // conn_drop/endpoint_rebind emits exactly [MOVING]
-    return Stream
-        .of(CATALOG.effect(StandaloneEffect.CONN_DROP).trigger("endpoint_rebind").scenario());
+    return Stream.of(
+      STANDALONE_CATALOG.effect(StandaloneEffect.CONN_DROP).trigger("endpoint_rebind").scenario());
   }
 
   static Stream<Arguments> handoffScenarios() {
@@ -237,7 +237,8 @@ public class MaintNotificationsIT extends MaintNotificationsObserverBase {
   @MethodSource("tlsHandoffEndpointTypes")
   @Timeout(300)
   void connectionHandoffOnMovingOverTls(EndpointType endpointType) {
-    Trigger trigger = CATALOG.effect(StandaloneEffect.CONN_DROP).trigger("endpoint_rebind");
+    Trigger trigger = STANDALONE_CATALOG.effect(StandaloneEffect.CONN_DROP)
+        .trigger("endpoint_rebind");
     assumeTrue(trigger.offers("single_tls"),
       "single_tls requirement not offered by this FI environment");
     assertConnectionHandoffLifecycle(trigger.scenario("single_tls"), endpointType);
@@ -258,7 +259,7 @@ public class MaintNotificationsIT extends MaintNotificationsObserverBase {
   @Test
   @Timeout(300)
   void connectionHandoffOnMovingNone() {
-    Scenario scenario = CATALOG.effect(StandaloneEffect.DATA_MOVEMENT_CONN_DROP)
+    Scenario scenario = STANDALONE_CATALOG.effect(StandaloneEffect.DATA_MOVEMENT_CONN_DROP)
         .trigger("endpoint_rebind").scenario();
     openClient(deployDatabase(scenario),
       relaxedMaintenance().endpointType(EndpointType.NONE).build());

@@ -456,6 +456,14 @@ Highlights:
 
 For most users this is transparent — cluster commands that previously needed manual fan-out (`INFO`, `CONFIG SET`, `DBSIZE`, etc.) now work correctly out of the box on `RedisClusterClient`.
 
+!!! warning "MSETEX in Jedis 8.1 and later"
+    `RedisClusterClient.msetex()` requires all keys to share one hash slot and throws
+    `JedisClusterOperationException` before any writes for cross-slot calls, including
+    unconditional calls. This preserves atomicity and the all-key `NX`/`XX` conditions despite
+    the server's `request_policy:multi_shard` hint. Applications relying on splitting in Jedis
+    8.0 must use keys in the same slot, for example with a shared hash tag. See the
+    [8.1 release notes](../release-notes/8.1.0.md#msetex-requires-keys-in-one-hash-slot-4806).
+
 ### Out-of-Band Push Notification Handling
 
 `Connection` and `Protocol` now understand out-of-band RESP3 push messages and route them through a configurable `PushConsumerChain`. Unsupported push types are silently dropped instead of failing the connection. This makes it safe to enable features such as `CLIENT TRACKING` on regular connections — invalidation pushes are no longer treated as protocol errors.

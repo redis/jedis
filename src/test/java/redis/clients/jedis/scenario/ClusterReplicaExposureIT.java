@@ -149,7 +149,7 @@ public class ClusterReplicaExposureIT extends ClusterMaintNotificationsScenarioB
   /** What a raw CLUSTER SLOTS reply says about masters and replicas. */
   private static final class SlotsView {
     int ranges;
-    int slotsCovered;
+    long slotsCovered;
     final Set<String> masters = new LinkedHashSet<>();
     /** {@code host:port [start-end]} of every node entry after the master. */
     final List<String> replicas = new ArrayList<>();

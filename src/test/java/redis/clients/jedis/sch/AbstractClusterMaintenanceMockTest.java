@@ -1,6 +1,8 @@
 package redis.clients.jedis.sch;
 
 import static org.awaitility.Awaitility.await;
+import static redis.clients.jedis.JedisClusterInfoCache.getNodeKey;
+import static redis.clients.jedis.util.ClusterKeyRegistry.keyInRange;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -16,13 +18,11 @@ import redis.clients.jedis.ConnectionTestHelper;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
-import redis.clients.jedis.JedisClusterInfoCache;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.MaintenanceNotificationsConfig.Mode;
 import redis.clients.jedis.RedisClusterClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.builders.ClusterClientBuilder;
-import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.server.ClusterSlotsResponder;
 import redis.clients.jedis.util.server.MaintenanceEventMessages;
 import redis.clients.jedis.util.server.MockClusterTopology;
@@ -150,35 +150,20 @@ public abstract class AbstractClusterMaintenanceMockTest {
 
   // ---- keys and slots ---------------------------------------------------------------------
 
-  /** A key whose hash slot lies in the inclusive range; distinct ranges give distinct keys. */
-  protected static String keyInSlots(int from, int to) {
-    for (int i = 0;; i++) {
-      String key = "key:" + i;
-      int slot = JedisClusterCRC16.getSlot(key);
-      if (slot >= from && slot <= to) {
-        return key;
-      }
-    }
-  }
-
   protected static String keyOnA() {
-    return keyInSlots(A_FROM, A_TO);
+    return keyInRange(A_FROM, A_TO, "onA");
   }
 
   protected static String keyOnB() {
-    return keyInSlots(B_FROM, B_TO);
-  }
-
-  protected static String nodeKey(HostAndPort node) {
-    return JedisClusterInfoCache.getNodeKey(node);
+    return keyInRange(B_FROM, B_TO, "onB");
   }
 
   protected ConnectionPool poolOf(HostAndPort node) {
-    return client.getClusterNodes().get(nodeKey(node));
+    return client.getClusterNodes().get(getNodeKey(node));
   }
 
   protected boolean hasNode(HostAndPort node) {
-    return client.getClusterNodes().containsKey(nodeKey(node));
+    return client.getClusterNodes().containsKey(getNodeKey(node));
   }
 
   protected TcpMockServer serverOf(HostAndPort node) {

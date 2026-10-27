@@ -57,7 +57,7 @@
 		<jedis.module.name>redis.clients.jedis</jedis.module.name>
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
-		<jackson.version>2.22.3</jackson.version>
+		<jackson.version>2.22.4</jackson.version>
 		<maven.surefire.version>3.5.6</maven.surefire.version>
 		<junit.version>5.14.4</junit.version>
 		<!-- Default JVM options for tests -->
@@ -658,14 +658,21 @@
 						<include>**/NanoClock.java</include>
 						<include>**/*TimeoutSource*.java</include>
 						<include>**/RebindAwareEvictionPolicy.java</include>
-						<include>**/Maintenance*.java</include>
+						<include>**/*Maintenance*.java</include>
 						<include>**/ConnectionRegistry.java</include>
 						<include>**/MovingOperations.java</include>
 						<include>src/test/java/com/redis/test/fi/*.java</include>
-						<include>**/MaintNotifications*.java</include>
+						<include>**/*MaintNotifications*.java</include>
+						<include>**/TrafficRunner.java</include>
+						<include>**/*TestSupport.java</include>
 						<include>**/SocketAddress*.java</include>
 						<include>**/sch/*.java</include>
 						<include>**/ConnectionFactoryRebindTest.java</include>
+						<include>**/JedisClusterInfoCache.java</include>
+						<include>**/ClusterMaintenance*.java</include>
+						<include>**/HashSlotRanges.java</include>
+						<include>**/ClusterMaintenanceEventTest.java</include>
+						<include>**/HashSlotRangesTest.java</include>
 						<include>**/scenario/EnterpriseSentinelSupport.java</include>
 						<include>**/scenario/RedisEnterpriseClusterStatus.java</include>
 						<include>**/scenario/RedisEnterpriseClusterStatusUnitTests.java</include>

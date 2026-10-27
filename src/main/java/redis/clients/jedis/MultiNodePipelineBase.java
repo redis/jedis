@@ -1,6 +1,8 @@
 package redis.clients.jedis;
 
-import java.util.Iterator;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -15,7 +17,7 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import redis.clients.jedis.exceptions.JedisConnectionException;
+import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.IOUtils;
 
 public abstract class MultiNodePipelineBase extends AbstractPipeline {
@@ -107,59 +109,95 @@ public abstract class MultiNodePipelineBase extends AbstractPipeline {
       return;
     }
     syncing = true;
+    try {
+      boolean multiNode = pipelinedResponses.size() > 1;
+      Executor executor;
+      ExecutorService executorService = null;
+      if (multiNode) {
+        executorService = getPipelineExecutor();
+        executor = executorService;
+      } else {
+        executor = Runnable::run;
+      }
+      CountDownLatch countDownLatch = multiNode
+          ? new CountDownLatch(pipelinedResponses.size())
+          : null;
 
-    boolean multiNode = pipelinedResponses.size() > 1;
-    Executor executor;
-    ExecutorService executorService = null;
-    if (multiNode) {
-      executorService = getPipelineExecutor();
-      executor = executorService;
-    } else {
-      executor = Runnable::run;
-    }
-    CountDownLatch countDownLatch = multiNode
-        ? new CountDownLatch(pipelinedResponses.size())
-        : null;
+      // Read failure of each failed node; the key is null for keyless commands.
+      Map<HostAndPort, Throwable> failures = Collections.synchronizedMap(new HashMap<>());
 
-    Iterator<Map.Entry<HostAndPort, Queue<Response<?>>>> pipelinedResponsesIterator = pipelinedResponses.entrySet()
-        .iterator();
-    while (pipelinedResponsesIterator.hasNext()) {
-      Map.Entry<HostAndPort, Queue<Response<?>>> entry = pipelinedResponsesIterator.next();
-      HostAndPort nodeKey = entry.getKey();
-      Queue<Response<?>> queue = entry.getValue();
-      Connection connection = connections.get(nodeKey);
-      executor.execute(() -> {
-        try {
-          List<Object> unformatted = connection.getMany(queue.size());
-          for (Object o : unformatted) {
-            queue.poll().set(o);
+      for (Map.Entry<HostAndPort, Queue<Response<?>>> entry : pipelinedResponses.entrySet()) {
+        HostAndPort nodeKey = entry.getKey();
+        Queue<Response<?>> queue = entry.getValue();
+        Connection connection = connections.get(nodeKey);
+        executor.execute(() -> {
+          try {
+            List<Object> unformatted = connection.getMany(queue.size());
+            for (Object o : unformatted) {
+              queue.poll().set(o);
+            }
+          } catch (Throwable t) {
+            // Throwable: anything escaping would die in the executor unreported.
+            log.error("Error with connection to " + nodeKey, t);
+            queue.forEach(response -> response.completeExceptionally(t));
+            failures.put(nodeKey, t);
+            IOUtils.closeQuietly(connection);
+          } finally {
+            if (multiNode) {
+              countDownLatch.countDown();
+            }
           }
-        } catch (JedisConnectionException jce) {
-          log.error("Error with connection to " + nodeKey, jce);
-          // cleanup the connection
-          // TODO these operations not thread-safe and when executed here, the iter may moved
-          pipelinedResponsesIterator.remove();
-          connections.remove(nodeKey);
-          IOUtils.closeQuietly(connection);
-        } finally {
-          if (multiNode) {
-            countDownLatch.countDown();
-          }
-        }
-      });
-    }
-
-    if (multiNode) {
-      try {
-        countDownLatch.await();
-      } catch (InterruptedException e) {
-        log.error("Thread is interrupted during sync.", e);
+        });
       }
 
-      releasePipelineExecutor(executorService);
-    }
+      if (multiNode) {
+        try {
+          countDownLatch.await();
+        } catch (InterruptedException e) {
+          log.error("Thread is interrupted during sync.", e);
+        }
 
-    syncing = false;
+        releasePipelineExecutor(executorService);
+      }
+
+      if (!failures.isEmpty()) {
+        rethrow(dropFailedNodes(failures));
+      }
+    } finally {
+      syncing = false;
+    }
+  }
+
+  /**
+   * Removes the failed nodes, so their next command takes a fresh connection. Returns the first
+   * failure in pipeline order, with the others attached as suppressed.
+   */
+  private Throwable dropFailedNodes(Map<HostAndPort, Throwable> failures) {
+    Throwable failure = null;
+    for (HostAndPort nodeKey : new ArrayList<>(pipelinedResponses.keySet())) {
+      Throwable nodeFailure = failures.get(nodeKey);
+      if (nodeFailure == null) {
+        continue;
+      }
+      pipelinedResponses.remove(nodeKey);
+      connections.remove(nodeKey);
+      if (failure == null) {
+        failure = nodeFailure;
+      } else {
+        failure.addSuppressed(nodeFailure);
+      }
+    }
+    return failure;
+  }
+
+  private static void rethrow(Throwable t) {
+    if (t instanceof RuntimeException) {
+      throw (RuntimeException) t;
+    }
+    if (t instanceof Error) {
+      throw (Error) t;
+    }
+    throw new JedisException(t);
   }
 
   /**

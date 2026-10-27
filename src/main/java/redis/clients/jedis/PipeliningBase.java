@@ -4656,6 +4656,11 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<Number>> jsonNumIncrByAsNumbers(String key, Path2 path, Number value) {
+    return appendCommand(commandObjects.jsonNumIncrByAsNumbers(key, path, value));
+  }
+
+  @Override
   public Response<List<Long>> jsonArrAppend(String key, Path2 path, Object... objects) {
     return appendCommand(commandObjects.jsonArrAppend(key, path, objects));
   }
@@ -5287,8 +5292,18 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Boolean> vadd(String key, float[] vector, String element, int reduceDim) {
+    return appendCommand(commandObjects.vadd(key, vector, element, reduceDim));
+  }
+
+  @Override
   public Response<Boolean> vadd(String key, float[] vector, String element, int reduceDim, VAddParams params) {
     return appendCommand(commandObjects.vadd(key, vector, element, reduceDim, params));
+  }
+
+  @Override
+  public Response<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim) {
+    return appendCommand(commandObjects.vaddFP32(key, vectorBlob, element, reduceDim));
   }
 
   @Override
@@ -5307,8 +5322,24 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Map<String, Double>> vsimWithScores(String key, float[] vector) {
+    return appendCommand(commandObjects.vsimWithScores(key, vector));
+  }
+
+  @Override
   public Response<Map<String, Double>> vsimWithScores(String key, float[] vector, VSimParams params) {
     return appendCommand(commandObjects.vsimWithScores(key, vector, params));
+  }
+
+  @Override
+  public Response<Map<String, VSimScoreAttribs>> vsimWithScoresAndAttribs(String key, float[] vector) {
+    return appendCommand(commandObjects.vsimWithScoresAndAttribs(key, vector));
+  }
+
+  @Override
+  public Response<Map<String, VSimScoreAttribs>> vsimWithScoresAndAttribs(String key, float[] vector,
+      VSimParams params) {
+    return appendCommand(commandObjects.vsimWithScoresAndAttribs(key, vector, params));
   }
 
   @Override
@@ -5322,8 +5353,24 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Map<String, Double>> vsimByElementWithScores(String key, String element) {
+    return appendCommand(commandObjects.vsimByElementWithScores(key, element));
+  }
+
+  @Override
   public Response<Map<String, Double>> vsimByElementWithScores(String key, String element, VSimParams params) {
     return appendCommand(commandObjects.vsimByElementWithScores(key, element, params));
+  }
+
+  @Override
+  public Response<Map<String, VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(String key, String element) {
+    return appendCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element));
+  }
+
+  @Override
+  public Response<Map<String, VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(String key, String element,
+      VSimParams params) {
+    return appendCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element, params));
   }
 
   @Override
@@ -5413,8 +5460,18 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Boolean> vadd(byte[] key, float[] vector, byte[] element, int reduceDim) {
+    return appendCommand(commandObjects.vadd(key, vector, element, reduceDim));
+  }
+
+  @Override
   public Response<Boolean> vadd(byte[] key, float[] vector, byte[] element, int reduceDim, VAddParams params) {
     return appendCommand(commandObjects.vadd(key, vector, element, reduceDim, params));
+  }
+
+  @Override
+  public Response<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim) {
+    return appendCommand(commandObjects.vaddFP32(key, vectorBlob, element, reduceDim));
   }
 
   @Override
@@ -5433,8 +5490,24 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Map<byte[], Double>> vsimWithScores(byte[] key, float[] vector) {
+    return appendCommand(commandObjects.vsimWithScores(key, vector));
+  }
+
+  @Override
   public Response<Map<byte[], Double>> vsimWithScores(byte[] key, float[] vector, VSimParams params) {
     return appendCommand(commandObjects.vsimWithScores(key, vector, params));
+  }
+
+  @Override
+  public Response<Map<byte[], VSimScoreAttribs>> vsimWithScoresAndAttribs(byte[] key, float[] vector) {
+    return appendCommand(commandObjects.vsimWithScoresAndAttribs(key, vector));
+  }
+
+  @Override
+  public Response<Map<byte[], VSimScoreAttribs>> vsimWithScoresAndAttribs(byte[] key, float[] vector,
+      VSimParams params) {
+    return appendCommand(commandObjects.vsimWithScoresAndAttribs(key, vector, params));
   }
 
   @Override
@@ -5448,8 +5521,24 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Map<byte[], Double>> vsimByElementWithScores(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vsimByElementWithScores(key, element));
+  }
+
+  @Override
   public Response<Map<byte[], Double>> vsimByElementWithScores(byte[] key, byte[] element, VSimParams params) {
     return appendCommand(commandObjects.vsimByElementWithScores(key, element, params));
+  }
+
+  @Override
+  public Response<Map<byte[], VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(byte[] key, byte[] element) {
+    return appendCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element));
+  }
+
+  @Override
+  public Response<Map<byte[], VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(byte[] key, byte[] element,
+      VSimParams params) {
+    return appendCommand(commandObjects.vsimByElementWithScoresAndAttribs(key, element, params));
   }
 
   @Override

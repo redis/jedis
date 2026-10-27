@@ -1,5 +1,5 @@
 window.BENCHMARK_DATA = {
-  "lastUpdate": 1792978883465,
+  "lastUpdate": 1793065299010,
   "repoUrl": "https://github.com/redis/jedis",
   "entries": {
     "Benchmark": [
@@ -42610,6 +42610,274 @@ window.BENCHMARK_DATA = {
           {
             "name": "redis.clients.jedis.benchmark.util.SafeEncoderBenchmark.encodeStringToBytes",
             "value": 46.81137204707365,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          }
+        ]
+      },
+      {
+        "commit": {
+          "author": {
+            "name": "atakavci",
+            "username": "atakavci",
+            "email": "a_takavci@yahoo.com"
+          },
+          "committer": {
+            "name": "GitHub",
+            "username": "web-flow",
+            "email": "noreply@github.com"
+          },
+          "id": "ce1830cd1d3615d6319109db005cb6fbcee48400",
+          "message": "[maintenance events - cluster] Smart Client Handoffs (SCH): maintenance notifications support for cluster client (#4747)\n\n* [maintenance events - cluster] Decode SMIGRATING/SMIGRATED cluster maintenance pushes into events (#4724)\n\n* Parse SMIGRATING/SMIGRATED cluster maintenance push frames into domain events\n\nAdds the two OSS-cluster maintenance tokens to PushMessageTypes and\nMaintenancePushCodec (SMIGRATED joins MIGRATING under the length-9 fast\npath; SMIGRATING is the new length-10 case), a HashSlotRanges value type\nfor the slots-or-ranges wire format, and the ClusterMaintenanceEvent\nhierarchy (SMigratingEvent, SMigratedEvent, SlotMigration) kept fully\nseparate from MaintenanceEvent. Cluster frames pass through\nMaintenanceEventConsumer untouched until their dedicated dispatch path\nlands.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\n\n* - removing iscluster and buildCluster\n\n* -  shift to inheritance for clustermaintenanceevent\n\n* - add more tests\n\n* - drop unit test tags\n\n* address tests to apply a higher seqId with SMIGRATED event\n\n---------\n\nCo-authored-by: Claude Fable 5 <noreply@anthropic.com>\n\n* [maintenance events - cluster] Add cluster maintenance coordinator and atomic SMIGRATED slot-delta application (#4729)\n\n* Parse SMIGRATING/SMIGRATED cluster maintenance push frames into domain events\n\nAdds the two OSS-cluster maintenance tokens to PushMessageTypes and\nMaintenancePushCodec (SMIGRATED joins MIGRATING under the length-9 fast\npath; SMIGRATING is the new length-10 case), a HashSlotRanges value type\nfor the slots-or-ranges wire format, and the ClusterMaintenanceEvent\nhierarchy (SMigratingEvent, SMigratedEvent, SlotMigration) kept fully\nseparate from MaintenanceEvent. Cluster frames pass through\nMaintenanceEventConsumer untouched until their dedicated dispatch path\nlands.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\n\n* - removing iscluster and buildCluster\n\n* -  shift to inheritance for clustermaintenanceevent\n\n* - add more tests\n\n* apply SMIGRATED slot deltas atomically in JedisClusterInfoCache\n\n* add ClusterMaintenanceCoordinator\n\n* drop stale SMIGRATING windows on a higher-seqId SMIGRATED\n\n* - shift slot migration safety into JedisClusterInfoCache\n\n* - fix concurrency issues\n- refactor cluster info cache\n\n* - format\n\n* - drop unit test tags\n\n* address tests to apply a higher seqId with SMIGRATED event\n\n* - improve the coordinator to track the unordered/late processed events in the correct way\n- fix the relaxation gap between processing the SMIGRATED event and applying slot delta\n- fix references/statements in javadocs\n\n* - restrict the SMIGRATED event acceptance criteria for improved reliability\n\n* - addressing feedback from @ggivo and ai\n\n* - do not crop migrationWindows on SMIGRATING\n- run drainSlotDeltas right after the release of slotDeltaLock\n\n* - remove slotless nodes\n\n* - cleanupSlotlessNodes sync with rediscovery\n\n* fix for ignored  late SMIGRATING\n\n* - change the approach for applying slot deltas; clusterInfoCache now suggest a stateful slot migration process\n- drain covers the pool cleanup with one tryLock pass with a post rediscovery check\n\n* - move back to one step delta migration approach\n- simplfy the coordinator and clusterInfoCache\n- gate for older SMIGRATING events\n\n* -add tests for maintenanceCoordinator an d clusterInfoCache\n\n* - format\n\n---------\n\nCo-authored-by: Claude Fable 5 <noreply@anthropic.com>\n\n* [maintenance events - cluster] Wire cluster maintenance notifications through family-agnostic controller (#4732)\n\n* Parse SMIGRATING/SMIGRATED cluster maintenance push frames into domain events\n\nAdds the two OSS-cluster maintenance tokens to PushMessageTypes and\nMaintenancePushCodec (SMIGRATED joins MIGRATING under the length-9 fast\npath; SMIGRATING is the new length-10 case), a HashSlotRanges value type\nfor the slots-or-ranges wire format, and the ClusterMaintenanceEvent\nhierarchy (SMigratingEvent, SMigratedEvent, SlotMigration) kept fully\nseparate from MaintenanceEvent. Cluster frames pass through\nMaintenanceEventConsumer untouched until their dedicated dispatch path\nlands.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\n\n* - removing iscluster and buildCluster\n\n* -  shift to inheritance for clustermaintenanceevent\n\n* - add more tests\n\n* apply SMIGRATED slot deltas atomically in JedisClusterInfoCache\n\n* add ClusterMaintenanceCoordinator\n\n* drop stale SMIGRATING windows on a higher-seqId SMIGRATED\n\n* - shift slot migration safety into JedisClusterInfoCache\n\n* - fix concurrency issues\n- refactor cluster info cache\n\n* - format\n\n* - drop unit test tags\n\n* address tests to apply a higher seqId with SMIGRATED event\n\n* - improve the coordinator to track the unordered/late processed events in the correct way\n- fix the relaxation gap between processing the SMIGRATED event and applying slot delta\n- fix references/statements in javadocs\n\n* - restrict the SMIGRATED event acceptance criteria for improved reliability\n\n* - addressing feedback from @ggivo and ai\n\n* - do not crop migrationWindows on SMIGRATING\n- run drainSlotDeltas right after the release of slotDeltaLock\n\n* - remove slotless nodes\n\n* - cleanupSlotlessNodes sync with rediscovery\n\n* fix for ignored  late SMIGRATING\n\n* - change the approach for applying slot deltas; clusterInfoCache now suggest a stateful slot migration process\n- drain covers the pool cleanup with one tryLock pass with a post rediscovery check\n\n* - move back to one step delta migration approach\n- simplfy the coordinator and clusterInfoCache\n- gate for older SMIGRATING events\n\n* -add tests for maintenanceCoordinator an d clusterInfoCache\n\n* - format\n\n* - wire MaintenanceConfig into clusterCilient builder and  info cache\n- introduce common controller inteface and bisect both implementation accordingly\n-  update visitor and ConnPool to use controller interface\n- swith RebindTimeoutSource into ManagedTimeoutSource\n-\n\n* - drop SocketAddressMapper from controller interface\n\n* - improve maintenance wiring: abstract the controller init from ConnectionPool\n\n* - fix merge issue\n\n* - fix invalid case of same event applied twice on same connection.\n\n* add logger to connectionpool\n\n* - fix missing cluster controller wiring\n- improve docs\n\n* - format\n\n* cleanup on previous comments\n\n* - more unit tests\n\n* - accept SMIGRATED with no slot delta\n\n* - empty SMIGRATED test\n\n* - feedback from @ggivo\n\n* - feedback from AI bot\n\n---------\n\nCo-authored-by: Claude Fable 5 <noreply@anthropic.com>\n\n* [maintenance events - cluster] Add mock-server tests for cluster maintenance notifications (#4787)\n\n* Parse SMIGRATING/SMIGRATED cluster maintenance push frames into domain events\n\n* - removing iscluster and buildCluster\n\n* -  shift to inheritance for clustermaintenanceevent\n\n* - add more tests\n\n* apply SMIGRATED slot deltas atomically in JedisClusterInfoCache\n\n* add ClusterMaintenanceCoordinator\n\n* drop stale SMIGRATING windows on a higher-seqId SMIGRATED\n\n* - shift slot migration safety into JedisClusterInfoCache\n\n* - fix concurrency issues\n- refactor cluster info cache\n\n* - format\n\n* - drop unit test tags\n\n* address tests to apply a higher seqId with SMIGRATED event\n\n* - improve the coordinator to track the unordered/late processed events in the correct way\n- fix the relaxation gap between processing the SMIGRATED event and applying slot delta\n- fix references/statements in javadocs\n\n* - restrict the SMIGRATED event acceptance criteria for improved reliability\n\n* - addressing feedback from @ggivo and ai\n\n* - do not crop migrationWindows on SMIGRATING\n- run drainSlotDeltas right after the release of slotDeltaLock\n\n* - remove slotless nodes\n\n* - cleanupSlotlessNodes sync with rediscovery\n\n* fix for ignored  late SMIGRATING\n\n* - change the approach for applying slot deltas; clusterInfoCache now suggest a stateful slot migration process\n- drain covers the pool cleanup with one tryLock pass with a post rediscovery check\n\n* - move back to one step delta migration approach\n- simplfy the coordinator and clusterInfoCache\n- gate for older SMIGRATING events\n\n* -add tests for maintenanceCoordinator an d clusterInfoCache\n\n* - format\n\n* - wire MaintenanceConfig into clusterCilient builder and  info cache\n- introduce common controller inteface and bisect both implementation accordingly\n-  update visitor and ConnPool to use controller interface\n- swith RebindTimeoutSource into ManagedTimeoutSource\n-\n\n* - drop SocketAddressMapper from controller interface\n\n* - improve maintenance wiring: abstract the controller init from ConnectionPool\n\n* - fix merge issue\n\n* - fix invalid case of same event applied twice on same connection.\n\n* add logger to connectionpool\n\n* - fix missing cluster controller wiring\n- improve docs\n\n* - format\n\n* cleanup on previous comments\n\n* - more unit tests\n\n* - accept SMIGRATED with no slot delta\n\n* - empty SMIGRATED test\n\n* - tests against mock server\n\n* - fix merge issues\n- improve ManagedTimeoutSource by explicit identity\n\n* - Rename pool listener probe to hasPoolControllerListener\n\n- Record cluster event payloads in their own ReceivedEvent field\n\n- Name the AUTO mode explicitly in the handshake tests A1 and A2\n\n- Assert the configured mode in the builder-default handshake test\n\n- Move the socket SO_TIMEOUT probe into ConnectionTestHelper\n\n- Use ConnectionTestHelper.isRelaxedTimeoutActive directly in cluster tests\n\n- Make duplicate-copy deduplication observable in the B4 cluster test\n\n- Record cluster events as ReceivedClusterEvent\n\n- refactor\n\n- Deliver the same closer twice in B4 and check the gate is client-wide\n\n- Phrase the B4 assertion messages as failure descriptions\n\n* - fix potential misleading test in ClusterSlotMigrationMockTest\n- fix race condition in onSMigrating\n\n* - fix window gap during closing event\n- refactor coordinator test\n\n* [maintenance events - cluster] Update SCH doc (#4811)\n\n* - update SCH doc\n\n* - revisit doc\n\n* - feedback from @ggivo\n\n* [maintenance events - cluster] Add scenario tests for cluster maintenance events via fault injector (#4792)\n\n* Parse SMIGRATING/SMIGRATED cluster maintenance push frames into domain events\n\nAdds the two OSS-cluster maintenance tokens to PushMessageTypes and\nMaintenancePushCodec (SMIGRATED joins MIGRATING under the length-9 fast\npath; SMIGRATING is the new length-10 case), a HashSlotRanges value type\nfor the slots-or-ranges wire format, and the ClusterMaintenanceEvent\nhierarchy (SMigratingEvent, SMigratedEvent, SlotMigration) kept fully\nseparate from MaintenanceEvent. Cluster frames pass through\nMaintenanceEventConsumer untouched until their dedicated dispatch path\nlands.\n\nCo-Authored-By: Claude Fable 5 <noreply@anthropic.com>\n\n* - removing iscluster and buildCluster\n\n* -  shift to inheritance for clustermaintenanceevent\n\n* - add more tests\n\n* apply SMIGRATED slot deltas atomically in JedisClusterInfoCache\n\n* add ClusterMaintenanceCoordinator\n\n* drop stale SMIGRATING windows on a higher-seqId SMIGRATED\n\n* - shift slot migration safety into JedisClusterInfoCache\n\n* - fix concurrency issues\n- refactor cluster info cache\n\n* - format\n\n* - drop unit test tags\n\n* address tests to apply a higher seqId with SMIGRATED event\n\n* - improve the coordinator to track the unordered/late processed events in the correct way\n- fix the relaxation gap between processing the SMIGRATED event and applying slot delta\n- fix references/statements in javadocs\n\n* - restrict the SMIGRATED event acceptance criteria for improved reliability\n\n* - addressing feedback from @ggivo and ai\n\n* - do not crop migrationWindows on SMIGRATING\n- run drainSlotDeltas right after the release of slotDeltaLock\n\n* - remove slotless nodes\n\n* - cleanupSlotlessNodes sync with rediscovery\n\n* fix for ignored  late SMIGRATING\n\n* - change the approach for applying slot deltas; clusterInfoCache now suggest a stateful slot migration process\n- drain covers the pool cleanup with one tryLock pass with a post rediscovery check\n\n* - move back to one step delta migration approach\n- simplfy the coordinator and clusterInfoCache\n- gate for older SMIGRATING events\n\n* -add tests for maintenanceCoordinator an d clusterInfoCache\n\n* - format\n\n* - wire MaintenanceConfig into clusterCilient builder and  info cache\n- introduce common controller inteface and bisect both implementation accordingly\n-  update visitor and ConnPool to use controller interface\n- swith RebindTimeoutSource into ManagedTimeoutSource\n-\n\n* - drop SocketAddressMapper from controller interface\n\n* - improve maintenance wiring: abstract the controller init from ConnectionPool\n\n* - fix merge issue\n\n* - fix invalid case of same event applied twice on same connection.\n\n* add logger to connectionpool\n\n* - fix missing cluster controller wiring\n- improve docs\n\n* - format\n\n* cleanup on previous comments\n\n* - more unit tests\n\n* - accept SMIGRATED with no slot delta\n\n* - empty SMIGRATED test\n\n* - tests against mock server\n\n* - fix merge issues\n- improve ManagedTimeoutSource by explicit identity\n\n* - phase 1 with cluster scenario tests\n\n* - fix observations for initial SMIGRATING\n- assert probe outcomes\n\n* - Rename pool listener probe to hasPoolControllerListener\n\n- Record cluster event payloads in their own ReceivedEvent field\n\n- Name the AUTO mode explicitly in the handshake tests A1 and A2\n\n- Assert the configured mode in the builder-default handshake test\n\n- Move the socket SO_TIMEOUT probe into ConnectionTestHelper\n\n- Use ConnectionTestHelper.isRelaxedTimeoutActive directly in cluster tests\n\n- Make duplicate-copy deduplication observable in the B4 cluster test\n\n- Record cluster events as ReceivedClusterEvent\n\n- refactor\n\n- Deliver the same closer twice in B4 and check the gate is client-wide\n\n- Phrase the B4 assertion messages as failure descriptions\n\nCo-Authored-By: Claude Fable 5.1 <noreply@anthropic.com>\n\n* - fix potential misleading test in ClusterSlotMigrationMockTest\n- fix race condition in onSMigrating\n\n* - fix window gap during closing event\n- refactor coordinator test\n\n* - fix pool destroy assertions on removed pools\n\n* - fix merge issues\n\n* - phase 2 with cluster maintenence events\n\n* - improve reliability of cluster maintenance scenario tests\n\n* - capture and identify failures in traffic resillience test\n\n* - feedback from @ggivo\n\n* - addressing feedback from AI\n\n* - fix flaky test with pubsub across migration\n- use computed shared ranges instead of merged adjacent slots for each node\n\n* - update test plan\n\n* - strengthen the observe on connection\n\n* - gate for not offered scenarios with RE\n- drop pubsub and CSC assertions\n\n* - fix the version gate for target triggers\n\n---------\n\nCo-authored-by: Claude Fable 5 <noreply@anthropic.com>\n\n* Potential fix for pull request finding 'CodeQL / Implicit narrowing conversion in compound assignment'\n\nCo-authored-by: Copilot Autofix powered by AI <62310815+github-advanced-security[bot]@users.noreply.github.com>\n\n---------\n\nCo-authored-by: Claude Fable 5 <noreply@anthropic.com>\nCo-authored-by: Copilot Autofix powered by AI <62310815+github-advanced-security[bot]@users.noreply.github.com>",
+          "timestamp": "2026-10-26T12:41:49Z",
+          "url": "https://github.com/redis/jedis/commit/ce1830cd1d3615d6319109db005cb6fbcee48400"
+        },
+        "date": 1793065297661,
+        "tool": "jmh",
+        "benches": [
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.get",
+            "value": 8096.28184979479,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.pipelinedGet",
+            "value": 542052.1931097016,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.pipelinedSet",
+            "value": 476731.79824005935,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.jedis.GetSetBenchmark.set",
+            "value": 8059.559665289191,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.pubsub.PubSubPushBenchmark.publishAndReceive",
+            "value": 6018.2950016272125,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.get",
+            "value": 8050.477536397157,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.pipelinedGet",
+            "value": 544441.4166301212,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.pipelinedSet",
+            "value": 473969.7885872155,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads1.set",
+            "value": 8016.432811338484,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.get",
+            "value": 48483.560329981665,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.pipelinedGet",
+            "value": 1642712.2446262273,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.pipelinedSet",
+            "value": 1202799.7409506824,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads64.set",
+            "value": 48037.016567997205,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 64"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.get",
+            "value": 31732.376909305825,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.pipelinedGet",
+            "value": 1352501.5551475035,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.pipelinedSet",
+            "value": 1007570.8974863561,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.redisclient.GetSetBenchmark.Threads8.set",
+            "value": 31420.348596088057,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 1\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.JedisPoolT1.workload",
+            "value": 7959.764848235654,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.JedisPoolT8.workload",
+            "value": 31766.479660495475,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.JedisT1.workload",
+            "value": 8044.350474542969,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientCSCT1.workload",
+            "value": 12917.544887297723,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientCSCT8.workload",
+            "value": 42930.52674238787,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientT1.workload",
+            "value": 8036.2743108552795,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.workload.GetSetMixedR90W10Benchmark.RedisClientT8.workload",
+            "value": 31764.861990672955,
+            "unit": "ops/s",
+            "extra": "iterations: 5\nforks: 2\nthreads: 8"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadArray",
+            "value": 108.9414173672457,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadBulkString",
+            "value": 29.126600294952834,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadMultiBulkResponse",
+            "value": 145.75783256206728,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.cacheAwareReadSimpleString",
+            "value": 14.019553009849966,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readArray",
+            "value": 109.61699771023909,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readBulkString",
+            "value": 29.12630100085113,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readMultiBulkResponse",
+            "value": 147.60049249671764,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readSimpleString",
+            "value": 14.332094159691797,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readWith100PushMessages",
+            "value": 21982.87617303531,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadBenchmark.readWith1PushMessage",
+            "value": 256.76832243658885,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadPushesBenchmark.drain1000Pending",
+            "value": 216897.33527723234,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.ReadPushesBenchmark.drain1Pending",
+            "value": 230.5728031341736,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.protocol.SendCommandBenchmark.measureSendCommand",
+            "value": 100.87475193642072,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.CRC16Benchmark.getSlotBytes",
+            "value": 39.10178511540865,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.CRC16Benchmark.getSlotString",
+            "value": 103.81832871613419,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.SafeEncoderBenchmark.decodeBytesToString",
+            "value": 42.78491738059305,
+            "unit": "ns/op",
+            "extra": "iterations: 5\nforks: 1\nthreads: 1"
+          },
+          {
+            "name": "redis.clients.jedis.benchmark.util.SafeEncoderBenchmark.encodeStringToBytes",
+            "value": 46.836874456927944,
             "unit": "ns/op",
             "extra": "iterations: 5\nforks: 1\nthreads: 1"
           }

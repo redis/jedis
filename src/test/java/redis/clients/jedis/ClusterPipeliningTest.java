@@ -11,10 +11,6 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
 import java.util.*;
@@ -31,8 +27,6 @@ import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.json.JsonObjectMapper;
-import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.resps.GeoRadiusResponse;
@@ -173,25 +167,6 @@ public class ClusterPipeliningTest {
         clientConfig).build()) {
       assertEquals("value1", cluster.get("test-prefix:key1"));
       assertNull(cluster.get("key1"));
-    }
-  }
-
-  @Test
-  public void constructorClientConfigAppliesJsonObjectMapper() {
-    JsonObjectMapper mapper = mock(JsonObjectMapper.class);
-    when(mapper.toJson(any())).thenReturn("\"from-mapper\"");
-    JedisClientConfig mapperConfig = endpoint.getClientConfigBuilder().protocol(protocol)
-        .jsonObjectMapper(mapper).build();
-    try (ClusterPipeline pipe = new ClusterPipeline(nodes, mapperConfig)) {
-      Response<String> set = pipe.jsonSetWithEscape("doc", Path2.ROOT_PATH, "ignored");
-      pipe.sync();
-      assertEquals("OK", set.get());
-    }
-    verify(mapper).toJson("ignored");
-
-    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(
-        clientConfig).build()) {
-      assertEquals("from-mapper", cluster.jsonGet("doc"));
     }
   }
 

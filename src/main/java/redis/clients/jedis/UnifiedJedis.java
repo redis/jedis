@@ -162,7 +162,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * Applies the {@code CommandObjects}-level knobs ({@code commandKeyArgumentPreProcessor},
    * {@code jsonObjectMapper}, {@code searchDialect}) carried by {@code clientConfig} onto the
    * freshly constructed instance. Called once from the {@link UnifiedJedis} constructor after
-   * {@link #newCommandObjects(RedisProtocol)}.
+   * {@link #newCommandObjects(RedisProtocol)}, and by {@link ClusterPipeline} when it builds its
+   * own command objects from a {@link JedisClientConfig}.
    */
   static void applyCommandObjectsConfiguration(CommandObjects target, JedisClientConfig clientConfig) {
     if (clientConfig == null) {

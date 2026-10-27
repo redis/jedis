@@ -50,12 +50,14 @@ public class MaintNotificationsReceptionIT extends MaintNotificationsObserverBas
   // (RE emits MOVING only when a proxy is removed)
   private static final Map<Trigger, List<String>> EXPECTATIONS = new LinkedHashMap<>();
   static {
-    EXPECTATIONS.put(CATALOG.effect(StandaloneEffect.DATA_MOVEMENT_NO_CONN_DROP).trigger("migrate"),
+    EXPECTATIONS.put(
+      STANDALONE_CATALOG.effect(StandaloneEffect.DATA_MOVEMENT_NO_CONN_DROP).trigger("migrate"),
       Arrays.asList(PushMessageTypes.MIGRATING, PushMessageTypes.MIGRATED));
     EXPECTATIONS.put(
-      CATALOG.effect(StandaloneEffect.DATA_MOVEMENT_NO_CONN_DROP).trigger("failover"),
+      STANDALONE_CATALOG.effect(StandaloneEffect.DATA_MOVEMENT_NO_CONN_DROP).trigger("failover"),
       Arrays.asList(PushMessageTypes.FAILING_OVER, PushMessageTypes.FAILED_OVER));
-    EXPECTATIONS.put(CATALOG.effect(StandaloneEffect.CONN_DROP).trigger("endpoint_rebind"),
+    EXPECTATIONS.put(
+      STANDALONE_CATALOG.effect(StandaloneEffect.CONN_DROP).trigger("endpoint_rebind"),
       Arrays.asList(PushMessageTypes.MOVING));
   }
 

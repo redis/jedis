@@ -97,9 +97,10 @@ public class Pipeline extends AbstractPipeline implements DatabasePipelineComman
   }
 
   /**
-   * Synchronize pipeline by reading all responses. This operation close the pipeline. In order to
-   * get return values from pipelined commands, capture the different Response&lt;?&gt; of the
-   * commands you execute.
+   * Sends the buffered commands and reads all their replies. A reply is decoded when its
+   * {@link Response#get()} is called, so keep the {@link Response} returned by each command.
+   * Server errors are not thrown here: the corresponding {@code get()} throws them. If reading
+   * fails, every pending response is completed with that failure and the failure is rethrown.
    */
   @Override
   public void sync() {
@@ -111,10 +112,11 @@ public class Pipeline extends AbstractPipeline implements DatabasePipelineComman
   }
 
   /**
-   * Synchronize pipeline by reading all responses. This operation close the pipeline. Whenever
-   * possible try to avoid using this version and use Pipeline.sync() as it won't go through all the
-   * responses and generate the right response type (usually it is a waste of time).
-   * @return A list of all the responses in the order you executed them.
+   * Sends the buffered commands, reads all replies and returns them decoded, in the order the
+   * commands were added. Server errors are returned as {@link JedisDataException} elements
+   * instead of being thrown. Prefer {@link #sync()} when the {@link Response} handles are kept: it
+   * decodes a reply only when its {@code get()} is called.
+   * @return the decoded replies, in command order
    */
   public List<Object> syncAndReturnAll() {
     if (hasPipelinedResponse()) {

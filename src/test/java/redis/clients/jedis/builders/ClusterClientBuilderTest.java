@@ -3,6 +3,7 @@ package redis.clients.jedis.builders;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import static org.mockito.Mockito.atLeastOnce;
@@ -29,6 +30,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.DefaultJedisClientConfig;
 import redis.clients.jedis.HostAndPort;
+import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.RedisClusterClient;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.executors.ClusterCommandExecutor;
@@ -103,6 +105,43 @@ class ClusterClientBuilderTest {
     }
     verify(exec, atLeastOnce()).executeCommand(cap.capture());
     assertThat(argsToStrings(cap.getValue()).get(0), containsString("PING"));
+  }
+
+  @Test
+  void maintenanceNotificationsNullShouldThrow() {
+    IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
+      () -> RedisClusterClient.builder().maintenanceNotifications(null));
+
+    assertThat(ex.getMessage(), containsString("MaintenanceNotificationsConfig must not be null"));
+  }
+
+  @Test
+  void maintenanceNotificationsDefaultToAutoAndReachTheProvider() {
+    try (MockedConstruction<ClusterConnectionProvider> constructed = Mockito
+        .mockConstruction(ClusterConnectionProvider.class, (mock, context) -> {
+          assertEquals(6, context.arguments().size(),
+            "the provider is built with the maintenance config as its last argument");
+          MaintenanceNotificationsConfig maint = (MaintenanceNotificationsConfig) context
+              .arguments().get(5);
+          assertEquals(MaintenanceNotificationsConfig.Mode.AUTO, maint.getMode());
+        })) {
+      try (RedisClusterClient client = RedisClusterClient.builder().nodes(someNodes()).build()) {
+        assertEquals(1, constructed.constructed().size());
+      }
+    }
+  }
+
+  @Test
+  void explicitMaintenanceNotificationsReachTheProviderAsIs() {
+    try (MockedConstruction<ClusterConnectionProvider> constructed = Mockito.mockConstruction(
+      ClusterConnectionProvider.class,
+      (mock, context) -> assertSame(MaintenanceNotificationsConfig.DISABLED,
+        context.arguments().get(5)))) {
+      try (RedisClusterClient client = RedisClusterClient.builder().nodes(someNodes())
+          .maintenanceNotifications(MaintenanceNotificationsConfig.DISABLED).build()) {
+        assertEquals(1, constructed.constructed().size());
+      }
+    }
   }
 
   @Test

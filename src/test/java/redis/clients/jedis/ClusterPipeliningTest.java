@@ -11,6 +11,10 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
 import java.util.*;
@@ -27,6 +31,8 @@ import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.args.*;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.json.JsonObjectMapper;
+import redis.clients.jedis.json.Path2;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.resps.GeoRadiusResponse;
@@ -36,6 +42,7 @@ import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.GeoCoordinateMatcher;
 import redis.clients.jedis.util.GeoRadiusResponseMatcher;
 import redis.clients.jedis.util.JedisClusterTestUtil;
+import redis.clients.jedis.util.PrefixedKeyArgumentPreProcessor;
 import redis.clients.jedis.util.SafeEncoder;
 
 @Tag("integration")
@@ -146,6 +153,45 @@ public class ClusterPipeliningTest {
       assertEquals("value1", r4.get());
       assertEquals("value2", r5.get());
       assertEquals("value3", r6.get());
+    }
+  }
+
+  @Test
+  public void constructorClientConfigAppliesKeyPreProcessor() {
+    JedisClientConfig prefixingConfig = endpoint.getClientConfigBuilder().protocol(protocol)
+        .commandKeyArgumentPreProcessor(new PrefixedKeyArgumentPreProcessor("test-prefix:")).build();
+    try (ClusterPipeline pipe = new ClusterPipeline(nodes, prefixingConfig)) {
+      Response<String> set = pipe.set("key1", "value1");
+      Response<String> get = pipe.get("key1");
+      pipe.sync();
+      assertEquals("OK", set.get());
+      assertEquals("value1", get.get());
+    }
+
+    // the key must have been stored under the prefix, as it is for a client built from the config
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(
+        clientConfig).build()) {
+      assertEquals("value1", cluster.get("test-prefix:key1"));
+      assertNull(cluster.get("key1"));
+    }
+  }
+
+  @Test
+  public void constructorClientConfigAppliesJsonObjectMapper() {
+    JsonObjectMapper mapper = mock(JsonObjectMapper.class);
+    when(mapper.toJson(any())).thenReturn("\"from-mapper\"");
+    JedisClientConfig mapperConfig = endpoint.getClientConfigBuilder().protocol(protocol)
+        .jsonObjectMapper(mapper).build();
+    try (ClusterPipeline pipe = new ClusterPipeline(nodes, mapperConfig)) {
+      Response<String> set = pipe.jsonSetWithEscape("doc", Path2.ROOT_PATH, "ignored");
+      pipe.sync();
+      assertEquals("OK", set.get());
+    }
+    verify(mapper).toJson("ignored");
+
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(
+        clientConfig).build()) {
+      assertEquals("from-mapper", cluster.jsonGet("doc"));
     }
   }
 

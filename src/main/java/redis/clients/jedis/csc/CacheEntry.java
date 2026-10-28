@@ -9,7 +9,7 @@ import java.lang.ref.WeakReference;
 import java.util.Objects;
 
 import redis.clients.jedis.Builder;
-import redis.clients.jedis.Protocol;
+import redis.clients.jedis.ProtocolReplies;
 import redis.clients.jedis.exceptions.JedisCacheException;
 
 public class CacheEntry<T> {
@@ -53,7 +53,7 @@ public class CacheEntry<T> {
 
   public T getValue() {
     // Some builders return their input or consume it while building the result.
-    return builder.build(Protocol.copyReply(reply));
+    return builder.build(ProtocolReplies.copy(reply));
   }
 
   public CacheConnection getConnection() {

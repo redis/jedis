@@ -1,7 +1,6 @@
 package redis.clients.jedis;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -90,7 +89,7 @@ public final class Protocol {
     throw createError(is.readLine());
   }
 
-  private static JedisDataException createError(String message) {
+  static JedisDataException createError(String message) {
     // TODO: I'm not sure if this is the best way to do this.
     // Maybe Read only first 5 bytes instead?
     if (message.startsWith(MOVED_PREFIX)) {
@@ -113,44 +112,6 @@ public final class Protocol {
       return new JedisProtocolNotSupportedException(message);
     }
     return new JedisDataException(message);
-  }
-
-  /**
-   * Copy a reply produced by {@link #read(RedisInputStream, PushConsumerChain)}. Mutable protocol
-   * containers, byte arrays and error replies are copied; immutable scalar values are shared.
-   * @param reply a protocol reply, before conversion by a response builder
-   * @return an independent reply with the same protocol representation
-   * @throws IllegalArgumentException if the value is not a supported protocol reply type
-   * @since 8.1
-   */
-  public static Object copyReply(Object reply) {
-    // Builders distinguish an empty RESP3 map from an empty array by this immutable marker.
-    if (reply == PROTOCOL_EMPTY_MAP || reply == null || reply instanceof Long
-        || reply instanceof Double || reply instanceof Boolean || reply instanceof BigInteger) {
-      return reply;
-    }
-    if (reply instanceof byte[]) {
-      return ((byte[]) reply).clone();
-    }
-    if (reply instanceof List) {
-      List<?> values = (List<?>) reply;
-      List<Object> copy = new ArrayList<>(values.size());
-      for (Object value : values) {
-        copy.add(copyReply(value));
-      }
-      return copy;
-    }
-    if (reply instanceof KeyValue) {
-      KeyValue<?, ?> pair = (KeyValue<?, ?>) reply;
-      return new KeyValue<>(copyReply(pair.getKey()), copyReply(pair.getValue()));
-    }
-    if (reply instanceof JedisDataException) {
-      JedisDataException error = (JedisDataException) reply;
-      JedisDataException copy = createError(error.getMessage());
-      copy.setStackTrace(error.getStackTrace());
-      return copy;
-    }
-    throw new IllegalArgumentException("Unsupported protocol reply type: " + reply.getClass());
   }
 
   public static String readErrorLineIfPossible(RedisInputStream is) {

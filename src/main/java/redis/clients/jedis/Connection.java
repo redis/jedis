@@ -486,9 +486,9 @@ public class Connection implements Closeable {
    * Execute a command with its hooks and timeout handling, before applying its response builder.
    * @param commandObject command to execute
    * @return the reply decoded by the protocol reader
-   * @since 8.1
    */
-  protected Object executeCommandRaw(final CommandObject<?> commandObject) {
+  @Internal
+  protected final Object executeCommandRaw(final CommandObject<?> commandObject) {
     himportSendPendingDiscards();
     List<Consumer<Connection>> preProcessHooks = commandObject.getPreProcessHooks();
     if (!preProcessHooks.isEmpty()) {

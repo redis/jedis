@@ -2,6 +2,7 @@ package redis.clients.jedis.commands.unified.cluster;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Stream;
 
 import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
@@ -9,17 +10,23 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.params.ParameterizedClass;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.StringValuesCommandsTestBase;
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.params.LCSParams;
 import redis.clients.jedis.params.MSetExParams;
 
 import redis.clients.jedis.resps.LCSMatchResult;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ParameterizedClass
@@ -107,24 +114,59 @@ public class ClusterStringValuesCommandsTest extends StringValuesCommandsTestBas
     assertEquals(0, stringMatchResult.getMatches().size());
   }
 
+  static Stream<Arguments> msetexCrossSlotParams() {
+    return Stream.of(Arguments.of("unconditional", MSetExParams.setParams().ex(60)),
+      Arguments.of("NX", MSetExParams.setParams().nx().ex(60)),
+      Arguments.of("XX", MSetExParams.setParams().xx().ex(60)));
+  }
+
+  @ParameterizedTest(name = "MSETEX {0} rejects cross-slot keys")
+  @MethodSource("msetexCrossSlotParams")
+  @EnabledOnCommand("MSETEX")
+  public void msetexRejectsCrossSlotKeysBeforeWrites(String condition, MSetExParams params) {
+    String existing = "{a}msetex:existing";
+    String missing = "{b}msetex:missing";
+    jedis.set(existing, "old");
+
+    assertThrows(JedisClusterOperationException.class,
+      () -> jedis.msetex(params, missing, "new", existing, "new"));
+
+    assertEquals("old", jedis.get(existing));
+    assertEquals(-1L, jedis.ttl(existing));
+    assertNull(jedis.get(missing));
+  }
+
+  static Stream<Arguments> msetexSameSlotConditions() {
+    return Stream.of(Arguments.of("NX", MSetExParams.setParams().nx().ex(60)),
+      Arguments.of("XX", MSetExParams.setParams().xx().ex(60)));
+  }
+
+  @ParameterizedTest(name = "MSETEX {0} checks all same-slot keys")
+  @MethodSource("msetexSameSlotConditions")
+  @EnabledOnCommand("MSETEX")
+  public void msetexSameSlotConditionFailureLeavesKeysUnchanged(String condition,
+      MSetExParams params) {
+    String existing = "{a}msetex:existing";
+    String missing = "{a}msetex:missing";
+    jedis.set(existing, "old");
+
+    assertFalse(jedis.msetex(params, missing, "new", existing, "new"));
+
+    assertEquals("old", jedis.get(existing));
+    assertEquals(-1L, jedis.ttl(existing));
+    assertNull(jedis.get(missing));
+  }
+
   @Test
   @EnabledOnCommand("MSETEX")
-  public void msetex_crossslot_works_with_client_side_splitting() {
-    // Use keys without a hashtag so they map to different hash slots
-    String k1 = "cross:k1";
-    String k2 = "other:k2";
+  public void msetexSameSlotWithoutConditionSetsAllKeys() {
+    String k1 = "{a}msetex:first";
+    String k2 = "{a}msetex:second";
 
-    MSetExParams params = new MSetExParams().nx().ex(5);
+    assertTrue(jedis.msetex(MSetExParams.setParams().ex(60), k1, "v1", k2, "v2"));
 
-    // Cross-slot msetex should work - client splits by slot
-    boolean result = jedis.msetex(params, k1, "v1", k2, "v2");
-    assertTrue(result);
-
-    // Verify values were set
     assertEquals("v1", jedis.get(k1));
     assertEquals("v2", jedis.get(k2));
-
-    // Verify TTL is set
     assertTrue(jedis.ttl(k1) > 0);
     assertTrue(jedis.ttl(k2) > 0);
   }

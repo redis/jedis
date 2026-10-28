@@ -1,5 +1,6 @@
 package redis.clients.jedis.mcf;
 
+import static redis.clients.jedis.mcf.MultiDbConnectionProviderHelper.activeConnectionPool;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
@@ -26,7 +27,6 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
-import redis.clients.jedis.util.ClientTestUtil;
 
 /**
  * Integration tests for {@link MultiDbTransaction} against a running Redis standalone instance.
@@ -66,11 +66,6 @@ public class MultiDbTransactionIT {
       }
       client.close();
     }
-  }
-
-  private ConnectionPool activePool() {
-    MultiDbConnectionProvider p = ClientTestUtil.getConnectionProvider(client);
-    return p.getDatabase().getConnectionPool();
   }
 
   @Test
@@ -117,12 +112,12 @@ public class MultiDbTransactionIT {
     }
     // discard happened during close; key should not be set
     assertNull(client.get("k"));
-    assertEquals(0, activePool().getNumActive());
+    assertEquals(0, activeConnectionPool(client).getNumActive());
   }
 
   @Test
   public void exec_releasesConnectionBackToPool() {
-    ConnectionPool pool = activePool();
+    ConnectionPool pool = activeConnectionPool(client);
 
     try (MultiDbTransaction tx = client.multi()) {
       tx.set("a", "1");
@@ -135,7 +130,7 @@ public class MultiDbTransactionIT {
 
   @Test
   public void discard_releasesConnectionBackToPool() {
-    ConnectionPool pool = activePool();
+    ConnectionPool pool = activeConnectionPool(client);
 
     try (MultiDbTransaction tx = client.multi()) {
       tx.set("a", "1");
@@ -156,12 +151,12 @@ public class MultiDbTransactionIT {
       assertEquals("OK", res.get(0));
     }
     assertEquals("1", client.get("a"));
-    assertEquals(0, activePool().getNumActive());
+    assertEquals(0, activeConnectionPool(client).getNumActive());
   }
 
   @Test
   public void exec_queuedCommandRejectedByServer_surfacesServerError() {
-    ConnectionPool pool = activePool();
+    ConnectionPool pool = activeConnectionPool(client);
 
     try (MultiDbTransaction tx = client.multi()) {
       // GET with no arguments: Redis rejects it at queue time with an arity error instead of

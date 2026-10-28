@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -33,6 +34,7 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.TestEnvUtil;
 
 public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
@@ -438,6 +440,25 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       assertEquals(expected, fromMap);
       assertTrue(members1 != members2);
       assertTrue(members1 != fromMap);
+    }
+  }
+
+  @Test
+  public void nonSerializableValueIsCached() {
+    try (RedisClient jedis = RedisClient.builder()
+        .hostAndPort(hnp)
+        .clientConfig(clientConfig.get())
+        .cacheConfig(CacheConfig.builder().build())
+        .build()) {
+      jedis.zadd("foo", 1, "a");
+
+      // Tuple is not Serializable
+      List<Tuple> first = jedis.zrangeWithScores("foo", 0, -1);
+      List<Tuple> second = jedis.zrangeWithScores("foo", 0, -1);
+
+      assertEquals(Collections.singletonList(new Tuple("a", 1d)), second);
+      assertEquals(1, jedis.getCache().getStats().getHitCount());
+      assertNotSame(first, second);
     }
   }
 

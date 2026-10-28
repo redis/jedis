@@ -3,8 +3,12 @@ package redis.clients.jedis.csc;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.instanceOf;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.argThat;
 import static org.mockito.Mockito.spy;
@@ -12,6 +16,7 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 import redis.clients.jedis.util.SafeEncoder;
 
 import java.io.IOException;
@@ -20,6 +25,10 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.Builder;
+import redis.clients.jedis.BuilderFactory;
+import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.ConnectionPoolConfig;
@@ -29,11 +38,13 @@ import redis.clients.jedis.DefaultJedisSocketFactory;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.MaintenanceNotificationsConfig;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.PushConsumer;
 import redis.clients.jedis.sch.AbstractMaintenanceEventHandlingTest;
 import redis.clients.jedis.sch.MaintenanceEventTestSupport;
 import redis.clients.jedis.sch.AbstractMaintenanceHandshakeTest;
 import redis.clients.jedis.sch.AbstractRelaxedTimeoutBehaviorTest;
+import redis.clients.jedis.util.server.RespResponse;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 /**
@@ -155,6 +166,151 @@ public class CacheConnectionMockTest {
   }
 
   /**
+   * Entries are evicted through their recorded Redis keys, so a command whose arguments carry no
+   * recorded key (built with {@code add()} instead of {@code key()}, as the generic
+   * {@code sendCommand}/{@code executeCommand} paths do) can never be invalidated by the server and
+   * must not be cached.
+   */
+  @Nested
+  class KeyTrackingTests {
+
+    private final AtomicInteger serverGets = new AtomicInteger();
+
+    @BeforeEach
+    public void countGets() {
+      mockServer.setCommandHandler((args, clientId) -> {
+        if (Protocol.Command.GET.equals(args.getCommand())) {
+          serverGets.incrementAndGet();
+          return RespResponse.bulkString("v");
+        }
+        return null;
+      });
+    }
+
+    @Test
+    public void commandWithoutRecordedKeysIsNotCached() {
+      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().resp3().build();
+      DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(
+          new HostAndPort("localhost", mockServer.getPort()), config);
+
+      try (CacheConnection conn = new CacheConnection(socketFactory, config, cache)) {
+        CommandObject<String> get = new CommandObject<>(
+            new CommandArguments(Protocol.Command.GET).add("k"), BuilderFactory.STRING);
+
+        assertEquals("v", conn.executeCommand(get));
+        assertEquals("v", conn.executeCommand(get));
+
+        assertEquals(2, serverGets.get(), "every call must reach the server");
+        assertEquals(0, cache.getSize());
+        assertEquals(2, cache.getStats().getNonCacheableCount());
+      }
+    }
+
+    @Test
+    public void commandWithRecordedKeyIsCached() {
+      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().resp3().build();
+      DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(
+          new HostAndPort("localhost", mockServer.getPort()), config);
+
+      try (CacheConnection conn = new CacheConnection(socketFactory, config, cache)) {
+        CommandObject<String> get = new CommandObject<>(
+            new CommandArguments(Protocol.Command.GET).key("k"), BuilderFactory.STRING);
+
+        assertEquals("v", conn.executeCommand(get));
+        assertEquals("v", conn.executeCommand(get));
+
+        assertEquals(1, serverGets.get(), "second call must be served from the cache");
+        assertEquals(1, cache.getSize());
+      }
+    }
+  }
+
+  /**
+   * An entry keeps the protocol reply and rebuilds the value with the command's builder on every
+   * read, so results need not be {@code Serializable} and callers never share an instance.
+   */
+  @Nested
+  class ReplyRebuildTests {
+
+    private final AtomicInteger serverGets = new AtomicInteger();
+
+    @BeforeEach
+    public void countGets() {
+      mockServer.setCommandHandler((args, clientId) -> {
+        if (Protocol.Command.GET.equals(args.getCommand())) {
+          serverGets.incrementAndGet();
+          return RespResponse.bulkString("v");
+        }
+        return null;
+      });
+    }
+
+    @Test
+    public void nonSerializableResultIsRebuiltOnEachHit() {
+      try (CacheConnection conn = connect()) {
+        CommandObject<Holder> get = new CommandObject<>(
+            new CommandArguments(Protocol.Command.GET).key("k"), new Builder<Holder>() {
+              @Override
+              public Holder build(Object data) {
+                return new Holder(SafeEncoder.encode((byte[]) data));
+              }
+            });
+
+        Holder first = conn.executeCommand(get);
+        Holder second = conn.executeCommand(get);
+
+        assertEquals(1, serverGets.get(), "second call must be served from the cache");
+        assertEquals("v", second.value);
+        assertNotSame(first, second);
+      }
+    }
+
+    @Test
+    public void replyRejectedByBuilderIsNotCached() {
+      AtomicInteger builds = new AtomicInteger();
+      try (CacheConnection conn = connect()) {
+        CommandObject<String> get = new CommandObject<>(
+            new CommandArguments(Protocol.Command.GET).key("k"), new Builder<String>() {
+              @Override
+              public String build(Object data) {
+                if (builds.incrementAndGet() == 1) {
+                  throw new IllegalStateException("rejected");
+                }
+                return SafeEncoder.encode((byte[]) data);
+              }
+            });
+
+        assertThrows(IllegalStateException.class, () -> conn.executeCommand(get));
+        assertEquals(0, cache.getSize());
+
+        assertEquals("v", conn.executeCommand(get));
+        assertEquals(2, serverGets.get(), "a rejected reply must not be served from the cache");
+      }
+    }
+
+    @Test
+    public void mutatingBinaryResultDoesNotChangeCachedReply() {
+      try (CacheConnection conn = connect()) {
+        CommandObject<byte[]> get = new CommandObject<>(
+            new CommandArguments(Protocol.Command.GET).key("k"), BuilderFactory.BINARY);
+
+        conn.executeCommand(get)[0] = 'X'; // miss
+        conn.executeCommand(get)[0] = 'Y'; // hit
+
+        assertArrayEquals(SafeEncoder.encode("v"), conn.executeCommand(get));
+        assertEquals(1, serverGets.get());
+      }
+    }
+
+    private CacheConnection connect() {
+      DefaultJedisClientConfig config = DefaultJedisClientConfig.builder().resp3().build();
+      return new CacheConnection(
+          new DefaultJedisSocketFactory(new HostAndPort("localhost", mockServer.getPort()), config),
+          config, cache);
+    }
+  }
+
+  /**
    * Mirror of {@link redis.clients.jedis.ConnectionMockTest.MaintenanceEventHandling} for
    * {@link CacheConnection}: pooled CSC connections must register the maintenance consumer; direct
    * and builder-built CSC connections must not.
@@ -208,6 +364,15 @@ public class CacheConnectionMockTest {
     @Override
     protected Connection.Builder newConnectionBuilder() {
       return CacheConnection.builder(cache);
+    }
+  }
+
+  /** Deliberately not {@code Serializable}. */
+  private static final class Holder {
+    final String value;
+
+    Holder(String value) {
+      this.value = value;
     }
   }
 }

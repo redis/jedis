@@ -25,7 +25,9 @@ public class CacheEntry<T> {
    * @param cacheKey cache key
    * @param value an already-built, serializable value
    * @param connection connection that owns the entry
+   * @deprecated Since 8.1, with no replacement: cache entries are created by Jedis.
    */
+  @Deprecated
   public CacheEntry(CacheKey<T> cacheKey, T value, CacheConnection connection) {
     this(cacheKey, toBytes(value), new Builder<T>() {
       @Override

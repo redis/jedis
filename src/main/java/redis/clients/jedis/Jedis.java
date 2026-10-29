@@ -392,10 +392,22 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     if (dataSource != null) {
       Pool<Jedis> pool = this.dataSource;
       this.dataSource = null;
-      if (isBroken()) {
-        pool.returnBrokenResource(this);
-      } else {
-        pool.returnResource(this);
+      try {
+        if (isBroken()) {
+          pool.returnBrokenResource(this);
+        } else {
+          pool.returnResource(this);
+        }
+      } catch (Exception e) {
+        if (isBroken()) {
+          logger.warn("Error returning broken Jedis instance to pool", e);
+        } else {
+          throw e;
+        }
+      } finally {
+        if (isBroken()) {
+          connection.close();
+        }
       }
     } else {
       connection.close();

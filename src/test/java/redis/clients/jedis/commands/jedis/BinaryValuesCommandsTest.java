@@ -14,6 +14,7 @@ import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Stream;
 
 import io.redis.test.annotations.EnabledOnCommand;
@@ -407,21 +408,27 @@ public class BinaryValuesCommandsTest extends JedisCommandsTestBase {
 
   // MSETEX NX + expiration matrix (binary)
   static Stream<Arguments> msetexNxArgsProvider() {
-    return java.util.stream.Stream.of(Arguments.of("EX", new MSetExParams().nx().ex(5)),
-      Arguments.of("PX", new MSetExParams().nx().px(5000)),
-      Arguments.of("EXAT", new MSetExParams().nx().exAt(System.currentTimeMillis() / 1000 + 5)),
-      Arguments.of("PXAT", new MSetExParams().nx().pxAt(System.currentTimeMillis() + 5000)),
-      Arguments.of("KEEPTTL", new MSetExParams().nx().keepTtl()));
+    return Stream.of(msetexCase("EX", () -> new MSetExParams().nx().ex(5)),
+      msetexCase("PX", () -> new MSetExParams().nx().px(5000)),
+      msetexCase("EXAT",
+        () -> new MSetExParams().nx().exAt(System.currentTimeMillis() / 1000 + 60)),
+      msetexCase("PXAT", () -> new MSetExParams().nx().pxAt(System.currentTimeMillis() + 60_000)),
+      msetexCase("KEEPTTL", () -> new MSetExParams().nx().keepTtl()));
+  }
+
+  // Built per invocation so absolute EXAT/PXAT aren't stale by the time later cases run.
+  private static Arguments msetexCase(String label, Supplier<MSetExParams> params) {
+    return Arguments.of(label, params);
   }
 
   @ParameterizedTest(name = "MSETEX NX + {0} (binary)")
   @MethodSource("msetexNxArgsProvider")
   @EnabledOnCommand("MSETEX")
-  public void msetexNx_binary_parametrized(String optionLabel, MSetExParams params) {
+  public void msetexNx_binary_parametrized(String optionLabel, Supplier<MSetExParams> params) {
     byte[] k1 = "{t}msetex:jb:k1".getBytes();
     byte[] k2 = "{t}msetex:jb:k2".getBytes();
 
-    boolean result = jedis.msetex(params, k1, "v1".getBytes(), k2, "v2".getBytes());
+    boolean result = jedis.msetex(params.get(), k1, "v1".getBytes(), k2, "v2".getBytes());
     assertTrue(result);
 
     long ttl = jedis.ttl(k1);

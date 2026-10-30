@@ -16,6 +16,11 @@ import redis.clients.jedis.mcf.JedisFailoverException.JedisTemporarilyNotAvailab
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -142,6 +147,90 @@ public class MultiDbConnectionProviderTest {
       assertTrue(initial.getConnectionPool().isClosed());
       held.close();
     }
+  }
+
+  @Test
+  public void oldPoolIsDrainedWhenSwitchListenerThrows() {
+    DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
+    databaseConfigs[0] = DatabaseConfig.builder(endpointStandalone0.getHostAndPort(),
+      endpointStandalone0.getClientConfigBuilder().build()).weight(0.5f).build();
+    databaseConfigs[1] = DatabaseConfig.builder(endpointStandalone1.getHostAndPort(),
+      endpointStandalone1.getClientConfigBuilder().build()).weight(0.3f).build();
+    try (MultiDbConnectionProvider localProvider = new MultiDbConnectionProvider(
+        new MultiDbConfig.Builder(databaseConfigs).fastFailover(true).build())) {
+      Database initial = localProvider.getDatabase(endpointStandalone0.getHostAndPort());
+      Database other = localProvider.getDatabase(endpointStandalone1.getHostAndPort());
+      waitForDatabaseToGetHealthy(initial, other);
+      assertSame(initial, localProvider.getDatabase());
+
+      Connection held = initial.getConnection();
+      localProvider.setDatabaseSwitchListener(e -> {
+        throw new IllegalStateException("listener failed");
+      });
+
+      IllegalStateException ex = assertThrows(IllegalStateException.class,
+        () -> MultiDbConnectionProviderHelper.switchToHealthyDatabase(localProvider,
+          SwitchReason.HEALTH_CHECK, initial));
+      assertEquals("listener failed", ex.getMessage());
+
+      // The listener's failure propagates, but the switch and the drain still happened
+      assertSame(other, localProvider.getDatabase());
+      assertFalse(held.isConnected());
+      assertTrue(initial.getConnectionPool().isClosed());
+      held.close();
+    }
+  }
+
+  @Test
+  public void removedDatabaseIsClosedWhenSwitchListenerThrows() {
+    Database initial = provider.getDatabase(endpointStandalone0.getHostAndPort());
+    Database other = provider.getDatabase(endpointStandalone1.getHostAndPort());
+    waitForDatabaseToGetHealthy(initial, other);
+    assertSame(initial, provider.getDatabase());
+
+    provider.setDatabaseSwitchListener(e -> {
+      throw new IllegalStateException("listener failed");
+    });
+
+    assertThrows(IllegalStateException.class,
+      () -> provider.remove(endpointStandalone0.getHostAndPort()));
+
+    assertSame(other, provider.getDatabase());
+    assertTrue(initial.getConnectionPool().isClosed());
+  }
+
+  @Test
+  public void assertOperabilityRunsPostSwitchOutsideTheLock() throws Exception {
+    Database initial = provider.getDatabase(endpointStandalone0.getHostAndPort());
+    Database other = provider.getDatabase(endpointStandalone1.getHostAndPort());
+    waitForDatabaseToGetHealthy(initial, other);
+    assertSame(initial, provider.getDatabase());
+
+    // From inside the listener, another thread asks for a switch that needs the provider lock.
+    // It completes only if the listener is not running under that lock.
+    ExecutorService probeThread = Executors.newSingleThreadExecutor();
+    AtomicReference<Boolean> switchPossibleDuringListener = new AtomicReference<>();
+    provider.setDatabaseSwitchListener(e -> {
+      Future<?> probe = probeThread.submit(() -> provider.setActiveDatabase(e.getEndpoint()));
+      try {
+        probe.get(2, TimeUnit.SECONDS);
+        switchPossibleDuringListener.set(true);
+      } catch (TimeoutException te) {
+        switchPossibleDuringListener.set(false);
+      } catch (Exception ex) {
+        throw new RuntimeException(ex);
+      }
+    });
+
+    try {
+      initial.setDisabled(true);
+      provider.assertOperability();
+    } finally {
+      probeThread.shutdownNow();
+    }
+
+    assertSame(other, provider.getDatabase());
+    assertEquals(Boolean.TRUE, switchPossibleDuringListener.get());
   }
 
   @Test

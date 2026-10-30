@@ -11,6 +11,7 @@ import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.SortingParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.CompareCondition;
+import redis.clients.jedis.args.BlessFlag;
 
 public interface KeyPipelineBinaryCommands {
 
@@ -107,6 +108,36 @@ public interface KeyPipelineBinaryCommands {
   Response<ScanResult<byte[]>> scan(byte[] cursor, ScanParams params);
 
   Response<ScanResult<byte[]>> scan(byte[] cursor, ScanParams params, byte[] type);
+
+  /**
+   * Pipeline variant of {@link KeyBinaryCommands#blessSet(byte[], BlessFlag)}.
+   * @since 8.1
+   */
+  Response<Long> blessSet(byte[] key, BlessFlag flag);
+
+  /**
+   * Pipeline variant of {@link KeyBinaryCommands#blessClear(byte[], BlessFlag)}.
+   * @since 8.1
+   */
+  Response<Long> blessClear(byte[] key, BlessFlag flag);
+
+  /**
+   * Pipeline variant of {@link KeyBinaryCommands#blessGet(byte[])}.
+   * @since 8.1
+   */
+  Response<List<byte[]>> blessGet(byte[] key);
+
+  /**
+   * Pipeline variant of {@link KeyBinaryCommands#blessScan(byte[], BlessFlag)}.
+   * @since 8.1
+   */
+  Response<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag);
+
+  /**
+   * Pipeline variant of {@link KeyBinaryCommands#blessScan(byte[], BlessFlag, int)}.
+   * @since 8.1
+   */
+  Response<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag, int count);
 
   Response<byte[]> randomBinaryKey();
 

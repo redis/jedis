@@ -11,6 +11,7 @@ import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.SortingParams;
 import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.args.BlessFlag;
 
 public interface KeyCommands {
 
@@ -617,6 +618,88 @@ public interface KeyCommands {
   ScanResult<String> scan(String cursor, ScanParams params);
 
   ScanResult<String> scan(String cursor, ScanParams params, String type);
+
+  /**
+   * <b><a href="https://redis.io/commands/bless-set">BLESS SET Command</a></b>
+   * Turn on a protection flag for {@code key}. A key flagged {@link BlessFlag#NO_EVICT} is never
+   * chosen as a {@code maxmemory} eviction victim. The flag survives value overwrites and travels
+   * with the key through {@code COPY}, {@code MOVE}, {@code RENAME}, replication and persistence,
+   * but is not part of {@code DUMP} payloads. Only {@link #blessClear(String, BlessFlag)} or
+   * deleting the key removes it.
+   * <p>
+   * The key must exist, otherwise the server replies {@code ERR no such key}. The command is
+   * rejected with an OOM error while the server is over {@code maxmemory}.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the key to protect
+   * @param flag the flag to turn on
+   * @return 1 if the flag was turned on, 0 if it was already on
+   * @since 8.1
+   */
+  long blessSet(String key, BlessFlag flag);
+
+  /**
+   * <b><a href="https://redis.io/commands/bless-clear">BLESS CLEAR Command</a></b>
+   * Turn off a protection flag for {@code key}. Unlike {@link #blessSet(String, BlessFlag)} this
+   * command is accepted while the server is over {@code maxmemory}, so it is the recovery path when
+   * blessed keys are what holds memory.
+   * <p>
+   * The key must exist, otherwise the server replies {@code ERR no such key}.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the key to unprotect
+   * @param flag the flag to turn off
+   * @return 1 if the flag was turned off, 0 if it was already off
+   * @since 8.1
+   */
+  long blessClear(String key, BlessFlag flag);
+
+  /**
+   * <b><a href="https://redis.io/commands/bless-get">BLESS GET Command</a></b>
+   * Return the protection flags currently active on {@code key}, as wire tokens (for example
+   * {@code "NO-EVICT"}). Tokens are returned verbatim so flags added by newer servers are visible
+   * without a client upgrade.
+   * <p>
+   * The key must exist, otherwise the server replies {@code ERR no such key}. Does not update the
+   * key's LRU/LFU clock.
+   * <p>
+   * Time complexity: O(1)
+   * @param key the key to query
+   * @return the active flag tokens, empty if the key carries none
+   * @since 8.1
+   */
+  List<String> blessGet(String key);
+
+  /**
+   * <b><a href="https://redis.io/commands/bless-scan">BLESS SCAN Command</a></b>
+   * Incrementally iterate the keys of the current database that carry {@code flag}, with
+   * {@code SCAN} semantics: start with cursor {@code "0"} and loop until the returned cursor is
+   * {@code "0"} again. Order is unspecified and a key may be returned more than once.
+   * <p>
+   * Only the node that receives the command is iterated. In cluster mode use
+   * {@code UnifiedJedis#blessScanIteration(int, BlessFlag)} instead, which runs an independent
+   * cursor on every node.
+   * <p>
+   * Time complexity: O(1) per call, O(N) for a complete iteration where N is the number of blessed
+   * keys
+   * @param cursor the cursor, {@code "0"} to start an iteration
+   * @param flag the flag to filter on
+   * @return the next cursor and the keys of this batch
+   * @since 8.1
+   */
+  ScanResult<String> blessScan(String cursor, BlessFlag flag);
+
+  /**
+   * <b><a href="https://redis.io/commands/bless-scan">BLESS SCAN Command</a></b>
+   * Like {@link #blessScan(String, BlessFlag)} with a {@code COUNT} hint. The hint is not a limit:
+   * a batch may hold more or fewer keys, and a small batch does not mean the iteration is complete.
+   * @param cursor the cursor, {@code "0"} to start an iteration
+   * @param flag the flag to filter on
+   * @param count hint for how many entries to visit per call, must be positive
+   * @return the next cursor and the keys of this batch
+   * @since 8.1
+   */
+  ScanResult<String> blessScan(String cursor, BlessFlag flag, int count);
 
   /**
    * <b><a href="http://redis.io/commands/randomkey">RandomKey Command</a></b>

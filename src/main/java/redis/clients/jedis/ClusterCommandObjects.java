@@ -1,5 +1,7 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.args.BlessFlag;
 import redis.clients.jedis.params.IParams;
 import redis.clients.jedis.params.MSetExParams;
 import redis.clients.jedis.params.ScanParams;
@@ -40,7 +42,7 @@ public class ClusterCommandObjects extends CommandObjects {
     if (match == null || !JedisClusterHashTag.isClusterCompliantMatchPattern(match)) {
       throw new IllegalArgumentException(SCAN_PATTERN_MESSAGE);
     }
-    return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params).addHashSlotKey(match), BuilderFactory.SCAN_RESPONSE);
+    return new CommandObject<>(commandArguments(Command.SCAN).add(cursor).addParams(params).addHashSlotKey(match), BuilderFactory.SCAN_RESPONSE);
   }
 
   @Override
@@ -49,7 +51,7 @@ public class ClusterCommandObjects extends CommandObjects {
     if (match == null || !JedisClusterHashTag.isClusterCompliantMatchPattern(match)) {
       throw new IllegalArgumentException(SCAN_PATTERN_MESSAGE);
     }
-    return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params).addHashSlotKey(match).add(TYPE).add(type), BuilderFactory.SCAN_RESPONSE);
+    return new CommandObject<>(commandArguments(Command.SCAN).add(cursor).addParams(params).addHashSlotKey(match).add(TYPE).add(type), BuilderFactory.SCAN_RESPONSE);
   }
 
   @Override
@@ -63,7 +65,7 @@ public class ClusterCommandObjects extends CommandObjects {
     if (match == null || !JedisClusterHashTag.isClusterCompliantMatchPattern(match)) {
       throw new IllegalArgumentException(SCAN_PATTERN_MESSAGE);
     }
-    return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params).addHashSlotKey(match), BuilderFactory.SCAN_BINARY_RESPONSE);
+    return new CommandObject<>(commandArguments(Command.SCAN).add(cursor).addParams(params).addHashSlotKey(match), BuilderFactory.SCAN_BINARY_RESPONSE);
   }
 
   @Override
@@ -72,7 +74,30 @@ public class ClusterCommandObjects extends CommandObjects {
     if (match == null || !JedisClusterHashTag.isClusterCompliantMatchPattern(match)) {
       throw new IllegalArgumentException(SCAN_PATTERN_MESSAGE);
     }
-    return new CommandObject<>(commandArguments(SCAN).add(cursor).addParams(params).addHashSlotKey(match).add(TYPE).add(type), BuilderFactory.SCAN_BINARY_RESPONSE);
+    return new CommandObject<>(commandArguments(Command.SCAN).add(cursor).addParams(params).addHashSlotKey(match).add(TYPE).add(type), BuilderFactory.SCAN_BINARY_RESPONSE);
+  }
+
+  private static final String BLESS_SCAN_MESSAGE = "BLESS SCAN iterates a single node. Use"
+      + " blessScanIteration(int, BlessFlag) to iterate every node of the cluster.";
+
+  @Override
+  public final CommandObject<ScanResult<String>> blessScan(String cursor, BlessFlag flag) {
+    throw new UnsupportedOperationException(BLESS_SCAN_MESSAGE);
+  }
+
+  @Override
+  public final CommandObject<ScanResult<String>> blessScan(String cursor, BlessFlag flag, int count) {
+    throw new UnsupportedOperationException(BLESS_SCAN_MESSAGE);
+  }
+
+  @Override
+  public final CommandObject<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag) {
+    throw new UnsupportedOperationException(BLESS_SCAN_MESSAGE);
+  }
+
+  @Override
+  public final CommandObject<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag, int count) {
+    throw new UnsupportedOperationException(BLESS_SCAN_MESSAGE);
   }
 
   @Override

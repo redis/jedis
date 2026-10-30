@@ -104,9 +104,69 @@ public class MultiDbConnectionProviderTest {
     waitForDatabaseToGetHealthy(provider.getDatabase(endpointStandalone0.getHostAndPort()),
       provider.getDatabase(endpointStandalone1.getHostAndPort()));
 
-    Endpoint e2 = provider.switchToHealthyDatabase(SwitchReason.HEALTH_CHECK,
-      provider.getDatabase());
+    Endpoint e2 = MultiDbConnectionProviderHelper.switchToHealthyDatabase(provider,
+      SwitchReason.HEALTH_CHECK, provider.getDatabase());
     assertEquals(endpointStandalone1.getHostAndPort(), e2);
+  }
+
+  @Test
+  public void switchListenerRunsBeforeFastFailoverDrain() {
+    DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
+    databaseConfigs[0] = DatabaseConfig.builder(endpointStandalone0.getHostAndPort(),
+      endpointStandalone0.getClientConfigBuilder().build()).weight(0.5f).build();
+    databaseConfigs[1] = DatabaseConfig.builder(endpointStandalone1.getHostAndPort(),
+      endpointStandalone1.getClientConfigBuilder().build()).weight(0.3f).build();
+    try (MultiDbConnectionProvider localProvider = new MultiDbConnectionProvider(
+        new MultiDbConfig.Builder(databaseConfigs).fastFailover(true).build())) {
+      Database initial = localProvider.getDatabase(endpointStandalone0.getHostAndPort());
+      Database other = localProvider.getDatabase(endpointStandalone1.getHostAndPort());
+      waitForDatabaseToGetHealthy(initial, other);
+      assertSame(initial, localProvider.getDatabase());
+
+      // A connection the application still holds on the database being left
+      Connection held = initial.getConnection();
+      AtomicBoolean heldConnectedAtEvent = new AtomicBoolean(false);
+      AtomicBoolean oldPoolClosedAtEvent = new AtomicBoolean(true);
+      localProvider.setDatabaseSwitchListener(e -> {
+        heldConnectedAtEvent.set(held.isConnected());
+        oldPoolClosedAtEvent.set(initial.getConnectionPool().isClosed());
+      });
+
+      MultiDbConnectionProviderHelper.switchToHealthyDatabase(localProvider,
+        SwitchReason.HEALTH_CHECK, initial);
+
+      // The listener marks the switch itself; the forced disconnect of the old pool follows it
+      assertTrue(heldConnectedAtEvent.get());
+      assertFalse(oldPoolClosedAtEvent.get());
+      assertFalse(held.isConnected());
+      assertTrue(initial.getConnectionPool().isClosed());
+      held.close();
+    }
+  }
+
+  @Test
+  public void removingActiveEndpointPublishesSwitchBeforeClosingIt() {
+    Database initial = provider.getDatabase(endpointStandalone0.getHostAndPort());
+    Database other = provider.getDatabase(endpointStandalone1.getHostAndPort());
+    waitForDatabaseToGetHealthy(initial, other);
+    assertSame(initial, provider.getDatabase());
+
+    AtomicReference<DatabaseSwitchEvent> event = new AtomicReference<>();
+    AtomicBoolean removedPoolClosedAtEvent = new AtomicBoolean(true);
+    provider.setDatabaseSwitchListener(e -> {
+      event.set(e);
+      removedPoolClosedAtEvent.set(initial.getConnectionPool().isClosed());
+    });
+
+    provider.remove(endpointStandalone0.getHostAndPort());
+
+    assertNotNull(event.get());
+    assertEquals(SwitchReason.FORCED, event.get().getReason());
+    assertEquals(endpointStandalone1.getHostAndPort(), event.get().getEndpoint());
+    // The removed database is closed only after the listener has been told about the switch
+    assertFalse(removedPoolClosedAtEvent.get());
+    assertTrue(initial.getConnectionPool().isClosed());
+    assertSame(other, provider.getDatabase());
   }
 
   @Test
@@ -117,7 +177,8 @@ public class MultiDbConnectionProviderTest {
 
     provider.setActiveDatabase(endpoint0);
     provider.getDatabase().setDisabled(true);
-    provider.switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, provider.getDatabase(endpoint0));
+    MultiDbConnectionProviderHelper.switchToHealthyDatabase(provider, SwitchReason.HEALTH_CHECK,
+      provider.getDatabase(endpoint0));
 
     assertFalse(provider.canIterateFrom(provider.getDatabase()));
   }

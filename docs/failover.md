@@ -543,7 +543,9 @@ MultiDbClient client = MultiDbClient.builder()
         .databaseSwitchListener(reporter)
         .build();
 ```
-The client will call your `accept` whenever the active database changes.
+The client will call your `accept` whenever the active database changes. It is called as soon as
+the switch has happened, before `fastFailover` (if enabled) force-closes the connections to the
+previous database, so the event marks the time of the switch rather than the end of that cleanup.
 You can also use a lambda expression:
 ```java
 MultiDbClient client = MultiDbClient.builder()

@@ -623,10 +623,22 @@ public class Connection implements Closeable {
     if (this.memberOf != null) {
       ConnectionPool pool = this.memberOf;
       this.memberOf = null;
-      if (isBroken()) {
-        pool.returnBrokenResource(this);
-      } else {
-        pool.returnResource(this);
+      try {
+        if (isBroken()) {
+          pool.returnBrokenResource(this);
+        } else {
+          pool.returnResource(this);
+        }
+      } catch (Exception e) {
+        if (isBroken()) {
+          logger.warn("Error returning broken connection to pool", e);
+        } else {
+          throw e;
+        }
+      } finally {
+        if (isBroken()) {
+          disconnect();
+        }
       }
     } else {
       disconnect();

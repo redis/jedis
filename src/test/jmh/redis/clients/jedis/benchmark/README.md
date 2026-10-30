@@ -109,6 +109,23 @@ RedisClient (pooled) GET/SET operations with concurrency testing.
 **Mode:** Throughput (ops/sec)
 **Purpose:** Test connection pool efficiency and pipelining under different load levels
 
+### csc.CacheHitBenchmark (3 benchmarks) ⚠️ Requires Redis
+Client-side cache hit cost through `RedisClient`, by reply shape.
+
+**Parameter `reply`:**
+- `GET` - 64-byte string
+- `LRANGE_100` - list of 100 elements
+- `HGETALL_100` - hash with 100 fields
+
+**Workload:**
+- Each reply is cached during setup, so every measured call is a cache hit
+- The trial fails if any measured call misses the cache
+- Writes and deletes its own `csc-hit-benchmark:` keys
+
+**Requirements:** Redis 7.4+ with RESP3 (client-side caching), `standalone0` endpoint
+**Mode:** Average time (ns/op); add `-prof gc` for allocation per call
+**Purpose:** Compare cache hit cost across versions. It uses only public API, so the same benchmark runs before and after changes to how the cache stores replies.
+
 ---
 
 ## Configuration

@@ -172,7 +172,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       // Simple rule is to never assign value of 'activeDatabase' outside of
       // 'activeDatabaseChangeLock' once the 'initializationComplete' is done.
       waitForInitializationPolicy(statusTracker);
-      switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, temp);
+      postSwitch(switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, temp));
     }
     this.fallbackExceptionList = multiDbConfig.getFallbackExceptionList();
 
@@ -280,10 +280,11 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     }
     log.debug("Removing endpoint {}", endpoint);
 
-    Map.Entry<Endpoint, Database> notificationData = null;
+    Database databaseToRemove;
+    SwitchInfo switchInfo = null;
     activeDatabaseChangeLock.lock();
     try {
-      Database databaseToRemove = databaseMap.get(endpoint);
+      databaseToRemove = databaseMap.get(endpoint);
       boolean isActiveDatabase = (activeDatabase == databaseToRemove);
 
       if (isActiveDatabase) {
@@ -291,10 +292,10 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
         Map.Entry<Endpoint, Database> candidate = findWeightedHealthyDatabaseToIterate(
           databaseToRemove);
         if (candidate != null) {
-          Database selectedDatabase = candidate.getValue();
-          if (setActiveDatabase(selectedDatabase, true)) {
+          switchInfo = switchActiveDatabase(SwitchReason.FORCED, candidate.getKey(),
+            candidate.getValue(), true);
+          if (switchInfo != null) {
             log.info("New active database set to {}", candidate.getKey());
-            notificationData = candidate;
           }
         } else {
           throw new JedisException(
@@ -309,16 +310,21 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       // Remove from database map
       databaseMap.remove(endpoint);
 
-      // Close the database resources
       if (databaseToRemove != null) {
         databaseToRemove.setDisabled(true);
-        databaseToRemove.close();
       }
     } finally {
       activeDatabaseChangeLock.unlock();
     }
-    if (notificationData != null) {
-      onDatabaseSwitch(SwitchReason.FORCED, notificationData.getKey(), notificationData.getValue());
+
+    // Listener and drain run outside the lock; the database is already unreachable via the map,
+    // so it is closed even if the listener throws.
+    try {
+      postSwitch(switchInfo);
+    } finally {
+      if (databaseToRemove != null) {
+        databaseToRemove.close();
+      }
     }
   }
 
@@ -400,9 +406,9 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       try {
         if (!newStatus.isHealthy() && databaseWithHealthChange == activeDatabase) {
           databaseWithHealthChange.setGracePeriod();
-          switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, databaseWithHealthChange);
+          postSwitch(switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, databaseWithHealthChange));
         } else if (newStatus.isHealthy() && databaseWithHealthChange != activeDatabase) {
-          failoverIfActiveInoperable();
+          postSwitch(failoverIfActiveInoperable());
         }
       } catch (JedisFailoverException e) {
         // Nothing to switch to right now. Do not propagate: this listener runs inside the
@@ -416,12 +422,15 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
   /**
    * Switches away from an inoperable active database to the best operable one, whatever its weight.
-   * Without one, the failure counts as a failover attempt.
+   * Without one, the failure counts as a failover attempt. The caller runs
+   * {@link #postSwitch(SwitchInfo)} with the result once it holds no lock.
+   * @return what changed, or {@code null} if the active database is operable or did not change
    * @throws JedisFailoverException if there is no operable database
    */
-  private void failoverIfActiveInoperable() {
+  private SwitchInfo failoverIfActiveInoperable() {
     Database current = activeDatabase;
-    if (!current.isHealthy()) switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, current);
+    if (current.isHealthy()) return null;
+    return switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, current);
   }
 
   /**
@@ -567,16 +576,21 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
         log.info("Performing failback from {} to {} (higher weight database available)",
           activeDatabase.getCircuitBreaker().getName(),
           selectedDatabase.getCircuitBreaker().getName());
-        if (setActiveDatabase(selectedDatabase, true)) {
-          onDatabaseSwitch(SwitchReason.FAILBACK, bestCandidate.getKey(), selectedDatabase);
-        }
+        postSwitch(switchActiveDatabase(SwitchReason.FAILBACK, bestCandidate.getKey(),
+          selectedDatabase, true));
       }
     } catch (Exception e) {
       log.error("Error during periodic failback check", e);
     }
   }
 
-  Endpoint switchToHealthyDatabase(SwitchReason reason, Database iterateFrom) {
+  /**
+   * Switches the active database to the best healthy one. The post-switch operations (publishing
+   * the event, draining the old pool) are left to the caller, who runs
+   * {@link #postSwitch(SwitchInfo)} with the result after releasing any lock it holds.
+   * @return what changed, or {@code null} if the active database did not change
+   */
+  SwitchInfo switchToHealthyDatabase(SwitchReason reason, Database iterateFrom) {
     Map.Entry<Endpoint, Database> databaseToIterate = findWeightedHealthyDatabaseToIterate(
       iterateFrom);
     if (databaseToIterate == null) {
@@ -584,12 +598,10 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       handleNoHealthyDatabase();
     }
 
-    Database database = databaseToIterate.getValue();
-    boolean changed = setActiveDatabase(database, false);
-    if (!changed) return null;
-    failoverAttemptCount.set(0);
-    onDatabaseSwitch(reason, databaseToIterate.getKey(), database);
-    return databaseToIterate.getKey();
+    SwitchInfo switchInfo = switchActiveDatabase(reason, databaseToIterate.getKey(),
+      databaseToIterate.getValue(), false);
+    if (switchInfo != null) failoverAttemptCount.set(0);
+    return switchInfo;
   }
 
   private void handleNoHealthyDatabase() {
@@ -640,11 +652,13 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     } else if (activeDatabaseChangeLock.tryLock()) {
       // Never wait for a switch in progress: this command fails anyway, the next ones use the
       // new database
+      SwitchInfo switchInfo;
       try {
-        failoverIfActiveInoperable();
+        switchInfo = failoverIfActiveInoperable();
       } finally {
         activeDatabaseChangeLock.unlock();
       }
+      postSwitch(switchInfo);
     }
   }
 
@@ -713,9 +727,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       throw new JedisValidationException("Provided endpoint: " + endpoint + " is not within "
           + "the configured endpoints. Please use one from the configuration");
     }
-    if (setActiveDatabase(database, true)) {
-      onDatabaseSwitch(SwitchReason.FORCED, endpoint, database);
-    }
+    postSwitch(switchActiveDatabase(SwitchReason.FORCED, endpoint, database, true));
   }
 
   public void forceActiveDatabase(Endpoint endpoint, long forcedActiveDuration) {
@@ -739,43 +751,80 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     setActiveDatabase(endpoint);
   }
 
-  private boolean setActiveDatabase(Database database, boolean validateConnection) {
-    // Database database = databaseEntry.getValue();
+  /**
+   * What a switch of the active database changed. Produced under {@code activeDatabaseChangeLock}
+   * by {@link #switchActiveDatabase}, consumed outside any lock by {@link #postSwitch}.
+   */
+  static final class SwitchInfo {
+    final Database oldDatabase;
+    final SwitchReason reason;
+    final Endpoint newEndpoint;
+    final Database newDatabase;
+
+    SwitchInfo(Database oldDatabase, SwitchReason reason, Endpoint newEndpoint,
+        Database newDatabase) {
+      this.oldDatabase = oldDatabase;
+      this.reason = reason;
+      this.newEndpoint = newEndpoint;
+      this.newDatabase = newDatabase;
+    }
+  }
+
+  /**
+   * Switches the active database under {@code activeDatabaseChangeLock}. Only the optional
+   * validation of the target and the pointer swap happen here; neither user code nor the drain of
+   * the old pool runs under the lock. The switch is effective when this returns.
+   * @return what changed, or {@code null} if the active database did not change
+   */
+  private SwitchInfo switchActiveDatabase(SwitchReason reason, Endpoint endpoint, Database database,
+      boolean validateConnection) {
     // Field-level synchronization is used to avoid the edge case in which
-    // setActiveDatabase() is called at the same time
+    // switchActiveDatabase() is called at the same time
     activeDatabaseChangeLock.lock();
-    Database oldDatabase;
     try {
 
       // Allows an attempt to reset the current database from a FORCED_OPEN to CLOSED state in the
       // event that no failover is possible
-      if (activeDatabase == database && !database.isCBForcedOpen()) return false;
+      if (activeDatabase == database && !database.isCBForcedOpen()) return null;
 
       if (validateConnection) validateTargetConnection(database);
 
       String originalDatabaseName = getDatabaseCircuitBreaker().getName();
 
-      if (activeDatabase == database)
+      if (activeDatabase == database) {
         log.warn("Database/database endpoint '{}' successfully closed its circuit breaker",
           originalDatabaseName);
-      else log.warn("Database/database endpoint successfully updated from '{}' to '{}'",
+        return null;
+      }
+      log.warn("Database/database endpoint successfully updated from '{}' to '{}'",
         originalDatabaseName, database.circuitBreaker.getName());
-      oldDatabase = activeDatabase;
+      Database oldDatabase = activeDatabase;
       activeDatabase = database;
+      return new SwitchInfo(oldDatabase, reason, endpoint, database);
     } finally {
       activeDatabaseChangeLock.unlock();
     }
-    boolean switched = oldDatabase != database;
-    if (switched && this.multiDbConfig.isFastFailover()) {
-      log.info("Forcing disconnect of all active connections in old database: {}",
-        oldDatabase.circuitBreaker.getName());
-      oldDatabase.forceDisconnect();
-      log.info("Disconnected all active connections in old database: {}",
-        oldDatabase.circuitBreaker.getName());
+  }
 
+  /**
+   * Publishes the switch and, with fast failover, drains the old database's pool. Must not be
+   * called while holding a lock: the listener is user code and the drain waits for in-flight
+   * connection attempts to the old database to time out. A {@code null} argument, meaning no switch
+   * happened, is a no-op.
+   */
+  void postSwitch(SwitchInfo switchInfo) {
+    if (switchInfo == null) return;
+    try {
+      onDatabaseSwitch(switchInfo.reason, switchInfo.newEndpoint, switchInfo.newDatabase);
+    } finally {
+      // The listener is user code: the old pool is drained whether or not it threw.
+      if (this.multiDbConfig.isFastFailover()) {
+        String name = switchInfo.oldDatabase.circuitBreaker.getName();
+        log.info("Forcing disconnect of all active connections in old database: {}", name);
+        switchInfo.oldDatabase.forceDisconnect();
+        log.info("Disconnected all active connections in old database: {}", name);
+      }
     }
-    return switched;
-
   }
 
   @Override
@@ -874,6 +923,13 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     return e != null;
   }
 
+  /**
+   * Publishes a switch to the registered listener.
+   * @deprecated Internal to the provider and not meant to be called by applications. It will stop
+   *             being public in a future release; do not rely on it. To be notified of switches,
+   *             register a listener with {@link #setDatabaseSwitchListener(Consumer)}.
+   */
+  @Deprecated
   public void onDatabaseSwitch(SwitchReason reason, Endpoint endpoint, Database database) {
     if (databaseSwitchListener != null) {
       DatabaseSwitchEvent eventArgs = new DatabaseSwitchEvent(reason, endpoint, database);

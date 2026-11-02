@@ -43,6 +43,7 @@ public class JmhMain {
     // runCRC16Benchmarks();
     // runSafeEncoderBenchmarks();
     // runGetSetMixedR90W10Benchmarks();
+    // runCacheHitBenchmarks();
     // runPubSubPushBenchmarks();
     // runSpecificBenchmark("ReadPushesBenchmark");
 
@@ -110,6 +111,15 @@ public class JmhMain {
   private static void runGetSetMixedR90W10Benchmarks() throws RunnerException {
     System.out.println("Running GetSetMixedR90W10 workload benchmarks (requires Redis server)...");
     new Runner(prepareOptions().include(".*GetSetMixedR90W10Benchmark.*").build()).run();
+  }
+
+  /**
+   * Run only the client-side cache hit benchmark (requires live Redis 7.4+ server). Adds the GC
+   * profiler to report allocation per hit. Uses benchmark class defaults for mode and timeUnit.
+   */
+  private static void runCacheHitBenchmarks() throws RunnerException {
+    System.out.println("Running client-side cache hit benchmarks (requires Redis server)...");
+    new Runner(prepareOptions().addProfiler("gc").include(".*benchmark\\.csc\\..*").build()).run();
   }
 
   /**

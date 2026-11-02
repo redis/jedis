@@ -1785,7 +1785,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     when(connection.executeCommand(any(CommandArguments.class)))
         .thenReturn(Arrays.asList(SafeEncoder.encode(cursor), Arrays.asList(SafeEncoder.encode(key1), SafeEncoder.encode(key2))));
 
-    when(connectionProvider.getConnectionMap()).thenAnswer(new Answer<Map<?, ?>>() {
+    when(connectionProvider.getPrimaryNodesConnectionMap()).thenAnswer(new Answer<Map<?, ?>>() {
       @Override
       public Map<?, ?> answer(InvocationOnMock invocationOnMock) {
         return Collections.singletonMap("c", connection);
@@ -1804,7 +1804,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
     assertThat(args.getValue(), hasArguments(Protocol.Command.BLESS, Protocol.Keyword.SCAN,
       RawableFactory.from("0"), BlessFlag.NO_EVICT, Protocol.Keyword.COUNT, RawableFactory.from(10)));
 
-    verify(connectionProvider).getConnectionMap();
+    verify(connectionProvider).getPrimaryNodesConnectionMap();
   }
 
 }

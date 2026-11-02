@@ -825,9 +825,9 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       // The listener is user code: the old pool is drained whether or not it threw.
       if (this.multiDbConfig.isFastFailover()) {
         String name = switchInfo.oldDatabase.circuitBreaker.getName();
-        log.info("Forcing disconnect of all active connections in old connection of database: {}", name);
+        log.info("Fast failover: start draining the pool of previous active database {}", name);
         switchInfo.oldConnectionPool.forceDisconnect();
-        log.info("Disconnected all active connections in old connection of database: {}", name);
+        log.info("Fast failover: drained the pool of previous active database {}", name);
       }
     }
   }

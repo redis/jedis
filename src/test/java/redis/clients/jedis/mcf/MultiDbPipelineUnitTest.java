@@ -1,6 +1,7 @@
 package redis.clients.jedis.mcf;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -240,5 +241,58 @@ public class MultiDbPipelineUnitTest {
 
     verify(poolMock, times(1)).getResource();
     verify(conn, atLeastOnce()).close();
+  }
+
+  /**
+   * Once the batch has been written, the server may already have applied it. A failed read must
+   * complete the buffered responses with the failure and drop the commands, so that close() (or a
+   * later sync()) does not send the batch a second time, possibly to another database.
+   */
+  @Test
+  public void sync_getManyThrows_failsResponsesAndCloseDoesNotResendTheBatch() {
+    JedisConnectionException failure = new JedisConnectionException("read failed");
+    Connection conn = mock(Connection.class);
+    when(conn.ping()).thenReturn(true);
+    when(conn.getMany(anyInt())).thenThrow(failure);
+    doNothing().when(conn).close();
+    when(poolMock.getResource()).thenReturn(conn);
+
+    Response<Long> incr = pipeline.incr("counter");
+    Response<Long> rpush = pipeline.rpush("queue", "job");
+
+    assertSame(failure, assertThrows(JedisConnectionException.class, pipeline::sync));
+    assertSame(failure, assertThrows(JedisConnectionException.class, incr::get));
+    assertSame(failure, assertThrows(JedisConnectionException.class, rpush::get));
+
+    pipeline.close();
+
+    verify(poolMock, times(1)).getResource();
+    verify(conn, times(2)).sendCommand(any(CommandArguments.class));
+    verify(conn, times(1)).getMany(2);
+  }
+
+  /**
+   * A write failure is just as ambiguous: part of the batch may have reached the server before the
+   * connection broke, so it is not replayed either.
+   */
+  @Test
+  public void sync_sendCommandThrows_failsResponsesAndCloseDoesNotResendTheBatch() {
+    JedisConnectionException failure = new JedisConnectionException("network down");
+    Connection conn = mock(Connection.class);
+    when(conn.ping()).thenReturn(true);
+    doThrow(failure).when(conn).sendCommand(any(CommandArguments.class));
+    doNothing().when(conn).close();
+    when(poolMock.getResource()).thenReturn(conn);
+
+    Response<Long> incr = pipeline.incr("counter");
+
+    assertSame(failure, assertThrows(JedisConnectionException.class, pipeline::sync));
+    assertSame(failure, assertThrows(JedisConnectionException.class, incr::get));
+
+    pipeline.close();
+
+    verify(poolMock, times(1)).getResource();
+    verify(conn, times(1)).sendCommand(any(CommandArguments.class));
+    verify(conn, never()).getMany(anyInt());
   }
 }

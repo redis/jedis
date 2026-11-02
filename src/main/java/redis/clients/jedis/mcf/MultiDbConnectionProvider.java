@@ -757,6 +757,10 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
    */
   static final class SwitchInfo {
     final Database oldDatabase;
+    /**
+     * Pool of the old database at switch time: the one drained, whatever the database holds later.
+     */
+    final TrackingConnectionPool oldConnectionPool;
     final SwitchReason reason;
     final Endpoint newEndpoint;
     final Database newDatabase;
@@ -764,6 +768,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     SwitchInfo(Database oldDatabase, SwitchReason reason, Endpoint newEndpoint,
         Database newDatabase) {
       this.oldDatabase = oldDatabase;
+      this.oldConnectionPool = oldDatabase.connectionPool;
       this.reason = reason;
       this.newEndpoint = newEndpoint;
       this.newDatabase = newDatabase;
@@ -820,9 +825,9 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       // The listener is user code: the old pool is drained whether or not it threw.
       if (this.multiDbConfig.isFastFailover()) {
         String name = switchInfo.oldDatabase.circuitBreaker.getName();
-        log.info("Forcing disconnect of all active connections in old database: {}", name);
-        switchInfo.oldDatabase.forceDisconnect();
-        log.info("Disconnected all active connections in old database: {}", name);
+        log.info("Forcing disconnect of all active connections in old connection of database: {}", name);
+        switchInfo.oldConnectionPool.forceDisconnect();
+        log.info("Disconnected all active connections in old connection of database: {}", name);
       }
     }
   }
@@ -996,6 +1001,11 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       return connectionPool.getResource();
     }
 
+    /**
+     * @deprecated The pool is an implementation detail of the database and will become internal in
+     *             a future release; do not rely on it.
+     */
+    @Deprecated
     @VisibleForTesting
     public ConnectionPool getConnectionPool() {
       return connectionPool;
@@ -1089,6 +1099,10 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       return multiDbConfig.isFailbackSupported();
     }
 
+    /**
+     * @deprecated Not used by Jedis any more and will be removed entirely in a future release.
+     */
+    @Deprecated
     public void forceDisconnect() {
       connectionPool.forceDisconnect();
     }

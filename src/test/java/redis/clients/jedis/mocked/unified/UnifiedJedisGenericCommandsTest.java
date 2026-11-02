@@ -34,6 +34,7 @@ import redis.clients.jedis.params.SortingParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.args.BlessFlag;
+import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.BlessScanIteration;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.args.RawableFactory;
@@ -1638,7 +1639,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testBlessSetBinary() {
-    byte[] key = "key1".getBytes();
+    byte[] key = SafeEncoder.encode("key1");
 
     when(commandObjects.blessSet(key, BlessFlag.NO_EVICT)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(0L);
@@ -1666,7 +1667,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testBlessClearBinary() {
-    byte[] key = "key1".getBytes();
+    byte[] key = SafeEncoder.encode("key1");
 
     when(commandObjects.blessClear(key, BlessFlag.NO_EVICT)).thenReturn(longCommandObject);
     when(commandExecutor.executeCommand(longCommandObject)).thenReturn(1L);
@@ -1696,8 +1697,8 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testBlessGetBinary() {
-    byte[] key = "key1".getBytes();
-    List<byte[]> expected = Collections.singletonList("NO-EVICT".getBytes());
+    byte[] key = SafeEncoder.encode("key1");
+    List<byte[]> expected = Collections.singletonList(SafeEncoder.encode("NO-EVICT"));
 
     when(commandObjects.blessGet(key)).thenReturn(listBytesCommandObject);
     when(commandExecutor.executeCommand(listBytesCommandObject)).thenReturn(expected);
@@ -1744,8 +1745,8 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testBlessScanBinary() {
-    byte[] cursor = "0".getBytes();
-    ScanResult<byte[]> expected = new ScanResult<>(cursor, Arrays.asList("key1".getBytes(), "key2".getBytes()));
+    byte[] cursor = SafeEncoder.encode("0");
+    ScanResult<byte[]> expected = new ScanResult<>(cursor, Arrays.asList(SafeEncoder.encode("key1"), SafeEncoder.encode("key2")));
 
     when(commandObjects.blessScan(cursor, BlessFlag.NO_EVICT)).thenReturn(scanResultBytesCommandObject);
     when(commandExecutor.executeCommand(scanResultBytesCommandObject)).thenReturn(expected);
@@ -1760,8 +1761,8 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testBlessScanBinaryWithCount() {
-    byte[] cursor = "0".getBytes();
-    ScanResult<byte[]> expected = new ScanResult<>(cursor, Arrays.asList("key1".getBytes(), "key2".getBytes()));
+    byte[] cursor = SafeEncoder.encode("0");
+    ScanResult<byte[]> expected = new ScanResult<>(cursor, Arrays.asList(SafeEncoder.encode("key1"), SafeEncoder.encode("key2")));
 
     when(commandObjects.blessScan(cursor, BlessFlag.NO_EVICT, 10)).thenReturn(scanResultBytesCommandObject);
     when(commandExecutor.executeCommand(scanResultBytesCommandObject)).thenReturn(expected);
@@ -1782,7 +1783,7 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
     Connection connection = mock(Connection.class);
     when(connection.executeCommand(any(CommandArguments.class)))
-        .thenReturn(Arrays.asList(cursor.getBytes(), Arrays.asList(key1.getBytes(), key2.getBytes())));
+        .thenReturn(Arrays.asList(SafeEncoder.encode(cursor), Arrays.asList(SafeEncoder.encode(key1), SafeEncoder.encode(key2))));
 
     when(connectionProvider.getConnectionMap()).thenAnswer(new Answer<Map<?, ?>>() {
       @Override

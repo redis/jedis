@@ -19,6 +19,7 @@ import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.args.BlessFlag;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class PipeliningBaseGenericCommandsTest extends PipeliningBaseMockedTestBase {
 
@@ -1181,7 +1182,7 @@ public class PipeliningBaseGenericCommandsTest extends PipeliningBaseMockedTestB
 
   @Test
   public void testBlessSetBinary() {
-    byte[] key = "key1".getBytes();
+    byte[] key = SafeEncoder.encode("key1");
     when(commandObjects.blessSet(key, BlessFlag.NO_EVICT)).thenReturn(longCommandObject);
 
     Response<Long> response = pipeliningBase.blessSet(key, BlessFlag.NO_EVICT);
@@ -1202,7 +1203,7 @@ public class PipeliningBaseGenericCommandsTest extends PipeliningBaseMockedTestB
 
   @Test
   public void testBlessClearBinary() {
-    byte[] key = "key1".getBytes();
+    byte[] key = SafeEncoder.encode("key1");
     when(commandObjects.blessClear(key, BlessFlag.NO_EVICT)).thenReturn(longCommandObject);
 
     Response<Long> response = pipeliningBase.blessClear(key, BlessFlag.NO_EVICT);
@@ -1223,7 +1224,7 @@ public class PipeliningBaseGenericCommandsTest extends PipeliningBaseMockedTestB
 
   @Test
   public void testBlessGetBinary() {
-    byte[] key = "key1".getBytes();
+    byte[] key = SafeEncoder.encode("key1");
     when(commandObjects.blessGet(key)).thenReturn(listBytesCommandObject);
 
     Response<List<byte[]>> response = pipeliningBase.blessGet(key);
@@ -1254,7 +1255,7 @@ public class PipeliningBaseGenericCommandsTest extends PipeliningBaseMockedTestB
 
   @Test
   public void testBlessScanBinary() {
-    byte[] cursor = "0".getBytes();
+    byte[] cursor = SafeEncoder.encode("0");
     when(commandObjects.blessScan(cursor, BlessFlag.NO_EVICT)).thenReturn(scanResultBytesCommandObject);
 
     Response<ScanResult<byte[]>> response = pipeliningBase.blessScan(cursor, BlessFlag.NO_EVICT);
@@ -1265,7 +1266,7 @@ public class PipeliningBaseGenericCommandsTest extends PipeliningBaseMockedTestB
 
   @Test
   public void testBlessScanBinaryWithCount() {
-    byte[] cursor = "0".getBytes();
+    byte[] cursor = SafeEncoder.encode("0");
     when(commandObjects.blessScan(cursor, BlessFlag.NO_EVICT, 10)).thenReturn(scanResultBytesCommandObject);
 
     Response<ScanResult<byte[]>> response = pipeliningBase.blessScan(cursor, BlessFlag.NO_EVICT, 10);

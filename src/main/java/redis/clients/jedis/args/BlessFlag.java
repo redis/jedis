@@ -1,14 +1,15 @@
 package redis.clients.jedis.args;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
  * Protection flag a key can carry via the {@code BLESS} command family. Flags are independent of
  * each other and form an open set: {@link #NO_EVICT} is the only one the server defines today, and
- * {@link #of(String)} forwards any other token verbatim so newer server flags can be used without a
- * client upgrade. Unknown tokens are rejected by the server with a syntax error.
+ * {@link #of(String)} accepts any other token so newer server flags can be used without a client
+ * upgrade. Unknown tokens are rejected by the server with a syntax error.
  * @since 8.1
  */
 public final class BlessFlag implements Rawable {
@@ -21,11 +22,14 @@ public final class BlessFlag implements Rawable {
   private final byte[] raw;
 
   private BlessFlag(String token) {
-    this.raw = SafeEncoder.encode(token);
+    // the server matches tokens case-insensitively; normalise so equals() agrees with it
+    this.raw = SafeEncoder.encode(token.toUpperCase(Locale.ENGLISH));
   }
 
   /**
-   * A flag from its wire token, for example {@code "NO-EVICT"}. No client-side validation is done.
+   * A flag from its wire token, for example {@code "NO-EVICT"}. The token is upper-cased, mirroring
+   * the server's case-insensitive matching, so {@code of("no-evict")} equals {@link #NO_EVICT}. No
+   * other client-side validation is done.
    * @param token the flag token as accepted by the server
    * @return the flag
    */

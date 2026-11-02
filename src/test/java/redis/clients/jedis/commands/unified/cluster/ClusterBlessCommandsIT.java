@@ -7,10 +7,12 @@ import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 
 import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import redis.clients.jedis.AbstractPipeline;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.args.BlessFlag;
@@ -20,6 +22,8 @@ import redis.clients.jedis.util.SafeEncoder;
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#respVersions")
 public class ClusterBlessCommandsIT extends BlessCommandsTestBase {
+
+  private static final String BLESS_SCAN_REJECTED = "BLESS SCAN is rejected in cluster mode";
 
   public ClusterBlessCommandsIT(RedisProtocol protocol) {
     super(protocol);
@@ -52,27 +56,41 @@ public class ClusterBlessCommandsIT extends BlessCommandsTestBase {
   }
 
   @Test
+  public void blessScanIsRejectedInClusterPipeline() {
+    try (AbstractPipeline pipeline = jedis.pipelined()) {
+      assertThrows(UnsupportedOperationException.class,
+        () -> pipeline.blessScan(SCAN_POINTER_START, BlessFlag.NO_EVICT));
+      assertThrows(UnsupportedOperationException.class,
+        () -> pipeline.blessScan(SCAN_POINTER_START, BlessFlag.NO_EVICT, 10));
+      assertThrows(UnsupportedOperationException.class,
+        () -> pipeline.blessScan(SCAN_POINTER_START_BINARY, BlessFlag.NO_EVICT));
+      assertThrows(UnsupportedOperationException.class,
+        () -> pipeline.blessScan(SCAN_POINTER_START_BINARY, BlessFlag.NO_EVICT, 10));
+    }
+  }
+
+  @Test
+  @Disabled(BLESS_SCAN_REJECTED)
   @Override
   public void blessScanIteratesBlessedKeysOnly() {
-    blessScanIsRejectedInClusterMode();
   }
 
   @Test
+  @Disabled(BLESS_SCAN_REJECTED)
   @Override
   public void blessScanReturnsCompleteCursorWhenNothingIsBlessed() {
-    blessScanIsRejectedInClusterMode();
   }
 
   @Test
+  @Disabled(BLESS_SCAN_REJECTED)
   @Override
   public void blessScanCountHintMustBePositive() {
-    blessScanIsRejectedInClusterMode();
   }
 
   @Test
   @Override
   public void blessBinary() {
-    byte[] key = SafeEncoder.encode("session:alice");
+    byte[] key = keys.bKey("session:alice");
     jedis.set(key, SafeEncoder.encode("v"));
 
     assertEquals(1L, jedis.blessSet(key, BlessFlag.NO_EVICT));

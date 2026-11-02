@@ -44,7 +44,6 @@ import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.IOUtils;
 import redis.clients.jedis.util.KeyValue;
-import redis.clients.jedis.args.BlessFlag;
 
 public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
     SampleKeyedCommands, SampleBinaryKeyedCommands, RedisModuleCommands,
@@ -756,8 +755,8 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   /**
-   * Iterate the keys carrying {@code flag} on every node known to this client, each with its own
-   * {@code BLESS SCAN} cursor. This is the cluster-safe counterpart of
+   * Iterate the keys carrying {@code flag} on every primary node known to this client, each with
+   * its own {@code BLESS SCAN} cursor. This is the cluster-safe counterpart of
    * {@link #blessScan(String, BlessFlag, int)}.
    * @param batchCount COUNT for each batch execution
    * @param flag the flag to filter on

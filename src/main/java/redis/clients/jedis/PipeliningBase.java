@@ -27,7 +27,6 @@ import redis.clients.jedis.search.schemafields.SchemaField;
 import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.util.CompareCondition;
 import redis.clients.jedis.util.KeyValue;
-import redis.clients.jedis.args.BlessFlag;
 
 public abstract class PipeliningBase
     implements PipelineCommands, PipelineBinaryCommands, RedisModulePipelineCommands {

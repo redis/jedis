@@ -10,9 +10,10 @@ import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.JedisCommandIterationBase;
 
 /**
- * Full {@code BLESS SCAN} iteration over every node known to the connection provider, each with its
- * own cursor. This is the cluster-safe way to enumerate blessed keys, since {@code BLESS SCAN} only
- * covers the node that receives it.
+ * Full {@code BLESS SCAN} iteration over every primary node known to the connection provider, each
+ * with its own cursor. This is the cluster-safe way to enumerate blessed keys, since
+ * {@code BLESS SCAN} only covers the node that receives it. Obtain one via
+ * {@link UnifiedJedis#blessScanIteration(int, BlessFlag)}.
  * @since 8.1
  */
 public class BlessScanIteration extends JedisCommandIterationBase<ScanResult<String>, String> {
@@ -20,7 +21,7 @@ public class BlessScanIteration extends JedisCommandIterationBase<ScanResult<Str
   private final BlessFlag flag;
   private final int count;
 
-  public BlessScanIteration(ConnectionProvider connectionProvider, int batchCount, BlessFlag flag) {
+  BlessScanIteration(ConnectionProvider connectionProvider, int batchCount, BlessFlag flag) {
     super(connectionProvider, BuilderFactory.SCAN_RESPONSE);
     this.flag = flag;
     this.count = batchCount;

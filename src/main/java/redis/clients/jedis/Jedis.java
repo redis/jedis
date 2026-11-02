@@ -35,7 +35,6 @@ import redis.clients.jedis.resps.*;
 import redis.clients.jedis.util.JedisURIHelper;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.Pool;
-import redis.clients.jedis.args.BlessFlag;
 
 /**
  * Jedis is a lightweight Redis client that uses a single, non-pooled connection to Redis.

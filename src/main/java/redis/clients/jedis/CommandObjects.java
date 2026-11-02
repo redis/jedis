@@ -35,7 +35,6 @@ import redis.clients.jedis.timeseries.*;
 import redis.clients.jedis.timeseries.TimeSeriesProtocol.*;
 import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.CompareCondition;
-import redis.clients.jedis.args.BlessFlag;
 
 public class CommandObjects {
 

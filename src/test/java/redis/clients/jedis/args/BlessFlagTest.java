@@ -2,7 +2,6 @@ package redis.clients.jedis.args;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import org.junit.jupiter.api.Test;
@@ -17,10 +16,12 @@ public class BlessFlagTest {
   }
 
   @Test
-  public void ofForwardsTokenVerbatim() {
+  public void ofUpperCasesToken() {
     BlessFlag future = BlessFlag.of("SOME-FUTURE-FLAG");
     assertArrayEquals(SafeEncoder.encode("SOME-FUTURE-FLAG"), future.getRaw());
     assertEquals("SOME-FUTURE-FLAG", future.toString());
+    assertArrayEquals(SafeEncoder.encode("SOME-FUTURE-FLAG"),
+      BlessFlag.of("some-future-flag").getRaw());
   }
 
   @Test
@@ -30,9 +31,10 @@ public class BlessFlagTest {
   }
 
   @Test
-  public void equalityIsByToken() {
+  public void equalityIsByTokenIgnoringCase() {
     assertEquals(BlessFlag.NO_EVICT, BlessFlag.of("NO-EVICT"));
     assertEquals(BlessFlag.NO_EVICT.hashCode(), BlessFlag.of("NO-EVICT").hashCode());
-    assertNotEquals(BlessFlag.NO_EVICT, BlessFlag.of("no-evict"));
+    assertEquals(BlessFlag.NO_EVICT, BlessFlag.of("no-evict"));
+    assertEquals(BlessFlag.NO_EVICT.hashCode(), BlessFlag.of("no-evict").hashCode());
   }
 }

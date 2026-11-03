@@ -121,32 +121,6 @@ public final class BuilderFactory {
 
   };
 
-  /**
-   * Same as {@link #LONG_LIST}, but an error the server reported for a single element of the array
-   * is thrown instead of being left in the list.
-   */
-  public static final Builder<List<Long>> LONG_LIST_THROWING_ERROR = new Builder<List<Long>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<Long> build(Object data) {
-      if (null == data) {
-        return null;
-      }
-      for (Object element : (List<Object>) data) {
-        if (element instanceof JedisDataException) {
-          throw (JedisDataException) element;
-        }
-      }
-      return (List<Long>) data;
-    }
-
-    @Override
-    public String toString() {
-      return "List<Long>";
-    }
-
-  };
-
   public static final Builder<Double> DOUBLE = new Builder<Double>() {
     @Override
     public Double build(Object data) {
@@ -200,6 +174,28 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "List<Boolean>";
+    }
+  };
+
+  /**
+   * Builds an array reply whose elements the server may reject one by one. A rejected element is
+   * handed over in its position as the {@link JedisDataException} the server reported, so the
+   * caller decides whether to skip it, map it or fail the whole call; every other element is built
+   * with {@link #LONG}.
+   */
+  public static final Builder<List<Object>> LONG_WITH_ERROR_LIST = new Builder<List<Object>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Object> build(Object data) {
+      if (null == data) return null;
+      return ((List<Object>) data).stream()
+          .map((val) -> (val instanceof JedisDataException) ? val : LONG.build(val))
+          .collect(Collectors.toList());
+    }
+
+    @Override
+    public String toString() {
+      return "List<Long|JedisDataException>";
     }
   };
 

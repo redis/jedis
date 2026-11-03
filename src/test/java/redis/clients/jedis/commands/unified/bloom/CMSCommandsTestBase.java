@@ -15,8 +15,10 @@ import org.junit.jupiter.api.Tag;
 
 import io.redis.test.annotations.SinceRedisVersion;
 
+import redis.clients.jedis.AbstractPipeline;
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.Response;
 import redis.clients.jedis.bloom.CmsCellSize;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisDataException;
@@ -142,6 +144,23 @@ public abstract class CMSCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
     // items before the failing one were still applied
     assertEquals(Arrays.asList(1L, 250L), jedis.cmsQuery("cms6", "bar", "foo"));
+  }
+
+  @Test
+  @SinceRedisVersion("8.11.0")
+  public void testIncrByPipelinedThrowsOnGet() {
+    jedis.cmsInitByDim("cms7", 16L, 4L, CmsCellSize.ONE_BYTE);
+    jedis.cmsIncrBy("cms7", "foo", 250L);
+
+    Map<String, Long> itemIncrements = new LinkedHashMap<>();
+    itemIncrements.put("foo", 10L);
+    try (AbstractPipeline pipeline = jedis.pipelined()) {
+      Response<List<Long>> response = pipeline.cmsIncrBy("cms7", itemIncrements);
+      pipeline.sync();
+
+      JedisDataException thrown = assertThrows(JedisDataException.class, response::get);
+      assertEquals("CMS: INCRBY overflow", thrown.getMessage());
+    }
   }
 
   @Test

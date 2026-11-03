@@ -14,9 +14,9 @@ import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BuilderTest {
@@ -179,28 +179,28 @@ public class BuilderTest {
   }
 
   @Test
-  public void longListThrowingErrorPassesPlainIntegers() {
+  public void longWithErrorListPassesPlainIntegers() {
     Object data = parseRespResponse("*2\r\n:10\r\n:15\r\n");
 
-    List<Long> result = BuilderFactory.LONG_LIST_THROWING_ERROR.build(data);
-
-    assertEquals(Arrays.asList(10L, 15L), result);
+    assertEquals(Arrays.asList(10L, 15L), BuilderFactory.LONG_WITH_ERROR_LIST.build(data));
   }
 
   @Test
-  public void longListThrowingErrorRethrowsErrorElement() {
-    // CMS.INCRBY style reply: the first item was applied, the second one was rejected
-    Object data = parseRespResponse("*2\r\n:1\r\n-CMS: INCRBY overflow\r\n");
+  public void longWithErrorListHandsOverARejectedElementInPlace() {
+    Object data = parseRespResponse("*3\r\n:1\r\n-CMS: INCRBY overflow\r\n:2\r\n");
 
-    JedisDataException thrown = assertThrows(JedisDataException.class,
-      () -> BuilderFactory.LONG_LIST_THROWING_ERROR.build(data));
+    List<Object> result = BuilderFactory.LONG_WITH_ERROR_LIST.build(data);
 
-    assertEquals("CMS: INCRBY overflow", thrown.getMessage());
+    assertEquals(3, result.size());
+    assertEquals(1L, result.get(0));
+    JedisDataException error = assertInstanceOf(JedisDataException.class, result.get(1));
+    assertEquals("CMS: INCRBY overflow", error.getMessage());
+    assertEquals(2L, result.get(2));
   }
 
   @Test
-  public void longListThrowingErrorKeepsNull() {
-    assertNull(BuilderFactory.LONG_LIST_THROWING_ERROR.build(null));
+  public void longWithErrorListKeepsNull() {
+    assertNull(BuilderFactory.LONG_WITH_ERROR_LIST.build(null));
   }
 
 }

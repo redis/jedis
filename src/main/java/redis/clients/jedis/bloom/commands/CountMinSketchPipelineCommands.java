@@ -26,8 +26,10 @@ public interface CountMinSketchPipelineCommands {
 
   /**
    * Pipeline variant of {@link CountMinSketchCommands#cmsIncrBy(String, Map)}. If the server
-   * rejects any of the increments, {@link Response#get()} throws the corresponding
-   * {@link redis.clients.jedis.exceptions.JedisDataException}.
+   * rejects any of the increments, the first {@link Response#get()} throws the corresponding
+   * {@link redis.clients.jedis.exceptions.JedisDataException}; later calls on the same handle
+   * return {@code null}. {@code syncAndReturnAll()} and {@code exec()} deliver the exception as the
+   * element in the command's position instead.
    */
   Response<List<Long>> cmsIncrBy(String key, Map<String, Long> itemIncrements);
 

@@ -130,21 +130,23 @@ public class MultiDbConnectionProviderTest {
 
       // A connection the application still holds on the database being left
       Connection held = initial.getConnection();
+      ConnectionPool initialPool = initial.getConnectionPool();
       AtomicBoolean heldConnectedAtEvent = new AtomicBoolean(false);
-      AtomicBoolean oldPoolClosedAtEvent = new AtomicBoolean(true);
+      AtomicBoolean oldPoolClosedAtEvent = new AtomicBoolean(false);
       localProvider.setDatabaseSwitchListener(e -> {
         heldConnectedAtEvent.set(held.isConnected());
-        oldPoolClosedAtEvent.set(initial.getConnectionPool().isClosed());
+        oldPoolClosedAtEvent.set(initialPool.isClosed());
       });
 
       MultiDbConnectionProviderHelper.switchToHealthyDatabase(localProvider,
         SwitchReason.HEALTH_CHECK, initial);
 
-      // The listener marks the switch itself; the forced disconnect of the old pool follows it
+      // The pool is retired with the swap, but the listener marks the switch itself: connections
+      // handed out before it are force-closed only after the listener returns
       assertTrue(heldConnectedAtEvent.get());
-      assertFalse(oldPoolClosedAtEvent.get());
+      assertTrue(oldPoolClosedAtEvent.get());
       assertFalse(held.isConnected());
-      assertTrue(initial.getConnectionPool().isClosed());
+      assertTrue(initialPool.isClosed());
       held.close();
     }
   }
@@ -177,6 +179,47 @@ public class MultiDbConnectionProviderTest {
       assertSame(other, localProvider.getDatabase());
       assertFalse(held.isConnected());
       assertTrue(initial.getConnectionPool().isClosed());
+      held.close();
+    }
+  }
+
+  @Test
+  public void reactivatedDatabaseIsNotDrainedWithItsRetiredPool() {
+    DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
+    databaseConfigs[0] = DatabaseConfig.builder(endpointStandalone0.getHostAndPort(),
+      endpointStandalone0.getClientConfigBuilder().build()).weight(0.5f).build();
+    databaseConfigs[1] = DatabaseConfig.builder(endpointStandalone1.getHostAndPort(),
+      endpointStandalone1.getClientConfigBuilder().build()).weight(0.3f).build();
+    try (MultiDbConnectionProvider localProvider = new MultiDbConnectionProvider(
+        new MultiDbConfig.Builder(databaseConfigs).fastFailover(true).build())) {
+      Database initial = localProvider.getDatabase(endpointStandalone0.getHostAndPort());
+      Database other = localProvider.getDatabase(endpointStandalone1.getHostAndPort());
+      waitForDatabaseToGetHealthy(initial, other);
+      assertSame(initial, localProvider.getDatabase());
+
+      Connection held = initial.getConnection();
+      ConnectionPool retiredPool = initial.getConnectionPool();
+      // The listener of the first switch reverses it, before the drain of that switch has run
+      AtomicBoolean reversed = new AtomicBoolean(false);
+      localProvider.setDatabaseSwitchListener(e -> {
+        if (reversed.compareAndSet(false, true)) {
+          localProvider.setActiveDatabase(endpointStandalone0.getHostAndPort());
+        }
+      });
+
+      MultiDbConnectionProviderHelper.switchToHealthyDatabase(localProvider,
+        SwitchReason.HEALTH_CHECK, initial);
+
+      // Active again on a fresh pool the late drain could not reach; only the retired pool and the
+      // connection handed out from it are gone
+      assertSame(initial, localProvider.getDatabase());
+      assertTrue(retiredPool.isClosed());
+      assertFalse(held.isConnected());
+      assertNotSame(retiredPool, initial.getConnectionPool());
+      assertFalse(initial.getConnectionPool().isClosed());
+      try (Connection fresh = initial.getConnection()) {
+        assertTrue(fresh.isConnected());
+      }
       held.close();
     }
   }

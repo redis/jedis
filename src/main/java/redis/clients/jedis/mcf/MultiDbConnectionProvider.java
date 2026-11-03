@@ -758,7 +758,8 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   static final class SwitchInfo {
     final Database oldDatabase;
     /**
-     * Pool of the old database at switch time: the one drained, whatever the database holds later.
+     * Pool the old database was serving from at the swap. With fast failover it is closed at the
+     * swap and drained in {@link #postSwitch}; the database builds a fresh pool on its next borrow.
      */
     final TrackingConnectionPool oldConnectionPool;
     final SwitchReason reason;
@@ -805,14 +806,21 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
         originalDatabaseName, database.circuitBreaker.getName());
       Database oldDatabase = activeDatabase;
       activeDatabase = database;
-      return new SwitchInfo(oldDatabase, reason, endpoint, database);
+      SwitchInfo switchInfo = new SwitchInfo(oldDatabase, reason, endpoint, database);
+      if (multiDbConfig.isFastFailover()) {
+        // Retire the pool together with the swap. Any borrow on the old database from here on,
+        // including after it becomes active again, builds a fresh pool, so the drain in postSwitch
+        // can only reach connections handed out before this point.
+        switchInfo.oldConnectionPool.close();
+      }
+      return switchInfo;
     } finally {
       activeDatabaseChangeLock.unlock();
     }
   }
 
   /**
-   * Publishes the switch and, with fast failover, drains the old database's pool. Must not be
+   * Publishes the switch and, with fast failover, drains the pool retired at the swap. Must not be
    * called while holding a lock: the listener is user code and the drain waits for in-flight
    * connection attempts to the old database to time out. A {@code null} argument, meaning no switch
    * happened, is a no-op.

@@ -111,30 +111,45 @@ public interface KeyPipelineCommands {
 
   /**
    * Pipeline variant of {@link KeyCommands#blessSet(String, BlessFlag)}.
+   * @param key the key to protect
+   * @param flag the flag to turn on
+   * @return 1 if the flag was turned on, 0 if it was already on
    * @since 8.1
    */
   Response<Long> blessSet(String key, BlessFlag flag);
 
   /**
    * Pipeline variant of {@link KeyCommands#blessClear(String, BlessFlag)}.
+   * @param key the key to unprotect
+   * @param flag the flag to turn off
+   * @return 1 if the flag was turned off, 0 if it was already off
    * @since 8.1
    */
   Response<Long> blessClear(String key, BlessFlag flag);
 
   /**
    * Pipeline variant of {@link KeyCommands#blessGet(String)}.
+   * @param key the key to query
+   * @return the active flags, empty if the key carries none
    * @since 8.1
    */
   Response<List<BlessFlag>> blessGet(String key);
 
   /**
    * Pipeline variant of {@link KeyCommands#blessScan(String, BlessFlag)}.
+   * @param cursor the cursor, {@code "0"} to start an iteration
+   * @param flag the flag to filter on
+   * @return the next cursor and the keys of this batch
    * @since 8.1
    */
   Response<ScanResult<String>> blessScan(String cursor, BlessFlag flag);
 
   /**
    * Pipeline variant of {@link KeyCommands#blessScan(String, BlessFlag, int)}.
+   * @param cursor the cursor, {@code "0"} to start an iteration
+   * @param flag the flag to filter on
+   * @param count hint for how many entries to visit per call, must be positive
+   * @return the next cursor and the keys of this batch
    * @since 8.1
    */
   Response<ScanResult<String>> blessScan(String cursor, BlessFlag flag, int count);

@@ -2,7 +2,6 @@ package redis.clients.jedis.commands.unified;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
@@ -159,18 +158,18 @@ public abstract class BlessCommandsTestBase extends UnifiedJedisCommandsTestBase
     assertEquals(blessed, onlyTestKeys(scanned));
   }
 
+  /**
+   * COUNT is only a hint for how many entries to visit per call, not a batch size: the server may
+   * return every blessed key in one round trip, so nothing is asserted about the number of batches.
+   */
   private Set<String> collectBlessScan(int count) {
     Set<String> all = new HashSet<>();
     String cursor = SCAN_POINTER_START;
-    int batches = 0;
     do {
       ScanResult<String> batch = jedis.blessScan(cursor, BlessFlag.NO_EVICT, count);
       all.addAll(batch.getResult());
       cursor = batch.getCursor();
-      batches++;
     } while (!SCAN_POINTER_START.equals(cursor));
-    // COUNT 1 with two blessed keys must take more than one round trip
-    assertFalse(batches < 2, "expected a multi-batch iteration, got " + batches);
     return onlyTestKeys(all);
   }
 

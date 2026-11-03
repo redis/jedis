@@ -2,7 +2,6 @@ package redis.clients.jedis;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
-import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.resps.StreamEntry;
 import redis.clients.jedis.resps.StreamEntryBinary;
 import redis.clients.jedis.util.RedisInputStream;
@@ -10,13 +9,10 @@ import redis.clients.jedis.util.RedisInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BuilderTest {
@@ -176,31 +172,6 @@ public class BuilderTest {
     assertEquals("1234-12", streamEntry.getID().toString());
     assertEquals(Long.valueOf(5000), streamEntry.getMillisElapsedFromDelivery());
     assertEquals(Long.valueOf(2), streamEntry.getDeliveredCount());
-  }
-
-  @Test
-  public void longWithErrorListPassesPlainIntegers() {
-    Object data = parseRespResponse("*2\r\n:10\r\n:15\r\n");
-
-    assertEquals(Arrays.asList(10L, 15L), BuilderFactory.LONG_WITH_ERROR_LIST.build(data));
-  }
-
-  @Test
-  public void longWithErrorListHandsOverARejectedElementInPlace() {
-    Object data = parseRespResponse("*3\r\n:1\r\n-CMS: INCRBY overflow\r\n:2\r\n");
-
-    List<Object> result = BuilderFactory.LONG_WITH_ERROR_LIST.build(data);
-
-    assertEquals(3, result.size());
-    assertEquals(1L, result.get(0));
-    JedisDataException error = assertInstanceOf(JedisDataException.class, result.get(1));
-    assertEquals("CMS: INCRBY overflow", error.getMessage());
-    assertEquals(2L, result.get(2));
-  }
-
-  @Test
-  public void longWithErrorListKeepsNull() {
-    assertNull(BuilderFactory.LONG_WITH_ERROR_LIST.build(null));
   }
 
 }

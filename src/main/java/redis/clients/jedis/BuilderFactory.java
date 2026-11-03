@@ -177,28 +177,6 @@ public final class BuilderFactory {
     }
   };
 
-  /**
-   * Builds an array reply whose elements the server may reject one by one. A rejected element is
-   * handed over in its position as the {@link JedisDataException} the server reported, so the
-   * caller decides whether to skip it, map it or fail the whole call; every other element is built
-   * with {@link #LONG}.
-   */
-  public static final Builder<List<Object>> LONG_WITH_ERROR_LIST = new Builder<List<Object>>() {
-    @Override
-    @SuppressWarnings("unchecked")
-    public List<Object> build(Object data) {
-      if (null == data) return null;
-      return ((List<Object>) data).stream()
-          .map((val) -> (val instanceof JedisDataException) ? val : LONG.build(val))
-          .collect(Collectors.toList());
-    }
-
-    @Override
-    public String toString() {
-      return "List<Long|JedisDataException>";
-    }
-  };
-
   public static final Builder<List<Boolean>> BOOLEAN_WITH_ERROR_LIST = new Builder<List<Boolean>>() {
     @Override
     @SuppressWarnings("unchecked")

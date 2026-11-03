@@ -1,6 +1,5 @@
 package redis.clients.jedis.bloom;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import redis.clients.jedis.Builder;
@@ -15,24 +14,22 @@ public final class RedisBloomBuilderFactory {
 
   /**
    * Counts returned by {@code CMS.INCRBY}. The server rejects an increment per item, with an error
-   * element in place of its count, and by definition the command then fails as a whole: the first
-   * error handed over by {@link BuilderFactory#LONG_WITH_ERROR_LIST} is thrown.
+   * element in place of its count, and the command then fails as a whole: the first such error is
+   * thrown instead of being left in the list as {@link BuilderFactory#LONG_LIST} would.
    */
   public static final Builder<List<Long>> CMS_INCRBY_LONG_LIST = new Builder<List<Long>>() {
     @Override
+    @SuppressWarnings("unchecked")
     public List<Long> build(Object data) {
-      List<Object> elements = BuilderFactory.LONG_WITH_ERROR_LIST.build(data);
-      if (elements == null) {
+      if (null == data) {
         return null;
       }
-      List<Long> counts = new ArrayList<>(elements.size());
-      for (Object element : elements) {
+      for (Object element : (List<Object>) data) {
         if (element instanceof JedisDataException) {
           throw (JedisDataException) element;
         }
-        counts.add((Long) element);
       }
-      return counts;
+      return (List<Long>) data;
     }
 
     @Override

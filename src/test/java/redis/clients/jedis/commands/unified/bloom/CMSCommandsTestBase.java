@@ -127,6 +127,25 @@ public abstract class CMSCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
   @Test
   @SinceRedisVersion("8.11.0")
+  public void testIncrByMultipleArgsThrowsPerItemError() {
+    jedis.cmsInitByDim("cms6", 16L, 4L, CmsCellSize.ONE_BYTE);
+    jedis.cmsIncrBy("cms6", "foo", 250L);
+
+    // the server reports the overflow for "foo" inside the array reply; it must surface as an
+    // exception rather than an exception object hidden in the List<Long>
+    Map<String, Long> itemIncrements = new LinkedHashMap<>();
+    itemIncrements.put("bar", 1L);
+    itemIncrements.put("foo", 10L);
+    JedisDataException thrown = assertThrows(JedisDataException.class,
+      () -> jedis.cmsIncrBy("cms6", itemIncrements));
+    assertEquals("CMS: INCRBY overflow", thrown.getMessage());
+
+    // items before the failing one were still applied
+    assertEquals(Arrays.asList(1L, 250L), jedis.cmsQuery("cms6", "bar", "foo"));
+  }
+
+  @Test
+  @SinceRedisVersion("8.11.0")
   public void testMergeRequiresSameCellSize() {
     jedis.cmsInitByDim("{key}A", 1000L, 5L, CmsCellSize.TWO_BYTES);
     jedis.cmsInitByDim("{key}B", 1000L, 5L, CmsCellSize.FOUR_BYTES);

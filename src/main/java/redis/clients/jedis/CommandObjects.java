@@ -5119,7 +5119,7 @@ public class CommandObjects {
   public final CommandObject<List<Long>> cmsIncrBy(String key, Map<String, Long> itemIncrements) {
     CommandArguments args = commandArguments(CountMinSketchCommand.INCRBY).key(key);
     itemIncrements.entrySet().forEach(entry -> args.add(entry.getKey()).add(entry.getValue()));
-    return new CommandObject<>(args, BuilderFactory.LONG_LIST);
+    return new CommandObject<>(args, BuilderFactory.LONG_LIST_THROWING_ERROR);
   }
 
   public final CommandObject<List<Long>> cmsQuery(String key, String... items) {

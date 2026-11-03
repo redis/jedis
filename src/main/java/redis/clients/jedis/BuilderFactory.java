@@ -121,6 +121,32 @@ public final class BuilderFactory {
 
   };
 
+  /**
+   * Same as {@link #LONG_LIST}, but an error the server reported for a single element of the array
+   * is thrown instead of being left in the list.
+   */
+  public static final Builder<List<Long>> LONG_LIST_THROWING_ERROR = new Builder<List<Long>>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public List<Long> build(Object data) {
+      if (null == data) {
+        return null;
+      }
+      for (Object element : (List<Object>) data) {
+        if (element instanceof JedisDataException) {
+          throw (JedisDataException) element;
+        }
+      }
+      return (List<Long>) data;
+    }
+
+    @Override
+    public String toString() {
+      return "List<Long>";
+    }
+
+  };
+
   public static final Builder<Double> DOUBLE = new Builder<Double>() {
     @Override
     public Double build(Object data) {

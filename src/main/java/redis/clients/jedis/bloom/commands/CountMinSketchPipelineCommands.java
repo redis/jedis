@@ -24,6 +24,11 @@ public interface CountMinSketchPipelineCommands {
   Response<String> cmsInitByProb(String key, double error, double probability,
       CmsCellSize cellSize);
 
+  /**
+   * Pipeline variant of {@link CountMinSketchCommands#cmsIncrBy(String, Map)}. If the server
+   * rejects any of the increments, {@link Response#get()} throws the corresponding
+   * {@link redis.clients.jedis.exceptions.JedisDataException}.
+   */
   Response<List<Long>> cmsIncrBy(String key, Map<String, Long> itemIncrements);
 
   Response<List<Long>> cmsQuery(String key, String... items);

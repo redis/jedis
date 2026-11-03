@@ -1,9 +1,11 @@
 package redis.clients.jedis.bloom.commands;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
 import redis.clients.jedis.bloom.CmsCellSize;
+import redis.clients.jedis.exceptions.JedisDataException;
 
 /**
  * Interface for RedisBloom Count-Min Sketch Commands
@@ -86,21 +88,29 @@ public interface CountMinSketchCommands {
    * @param item      The item which counter to be changed
    * @param increment Counter to be changed by this integer, may be negative
    * @return Count for the item after the change
+   * @throws JedisDataException if the server rejects the increment, for example
+   *                            {@code CMS: INCRBY overflow} or
+   *                            {@code CMS: INCRBY underflow}
    */
-  // long cmsIncrBy(String key, String item, long increment);
   default long cmsIncrBy(String key, String item, long increment) {
-    return cmsIncrBy(key, java.util.Collections.singletonMap(item, increment)).get(0);
+    return cmsIncrBy(key, Collections.singletonMap(item, increment)).get(0);
   }
 
   /**
    * CMS.INCRBY Changes the count of one or more items. Increments may be negative;
    * see {@link #cmsIncrBy(String, String, long)} for the underflow and overflow
-   * rules, which are reported per item.
+   * rules. The server checks each item separately and reports an error per item;
+   * this method throws the first such error. Items that come before the failing
+   * one in {@code itemIncrements} have already been applied by then, so callers
+   * who need to know which item failed should use single-item calls.
    * 
    * @param key            The name of the sketch
    * @param itemIncrements a Map of the items to be changed and their integer
    *                       increment
    * @return Count of each item after the change
+   * @throws JedisDataException if the server rejects any of the increments, for
+   *                            example {@code CMS: INCRBY overflow} or
+   *                            {@code CMS: INCRBY underflow}
    */
   List<Long> cmsIncrBy(String key, Map<String, Long> itemIncrements);
 

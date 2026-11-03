@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.resps.StreamEntry;
 import redis.clients.jedis.resps.StreamEntryBinary;
 import redis.clients.jedis.util.RedisInputStream;
@@ -9,10 +10,13 @@ import redis.clients.jedis.util.RedisInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BuilderTest {
@@ -172,6 +176,31 @@ public class BuilderTest {
     assertEquals("1234-12", streamEntry.getID().toString());
     assertEquals(Long.valueOf(5000), streamEntry.getMillisElapsedFromDelivery());
     assertEquals(Long.valueOf(2), streamEntry.getDeliveredCount());
+  }
+
+  @Test
+  public void longListThrowingErrorPassesPlainIntegers() {
+    Object data = parseRespResponse("*2\r\n:10\r\n:15\r\n");
+
+    List<Long> result = BuilderFactory.LONG_LIST_THROWING_ERROR.build(data);
+
+    assertEquals(Arrays.asList(10L, 15L), result);
+  }
+
+  @Test
+  public void longListThrowingErrorRethrowsErrorElement() {
+    // CMS.INCRBY style reply: the first item was applied, the second one was rejected
+    Object data = parseRespResponse("*2\r\n:1\r\n-CMS: INCRBY overflow\r\n");
+
+    JedisDataException thrown = assertThrows(JedisDataException.class,
+      () -> BuilderFactory.LONG_LIST_THROWING_ERROR.build(data));
+
+    assertEquals("CMS: INCRBY overflow", thrown.getMessage());
+  }
+
+  @Test
+  public void longListThrowingErrorKeepsNull() {
+    assertNull(BuilderFactory.LONG_LIST_THROWING_ERROR.build(null));
   }
 
 }

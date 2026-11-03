@@ -8,6 +8,7 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
+import redis.clients.jedis.resps.VSimScoreAttribs;
 
 /**
  * Interface for Redis Vector Set binary pipeline commands. Vector sets are a new data type
@@ -74,6 +75,13 @@ public interface VectorSetPipelineBinaryCommands {
   Response<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, VAddParams params);
 
   /**
+   * Pipeline variant of {@link VectorSetBinaryCommands#vadd(byte[], float[], byte[], int)}.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Boolean> vadd(byte[] key, float[] vector, byte[] element, int reduceDim);
+
+  /**
    * <b><a href="https://redis.io/docs/latest/commands/vadd/">VADD Command</a></b> Add a new element
    * into the vector set specified by key with dimension reduction and additional parameters.
    * <p>
@@ -89,6 +97,13 @@ public interface VectorSetPipelineBinaryCommands {
   @Experimental
   Response<Boolean> vadd(byte[] key, float[] vector, byte[] element, int reduceDim,
       VAddParams params);
+
+  /**
+   * Pipeline variant of {@link VectorSetBinaryCommands#vaddFP32(byte[], byte[], byte[], int)}.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Boolean> vaddFP32(byte[] key, byte[] vectorBlob, byte[] element, int reduceDim);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vadd/">VADD Command</a></b> Add a new element
@@ -134,6 +149,13 @@ public interface VectorSetPipelineBinaryCommands {
   Response<List<byte[]>> vsim(byte[] key, float[] vector, VSimParams params);
 
   /**
+   * Pipeline variant of {@link VectorSetBinaryCommands#vsimWithScores(byte[], float[])}.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<byte[], Double>> vsimWithScores(byte[] key, float[] vector);
+
+  /**
    * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements
    * similar to a given vector with their similarity scores.
    * <p>
@@ -146,6 +168,22 @@ public interface VectorSetPipelineBinaryCommands {
    */
   @Experimental
   Response<Map<byte[], Double>> vsimWithScores(byte[] key, float[] vector, VSimParams params);
+
+  /**
+   * Pipeline variant of {@link VectorSetBinaryCommands#vsimWithScoresAndAttribs(byte[], float[])}.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<byte[], VSimScoreAttribs>> vsimWithScoresAndAttribs(byte[] key, float[] vector);
+
+  /**
+   * Pipeline variant of
+   * {@link VectorSetBinaryCommands#vsimWithScoresAndAttribs(byte[], float[], VSimParams)}.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<byte[], VSimScoreAttribs>> vsimWithScoresAndAttribs(byte[] key, float[] vector,
+      VSimParams params);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements
@@ -173,6 +211,13 @@ public interface VectorSetPipelineBinaryCommands {
   Response<List<byte[]>> vsimByElement(byte[] key, byte[] element, VSimParams params);
 
   /**
+   * Pipeline variant of {@link VectorSetBinaryCommands#vsimByElementWithScores(byte[], byte[])}.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<byte[], Double>> vsimByElementWithScores(byte[] key, byte[] element);
+
+  /**
    * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements
    * similar to a given element in the vector set with their similarity scores.
    * <p>
@@ -186,6 +231,24 @@ public interface VectorSetPipelineBinaryCommands {
   @Experimental
   Response<Map<byte[], Double>> vsimByElementWithScores(byte[] key, byte[] element,
       VSimParams params);
+
+  /**
+   * Pipeline variant of
+   * {@link VectorSetBinaryCommands#vsimByElementWithScoresAndAttribs(byte[], byte[])}.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<byte[], VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(byte[] key,
+      byte[] element);
+
+  /**
+   * Pipeline variant of
+   * {@link VectorSetBinaryCommands#vsimByElementWithScoresAndAttribs(byte[], byte[], VSimParams)}.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<byte[], VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(byte[] key,
+      byte[] element, VSimParams params);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vdim/">VDIM Command</a></b> Return the number

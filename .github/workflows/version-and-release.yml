@@ -23,9 +23,6 @@ jobs:
         with:
           java-version: '8'
           distribution: 'temurin'
-          server-id: central
-          server-username: MAVEN_USERNAME
-          server-password: MAVEN_PASSWORD
 
       - name: mvn versions
         run: mvn versions:set -DnewVersion=${{ steps.get_version.outputs.VERSION }}
@@ -39,6 +36,7 @@ jobs:
         run: |
           mvn --no-transfer-progress \
             --batch-mode \
+            --settings .github/maven-settings.xml \
             -Dgpg.passphrase='${{ secrets.OSSH_GPG_SECRET_KEY_PASSWORD }}' \
             -DskipTests deploy -P release
         env:

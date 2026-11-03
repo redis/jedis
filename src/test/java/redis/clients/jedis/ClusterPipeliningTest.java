@@ -36,6 +36,7 @@ import redis.clients.jedis.util.AssertUtil;
 import redis.clients.jedis.util.GeoCoordinateMatcher;
 import redis.clients.jedis.util.GeoRadiusResponseMatcher;
 import redis.clients.jedis.util.JedisClusterTestUtil;
+import redis.clients.jedis.util.PrefixedKeyArgumentPreProcessor;
 import redis.clients.jedis.util.SafeEncoder;
 
 @Tag("integration")
@@ -146,6 +147,26 @@ public class ClusterPipeliningTest {
       assertEquals("value1", r4.get());
       assertEquals("value2", r5.get());
       assertEquals("value3", r6.get());
+    }
+  }
+
+  @Test
+  public void constructorClientConfigAppliesKeyPreProcessor() {
+    JedisClientConfig prefixingConfig = endpoint.getClientConfigBuilder().protocol(protocol)
+        .commandKeyArgumentPreProcessor(new PrefixedKeyArgumentPreProcessor("test-prefix:")).build();
+    try (ClusterPipeline pipe = new ClusterPipeline(nodes, prefixingConfig)) {
+      Response<String> set = pipe.set("key1", "value1");
+      Response<String> get = pipe.get("key1");
+      pipe.sync();
+      assertEquals("OK", set.get());
+      assertEquals("value1", get.get());
+    }
+
+    // the key must have been stored under the prefix, as it is for a client built from the config
+    try (RedisClusterClient cluster = RedisClusterClient.builder().nodes(nodes).clientConfig(
+        clientConfig).build()) {
+      assertEquals("value1", cluster.get("test-prefix:key1"));
+      assertNull(cluster.get("key1"));
     }
   }
 

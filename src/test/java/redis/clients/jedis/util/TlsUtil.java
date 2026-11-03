@@ -2,6 +2,8 @@ package redis.clients.jedis.util;
 
 import javax.net.ssl.*;
 import java.io.*;
+import java.net.InetSocketAddress;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.security.*;
@@ -122,8 +124,28 @@ public class TlsUtil {
         return Paths.get(TEST_WORK_FOLDER, certLocation.toString(), clientName + ".p12");
     }
 
+    /**
+     * Creates an empty uniquely-named file for a truststore under the test work folder. The caller
+     * owns the file's lifecycle and should delete it when done.
+     */
+    public static Path tempTruststorePath(String prefix) {
+        try {
+            Path folder = Paths.get(TEST_WORK_FOLDER);
+            Files.createDirectories(folder);
+            return Files.createTempFile(folder, prefix + '-', ".jks");
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create temp truststore in " + TEST_WORK_FOLDER, e);
+        }
+    }
+
     public static Path testTruststorePath(String name) {
-        return Paths.get(TEST_WORK_FOLDER, name  + '-' + TEST_TRUSTSTORE);
+        Path path = Paths.get(TEST_WORK_FOLDER, name  + '-' + TEST_TRUSTSTORE);
+        try {
+            Files.createDirectories(path.getParent());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to create test work folder " + path.getParent(), e);
+        }
+        return path;
     }
 
     public static Path createAndSaveTestTruststore(String trustStoreName, List<Path> certificateLocations, String truststorePassword) {
@@ -156,19 +178,6 @@ public class TlsUtil {
     }
 
     /**
-     * Adds a trusted certificate to the given truststore.
-     *
-     * @param trustStore The KeyStore object.
-     * @param alias      Alias for the certificate.
-     * @param certPath   Path to the certificate file.
-     * @throws Exception If there's an error adding the certificate.
-     */
-    private static void addTrustedCertificate(KeyStore trustStore, String alias, Path certPath) throws Exception {
-        X509Certificate cert = loadCertificate(certPath);
-        trustStore.setCertificateEntry(alias, cert);
-    }
-
-    /**
      * Loads an X.509 certificate from the given file path.
      *
      * @param certPath Path to the certificate file.
@@ -192,10 +201,38 @@ public class TlsUtil {
      */
     public static Path createAndSaveTruststore(List<Path> trustedCertPaths, Path truststorePath, String truststorePassword) {
         try {
-            KeyStore trustStore = createTruststore();
-
+            List<X509Certificate> certs = new ArrayList<>();
             for (Path certPath : trustedCertPaths) {
-                addTrustedCertificate(trustStore, "trusted-cert-" + UUID.randomUUID(), certPath);
+                certs.add(loadCertificate(certPath));
+            }
+            return saveTruststore(TRUST_STORE_TYPE, certs.toArray(new X509Certificate[0]), truststorePath, truststorePassword);
+        } catch (Exception e) {
+            throw new RuntimeException("Failed to create and save truststore: " + e.getMessage(), e);
+        }
+    }
+
+    /**
+     * Creates a truststore from already-loaded certificates and saves it to the specified path.
+     * Uses the JKS format: the one format readable both by the default KeyStore type (dual-format
+     * PKCS12/JKS) and by the JCEKS type forced by {@link #setCustomTrustStore}, so callers can
+     * load it without setting an explicit truststore type.
+     *
+     * @param trustedCerts       Certificates to add to the truststore.
+     * @param truststorePath     Path to save the generated truststore.
+     * @param truststorePassword Password for the truststore.
+     * @return Path to the saved truststore file.
+     */
+    public static Path createAndSaveTruststore(X509Certificate[] trustedCerts, Path truststorePath, String truststorePassword) {
+        return saveTruststore("JKS", trustedCerts, truststorePath, truststorePassword);
+    }
+
+    private static Path saveTruststore(String storeType, X509Certificate[] trustedCerts, Path truststorePath, String truststorePassword) {
+        try {
+            KeyStore trustStore = KeyStore.getInstance(storeType);
+            trustStore.load(null, null);
+
+            for (X509Certificate cert : trustedCerts) {
+                trustStore.setCertificateEntry("trusted-cert-" + UUID.randomUUID(), cert);
             }
 
             try (FileOutputStream fos = new FileOutputStream(truststorePath.toFile())) {
@@ -227,7 +264,8 @@ public class TlsUtil {
         KeyStore trustStore = null;
         try {
             trustStore = createTruststore();
-            addTrustedCertificate(trustStore, "trusted-cert-" + UUID.randomUUID(), trustedCertPath.toAbsolutePath());
+            trustStore.setCertificateEntry("trusted-cert-" + UUID.randomUUID(),
+                loadCertificate(trustedCertPath.toAbsolutePath()));
 
             TrustManagerFactory trustManagerFactory = TrustManagerFactory.getInstance("PKIX");
             trustManagerFactory.init(trustStore);
@@ -264,6 +302,38 @@ public class TlsUtil {
         SSLContext sslContext = SSLContext.getInstance("TLS");
         sslContext.init(null, unTrustManagers, new SecureRandom());
         return sslContext.getSocketFactory();
+    }
+
+    /**
+     * Captures the certificate chain a TLS server presents, over a throwaway handshake that trusts
+     * anything. Intended for pinning the captured chain into a test truststore; never use the
+     * capturing connection for the client under test.
+     */
+    public static X509Certificate[] captureServerChain(String host, int port) throws Exception {
+        final X509Certificate[][] captured = new X509Certificate[1][];
+        TrustManager capturing = new X509TrustManager() {
+            public void checkClientTrusted(X509Certificate[] chain, String authType) {
+            }
+
+            public void checkServerTrusted(X509Certificate[] chain, String authType) {
+                captured[0] = chain;
+            }
+
+            public X509Certificate[] getAcceptedIssuers() {
+                return new X509Certificate[0];
+            }
+        };
+        SSLContext context = SSLContext.getInstance("TLS");
+        context.init(null, new TrustManager[]{capturing}, null);
+        try (SSLSocket socket = (SSLSocket) context.getSocketFactory().createSocket()) {
+            socket.connect(new InetSocketAddress(host, port), 5_000);
+            socket.setSoTimeout(5_000);
+            socket.startHandshake();
+        }
+        if (captured[0] == null || captured[0].length == 0) {
+            throw new IllegalStateException("No server certificate chain captured from " + host);
+        }
+        return captured[0];
     }
 
     public static void createEmptyTruststore(Path emptyTrustStore, char[] trustStorePassword) throws Exception {

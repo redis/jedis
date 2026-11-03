@@ -32,7 +32,9 @@ It covers standalone, cluster, sentinel, and multi-db setups — with pipelining
 
 ### Test Conventions
 - Name new unit test classes using the `*Test` convention.
-- Name new integration test classes using the `*IT` convention. Do not use the `integration` tag for new tests.
+- Add a new integration test to the existing class that covers the same area or command group, even if that
+  class is a legacy `*Test` with `@Tag("integration")`. Do not create a new class just to get the `*IT` name.
+- Only when no matching class exists, create one named `*IT`, without the `integration` tag.
 
 ## Architecture
 
@@ -79,3 +81,16 @@ the full matrix so all surfaces stay in sync:
 **Encoding:**
 - String ↔ bytes: `SafeEncoder.encode()` — never `String.getBytes()` (breaks GBK).
 - Numeric → bytes: `Protocol.toByteArray()`.
+
+## Agent Skills
+
+Task procedures live in [`.agents/skills/`](.agents/skills) (also reachable as
+`.claude/skills/`). Read the matching `SKILL.md` before that kind of work:
+
+- `extend-commands-api` — add or extend a Redis command end-to-end (evidence, decision tree, full
+  String/binary/pipeline matrix, tests), supervised or unattended.
+- `create-implementation-plan-for-redis-api-change` — turn a shared client HLD into Jedis's reviewed
+  implementation plan (API, files, ordered steps, test matrix) without touching sources; read-only,
+  writes one plan file; conventions come from `extend-commands-api`.
+- `creating-description-for-gh-pr` — draft a PR title and description from the diff between two
+  local branches.

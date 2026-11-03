@@ -3,10 +3,12 @@ package redis.clients.jedis.csc;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.EndpointConfig;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.args.ClientType;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.params.ClientKillParams;
+import redis.clients.jedis.util.SafeEncoder;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,6 +32,19 @@ public abstract class RedisClientSideCacheTestBase extends UnifiedJedisClientSid
         .clientConfig(endpoint.getClientConfigBuilder().resp3().build())
         .cacheConfig(cacheConfig)
         .build();
+  }
+
+  @Test
+  public void sendCommandIsNotServedStale() {
+    try (RedisClient jedis = createCachedJedis(CacheConfig.builder().build())) {
+      control.set("foo", "bar");
+      assertEquals("bar",
+        SafeEncoder.encode((byte[]) jedis.sendCommand(Protocol.Command.GET, "foo")));
+      control.set("foo", "baz");
+      assertEquals("baz",
+        SafeEncoder.encode((byte[]) jedis.sendCommand(Protocol.Command.GET, "foo")));
+      assertEquals(0, jedis.getCache().getSize());
+    }
   }
 
   @Test

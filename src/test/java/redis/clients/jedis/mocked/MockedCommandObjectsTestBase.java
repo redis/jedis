@@ -2,7 +2,6 @@ package redis.clients.jedis.mocked;
 
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalLong;
 import java.util.Set;
 
 import org.json.JSONArray;
@@ -78,6 +77,7 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<List<Map.Entry<String, String>>> listEntryStringStringCommandObject;
   @Mock protected CommandObject<List<Map.Entry<byte[], byte[]>>> listEntryBytesBytesCommandObject;
   @Mock protected CommandObject<List<MyBean>> listMyBeanCommandObject;
+  @Mock protected CommandObject<List<Number>> listNumberCommandObject;
   @Mock protected CommandObject<List<Object>> listObjectCommandObject;
   @Mock protected CommandObject<List<StreamConsumerInfo>> listStreamConsumerInfoCommandObject;
   @Mock protected CommandObject<List<StreamConsumersInfo>> listStreamConsumersInfoCommandObject;
@@ -103,7 +103,9 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<Map<String, String>> mapStringStringCommandObject;
   @Mock protected CommandObject<Map<String, TSMGetElement>> mapStringTsmGetElementCommandObject;
   @Mock protected CommandObject<Map<String, TSMRangeElements>> mapStringTsmRangeElementsCommandObject;
+  @Mock protected CommandObject<Map<String, VSimScoreAttribs>> mapStringVSimScoreAttribsCommandObject;
   @Mock protected CommandObject<Map<byte[], byte[]>> mapBytesBytesCommandObject;
+  @Mock protected CommandObject<Map<byte[], VSimScoreAttribs>> mapBytesVSimScoreAttribsCommandObject;
   @Mock protected CommandObject<MyBean> myBeanCommandObject;
   @Mock protected CommandObject<Object> objectCommandObject;
   @Mock protected CommandObject<ScanResult<Map.Entry<String, String>>> scanResultEntryStringStringCommandObject;

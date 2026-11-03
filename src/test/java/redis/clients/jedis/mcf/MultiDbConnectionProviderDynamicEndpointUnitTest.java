@@ -113,6 +113,37 @@ public class MultiDbConnectionProviderDynamicEndpointUnitTest {
     }
   }
 
+  @Test
+  void testRemoveUnregistersHealthStatusListener() {
+    try (MockedConstruction<TrackingConnectionPool> mockedPool = mockPool(mock(Connection.class))) {
+      HostAndPort removed = endpoint2.getHostAndPort();
+      MultiDbConfig multiConfig = MultiDbConfig.builder(
+        new DatabaseConfig[] { createHealthCheckedDatabaseConfig(endpoint1.getHostAndPort(), 1.0f),
+            createHealthCheckedDatabaseConfig(removed, 0.5f) })
+          .build();
+
+      try (MultiDbConnectionProvider providerWithMockedPool = new MultiDbConnectionProvider(
+          multiConfig)) {
+        HealthStatusManager healthStatusManager = providerWithMockedPool.getHealthStatusManager();
+        assertEquals(1, healthStatusManager.getListeners(removed).size());
+
+        providerWithMockedPool.remove(removed);
+        assertTrue(healthStatusManager.getListeners(removed).isEmpty(),
+          "removed database must not stay registered");
+
+        providerWithMockedPool.add(createHealthCheckedDatabaseConfig(removed, 0.5f));
+        assertEquals(1, healthStatusManager.getListeners(removed).size(),
+          "re-added database registers exactly once");
+      }
+    }
+  }
+
+  // The provider registers a health status listener only for databases with a health check.
+  private DatabaseConfig createHealthCheckedDatabaseConfig(HostAndPort hostAndPort, float weight) {
+    return DatabaseConfig.builder(hostAndPort, clientConfig).weight(weight)
+        .healthCheckStrategy(new TestHealthCheckStrategy(e -> HealthStatus.HEALTHY)).build();
+  }
+
   private MockedConstruction<TrackingConnectionPool> mockPool(Connection mockConnection) {
     return mockConstruction(TrackingConnectionPool.class, (mock, context) -> {
       when(mock.getResource()).thenReturn(mockConnection);

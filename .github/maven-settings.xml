@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Maven settings used by the snapshot and release publishing workflows.
+
+  Maven 3.10+ binds server credentials to repository origins. The server id "central" is implicitly bound to
+  https://repo.maven.apache.org only, so the credentials would not be sent to Sonatype Central and publishing would
+  fail with HTTP 401. Declaring the Sonatype Central origin explicitly allows the credentials to be used there.
+  Older Maven versions ignore the repositoryOrigins element.
+-->
+<settings xmlns="http://maven.apache.org/SETTINGS/1.3.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.3.0 https://maven.apache.org/xsd/settings-1.3.0.xsd">
+    <servers>
+        <server>
+            <id>central</id>
+            <username>${env.MAVEN_USERNAME}</username>
+            <password>${env.MAVEN_PASSWORD}</password>
+            <repositoryOrigins>
+                <repositoryOrigin>https://central.sonatype.com</repositoryOrigin>
+            </repositoryOrigins>
+        </server>
+    </servers>
+</settings>

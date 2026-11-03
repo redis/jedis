@@ -10,6 +10,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 import redis.clients.jedis.Builder;
 import redis.clients.jedis.exceptions.JedisException;
+import redis.clients.jedis.util.SafeEncoder;
 
 public final class JsonBuilderFactory {
 
@@ -174,6 +175,98 @@ public final class JsonBuilderFactory {
       return list.stream().map(o -> JSON_ARRAY.build(o)).collect(Collectors.toList());
     }
   };
+
+  /**
+   * Builder that parses a List of numbers with type preservation ({@link Long} for integers,
+   * {@link Double} for decimals). Supports both RESP3 ({@code List<Object>}) and RESP2 (JSON array
+   * as {@code byte[]}). Returns {@code null} values for JSON null literals.
+   */
+  public static final Builder<List<Number>> NUMBER_LIST = new Builder<List<Number>>() {
+    @Override
+    public List<Number> build(Object data) {
+      if (data == null) {
+        return null;
+      }
+      // RESP3 -> expected List<Number>
+      if (data instanceof List) {
+        return JSON_NUMBER_LIST.build(data);
+      }
+      // RESP2 -> Bulk string reply containing a JSON array of Number elements (nullable):
+      if (data instanceof byte[]) {
+        return parseJsonNumberArray(SafeEncoder.encode((byte[]) data));
+      }
+      throw new JedisException("Unsupported type: " + data.getClass());
+    }
+
+    @Override
+    public String toString() {
+      return "List<Number>";
+    }
+  };
+
+  private static List<Number> parseJsonNumberArray(String json) {
+    int first = 0;
+    int last = json.length() - 1;
+    while (first <= last && Character.isWhitespace(json.charAt(first))) {
+      first++;
+    }
+    while (last > first && Character.isWhitespace(json.charAt(last))) {
+      last--;
+    }
+    if (last <= first || json.charAt(first) != '[' || json.charAt(last) != ']') {
+      throw new JedisException("Expected a JSON array of numbers but got: " + json);
+    }
+
+    List<Number> out = new ArrayList<>();
+    int i = first + 1;
+    while (true) {
+      while (i < last && Character.isWhitespace(json.charAt(i))) {
+        i++;
+      }
+      if (i == last) {
+        if (out.isEmpty()) {
+          return out; // "[]"
+        }
+        throw new JedisException("Expected null or number but got empty element in: " + json);
+      }
+
+      int tokenStart = i;
+      while (i < last && json.charAt(i) != ',') {
+        i++;
+      }
+      int tokenEnd = i;
+      while (tokenEnd > tokenStart && Character.isWhitespace(json.charAt(tokenEnd - 1))) {
+        tokenEnd--;
+      }
+      if (tokenStart == tokenEnd) {
+        throw new JedisException("Expected null or number but got empty element in: " + json);
+      }
+      out.add(parseNullOrNumber(json.substring(tokenStart, tokenEnd)));
+
+      if (i == last) {
+        return out;
+      }
+      i++; // skip ','
+    }
+  }
+
+  private static Number parseNullOrNumber(String str) {
+    if ("null".equals(str)) {
+      return null;
+    }
+    if (str.indexOf('.') < 0 && str.indexOf('e') < 0 && str.indexOf('E') < 0) {
+      try {
+        return Long.parseLong(str);
+      } catch (NumberFormatException e) {
+        // integer outside the long range; fall through to double
+      }
+    }
+    try {
+      return Double.parseDouble(str);
+    } catch (NumberFormatException e) {
+      throw new JedisException("Expected a number but got: " + str, e);
+    }
+  }
 
   private JsonBuilderFactory() {
     throw new InstantiationError("Must not instantiate this class");

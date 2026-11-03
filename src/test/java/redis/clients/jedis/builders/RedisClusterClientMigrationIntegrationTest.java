@@ -2,6 +2,7 @@ package redis.clients.jedis.builders;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -14,6 +15,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 
 import redis.clients.jedis.*;
+import redis.clients.jedis.util.PrefixedKeyArgumentPreProcessor;
 
 /**
  * Integration test that verifies migration compatibility from the legacy JedisCluster constructor
@@ -244,6 +246,43 @@ public class RedisClusterClientMigrationIntegrationTest {
         .poolConfig(poolConfig).build();
 
     verifyBothClients(legacyCluster, newCluster);
+  }
+
+  /**
+   * Tests constructor: JedisCluster(Set&lt;HostAndPort&gt;, JedisClientConfig) with a
+   * {@code commandKeyArgumentPreProcessor}, which must apply to both clients and their pipelines.
+   */
+  @Test
+  public void testConstructorWithClientConfigAppliesKeyPreProcessor() {
+    JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().password(PASSWORD)
+        .commandKeyArgumentPreProcessor(new PrefixedKeyArgumentPreProcessor("test-prefix:"))
+        .build();
+
+    legacyCluster = new JedisCluster(CLUSTER_NODES, clientConfig);
+    newCluster = RedisClusterClient.builder().nodes(CLUSTER_NODES).clientConfig(clientConfig)
+        .build();
+
+    verifyBothClients(legacyCluster, newCluster);
+
+    legacyCluster.set("legacy-key", "legacy-value");
+    newCluster.set("new-key", "new-value");
+    try (ClusterPipeline legacyPipeline = legacyCluster.pipelined();
+        ClusterPipeline newPipeline = newCluster.pipelined()) {
+      legacyPipeline.set("legacy-pipelined-key", "legacy-pipelined-value");
+      newPipeline.set("new-pipelined-key", "new-pipelined-value");
+      legacyPipeline.sync();
+      newPipeline.sync();
+    }
+
+    try (RedisClusterClient plain = RedisClusterClient.builder().nodes(CLUSTER_NODES)
+        .clientConfig(DefaultJedisClientConfig.builder().password(PASSWORD).build()).build()) {
+      assertEquals("legacy-value", plain.get("test-prefix:legacy-key"));
+      assertEquals("new-value", plain.get("test-prefix:new-key"));
+      assertEquals("legacy-pipelined-value", plain.get("test-prefix:legacy-pipelined-key"));
+      assertEquals("new-pipelined-value", plain.get("test-prefix:new-pipelined-key"));
+      assertNull(plain.get("legacy-key"));
+      assertNull(plain.get("legacy-pipelined-key"));
+    }
   }
 
   protected void verifyBothClients(JedisCluster legacyCluster, RedisClusterClient newCluster) {

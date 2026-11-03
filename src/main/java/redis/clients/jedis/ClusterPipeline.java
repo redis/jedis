@@ -83,8 +83,7 @@ public class ClusterPipeline extends MultiNodePipelineBase {
   }
 
   private ClusterPipeline(ClusterConnectionProvider provider, JedisClientConfig clientConfig) {
-    this(provider, createClusterCommandObjects(provider, clientConfig.getRedisProtocol(),
-        clientConfig.isAutoNegotiateProtocol()));
+    this(provider, createClusterCommandObjects(provider, clientConfig));
   }
 
   public ClusterPipeline(ClusterConnectionProvider provider, RedisProtocol protocol) {
@@ -105,6 +104,22 @@ public class ClusterPipeline extends MultiNodePipelineBase {
           CommandFlagsRegistry commandFlagsRegistry, ExecutorService executorService) {
     super(commandObjects, commandFlagsRegistry, executorService);
     this.provider = provider;
+  }
+
+  /**
+   * Like {@link #createClusterCommandObjects(ClusterConnectionProvider, RedisProtocol, boolean)},
+   * but also applies the CommandObjects-level settings carried by the config (key pre-processor,
+   * JSON mapper, search dialect), as {@link UnifiedJedis} does for its own command objects.
+   */
+  private static Supplier<ClusterCommandObjects> createClusterCommandObjects(
+      ClusterConnectionProvider provider, JedisClientConfig clientConfig) {
+    Supplier<ClusterCommandObjects> supplier = createClusterCommandObjects(provider,
+      clientConfig.getRedisProtocol(), clientConfig.isAutoNegotiateProtocol());
+    return () -> {
+      ClusterCommandObjects commandObjects = supplier.get();
+      UnifiedJedis.applyCommandObjectsConfiguration(commandObjects, clientConfig);
+      return commandObjects;
+    };
   }
 
   private static Supplier<ClusterCommandObjects> createClusterCommandObjects(

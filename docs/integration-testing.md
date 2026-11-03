@@ -221,8 +221,9 @@ Custom image instead of a version: `make start CLIENT_LIBS_TEST_IMAGE_TAG=<tag>`
 | Integration | `*IT` (new) — legacy `*IntegrationTest` / `@Tag("integration")` still run | Failsafe | run (`skipIntegrationTests=false`)     |
 | Scenario    | `@Tag("scenario")`                                                        | Failsafe | **skipped** (`skipScenarioTests=true`) |
 
-New integration tests **must** be named `*IT` — do not use `*IntegrationTest` or
-the `@Tag("integration")` marker. See §5.
+A new integration test goes into the existing class for the same area, whatever its
+name or tag. New integration test **classes** must be named `*IT`. Do not use
+`*IntegrationTest` or `@Tag("integration")` on them. See §5.
 
 Useful flags: `-DskipUnitTests=true` (CI Docker job runs integration only),
 `-Dtest=<Class#method>` to narrow.
@@ -261,25 +262,26 @@ What decides whether a test is run by Surefire (unit) or Failsafe (integration)
 is **how the test is marked** — its file-name suffix and/or JUnit tag — not which
 folder it sits in (the runners select by suffix and tag — see §4 and `pom.xml`).
 
-**New integration tests MUST be named `*IT`.** This is the single accepted
-convention for new code. Failsafe still recognises the older `*IntegrationTest`
-name and the `@Tag("integration")` marker so the many existing classes keep
-running while they are migrated, but **do not use them for new tests** — name
-your class `FooIT` and nothing else.
+**Add new integration tests to the existing class that covers the same area.**
+Failsafe still recognises the older `*IntegrationTest` name and the
+`@Tag("integration")` marker, so those classes keep running while they are
+migrated; a new test method belongs next to its siblings there. Create a new class
+only when none fits. **A new integration class MUST be named `*IT`**, never
+`*IntegrationTest` and never tagged `@Tag("integration")`.
 
 | Test needs… | Name / mark it as… | Runner |
 |---|---|---|
 | **No server** (pure logic, mocks) | a plain `*Test` / `*Tests` class, **untagged** | Surefire |
-| **A running Redis** | **`*IT`** file name | Failsafe |
+| **A running Redis** | the existing class for that area; a new class gets the **`*IT`** file name | Failsafe |
 | **A long-running scenario** | `@Tag("scenario")`, placed under `scenario/` | Failsafe (off by default) |
 
 Guidance for new tests:
 
-- **Integration test** → name the file `FooIT.java` (the **only** accepted name
-  for new integration tests — not `*IntegrationTest`, and **never**
-  `@Tag("integration")`). Put it in the area package it exercises (`commands/…`,
-  `search/`, `tls/`, etc.). It connects to a server resolved through
-  `Endpoints.getRedisEndpoint(...)`.
+- **Integration test** → add it to the existing class for that area. If there is
+  none, create `FooIT.java` (the **only** accepted name for new integration
+  classes — not `*IntegrationTest`, and **never** `@Tag("integration")`) in the
+  area package it exercises (`commands/…`, `search/`, `tls/`, etc.). It connects
+  to a server resolved through `Endpoints.getRedisEndpoint(...)`.
 - **Unit test** → add it next to related unit tests (or under `mocked/` if it is
   Mockito-based), name it `FooTest`, and leave it untagged. It must pass with no
   Redis running.

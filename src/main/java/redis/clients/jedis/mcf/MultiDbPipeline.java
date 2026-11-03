@@ -39,9 +39,10 @@ public class MultiDbPipeline extends AbstractPipeline implements Closeable {
   }
 
   /**
-   * Synchronize pipeline by reading all responses. This operation close the pipeline. In order to
-   * get return values from pipelined commands, capture the different Response&lt;?&gt; of the
-   * commands you execute.
+   * Sends the buffered commands to the active database over one connection and reads all their
+   * replies. A reply is decoded when its {@link Response#get()} is called, so keep the
+   * {@link Response} returned by each command. Server errors are not thrown here: the corresponding
+   * {@code get()} throws them.
    */
   @Override
   public void sync() {

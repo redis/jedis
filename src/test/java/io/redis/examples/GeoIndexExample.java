@@ -50,7 +50,8 @@ public class GeoIndexExample {
         String geoIdxCreateResult = jedis.ftCreate("productidx",
             FTCreateParams.createParams()
                     .on(IndexDataType.JSON)
-                    .addPrefix("product:"),
+                    .addPrefix("product:")
+                    .skipInitialScan(),
             geoSchema
         );
         // STEP_END
@@ -109,7 +110,8 @@ public class GeoIndexExample {
         String geomIndexCreateResult = jedis.ftCreate("geomidx",
             FTCreateParams.createParams()
                     .on(IndexDataType.JSON)
-                    .addPrefix("shape"),
+                    .addPrefix("shape")
+                    .skipInitialScan(),
             geomSchema
         );
         System.out.println(geomIndexCreateResult); // >>> OK

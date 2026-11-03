@@ -3019,7 +3019,7 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<List<String>> blessGet(String key) {
+  public Response<List<BlessFlag>> blessGet(String key) {
     return appendCommand(commandObjects.blessGet(key));
   }
 

@@ -1682,16 +1682,16 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
   @Test
   public void testBlessGet() {
-    List<String> expected = Collections.singletonList("NO-EVICT");
+    List<BlessFlag> expected = Collections.singletonList(BlessFlag.NO_EVICT);
 
-    when(commandObjects.blessGet("key1")).thenReturn(listStringCommandObject);
-    when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expected);
+    when(commandObjects.blessGet("key1")).thenReturn(listBlessFlagCommandObject);
+    when(commandExecutor.executeCommand(listBlessFlagCommandObject)).thenReturn(expected);
 
-    List<String> result = jedis.blessGet("key1");
+    List<BlessFlag> result = jedis.blessGet("key1");
 
     assertThat(result, equalTo(expected));
 
-    verify(commandExecutor).executeCommand(listStringCommandObject);
+    verify(commandExecutor).executeCommand(listBlessFlagCommandObject);
     verify(commandObjects).blessGet("key1");
   }
 

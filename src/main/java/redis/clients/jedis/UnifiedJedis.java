@@ -725,7 +725,7 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
-  public List<String> blessGet(String key) {
+  public List<BlessFlag> blessGet(String key) {
     return executeCommand(commandObjects.blessGet(key));
   }
 

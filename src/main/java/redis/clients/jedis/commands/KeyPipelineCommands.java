@@ -125,7 +125,7 @@ public interface KeyPipelineCommands {
    * Pipeline variant of {@link KeyCommands#blessGet(String)}.
    * @since 8.1
    */
-  Response<List<String>> blessGet(String key);
+  Response<List<BlessFlag>> blessGet(String key);
 
   /**
    * Pipeline variant of {@link KeyCommands#blessScan(String, BlessFlag)}.

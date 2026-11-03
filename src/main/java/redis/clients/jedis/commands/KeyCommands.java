@@ -656,19 +656,20 @@ public interface KeyCommands {
 
   /**
    * <b><a href="https://redis.io/commands/bless-get">BLESS GET Command</a></b>
-   * Return the protection flags currently active on {@code key}, as wire tokens (for example
-   * {@code "NO-EVICT"}). Tokens are returned verbatim so flags added by newer servers are visible
-   * without a client upgrade.
+   * Return the protection flags currently active on {@code key}. Each wire token is wrapped as a
+   * {@link BlessFlag} via {@link BlessFlag#of(String)}, so the result can be compared against
+   * {@link BlessFlag#NO_EVICT} directly and flags added by newer servers are still visible without
+   * a client upgrade.
    * <p>
    * The key must exist, otherwise the server replies {@code ERR no such key}. Does not update the
    * key's LRU/LFU clock.
    * <p>
    * Time complexity: O(1)
    * @param key the key to query
-   * @return the active flag tokens, empty if the key carries none
+   * @return the active flags, empty if the key carries none
    * @since 8.1
    */
-  List<String> blessGet(String key);
+  List<BlessFlag> blessGet(String key);
 
   /**
    * <b><a href="https://redis.io/commands/bless-scan">BLESS SCAN Command</a></b>

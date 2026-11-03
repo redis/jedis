@@ -9528,7 +9528,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<String> blessGet(final String key) {
+  public List<BlessFlag> blessGet(final String key) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.blessGet(key));
   }

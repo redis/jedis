@@ -52,7 +52,7 @@ public class BlessCommandsIT extends JedisCommandsTestBase {
     jedis.set(key, "v");
 
     assertEquals(1L, jedis.blessSet(key, BlessFlag.NO_EVICT));
-    assertEquals(Collections.singletonList("NO-EVICT"), jedis.blessGet(key));
+    assertEquals(Collections.singletonList(BlessFlag.NO_EVICT), jedis.blessGet(key));
 
     ScanResult<String> scan = jedis.blessScan(SCAN_POINTER_START, BlessFlag.NO_EVICT, 10);
     assertTrue(scan.isCompleteIteration());

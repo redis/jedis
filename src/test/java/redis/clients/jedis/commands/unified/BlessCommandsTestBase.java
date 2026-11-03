@@ -43,7 +43,7 @@ public abstract class BlessCommandsTestBase extends UnifiedJedisCommandsTestBase
 
     assertEquals(1L, jedis.blessSet(key, BlessFlag.NO_EVICT));
     assertEquals(0L, jedis.blessSet(key, BlessFlag.NO_EVICT));
-    assertEquals(Collections.singletonList(NO_EVICT_TOKEN), jedis.blessGet(key));
+    assertEquals(Collections.singletonList(BlessFlag.NO_EVICT), jedis.blessGet(key));
   }
 
   @Test
@@ -62,7 +62,7 @@ public abstract class BlessCommandsTestBase extends UnifiedJedisCommandsTestBase
     String key = keys.key("cache:page:1");
     jedis.set(key, "html");
 
-    List<String> flags = jedis.blessGet(key);
+    List<BlessFlag> flags = jedis.blessGet(key);
     assertTrue(flags.isEmpty());
   }
 
@@ -73,7 +73,7 @@ public abstract class BlessCommandsTestBase extends UnifiedJedisCommandsTestBase
     jedis.blessSet(key, BlessFlag.NO_EVICT);
 
     jedis.set(key, "v2");
-    assertEquals(Collections.singletonList(NO_EVICT_TOKEN), jedis.blessGet(key));
+    assertEquals(Collections.singletonList(BlessFlag.NO_EVICT), jedis.blessGet(key));
 
     jedis.del(key);
     jedis.set(key, "v3");

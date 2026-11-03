@@ -130,7 +130,8 @@ public interface KeyBinaryCommands {
   long blessClear(byte[] key, BlessFlag flag);
 
   /**
-   * Binary variant of {@link KeyCommands#blessGet(String)}.
+   * Binary variant of {@link KeyCommands#blessGet(String)}. Returns the raw wire tokens (for
+   * example {@code "NO-EVICT"}) rather than {@link BlessFlag} values.
    * @see KeyCommands#blessGet(String)
    * @since 8.1
    */

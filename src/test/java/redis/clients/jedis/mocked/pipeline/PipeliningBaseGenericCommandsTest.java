@@ -1214,11 +1214,11 @@ public class PipeliningBaseGenericCommandsTest extends PipeliningBaseMockedTestB
 
   @Test
   public void testBlessGet() {
-    when(commandObjects.blessGet("key1")).thenReturn(listStringCommandObject);
+    when(commandObjects.blessGet("key1")).thenReturn(listBlessFlagCommandObject);
 
-    Response<List<String>> response = pipeliningBase.blessGet("key1");
+    Response<List<BlessFlag>> response = pipeliningBase.blessGet("key1");
 
-    assertThat(commands, contains(listStringCommandObject));
+    assertThat(commands, contains(listBlessFlagCommandObject));
     assertThat(response, is(predefinedResponse));
   }
 

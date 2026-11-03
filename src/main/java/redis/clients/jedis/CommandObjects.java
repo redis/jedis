@@ -477,8 +477,8 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(BLESS).add(CLEAR).key(key).add(flag), BuilderFactory.LONG);
   }
 
-  public final CommandObject<List<String>> blessGet(String key) {
-    return new CommandObject<>(commandArguments(BLESS).add(Keyword.GET).key(key), BuilderFactory.STRING_LIST);
+  public final CommandObject<List<BlessFlag>> blessGet(String key) {
+    return new CommandObject<>(commandArguments(BLESS).add(Keyword.GET).key(key), BuilderFactory.BLESS_FLAG_LIST);
   }
 
   public final CommandObject<List<byte[]>> blessGet(byte[] key) {

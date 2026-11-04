@@ -12,6 +12,7 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.params.BitPosParams;
+import redis.clients.jedis.params.BitRangeIntArrayParams;
 
 public class PipeliningBaseBitmapCommandsTest extends PipeliningBaseMockedTestBase {
 
@@ -259,6 +260,35 @@ public class PipeliningBaseBitmapCommandsTest extends PipeliningBaseMockedTestBa
 
     assertThat(commands, contains(booleanCommandObject));
     assertThat(response, is(predefinedResponse));
+  }
+
+  /**
+   * Scenario BRIA-B04: every PipeliningBase bitrangeintarray form appends the matching
+   * CommandObjects command and returns its Response.
+   */
+  @Test
+  public void testBitrangeintarray() {
+    String key = "key";
+    byte[] bkey = "key".getBytes();
+    BitRangeIntArrayParams params = BitRangeIntArrayParams.bitRangeIntArrayParams()
+        .unit(BitCountOption.BIT).limit(3).zeros();
+
+    when(commandObjects.bitrangeintarray(key, 0, -1)).thenReturn(listLongCommandObject);
+    when(commandObjects.bitrangeintarray(key, 0, -1, params)).thenReturn(listLongCommandObject);
+    when(commandObjects.bitrangeintarray(bkey, 0, -1)).thenReturn(listLongCommandObject);
+    when(commandObjects.bitrangeintarray(bkey, 0, -1, params)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> r1 = pipeliningBase.bitrangeintarray(key, 0, -1);
+    Response<List<Long>> r2 = pipeliningBase.bitrangeintarray(key, 0, -1, params);
+    Response<List<Long>> r3 = pipeliningBase.bitrangeintarray(bkey, 0, -1);
+    Response<List<Long>> r4 = pipeliningBase.bitrangeintarray(bkey, 0, -1, params);
+
+    assertThat(commands, contains(listLongCommandObject, listLongCommandObject,
+      listLongCommandObject, listLongCommandObject));
+    assertThat(r1, is(predefinedResponse));
+    assertThat(r2, is(predefinedResponse));
+    assertThat(r3, is(predefinedResponse));
+    assertThat(r4, is(predefinedResponse));
   }
 
 }

@@ -1100,6 +1100,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<Long> bitrangeintarray(String key, long start, long end) {
+    return executeCommand(commandObjects.bitrangeintarray(key, start, end));
+  }
+
+  @Override
+  public List<Long> bitrangeintarray(String key, long start, long end, BitRangeIntArrayParams params) {
+    return executeCommand(commandObjects.bitrangeintarray(key, start, end, params));
+  }
+
+  @Override
   public long bitcount(byte[] key) {
     return executeCommand(commandObjects.bitcount(key));
   }
@@ -1122,6 +1132,16 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long bitpos(byte[] key, boolean value, BitPosParams params) {
     return executeCommand(commandObjects.bitpos(key, value, params));
+  }
+
+  @Override
+  public List<Long> bitrangeintarray(byte[] key, long start, long end) {
+    return executeCommand(commandObjects.bitrangeintarray(key, start, end));
+  }
+
+  @Override
+  public List<Long> bitrangeintarray(byte[] key, long start, long end, BitRangeIntArrayParams params) {
+    return executeCommand(commandObjects.bitrangeintarray(key, start, end, params));
   }
 
   @Override

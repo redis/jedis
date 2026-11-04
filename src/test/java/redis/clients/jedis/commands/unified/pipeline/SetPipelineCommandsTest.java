@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.greaterThan;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
@@ -20,6 +21,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
@@ -28,6 +30,8 @@ import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.params.SAddExParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.util.TestEnvUtil;
@@ -670,5 +674,41 @@ public class SetPipelineCommandsTest extends PipelineCommandsTestBase {
 
     pipe.sync();
     assertThat(bResult.get().getResult(), not(empty()));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void setMemberExpiration() {
+    pipe.sadd("foo", "a", "b");
+    Response<Long> saddex = pipe.saddex("foo", SAddExParams.sAddExParams().ex(1000), "b", "c");
+    Response<List<Long>> sexpire = pipe.sexpire("foo", 2000, ExpiryOption.NX, "a", "b", "nosuch");
+    Response<List<Long>> sttl = pipe.sttl("foo", "a", "b", "c");
+    Response<List<Long>> spersist = pipe.spersist("foo", "a", "nosuch");
+    Response<List<Long>> spttl = pipe.spttl("foo", "a");
+    pipe.sync();
+
+    assertThat(saddex.get(), equalTo(1L));
+    assertThat(sexpire.get(), contains(1L, 0L, -2L));
+    assertThat(sttl.get(), contains(greaterThan(1900L), greaterThan(900L), greaterThan(900L)));
+    assertThat(spersist.get(), contains(1L, -2L));
+    assertThat(spttl.get(), contains(-1L));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void setMemberExpirationBinary() {
+    pipe.sadd(bfoo, ba, bb);
+    Response<Long> saddex = pipe.saddex(bfoo, SAddExParams.sAddExParams().ex(1000), bb, bc);
+    Response<List<Long>> sexpire = pipe.sexpire(bfoo, 2000, ExpiryOption.NX, ba, bb, bx);
+    Response<List<Long>> sttl = pipe.sttl(bfoo, ba, bb, bc);
+    Response<List<Long>> spersist = pipe.spersist(bfoo, ba, bx);
+    Response<List<Long>> spttl = pipe.spttl(bfoo, ba);
+    pipe.sync();
+
+    assertThat(saddex.get(), equalTo(1L));
+    assertThat(sexpire.get(), contains(1L, 0L, -2L));
+    assertThat(sttl.get(), contains(greaterThan(1900L), greaterThan(900L), greaterThan(900L)));
+    assertThat(spersist.get(), contains(1L, -2L));
+    assertThat(spttl.get(), contains(-1L));
   }
 }

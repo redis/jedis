@@ -20,6 +20,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
@@ -29,6 +30,8 @@ import org.junit.jupiter.params.provider.MethodSource;
 
 
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.params.SAddExParams;
 import redis.clients.jedis.params.SDiffCardParams;
 import redis.clients.jedis.params.SUnionCardParams;
 import redis.clients.jedis.params.ScanParams;
@@ -699,5 +702,67 @@ public class SetCommandsTest extends JedisCommandsTestBase {
     ScanResult<byte[]> bResult = jedis.sscan(bfoo, SCAN_POINTER_START_BINARY, params);
 
     assertFalse(bResult.getResult().isEmpty());
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void sexpireAndSttl() {
+    long seconds = 20;
+    jedis.sadd("foo", "a", "b");
+    assertEquals(Arrays.asList(1L, -2L), jedis.sexpire("foo", seconds, "a", "nosuch"));
+    assertEquals(Arrays.asList(0L, 1L), jedis.sexpire("foo", seconds, ExpiryOption.NX, "a", "b"));
+
+    List<Long> ttl = jedis.sttl("foo", "a", "b", "nosuch");
+    assertTrue(ttl.get(0) >= seconds - 1 && ttl.get(0) <= seconds, ttl.toString());
+    assertTrue(ttl.get(1) >= seconds - 1 && ttl.get(1) <= seconds, ttl.toString());
+    assertEquals(Long.valueOf(-2), ttl.get(2));
+
+    assertEquals(Arrays.asList(1L, -2L), jedis.spersist("foo", "a", "nosuch"));
+    assertEquals(Arrays.asList(-1L), jedis.sttl("foo", "a"));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void sexpireAndSttlBinary() {
+    long seconds = 20;
+    jedis.sadd(bfoo, ba, bb);
+    assertEquals(Arrays.asList(1L, -2L), jedis.sexpire(bfoo, seconds, ba, bx));
+    assertEquals(Arrays.asList(0L, 1L), jedis.sexpire(bfoo, seconds, ExpiryOption.NX, ba, bb));
+
+    List<Long> ttl = jedis.sttl(bfoo, ba, bb, bx);
+    assertTrue(ttl.get(0) >= seconds - 1 && ttl.get(0) <= seconds, ttl.toString());
+    assertTrue(ttl.get(1) >= seconds - 1 && ttl.get(1) <= seconds, ttl.toString());
+    assertEquals(Long.valueOf(-2), ttl.get(2));
+
+    assertEquals(Arrays.asList(1L, -2L), jedis.spersist(bfoo, ba, bx));
+    assertEquals(Arrays.asList(-1L), jedis.sttl(bfoo, ba));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void saddex() {
+    long millis = 1_000_000;
+    assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().px(millis), "a", "b"));
+    List<Long> pttl = jedis.spttl("foo", "a", "b");
+    assertTrue(pttl.get(0) > millis - 1000 && pttl.get(0) <= millis, pttl.toString());
+
+    assertEquals(0, jedis.saddex("foo", SAddExParams.sAddExParams().mnx(), "a", "c"));
+    assertFalse(jedis.sismember("foo", "c"));
+    assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().mxx(), "a", "b"));
+    assertEquals(Arrays.asList(-1L, -1L), jedis.spttl("foo", "a", "b"));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void saddexBinary() {
+    long millis = 1_000_000;
+    assertEquals(1, jedis.saddex(bfoo, SAddExParams.sAddExParams().px(millis), ba, bb));
+    List<Long> pttl = jedis.spttl(bfoo, ba, bb);
+    assertTrue(pttl.get(0) > millis - 1000 && pttl.get(0) <= millis, pttl.toString());
+
+    assertEquals(0, jedis.saddex(bfoo, SAddExParams.sAddExParams().mnx(), ba, bc));
+    assertFalse(jedis.sismember(bfoo, bc));
+    assertEquals(1, jedis.saddex(bfoo, SAddExParams.sAddExParams().mxx(), ba, bb));
+    assertEquals(Arrays.asList(-1L, -1L), jedis.spttl(bfoo, ba, bb));
   }
 }

@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 
 import redis.clients.jedis.Response;
+import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.params.SAddExParams;
 import redis.clients.jedis.params.SDiffCardParams;
 import redis.clients.jedis.params.SUnionCardParams;
 import redis.clients.jedis.params.ScanParams;
@@ -110,5 +112,89 @@ public interface SetPipelineCommands {
   Response<Long> sunioncard(List<String> keys, SUnionCardParams params);
 
   Response<Long> smove(String srckey, String dstKey, String member);
+
+  /**
+   * Pipeline variant of {@link SetCommands#sexpire(String, long, String...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> sexpire(String key, long seconds, String... members);
+
+  /**
+   * Pipeline variant of {@link SetCommands#sexpire(String, long, ExpiryOption, String...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> sexpire(String key, long seconds, ExpiryOption condition, String... members);
+
+  /**
+   * Pipeline variant of {@link SetCommands#spexpire(String, long, String...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> spexpire(String key, long milliseconds, String... members);
+
+  /**
+   * Pipeline variant of {@link SetCommands#spexpire(String, long, ExpiryOption, String...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> spexpire(String key, long milliseconds, ExpiryOption condition, String... members);
+
+  /**
+   * Pipeline variant of {@link SetCommands#sexpireAt(String, long, String...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> sexpireAt(String key, long unixTimeSeconds, String... members);
+
+  /**
+   * Pipeline variant of {@link SetCommands#sexpireAt(String, long, ExpiryOption, String...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> sexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String... members);
+
+  /**
+   * Pipeline variant of {@link SetCommands#spexpireAt(String, long, String...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> spexpireAt(String key, long unixTimeMillis, String... members);
+
+  /**
+   * Pipeline variant of {@link SetCommands#spexpireAt(String, long, ExpiryOption, String...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> spexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String... members);
+
+  /**
+   * Pipeline variant of {@link SetCommands#sttl(String, String...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> sttl(String key, String... members);
+
+  /**
+   * Pipeline variant of {@link SetCommands#spttl(String, String...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> spttl(String key, String... members);
+
+  /**
+   * Pipeline variant of {@link SetCommands#sexpireTime(String, String...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> sexpireTime(String key, String... members);
+
+  /**
+   * Pipeline variant of {@link SetCommands#spexpireTime(String, String...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> spexpireTime(String key, String... members);
+
+  /**
+   * Pipeline variant of {@link SetCommands#spersist(String, String...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> spersist(String key, String... members);
+
+  /**
+   * Pipeline variant of {@link SetCommands#saddex(String, SAddExParams, String...)}.
+   * @since 8.1
+   */
+  Response<Long> saddex(String key, SAddExParams params, String... members);
 
 }

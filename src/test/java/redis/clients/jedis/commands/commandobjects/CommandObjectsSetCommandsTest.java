@@ -3,10 +3,13 @@ package redis.clients.jedis.commands.commandobjects;
 import static io.redis.test.utils.RedisVersion.V8_10_0_RC2_STRING;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.anyOf;
+import static org.hamcrest.Matchers.both;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
 import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.hamcrest.Matchers.not;
@@ -15,11 +18,14 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.params.SAddExParams;
 import redis.clients.jedis.params.SDiffCardParams;
 import redis.clients.jedis.params.SUnionCardParams;
 import redis.clients.jedis.params.ScanParams;
@@ -461,5 +467,76 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
 
     Set<byte[]> dstSet = exec(commandObjects.smembers(dstKey));
     assertThat(dstSet, contains(member));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void sexpireAndSttl() {
+    long seconds1 = 20;
+    long seconds2 = 10;
+
+    exec(commandObjects.sadd("foo", "a", "b"));
+    assertThat(exec(commandObjects.sexpire("foo", seconds1, "a", "nosuch")), equalTo(Arrays.asList(1L, -2L)));
+
+    exec(commandObjects.sadd("foo", "c"));
+    assertThat(exec(commandObjects.sexpire("foo", seconds2, ExpiryOption.NX, "a", "c")), equalTo(Arrays.asList(0L, 1L)));
+
+    assertThat(exec(commandObjects.sttl("foo", "a", "b", "c")),
+      contains(greaterThanOrEqualTo(seconds1 - 1), equalTo(-1L),
+        both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
+
+    assertThat(exec(commandObjects.spersist("foo", "a", "b", "nosuch")), equalTo(Arrays.asList(1L, -1L, -2L)));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void sexpireAndSttlBinary() {
+    byte[] key = "foo".getBytes();
+    byte[] a = "a".getBytes();
+    byte[] b = "b".getBytes();
+    byte[] c = "c".getBytes();
+    byte[] nosuch = "nosuch".getBytes();
+    long seconds1 = 20;
+    long seconds2 = 10;
+
+    exec(commandObjects.sadd(key, a, b));
+    assertThat(exec(commandObjects.sexpire(key, seconds1, a, nosuch)), equalTo(Arrays.asList(1L, -2L)));
+
+    exec(commandObjects.sadd(key, c));
+    assertThat(exec(commandObjects.sexpire(key, seconds2, ExpiryOption.NX, a, c)), equalTo(Arrays.asList(0L, 1L)));
+
+    assertThat(exec(commandObjects.sttl(key, a, b, c)),
+      contains(greaterThanOrEqualTo(seconds1 - 1), equalTo(-1L),
+        both(lessThanOrEqualTo(seconds2)).and(greaterThanOrEqualTo(seconds2 - 1))));
+
+    assertThat(exec(commandObjects.spersist(key, a, b, nosuch)), equalTo(Arrays.asList(1L, -1L, -2L)));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void saddex() {
+    long millis = 1_000_000;
+    assertThat(exec(commandObjects.saddex("foo", SAddExParams.sAddExParams().px(millis), "a", "b")), equalTo(1L));
+    assertThat(exec(commandObjects.spttl("foo", "a", "b")), everyItem(greaterThan(millis - 1000)));
+
+    assertThat(exec(commandObjects.saddex("foo", SAddExParams.sAddExParams().mnx(), "a", "c")), equalTo(0L));
+    assertThat(exec(commandObjects.saddex("foo", SAddExParams.sAddExParams().mxx(), "a", "b")), equalTo(1L));
+    assertThat(exec(commandObjects.spttl("foo", "a", "b")), contains(-1L, -1L));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void saddexBinary() {
+    byte[] key = "foo".getBytes();
+    byte[] a = "a".getBytes();
+    byte[] b = "b".getBytes();
+    byte[] c = "c".getBytes();
+    long millis = 1_000_000;
+    assertThat(exec(commandObjects.saddex(key, SAddExParams.sAddExParams().px(millis), a, b)), equalTo(1L));
+    assertThat(exec(commandObjects.spttl(key, a, b)), everyItem(greaterThan(millis - 1000)));
+
+    assertThat(exec(commandObjects.saddex(key, SAddExParams.sAddExParams().mnx(), a, c)), equalTo(0L));
+    assertThat(exec(commandObjects.saddex(key, SAddExParams.sAddExParams().mxx(), a, b)), equalTo(1L));
+    assertThat(exec(commandObjects.spttl(key, a, b)), contains(-1L, -1L));
   }
 }

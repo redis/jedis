@@ -1,6 +1,14 @@
 package redis.clients.jedis.commands.unified;
 
 import static io.redis.test.utils.RedisVersion.V8_10_0_RC2_STRING;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.both;
+import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.everyItem;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.greaterThanOrEqualTo;
+import static org.hamcrest.Matchers.lessThanOrEqualTo;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -20,13 +28,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.params.SAddExParams;
 import redis.clients.jedis.params.SDiffCardParams;
 import redis.clients.jedis.params.SUnionCardParams;
 import redis.clients.jedis.params.ScanParams;
@@ -840,5 +851,275 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
     ScanResult<byte[]> bResult = jedis.sscan(bfoo, SCAN_POINTER_START_BINARY, params);
 
     assertFalse(bResult.getResult().isEmpty());
+  }
+
+  // Set member expiration (Redis 8.12). Expected codes come from the server's
+  // tests/unit/type/set-member-expire.tcl.
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void sttlFamilyMissingKey() {
+    List<Long> missing = Arrays.asList(-2L, -2L, -2L);
+    assertEquals(missing, jedis.sttl("foo", "a", "b", "c"));
+    assertEquals(missing, jedis.spttl("foo", "a", "b", "c"));
+    assertEquals(missing, jedis.sexpireTime("foo", "a", "b", "c"));
+    assertEquals(missing, jedis.spexpireTime("foo", "a", "b", "c"));
+    assertEquals(missing, jedis.spersist("foo", "a", "b", "c"));
+    assertEquals(Arrays.asList(-2L, -2L), jedis.sexpire("foo", 1000, "a", "b"));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void sexpireAndSttl() {
+    long seconds = 20;
+    jedis.sadd("foo", "a", "b", "c");
+    assertEquals(Arrays.asList(1L, -2L), jedis.sexpire("foo", seconds, "a", "nosuch"));
+
+    assertThat(jedis.sttl("foo", "a", "b", "nosuch"), contains(
+      both(greaterThanOrEqualTo(seconds - 1)).and(lessThanOrEqualTo(seconds)), equalTo(-1L),
+      equalTo(-2L)));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void sexpireAndSttlBinary() {
+    long seconds = 20;
+    jedis.sadd(bfoo, ba, bb, bc);
+    assertEquals(Arrays.asList(1L, -2L), jedis.sexpire(bfoo, seconds, ba, bx));
+
+    assertThat(jedis.sttl(bfoo, ba, bb, bx), contains(
+      both(greaterThanOrEqualTo(seconds - 1)).and(lessThanOrEqualTo(seconds)), equalTo(-1L),
+      equalTo(-2L)));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void sexpireConditionsPerMember() {
+    jedis.sadd("foo", "a", "b", "c");
+    long base = System.currentTimeMillis() + 100_000_000L;
+    assertEquals(Arrays.asList(1L), jedis.spexpireAt("foo", base, "b"));
+
+    // NX: only members without an expiration
+    assertEquals(Arrays.asList(1L, 0L, -2L),
+      jedis.spexpireAt("foo", base, ExpiryOption.NX, "a", "b", "nosuch"));
+    // XX: only members with an expiration
+    assertEquals(Arrays.asList(0L, 1L),
+      jedis.spexpireAt("foo", base + 1000, ExpiryOption.XX, "c", "a"));
+    // GT: a member without an expiration counts as never expiring, so GT never holds for it
+    assertEquals(Arrays.asList(0L, 1L),
+      jedis.spexpireAt("foo", base + 500, ExpiryOption.GT, "a", "b"));
+    assertEquals(Arrays.asList(0L), jedis.spexpireAt("foo", base + 500, ExpiryOption.GT, "c"));
+    // LT: always holds for a member without an expiration
+    assertEquals(Arrays.asList(1L, 1L),
+      jedis.spexpireAt("foo", base + 100, ExpiryOption.LT, "a", "c"));
+    assertEquals(Arrays.asList(0L), jedis.spexpireAt("foo", base + 100, ExpiryOption.LT, "a"));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void sexpirePastTimeDeletes() {
+    jedis.sadd("foo", "a", "b", "c");
+    assertEquals(Arrays.asList(2L, -2L), jedis.sexpireAt("foo", 1, "a", "nosuch"));
+    assertEquals(new HashSet<>(Arrays.asList("b", "c")), jedis.smembers("foo"));
+
+    assertEquals(Arrays.asList(2L, 2L), jedis.spexpireAt("foo", 1, "b", "c"));
+    assertFalse(jedis.exists("foo"));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void sexpirePastTimeDeletesBinary() {
+    jedis.sadd(bfoo, ba, bb, bc);
+    assertEquals(Arrays.asList(2L, -2L), jedis.sexpireAt(bfoo, 1, ba, bx));
+    assertByteArraySetEquals(new HashSet<>(Arrays.asList(bb, bc)), jedis.smembers(bfoo));
+
+    assertEquals(Arrays.asList(2L, 2L), jedis.spexpireAt(bfoo, 1, bb, bc));
+    assertFalse(jedis.exists(bfoo));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void spexpireAndSpttl() {
+    long millis = 20_000;
+    jedis.sadd("foo", "a");
+    assertEquals(Arrays.asList(1L), jedis.spexpire("foo", millis, "a"));
+    assertThat(jedis.spttl("foo", "a"),
+      contains(both(greaterThan(millis - 1000)).and(lessThanOrEqualTo(millis))));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void sexpireAtAndSexpireTime() {
+    long at = System.currentTimeMillis() / 1000 + 1000;
+    jedis.sadd("foo", "a", "b");
+    assertEquals(Arrays.asList(1L), jedis.sexpireAt("foo", at, "a"));
+    assertEquals(Arrays.asList(at, -1L), jedis.sexpireTime("foo", "a", "b"));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void spexpireAtAndSpexpireTime() {
+    long at = System.currentTimeMillis() + 1_000_000;
+    jedis.sadd("foo", "a", "b");
+    assertEquals(Arrays.asList(1L), jedis.spexpireAt("foo", at, "a"));
+    assertEquals(Arrays.asList(at, -1L), jedis.spexpireTime("foo", "a", "b"));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void spersist() {
+    jedis.sadd("foo", "a", "b", "c");
+    assertEquals(Arrays.asList(1L, 1L), jedis.sexpire("foo", 1000, "a", "b"));
+
+    assertEquals(Arrays.asList(1L, -1L, -2L, 1L), jedis.spersist("foo", "a", "c", "nosuch", "b"));
+    assertEquals(Arrays.asList(-1L, -1L, -1L), jedis.sttl("foo", "a", "b", "c"));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void spersistBinary() {
+    jedis.sadd(bfoo, ba, bb, bc);
+    assertEquals(Arrays.asList(1L, 1L), jedis.sexpire(bfoo, 1000, ba, bb));
+
+    assertEquals(Arrays.asList(1L, -1L, -2L, 1L), jedis.spersist(bfoo, ba, bc, bx, bb));
+    assertEquals(Arrays.asList(-1L, -1L, -1L), jedis.sttl(bfoo, ba, bb, bc));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void saddexAddsWithExpiration() {
+    assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().ex(1000), "a", "b", "c"));
+    assertEquals(new HashSet<>(Arrays.asList("a", "b", "c")), jedis.smembers("foo"));
+    assertThat(jedis.sttl("foo", "a", "b", "c"), everyItem(greaterThan(900L)));
+
+    assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().px(2_000_000), "d"));
+    assertThat(jedis.spttl("foo", "d"), contains(greaterThan(1_900_000L)));
+
+    long exAt = System.currentTimeMillis() / 1000 + 1000;
+    assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().exAt(exAt), "e"));
+    assertEquals(Arrays.asList(exAt), jedis.sexpireTime("foo", "e"));
+
+    long pxAt = System.currentTimeMillis() + 1_000_000;
+    assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().pxAt(pxAt), "f"));
+    assertEquals(Arrays.asList(pxAt), jedis.spexpireTime("foo", "f"));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void saddexAddsWithExpirationBinary() {
+    assertEquals(1, jedis.saddex(bfoo, SAddExParams.sAddExParams().ex(1000), ba, bb, bc));
+    assertByteArraySetEquals(new HashSet<>(Arrays.asList(ba, bb, bc)), jedis.smembers(bfoo));
+    assertThat(jedis.sttl(bfoo, ba, bb, bc), everyItem(greaterThan(900L)));
+
+    assertEquals(1, jedis.saddex(bfoo, SAddExParams.sAddExParams().px(2_000_000), bd));
+    assertThat(jedis.spttl(bfoo, bd), contains(greaterThan(1_900_000L)));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void saddexExistingMemberExpiration() {
+    jedis.sadd("foo", "a", "b", "c");
+    jedis.sexpire("foo", 1000, "a", "b", "c");
+
+    // an existing member gets the new expiration
+    assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().ex(5000), "a"));
+    assertThat(jedis.sttl("foo", "a"), contains(greaterThan(4000L)));
+    // without an expiration option the existing expiration is discarded
+    assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams(), "b"));
+    assertEquals(Arrays.asList(-1L), jedis.sttl("foo", "b"));
+    // KEEPTTL keeps it; a new member gets none
+    assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().keepTtl(), "c", "new"));
+    assertThat(jedis.sttl("foo", "c", "new"), contains(greaterThan(900L), equalTo(-1L)));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void saddexConditions() {
+    jedis.sadd("foo", "a", "b");
+
+    // MNX: none of the members may exist
+    assertEquals(0, jedis.saddex("foo", SAddExParams.sAddExParams().mnx().ex(1000), "a", "x"));
+    assertFalse(jedis.sismember("foo", "x"));
+    assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().mnx().ex(1000), "x", "y"));
+    assertThat(jedis.sttl("foo", "x", "y"), everyItem(greaterThan(900L)));
+
+    // MXX: all of the members must exist
+    assertEquals(0, jedis.saddex("foo", SAddExParams.sAddExParams().mxx().ex(1000), "a", "nosuch"));
+    assertEquals(Arrays.asList(-1L), jedis.sttl("foo", "a"));
+    assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().mxx().ex(1000), "a", "b"));
+    assertThat(jedis.sttl("foo", "a", "b"), everyItem(greaterThan(900L)));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void saddexConditionsBinary() {
+    jedis.sadd(bfoo, ba, bb);
+
+    assertEquals(0, jedis.saddex(bfoo, SAddExParams.sAddExParams().mnx().ex(1000), ba, bx));
+    assertFalse(jedis.sismember(bfoo, bx));
+    assertEquals(1, jedis.saddex(bfoo, SAddExParams.sAddExParams().mnx().ex(1000), bx, bd));
+
+    assertEquals(0, jedis.saddex(bfoo, SAddExParams.sAddExParams().mxx().ex(1000), ba, bc));
+    assertEquals(Arrays.asList(-1L), jedis.sttl(bfoo, ba));
+    assertEquals(1, jedis.saddex(bfoo, SAddExParams.sAddExParams().mxx().ex(1000), ba, bb));
+    assertThat(jedis.sttl(bfoo, ba, bb), everyItem(greaterThan(900L)));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void saddexPastTimeDeletes() {
+    jedis.sadd("foo", "a", "b", "c");
+    // existing members are deleted, the new one is not added
+    assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().pxAt(1), "a", "new"));
+    assertEquals(new HashSet<>(Arrays.asList("b", "c")), jedis.smembers("foo"));
+
+    jedis.del("foo");
+    assertEquals(0, jedis.saddex("foo", SAddExParams.sAddExParams().pxAt(1), "a", "b"));
+    assertFalse(jedis.exists("foo"));
+
+    jedis.sadd("foo", "a", "b");
+    assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().exAt(1), "a", "b"));
+    assertFalse(jedis.exists("foo"));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void saddexRepliesZeroWhenNothingModified() {
+    long when = System.currentTimeMillis() + 1_000_000;
+    assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().pxAt(when), "a", "b"));
+    // the same members with the same expiration: nothing changes
+    assertEquals(0, jedis.saddex("foo", SAddExParams.sAddExParams().pxAt(when), "a", "b"));
+    // one new member is enough
+    assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().pxAt(when), "a", "c"));
+    // a different expiration is a modification
+    assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().pxAt(when + 1), "a"));
+
+    jedis.del("foo");
+    jedis.sadd("foo", "a", "b");
+    // members without an expiration, no expiration given or kept: nothing changes
+    assertEquals(0, jedis.saddex("foo", SAddExParams.sAddExParams(), "a", "b"));
+    assertEquals(0, jedis.saddex("foo", SAddExParams.sAddExParams().keepTtl(), "a", "b"));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void saddexMxxMissingKey() {
+    assertEquals(0, jedis.saddex("foo", SAddExParams.sAddExParams().mxx(), "a"));
+    assertFalse(jedis.exists("foo"));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void sexpireWrongType() {
+    jedis.set("foo", "bar");
+    assertWrongType(() -> jedis.sexpire("foo", 10, "a"));
+    assertWrongType(() -> jedis.sttl("foo", "a"));
+    assertWrongType(() -> jedis.spersist("foo", "a"));
+    assertWrongType(() -> jedis.saddex("foo", SAddExParams.sAddExParams(), "a"));
+  }
+
+  private static void assertWrongType(org.junit.jupiter.api.function.Executable executable) {
+    JedisDataException e = assertThrows(JedisDataException.class, executable);
+    assertTrue(e.getMessage().startsWith("WRONGTYPE"), e.getMessage());
   }
 }

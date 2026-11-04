@@ -11,6 +11,8 @@ import java.util.Set;
 
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Response;
+import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.params.SAddExParams;
 import redis.clients.jedis.params.SDiffCardParams;
 import redis.clients.jedis.params.SUnionCardParams;
 import redis.clients.jedis.params.ScanParams;
@@ -651,6 +653,372 @@ public class PipeliningBaseSetCommandsTest extends PipeliningBaseMockedTestBase 
     when(commandObjects.sunioncard(keys, params)).thenReturn(longCommandObject);
 
     Response<Long> response = pipeliningBase.sunioncard(keys, params);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSexpire() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+
+    when(commandObjects.sexpire(key, 20, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.sexpire(key, 20, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSexpireWithCondition() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+
+    when(commandObjects.sexpire(key, 20, ExpiryOption.NX, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.sexpire(key, 20, ExpiryOption.NX, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSpexpire() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+
+    when(commandObjects.spexpire(key, 20000, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.spexpire(key, 20000, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSpexpireWithCondition() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+
+    when(commandObjects.spexpire(key, 20000, ExpiryOption.NX, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.spexpire(key, 20000, ExpiryOption.NX, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSexpireAt() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+
+    when(commandObjects.sexpireAt(key, 1700000000, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.sexpireAt(key, 1700000000, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSexpireAtWithCondition() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+
+    when(commandObjects.sexpireAt(key, 1700000000, ExpiryOption.NX, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.sexpireAt(key, 1700000000, ExpiryOption.NX, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSpexpireAt() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+
+    when(commandObjects.spexpireAt(key, 1700000000000L, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.spexpireAt(key, 1700000000000L, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSpexpireAtWithCondition() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+
+    when(commandObjects.spexpireAt(key, 1700000000000L, ExpiryOption.NX, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.spexpireAt(key, 1700000000000L, ExpiryOption.NX, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSttl() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+
+    when(commandObjects.sttl(key, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.sttl(key, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSpttl() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+
+    when(commandObjects.spttl(key, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.spttl(key, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSexpireTime() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+
+    when(commandObjects.sexpireTime(key, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.sexpireTime(key, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSpexpireTime() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+
+    when(commandObjects.spexpireTime(key, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.spexpireTime(key, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSpersist() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+
+    when(commandObjects.spersist(key, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.spersist(key, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSaddex() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+    SAddExParams params = SAddExParams.sAddExParams().mnx().ex(100);
+
+    when(commandObjects.saddex(key, params, members)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.saddex(key, params, members);
+
+    assertThat(commands, contains(longCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSexpireBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+
+    when(commandObjects.sexpire(key, 20, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.sexpire(key, 20, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSexpireWithConditionBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+
+    when(commandObjects.sexpire(key, 20, ExpiryOption.NX, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.sexpire(key, 20, ExpiryOption.NX, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSpexpireBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+
+    when(commandObjects.spexpire(key, 20000, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.spexpire(key, 20000, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSpexpireWithConditionBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+
+    when(commandObjects.spexpire(key, 20000, ExpiryOption.NX, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.spexpire(key, 20000, ExpiryOption.NX, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSexpireAtBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+
+    when(commandObjects.sexpireAt(key, 1700000000, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.sexpireAt(key, 1700000000, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSexpireAtWithConditionBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+
+    when(commandObjects.sexpireAt(key, 1700000000, ExpiryOption.NX, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.sexpireAt(key, 1700000000, ExpiryOption.NX, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSpexpireAtBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+
+    when(commandObjects.spexpireAt(key, 1700000000000L, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.spexpireAt(key, 1700000000000L, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSpexpireAtWithConditionBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+
+    when(commandObjects.spexpireAt(key, 1700000000000L, ExpiryOption.NX, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.spexpireAt(key, 1700000000000L, ExpiryOption.NX, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSttlBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+
+    when(commandObjects.sttl(key, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.sttl(key, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSpttlBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+
+    when(commandObjects.spttl(key, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.spttl(key, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSexpireTimeBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+
+    when(commandObjects.sexpireTime(key, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.sexpireTime(key, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSpexpireTimeBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+
+    when(commandObjects.spexpireTime(key, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.spexpireTime(key, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSpersistBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+
+    when(commandObjects.spersist(key, members)).thenReturn(listLongCommandObject);
+
+    Response<List<Long>> response = pipeliningBase.spersist(key, members);
+
+    assertThat(commands, contains(listLongCommandObject));
+    assertThat(response, is(predefinedResponse));
+  }
+
+  @Test
+  public void testSaddexBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+    SAddExParams params = SAddExParams.sAddExParams().mnx().ex(100);
+
+    when(commandObjects.saddex(key, params, members)).thenReturn(longCommandObject);
+
+    Response<Long> response = pipeliningBase.saddex(key, params, members);
 
     assertThat(commands, contains(longCommandObject));
     assertThat(response, is(predefinedResponse));

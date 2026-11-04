@@ -77,7 +77,8 @@ public class RedisConditions {
    * @return {@code true} if the command is present.
    */
   public boolean hasCommand(String command) {
-    return commands.containsKey(command.toUpperCase());
+    // COMMAND replies the names in lower case
+    return commands.containsKey(command.toLowerCase());
   }
 
   /**

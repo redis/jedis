@@ -4023,6 +4023,19 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public List<Long> bitrangeintarray(final byte[] key, final long start, final long end) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bitrangeintarray(key, start, end));
+  }
+
+  @Override
+  public List<Long> bitrangeintarray(final byte[] key, final long start, final long end,
+      final BitRangeIntArrayParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bitrangeintarray(key, start, end, params));
+  }
+
+  @Override
   public long setrange(final byte[] key, final long offset, final byte[] value) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.setrange(key, offset, value));
@@ -8681,6 +8694,19 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public long bitpos(final String key, final boolean value, final BitPosParams params) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bitpos(key, value, params));
+  }
+
+  @Override
+  public List<Long> bitrangeintarray(final String key, final long start, final long end) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bitrangeintarray(key, start, end));
+  }
+
+  @Override
+  public List<Long> bitrangeintarray(final String key, final long start, final long end,
+      final BitRangeIntArrayParams params) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bitrangeintarray(key, start, end, params));
   }
 
   @Override

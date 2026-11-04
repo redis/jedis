@@ -5,6 +5,7 @@ import java.util.List;
 import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.params.BitPosParams;
+import redis.clients.jedis.params.BitRangeIntArrayParams;
 
 public interface BitCommands {
 
@@ -80,6 +81,43 @@ public interface BitCommands {
    * @return The position of the first bit set to 1 or 0 according to the request
    */
   long bitpos(String key, boolean value, BitPosParams params);
+
+  /**
+   * <b><a href="https://redis.io/commands/bitrangeintarray">BITRANGEINTARRAY Command</a></b>
+   * Return the offsets of the bits set to 1 in a range of a bitmap, in ascending order. The range
+   * is the one of BITCOUNT: start and end are inclusive byte indexes, and a negative index counts
+   * from the end. Missing keys and empty ranges return an empty list.
+   * <p>
+   * Time complexity: O(N + M) where N is the number of bytes in the range for a string, or the
+   * number of bitmap containers in the range (and of runs of set bits in it, with ZEROS), and M
+   * is the number of returned integers. With LIMIT, the scan stops after count matches, or after
+   * completing their last byte in BYTE units.
+   * @param key the bitmap key
+   * @param start the first byte of the range
+   * @param end the last byte of the range
+   * @return the bit offsets of the set bits in the range
+   * @since 8.1
+   */
+  List<Long> bitrangeintarray(String key, long start, long end);
+
+  /**
+   * <b><a href="https://redis.io/commands/bitrangeintarray">BITRANGEINTARRAY Command</a></b>
+   * Return the offsets of the set bits, or of the clear bits with
+   * {@link BitRangeIntArrayParams#zeros()}, in a range of a bitmap, in ascending order. The unit of
+   * start and end is set with {@link BitRangeIntArrayParams#unit(BitCountOption)}; the offsets are
+   * bit offsets in both units. Clear bits are reported inside the value only: unlike BITPOS, no
+   * clear bits are assumed past its end. With {@link BitRangeIntArrayParams#limit(long)} the lowest
+   * offsets of the range are returned; see there for paging.
+   * <p>
+   * Time complexity: as {@link #bitrangeintarray(String, long, long)}.
+   * @param key the bitmap key
+   * @param start the first index of the range, in the unit
+   * @param end the last index of the range, in the unit
+   * @param params {@link BitRangeIntArrayParams}
+   * @return the bit offsets in the range
+   * @since 8.1
+   */
+  List<Long> bitrangeintarray(String key, long start, long end, BitRangeIntArrayParams params);
 
   /**
    * <b><a href="http://redis.io/commands/bitfield">Bitfield Command</a></b>

@@ -684,14 +684,14 @@ public class SetPipelineCommandsTest extends PipelineCommandsTestBase {
     Response<List<Long>> sexpire = pipe.sexpire("foo", 2000, ExpiryOption.NX, "a", "b", "nosuch");
     Response<List<Long>> sttl = pipe.sttl("foo", "a", "b", "c");
     Response<List<Long>> spersist = pipe.spersist("foo", "a", "nosuch");
-    Response<List<Long>> spttl = pipe.spttl("foo", "a");
+    Response<Long> spttl = pipe.spttl("foo", "a");
     pipe.sync();
 
     assertThat(saddex.get(), equalTo(1L));
     assertThat(sexpire.get(), contains(1L, 0L, -2L));
     assertThat(sttl.get(), contains(greaterThan(1900L), greaterThan(900L), greaterThan(900L)));
     assertThat(spersist.get(), contains(1L, -2L));
-    assertThat(spttl.get(), contains(-1L));
+    assertThat(spttl.get(), equalTo(-1L));
   }
 
   @Test
@@ -702,13 +702,13 @@ public class SetPipelineCommandsTest extends PipelineCommandsTestBase {
     Response<List<Long>> sexpire = pipe.sexpire(bfoo, 2000, ExpiryOption.NX, ba, bb, bx);
     Response<List<Long>> sttl = pipe.sttl(bfoo, ba, bb, bc);
     Response<List<Long>> spersist = pipe.spersist(bfoo, ba, bx);
-    Response<List<Long>> spttl = pipe.spttl(bfoo, ba);
+    Response<Long> spttl = pipe.spttl(bfoo, ba);
     pipe.sync();
 
     assertThat(saddex.get(), equalTo(1L));
     assertThat(sexpire.get(), contains(1L, 0L, -2L));
     assertThat(sttl.get(), contains(greaterThan(1900L), greaterThan(900L), greaterThan(900L)));
     assertThat(spersist.get(), contains(1L, -2L));
-    assertThat(spttl.get(), contains(-1L));
+    assertThat(spttl.get(), equalTo(-1L));
   }
 }

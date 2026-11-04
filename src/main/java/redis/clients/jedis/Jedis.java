@@ -2055,9 +2055,93 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long sexpire(final byte[] key, final long seconds, final byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sexpire(key, seconds, member));
+  }
+
+  @Override
+  public long sexpire(final byte[] key, final long seconds, final ExpiryOption condition, final byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sexpire(key, seconds, condition, member));
+  }
+
+  @Override
+  public long spexpire(final byte[] key, final long milliseconds, final byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.spexpire(key, milliseconds, member));
+  }
+
+  @Override
+  public long spexpire(final byte[] key, final long milliseconds, final ExpiryOption condition, final byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.spexpire(key, milliseconds, condition, member));
+  }
+
+  @Override
+  public long sexpireAt(final byte[] key, final long unixTimeSeconds, final byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sexpireAt(key, unixTimeSeconds, member));
+  }
+
+  @Override
+  public long sexpireAt(final byte[] key, final long unixTimeSeconds, final ExpiryOption condition, final byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sexpireAt(key, unixTimeSeconds, condition, member));
+  }
+
+  @Override
+  public long spexpireAt(final byte[] key, final long unixTimeMillis, final byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.spexpireAt(key, unixTimeMillis, member));
+  }
+
+  @Override
+  public long spexpireAt(final byte[] key, final long unixTimeMillis, final ExpiryOption condition, final byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.spexpireAt(key, unixTimeMillis, condition, member));
+  }
+
+  @Override
+  public long sttl(final byte[] key, final byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sttl(key, member));
+  }
+
+  @Override
+  public long spttl(final byte[] key, final byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.spttl(key, member));
+  }
+
+  @Override
+  public long sexpireTime(final byte[] key, final byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sexpireTime(key, member));
+  }
+
+  @Override
+  public long spexpireTime(final byte[] key, final byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.spexpireTime(key, member));
+  }
+
+  @Override
+  public long spersist(final byte[] key, final byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.spersist(key, member));
+  }
+
+  @Override
   public long saddex(final byte[] key, final SAddExParams params, final byte[]... members) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.saddex(key, params, members));
+  }
+
+  @Override
+  public long saddex(final byte[] key, final SAddExParams params, final byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.saddex(key, params, member));
   }
 
   /**
@@ -7019,9 +7103,93 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
+  public long sexpire(final String key, final long seconds, final String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sexpire(key, seconds, member));
+  }
+
+  @Override
+  public long sexpire(final String key, final long seconds, final ExpiryOption condition, final String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sexpire(key, seconds, condition, member));
+  }
+
+  @Override
+  public long spexpire(final String key, final long milliseconds, final String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.spexpire(key, milliseconds, member));
+  }
+
+  @Override
+  public long spexpire(final String key, final long milliseconds, final ExpiryOption condition, final String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.spexpire(key, milliseconds, condition, member));
+  }
+
+  @Override
+  public long sexpireAt(final String key, final long unixTimeSeconds, final String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sexpireAt(key, unixTimeSeconds, member));
+  }
+
+  @Override
+  public long sexpireAt(final String key, final long unixTimeSeconds, final ExpiryOption condition, final String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sexpireAt(key, unixTimeSeconds, condition, member));
+  }
+
+  @Override
+  public long spexpireAt(final String key, final long unixTimeMillis, final String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.spexpireAt(key, unixTimeMillis, member));
+  }
+
+  @Override
+  public long spexpireAt(final String key, final long unixTimeMillis, final ExpiryOption condition, final String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.spexpireAt(key, unixTimeMillis, condition, member));
+  }
+
+  @Override
+  public long sttl(final String key, final String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sttl(key, member));
+  }
+
+  @Override
+  public long spttl(final String key, final String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.spttl(key, member));
+  }
+
+  @Override
+  public long sexpireTime(final String key, final String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.sexpireTime(key, member));
+  }
+
+  @Override
+  public long spexpireTime(final String key, final String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.spexpireTime(key, member));
+  }
+
+  @Override
+  public long spersist(final String key, final String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.spersist(key, member));
+  }
+
+  @Override
   public long saddex(final String key, final SAddExParams params, final String... members) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.saddex(key, params, members));
+  }
+
+  @Override
+  public long saddex(final String key, final SAddExParams params, final String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.saddex(key, params, member));
   }
 
   /**

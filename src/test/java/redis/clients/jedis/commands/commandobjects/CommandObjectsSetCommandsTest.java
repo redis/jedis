@@ -514,6 +514,28 @@ public class CommandObjectsSetCommandsTest extends CommandObjectsStandaloneTestB
 
   @Test
   @EnabledOnCommand("SADDEX")
+  public void singleMemberVariants() {
+    exec(commandObjects.sadd("foo", "a"));
+    assertThat(exec(commandObjects.sexpire("foo", 1000, "a")), equalTo(1L));
+    assertThat(exec(commandObjects.sexpire("foo", 2000, ExpiryOption.NX, "a")), equalTo(0L));
+    assertThat(exec(commandObjects.sttl("foo", "a")), greaterThan(900L));
+    assertThat(exec(commandObjects.spersist("foo", "a")), equalTo(1L));
+    assertThat(exec(commandObjects.sttl("foo", "a")), equalTo(-1L));
+    assertThat(exec(commandObjects.sttl("foo", "nosuch")), equalTo(-2L));
+
+    byte[] key = "foo".getBytes();
+    byte[] a = "a".getBytes();
+    assertThat(exec(commandObjects.spexpire(key, 1_000_000, a)), equalTo(1L));
+    assertThat(exec(commandObjects.spttl(key, a)), greaterThan(900_000L));
+    assertThat(exec(commandObjects.spersist(key, a)), equalTo(1L));
+    assertThat(exec(commandObjects.spexpireTime(key, a)), equalTo(-1L));
+
+    assertThat(exec(commandObjects.saddex("foo", SAddExParams.sAddExParams().ex(1000), "b")), equalTo(1L));
+    assertThat(exec(commandObjects.saddex(key, SAddExParams.sAddExParams().mnx(), "b".getBytes())), equalTo(0L));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
   public void saddex() {
     long millis = 1_000_000;
     assertThat(exec(commandObjects.saddex("foo", SAddExParams.sAddExParams().px(millis), "a", "b")), equalTo(1L));

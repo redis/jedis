@@ -192,9 +192,93 @@ public interface SetPipelineCommands {
   Response<List<Long>> spersist(String key, String... members);
 
   /**
+   * Pipeline variant of {@link SetCommands#sexpire(String, long, String)}.
+   * @since 8.1
+   */
+  Response<Long> sexpire(String key, long seconds, String member);
+
+  /**
+   * Pipeline variant of {@link SetCommands#sexpire(String, long, ExpiryOption, String)}.
+   * @since 8.1
+   */
+  Response<Long> sexpire(String key, long seconds, ExpiryOption condition, String member);
+
+  /**
+   * Pipeline variant of {@link SetCommands#spexpire(String, long, String)}.
+   * @since 8.1
+   */
+  Response<Long> spexpire(String key, long milliseconds, String member);
+
+  /**
+   * Pipeline variant of {@link SetCommands#spexpire(String, long, ExpiryOption, String)}.
+   * @since 8.1
+   */
+  Response<Long> spexpire(String key, long milliseconds, ExpiryOption condition, String member);
+
+  /**
+   * Pipeline variant of {@link SetCommands#sexpireAt(String, long, String)}.
+   * @since 8.1
+   */
+  Response<Long> sexpireAt(String key, long unixTimeSeconds, String member);
+
+  /**
+   * Pipeline variant of {@link SetCommands#sexpireAt(String, long, ExpiryOption, String)}.
+   * @since 8.1
+   */
+  Response<Long> sexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String member);
+
+  /**
+   * Pipeline variant of {@link SetCommands#spexpireAt(String, long, String)}.
+   * @since 8.1
+   */
+  Response<Long> spexpireAt(String key, long unixTimeMillis, String member);
+
+  /**
+   * Pipeline variant of {@link SetCommands#spexpireAt(String, long, ExpiryOption, String)}.
+   * @since 8.1
+   */
+  Response<Long> spexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String member);
+
+  /**
+   * Pipeline variant of {@link SetCommands#sttl(String, String)}.
+   * @since 8.1
+   */
+  Response<Long> sttl(String key, String member);
+
+  /**
+   * Pipeline variant of {@link SetCommands#spttl(String, String)}.
+   * @since 8.1
+   */
+  Response<Long> spttl(String key, String member);
+
+  /**
+   * Pipeline variant of {@link SetCommands#sexpireTime(String, String)}.
+   * @since 8.1
+   */
+  Response<Long> sexpireTime(String key, String member);
+
+  /**
+   * Pipeline variant of {@link SetCommands#spexpireTime(String, String)}.
+   * @since 8.1
+   */
+  Response<Long> spexpireTime(String key, String member);
+
+  /**
+   * Pipeline variant of {@link SetCommands#spersist(String, String)}.
+   * @since 8.1
+   */
+  Response<Long> spersist(String key, String member);
+
+  /**
    * Pipeline variant of {@link SetCommands#saddex(String, SAddExParams, String...)}.
    * @since 8.1
    */
   Response<Long> saddex(String key, SAddExParams params, String... members);
+
+  /**
+   * Pipeline variant of {@link SetCommands#saddex(String, SAddExParams, String)}.
+   * @since 8.1
+   */
+  Response<Long> saddex(String key, SAddExParams params, String member);
 
 }

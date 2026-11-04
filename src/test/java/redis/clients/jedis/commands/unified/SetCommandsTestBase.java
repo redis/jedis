@@ -897,7 +897,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
   public void sexpireConditionsPerMember() {
     jedis.sadd("foo", "a", "b", "c");
     long base = System.currentTimeMillis() + 100_000_000L;
-    assertEquals(Arrays.asList(1L), jedis.spexpireAt("foo", base, "b"));
+    assertEquals(1, jedis.spexpireAt("foo", base, "b"));
 
     // NX: only members without an expiration
     assertEquals(Arrays.asList(1L, 0L, -2L),
@@ -908,11 +908,11 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
     // GT: a member without an expiration counts as never expiring, so GT never holds for it
     assertEquals(Arrays.asList(0L, 1L),
       jedis.spexpireAt("foo", base + 500, ExpiryOption.GT, "a", "b"));
-    assertEquals(Arrays.asList(0L), jedis.spexpireAt("foo", base + 500, ExpiryOption.GT, "c"));
+    assertEquals(0, jedis.spexpireAt("foo", base + 500, ExpiryOption.GT, "c"));
     // LT: always holds for a member without an expiration
     assertEquals(Arrays.asList(1L, 1L),
       jedis.spexpireAt("foo", base + 100, ExpiryOption.LT, "a", "c"));
-    assertEquals(Arrays.asList(0L), jedis.spexpireAt("foo", base + 100, ExpiryOption.LT, "a"));
+    assertEquals(0, jedis.spexpireAt("foo", base + 100, ExpiryOption.LT, "a"));
   }
 
   @Test
@@ -942,9 +942,8 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
   public void spexpireAndSpttl() {
     long millis = 20_000;
     jedis.sadd("foo", "a");
-    assertEquals(Arrays.asList(1L), jedis.spexpire("foo", millis, "a"));
-    assertThat(jedis.spttl("foo", "a"),
-      contains(both(greaterThan(millis - 1000)).and(lessThanOrEqualTo(millis))));
+    assertEquals(1, jedis.spexpire("foo", millis, "a"));
+    assertThat(jedis.spttl("foo", "a"), both(greaterThan(millis - 1000)).and(lessThanOrEqualTo(millis)));
   }
 
   @Test
@@ -952,7 +951,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
   public void sexpireAtAndSexpireTime() {
     long at = System.currentTimeMillis() / 1000 + 1000;
     jedis.sadd("foo", "a", "b");
-    assertEquals(Arrays.asList(1L), jedis.sexpireAt("foo", at, "a"));
+    assertEquals(1, jedis.sexpireAt("foo", at, "a"));
     assertEquals(Arrays.asList(at, -1L), jedis.sexpireTime("foo", "a", "b"));
   }
 
@@ -961,7 +960,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
   public void spexpireAtAndSpexpireTime() {
     long at = System.currentTimeMillis() + 1_000_000;
     jedis.sadd("foo", "a", "b");
-    assertEquals(Arrays.asList(1L), jedis.spexpireAt("foo", at, "a"));
+    assertEquals(1, jedis.spexpireAt("foo", at, "a"));
     assertEquals(Arrays.asList(at, -1L), jedis.spexpireTime("foo", "a", "b"));
   }
 
@@ -993,15 +992,15 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertThat(jedis.sttl("foo", "a", "b", "c"), everyItem(greaterThan(900L)));
 
     assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().px(2_000_000), "d"));
-    assertThat(jedis.spttl("foo", "d"), contains(greaterThan(1_900_000L)));
+    assertThat(jedis.spttl("foo", "d"), greaterThan(1_900_000L));
 
     long exAt = System.currentTimeMillis() / 1000 + 1000;
     assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().exAt(exAt), "e"));
-    assertEquals(Arrays.asList(exAt), jedis.sexpireTime("foo", "e"));
+    assertEquals(exAt, jedis.sexpireTime("foo", "e"));
 
     long pxAt = System.currentTimeMillis() + 1_000_000;
     assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().pxAt(pxAt), "f"));
-    assertEquals(Arrays.asList(pxAt), jedis.spexpireTime("foo", "f"));
+    assertEquals(pxAt, jedis.spexpireTime("foo", "f"));
   }
 
   @Test
@@ -1012,7 +1011,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertThat(jedis.sttl(bfoo, ba, bb, bc), everyItem(greaterThan(900L)));
 
     assertEquals(1, jedis.saddex(bfoo, SAddExParams.sAddExParams().px(2_000_000), bd));
-    assertThat(jedis.spttl(bfoo, bd), contains(greaterThan(1_900_000L)));
+    assertThat(jedis.spttl(bfoo, bd), greaterThan(1_900_000L));
   }
 
   @Test
@@ -1023,10 +1022,10 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
     // an existing member gets the new expiration
     assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().ex(5000), "a"));
-    assertThat(jedis.sttl("foo", "a"), contains(greaterThan(4000L)));
+    assertThat(jedis.sttl("foo", "a"), greaterThan(4000L));
     // without an expiration option the existing expiration is discarded
     assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams(), "b"));
-    assertEquals(Arrays.asList(-1L), jedis.sttl("foo", "b"));
+    assertEquals(-1, jedis.sttl("foo", "b"));
     // KEEPTTL keeps it; a new member gets none
     assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().keepTtl(), "c", "new"));
     assertThat(jedis.sttl("foo", "c", "new"), contains(greaterThan(900L), equalTo(-1L)));
@@ -1045,7 +1044,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
 
     // MXX: all of the members must exist
     assertEquals(0, jedis.saddex("foo", SAddExParams.sAddExParams().mxx().ex(1000), "a", "nosuch"));
-    assertEquals(Arrays.asList(-1L), jedis.sttl("foo", "a"));
+    assertEquals(-1, jedis.sttl("foo", "a"));
     assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().mxx().ex(1000), "a", "b"));
     assertThat(jedis.sttl("foo", "a", "b"), everyItem(greaterThan(900L)));
   }
@@ -1060,7 +1059,7 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertEquals(1, jedis.saddex(bfoo, SAddExParams.sAddExParams().mnx().ex(1000), bx, bd));
 
     assertEquals(0, jedis.saddex(bfoo, SAddExParams.sAddExParams().mxx().ex(1000), ba, bc));
-    assertEquals(Arrays.asList(-1L), jedis.sttl(bfoo, ba));
+    assertEquals(-1, jedis.sttl(bfoo, ba));
     assertEquals(1, jedis.saddex(bfoo, SAddExParams.sAddExParams().mxx().ex(1000), ba, bb));
     assertThat(jedis.sttl(bfoo, ba, bb), everyItem(greaterThan(900L)));
   }
@@ -1106,6 +1105,71 @@ public abstract class SetCommandsTestBase extends UnifiedJedisCommandsTestBase {
   public void saddexMxxMissingKey() {
     assertEquals(0, jedis.saddex("foo", SAddExParams.sAddExParams().mxx(), "a"));
     assertFalse(jedis.exists("foo"));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void singleMemberVariants() {
+    jedis.sadd("foo", "a", "b");
+    long at = System.currentTimeMillis() / 1000 + 1000;
+    long atMillis = at * 1000;
+
+    assertEquals(1, jedis.sexpire("foo", 1000, "a"));
+    assertEquals(0, jedis.sexpire("foo", 2000, ExpiryOption.NX, "a"));
+    assertEquals(1, jedis.spexpire("foo", 2_000_000, "a"));
+    assertEquals(1, jedis.spexpire("foo", 1_000_000, ExpiryOption.LT, "a"));
+    assertEquals(1, jedis.sexpireAt("foo", at, "a"));
+    assertEquals(0, jedis.sexpireAt("foo", at, ExpiryOption.GT, "a"));
+    assertEquals(1, jedis.spexpireAt("foo", atMillis, "a"));
+    assertEquals(1, jedis.spexpireAt("foo", atMillis, ExpiryOption.XX, "a"));
+
+    assertThat(jedis.sttl("foo", "a"), both(greaterThan(900L)).and(lessThanOrEqualTo(1000L)));
+    assertThat(jedis.spttl("foo", "a"), both(greaterThan(900_000L)).and(lessThanOrEqualTo(1_000_000L)));
+    assertEquals(at, jedis.sexpireTime("foo", "a"));
+    assertEquals(atMillis, jedis.spexpireTime("foo", "a"));
+
+    assertEquals(1, jedis.spersist("foo", "a"));
+    assertEquals(-1, jedis.spersist("foo", "a"));
+    assertEquals(-1, jedis.sttl("foo", "b"));
+    assertEquals(-2, jedis.sttl("foo", "nosuch"));
+    assertEquals(-2, jedis.spexpireTime("foo", "nosuch"));
+    assertEquals(2, jedis.sexpireAt("foo", 1, "b"));
+
+    assertEquals(1, jedis.saddex("foo", SAddExParams.sAddExParams().ex(1000), "c"));
+    assertEquals(0, jedis.saddex("foo", SAddExParams.sAddExParams().mnx(), "c"));
+    assertThat(jedis.sttl("foo", "c"), greaterThan(900L));
+  }
+
+  @Test
+  @EnabledOnCommand("SADDEX")
+  public void singleMemberVariantsBinary() {
+    jedis.sadd(bfoo, ba, bb);
+    long at = System.currentTimeMillis() / 1000 + 1000;
+    long atMillis = at * 1000;
+
+    assertEquals(1, jedis.sexpire(bfoo, 1000, ba));
+    assertEquals(0, jedis.sexpire(bfoo, 2000, ExpiryOption.NX, ba));
+    assertEquals(1, jedis.spexpire(bfoo, 2_000_000, ba));
+    assertEquals(1, jedis.spexpire(bfoo, 1_000_000, ExpiryOption.LT, ba));
+    assertEquals(1, jedis.sexpireAt(bfoo, at, ba));
+    assertEquals(0, jedis.sexpireAt(bfoo, at, ExpiryOption.GT, ba));
+    assertEquals(1, jedis.spexpireAt(bfoo, atMillis, ba));
+    assertEquals(1, jedis.spexpireAt(bfoo, atMillis, ExpiryOption.XX, ba));
+
+    assertThat(jedis.sttl(bfoo, ba), both(greaterThan(900L)).and(lessThanOrEqualTo(1000L)));
+    assertThat(jedis.spttl(bfoo, ba), both(greaterThan(900_000L)).and(lessThanOrEqualTo(1_000_000L)));
+    assertEquals(at, jedis.sexpireTime(bfoo, ba));
+    assertEquals(atMillis, jedis.spexpireTime(bfoo, ba));
+
+    assertEquals(1, jedis.spersist(bfoo, ba));
+    assertEquals(-1, jedis.spersist(bfoo, ba));
+    assertEquals(-1, jedis.sttl(bfoo, bb));
+    assertEquals(-2, jedis.sttl(bfoo, bx));
+    assertEquals(2, jedis.sexpireAt(bfoo, 1, bb));
+
+    assertEquals(1, jedis.saddex(bfoo, SAddExParams.sAddExParams().ex(1000), bc));
+    assertEquals(0, jedis.saddex(bfoo, SAddExParams.sAddExParams().mnx(), bc));
+    assertThat(jedis.sttl(bfoo, bc), greaterThan(900L));
   }
 
   @Test

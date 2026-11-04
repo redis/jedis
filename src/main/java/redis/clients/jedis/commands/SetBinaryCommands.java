@@ -189,9 +189,93 @@ public interface SetBinaryCommands {
   List<Long> spersist(byte[] key, byte[]... members);
 
   /**
+   * @see SetCommands#sexpire(String, long, String)
+   * @since 8.1
+   */
+  long sexpire(byte[] key, long seconds, byte[] member);
+
+  /**
+   * @see SetCommands#sexpire(String, long, ExpiryOption, String)
+   * @since 8.1
+   */
+  long sexpire(byte[] key, long seconds, ExpiryOption condition, byte[] member);
+
+  /**
+   * @see SetCommands#spexpire(String, long, String)
+   * @since 8.1
+   */
+  long spexpire(byte[] key, long milliseconds, byte[] member);
+
+  /**
+   * @see SetCommands#spexpire(String, long, ExpiryOption, String)
+   * @since 8.1
+   */
+  long spexpire(byte[] key, long milliseconds, ExpiryOption condition, byte[] member);
+
+  /**
+   * @see SetCommands#sexpireAt(String, long, String)
+   * @since 8.1
+   */
+  long sexpireAt(byte[] key, long unixTimeSeconds, byte[] member);
+
+  /**
+   * @see SetCommands#sexpireAt(String, long, ExpiryOption, String)
+   * @since 8.1
+   */
+  long sexpireAt(byte[] key, long unixTimeSeconds, ExpiryOption condition, byte[] member);
+
+  /**
+   * @see SetCommands#spexpireAt(String, long, String)
+   * @since 8.1
+   */
+  long spexpireAt(byte[] key, long unixTimeMillis, byte[] member);
+
+  /**
+   * @see SetCommands#spexpireAt(String, long, ExpiryOption, String)
+   * @since 8.1
+   */
+  long spexpireAt(byte[] key, long unixTimeMillis, ExpiryOption condition, byte[] member);
+
+  /**
+   * @see SetCommands#sttl(String, String)
+   * @since 8.1
+   */
+  long sttl(byte[] key, byte[] member);
+
+  /**
+   * @see SetCommands#spttl(String, String)
+   * @since 8.1
+   */
+  long spttl(byte[] key, byte[] member);
+
+  /**
+   * @see SetCommands#sexpireTime(String, String)
+   * @since 8.1
+   */
+  long sexpireTime(byte[] key, byte[] member);
+
+  /**
+   * @see SetCommands#spexpireTime(String, String)
+   * @since 8.1
+   */
+  long spexpireTime(byte[] key, byte[] member);
+
+  /**
+   * @see SetCommands#spersist(String, String)
+   * @since 8.1
+   */
+  long spersist(byte[] key, byte[] member);
+
+  /**
    * @see SetCommands#saddex(String, SAddExParams, String...)
    * @since 8.1
    */
   long saddex(byte[] key, SAddExParams params, byte[]... members);
+
+  /**
+   * @see SetCommands#saddex(String, SAddExParams, String)
+   * @since 8.1
+   */
+  long saddex(byte[] key, SAddExParams params, byte[] member);
 
 }

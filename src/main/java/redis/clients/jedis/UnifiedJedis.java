@@ -2212,8 +2212,78 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long sexpire(String key, long seconds, String member) {
+    return executeCommand(commandObjects.sexpire(key, seconds, member));
+  }
+
+  @Override
+  public long sexpire(String key, long seconds, ExpiryOption condition, String member) {
+    return executeCommand(commandObjects.sexpire(key, seconds, condition, member));
+  }
+
+  @Override
+  public long spexpire(String key, long milliseconds, String member) {
+    return executeCommand(commandObjects.spexpire(key, milliseconds, member));
+  }
+
+  @Override
+  public long spexpire(String key, long milliseconds, ExpiryOption condition, String member) {
+    return executeCommand(commandObjects.spexpire(key, milliseconds, condition, member));
+  }
+
+  @Override
+  public long sexpireAt(String key, long unixTimeSeconds, String member) {
+    return executeCommand(commandObjects.sexpireAt(key, unixTimeSeconds, member));
+  }
+
+  @Override
+  public long sexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String member) {
+    return executeCommand(commandObjects.sexpireAt(key, unixTimeSeconds, condition, member));
+  }
+
+  @Override
+  public long spexpireAt(String key, long unixTimeMillis, String member) {
+    return executeCommand(commandObjects.spexpireAt(key, unixTimeMillis, member));
+  }
+
+  @Override
+  public long spexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String member) {
+    return executeCommand(commandObjects.spexpireAt(key, unixTimeMillis, condition, member));
+  }
+
+  @Override
+  public long sttl(String key, String member) {
+    return executeCommand(commandObjects.sttl(key, member));
+  }
+
+  @Override
+  public long spttl(String key, String member) {
+    return executeCommand(commandObjects.spttl(key, member));
+  }
+
+  @Override
+  public long sexpireTime(String key, String member) {
+    return executeCommand(commandObjects.sexpireTime(key, member));
+  }
+
+  @Override
+  public long spexpireTime(String key, String member) {
+    return executeCommand(commandObjects.spexpireTime(key, member));
+  }
+
+  @Override
+  public long spersist(String key, String member) {
+    return executeCommand(commandObjects.spersist(key, member));
+  }
+
+  @Override
   public long saddex(String key, SAddExParams params, String... members) {
     return executeCommand(commandObjects.saddex(key, params, members));
+  }
+
+  @Override
+  public long saddex(String key, SAddExParams params, String member) {
+    return executeCommand(commandObjects.saddex(key, params, member));
   }
 
   @Override
@@ -2357,8 +2427,78 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long sexpire(byte[] key, long seconds, byte[] member) {
+    return executeCommand(commandObjects.sexpire(key, seconds, member));
+  }
+
+  @Override
+  public long sexpire(byte[] key, long seconds, ExpiryOption condition, byte[] member) {
+    return executeCommand(commandObjects.sexpire(key, seconds, condition, member));
+  }
+
+  @Override
+  public long spexpire(byte[] key, long milliseconds, byte[] member) {
+    return executeCommand(commandObjects.spexpire(key, milliseconds, member));
+  }
+
+  @Override
+  public long spexpire(byte[] key, long milliseconds, ExpiryOption condition, byte[] member) {
+    return executeCommand(commandObjects.spexpire(key, milliseconds, condition, member));
+  }
+
+  @Override
+  public long sexpireAt(byte[] key, long unixTimeSeconds, byte[] member) {
+    return executeCommand(commandObjects.sexpireAt(key, unixTimeSeconds, member));
+  }
+
+  @Override
+  public long sexpireAt(byte[] key, long unixTimeSeconds, ExpiryOption condition, byte[] member) {
+    return executeCommand(commandObjects.sexpireAt(key, unixTimeSeconds, condition, member));
+  }
+
+  @Override
+  public long spexpireAt(byte[] key, long unixTimeMillis, byte[] member) {
+    return executeCommand(commandObjects.spexpireAt(key, unixTimeMillis, member));
+  }
+
+  @Override
+  public long spexpireAt(byte[] key, long unixTimeMillis, ExpiryOption condition, byte[] member) {
+    return executeCommand(commandObjects.spexpireAt(key, unixTimeMillis, condition, member));
+  }
+
+  @Override
+  public long sttl(byte[] key, byte[] member) {
+    return executeCommand(commandObjects.sttl(key, member));
+  }
+
+  @Override
+  public long spttl(byte[] key, byte[] member) {
+    return executeCommand(commandObjects.spttl(key, member));
+  }
+
+  @Override
+  public long sexpireTime(byte[] key, byte[] member) {
+    return executeCommand(commandObjects.sexpireTime(key, member));
+  }
+
+  @Override
+  public long spexpireTime(byte[] key, byte[] member) {
+    return executeCommand(commandObjects.spexpireTime(key, member));
+  }
+
+  @Override
+  public long spersist(byte[] key, byte[] member) {
+    return executeCommand(commandObjects.spersist(key, member));
+  }
+
+  @Override
   public long saddex(byte[] key, SAddExParams params, byte[]... members) {
     return executeCommand(commandObjects.saddex(key, params, members));
+  }
+
+  @Override
+  public long saddex(byte[] key, SAddExParams params, byte[] member) {
+    return executeCommand(commandObjects.saddex(key, params, member));
   }
   // Set commands
 

@@ -591,6 +591,97 @@ public interface SetCommands {
   List<Long> spersist(String key, String... members);
 
   /**
+   * Single-member variant of {@link #sexpire(String, long, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long sexpire(String key, long seconds, String member);
+
+  /**
+   * Single-member variant of {@link #sexpire(String, long, ExpiryOption, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long sexpire(String key, long seconds, ExpiryOption condition, String member);
+
+  /**
+   * Single-member variant of {@link #spexpire(String, long, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long spexpire(String key, long milliseconds, String member);
+
+  /**
+   * Single-member variant of {@link #spexpire(String, long, ExpiryOption, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long spexpire(String key, long milliseconds, ExpiryOption condition, String member);
+
+  /**
+   * Single-member variant of {@link #sexpireAt(String, long, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long sexpireAt(String key, long unixTimeSeconds, String member);
+
+  /**
+   * Single-member variant of {@link #sexpireAt(String, long, ExpiryOption, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long sexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String member);
+
+  /**
+   * Single-member variant of {@link #spexpireAt(String, long, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long spexpireAt(String key, long unixTimeMillis, String member);
+
+  /**
+   * Single-member variant of {@link #spexpireAt(String, long, ExpiryOption, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long spexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String member);
+
+  /**
+   * Single-member variant of {@link #sttl(String, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long sttl(String key, String member);
+
+  /**
+   * Single-member variant of {@link #spttl(String, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long spttl(String key, String member);
+
+  /**
+   * Single-member variant of {@link #sexpireTime(String, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long sexpireTime(String key, String member);
+
+  /**
+   * Single-member variant of {@link #spexpireTime(String, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long spexpireTime(String key, String member);
+
+  /**
+   * Single-member variant of {@link #spersist(String, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long spersist(String key, String member);
+
+  /**
    * <b><a href="https://redis.io/commands/saddex">SADDEX Command</a></b>
    * Add one or more members to the set stored at key, creating it if needed, and optionally set
    * their expiration. Unlike SADD, a member that already exists is not skipped: its expiration is
@@ -609,5 +700,12 @@ public interface SetCommands {
    * @since 8.1
    */
   long saddex(String key, SAddExParams params, String... members);
+
+  /**
+   * Single-member variant of {@link #saddex(String, SAddExParams, String...)}.
+   * @return 1 if the member was added, updated or deleted; 0 if nothing was modified
+   * @since 8.1
+   */
+  long saddex(String key, SAddExParams params, String member);
 
 }

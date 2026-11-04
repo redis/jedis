@@ -718,7 +718,7 @@ public class SetCommandsTest extends JedisCommandsTestBase {
     assertEquals(Long.valueOf(-2), ttl.get(2));
 
     assertEquals(Arrays.asList(1L, -2L), jedis.spersist("foo", "a", "nosuch"));
-    assertEquals(Arrays.asList(-1L), jedis.sttl("foo", "a"));
+    assertEquals(-1, jedis.sttl("foo", "a"));
   }
 
   @Test
@@ -735,7 +735,7 @@ public class SetCommandsTest extends JedisCommandsTestBase {
     assertEquals(Long.valueOf(-2), ttl.get(2));
 
     assertEquals(Arrays.asList(1L, -2L), jedis.spersist(bfoo, ba, bx));
-    assertEquals(Arrays.asList(-1L), jedis.sttl(bfoo, ba));
+    assertEquals(-1, jedis.sttl(bfoo, ba));
   }
 
   @Test

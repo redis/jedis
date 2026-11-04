@@ -1786,9 +1786,79 @@ public class CommandObjects {
         .add(MEMBERS).add(members.length).addObjects((Object[]) members), BuilderFactory.LONG_LIST);
   }
 
+  public final CommandObject<Long> sexpire(String key, long seconds, String member) {
+    return new CommandObject<>(commandArguments(SEXPIRE).key(key).add(seconds)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> sexpire(String key, long seconds, ExpiryOption condition, String member) {
+    return new CommandObject<>(commandArguments(SEXPIRE).key(key).add(seconds).add(condition)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> spexpire(String key, long milliseconds, String member) {
+    return new CommandObject<>(commandArguments(SPEXPIRE).key(key).add(milliseconds)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> spexpire(String key, long milliseconds, ExpiryOption condition, String member) {
+    return new CommandObject<>(commandArguments(SPEXPIRE).key(key).add(milliseconds).add(condition)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> sexpireAt(String key, long unixTimeSeconds, String member) {
+    return new CommandObject<>(commandArguments(SEXPIREAT).key(key).add(unixTimeSeconds)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> sexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String member) {
+    return new CommandObject<>(commandArguments(SEXPIREAT).key(key).add(unixTimeSeconds).add(condition)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> spexpireAt(String key, long unixTimeMillis, String member) {
+    return new CommandObject<>(commandArguments(SPEXPIREAT).key(key).add(unixTimeMillis)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> spexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String member) {
+    return new CommandObject<>(commandArguments(SPEXPIREAT).key(key).add(unixTimeMillis).add(condition)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> sttl(String key, String member) {
+    return new CommandObject<>(commandArguments(STTL).key(key)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> spttl(String key, String member) {
+    return new CommandObject<>(commandArguments(SPTTL).key(key)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> sexpireTime(String key, String member) {
+    return new CommandObject<>(commandArguments(SEXPIRETIME).key(key)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> spexpireTime(String key, String member) {
+    return new CommandObject<>(commandArguments(SPEXPIRETIME).key(key)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> spersist(String key, String member) {
+    return new CommandObject<>(commandArguments(SPERSIST).key(key)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
   public final CommandObject<Long> saddex(String key, SAddExParams params, String... members) {
     return new CommandObject<>(commandArguments(SADDEX).key(key).addParams(params)
         .add(MEMBERS).add(members.length).addObjects((Object[]) members), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> saddex(String key, SAddExParams params, String member) {
+    return new CommandObject<>(commandArguments(SADDEX).key(key).addParams(params)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<Long>> sexpire(byte[] key, long seconds, byte[]... members) {
@@ -1856,9 +1926,79 @@ public class CommandObjects {
         .add(MEMBERS).add(members.length).addObjects((Object[]) members), BuilderFactory.LONG_LIST);
   }
 
+  public final CommandObject<Long> sexpire(byte[] key, long seconds, byte[] member) {
+    return new CommandObject<>(commandArguments(SEXPIRE).key(key).add(seconds)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> sexpire(byte[] key, long seconds, ExpiryOption condition, byte[] member) {
+    return new CommandObject<>(commandArguments(SEXPIRE).key(key).add(seconds).add(condition)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> spexpire(byte[] key, long milliseconds, byte[] member) {
+    return new CommandObject<>(commandArguments(SPEXPIRE).key(key).add(milliseconds)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> spexpire(byte[] key, long milliseconds, ExpiryOption condition, byte[] member) {
+    return new CommandObject<>(commandArguments(SPEXPIRE).key(key).add(milliseconds).add(condition)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> sexpireAt(byte[] key, long unixTimeSeconds, byte[] member) {
+    return new CommandObject<>(commandArguments(SEXPIREAT).key(key).add(unixTimeSeconds)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> sexpireAt(byte[] key, long unixTimeSeconds, ExpiryOption condition, byte[] member) {
+    return new CommandObject<>(commandArguments(SEXPIREAT).key(key).add(unixTimeSeconds).add(condition)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> spexpireAt(byte[] key, long unixTimeMillis, byte[] member) {
+    return new CommandObject<>(commandArguments(SPEXPIREAT).key(key).add(unixTimeMillis)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> spexpireAt(byte[] key, long unixTimeMillis, ExpiryOption condition, byte[] member) {
+    return new CommandObject<>(commandArguments(SPEXPIREAT).key(key).add(unixTimeMillis).add(condition)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> sttl(byte[] key, byte[] member) {
+    return new CommandObject<>(commandArguments(STTL).key(key)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> spttl(byte[] key, byte[] member) {
+    return new CommandObject<>(commandArguments(SPTTL).key(key)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> sexpireTime(byte[] key, byte[] member) {
+    return new CommandObject<>(commandArguments(SEXPIRETIME).key(key)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> spexpireTime(byte[] key, byte[] member) {
+    return new CommandObject<>(commandArguments(SPEXPIRETIME).key(key)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
+  public final CommandObject<Long> spersist(byte[] key, byte[] member) {
+    return new CommandObject<>(commandArguments(SPERSIST).key(key)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG_FROM_LIST);
+  }
+
   public final CommandObject<Long> saddex(byte[] key, SAddExParams params, byte[]... members) {
     return new CommandObject<>(commandArguments(SADDEX).key(key).addParams(params)
         .add(MEMBERS).add(members.length).addObjects((Object[]) members), BuilderFactory.LONG);
+  }
+
+  public final CommandObject<Long> saddex(byte[] key, SAddExParams params, byte[] member) {
+    return new CommandObject<>(commandArguments(SADDEX).key(key).addParams(params)
+        .add(MEMBERS).add(1).add(member), BuilderFactory.LONG);
   }
   // Set commands
 

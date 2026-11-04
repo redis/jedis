@@ -1,18 +1,26 @@
 package redis.clients.jedis.commands.unified;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 
 import io.redis.test.annotations.ConditionalOnEnv;
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import redis.clients.jedis.ConnectionPool;
+import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
+import redis.clients.jedis.RedisClusterClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.BitPosParams;
+import redis.clients.jedis.params.BitRangeIntArrayParams;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.TestEnvUtil;
 
@@ -587,6 +595,367 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
     byte[] src1 = "{bitOp:key:}src1".getBytes();
 
     assertThrows(JedisDataException.class, () -> jedis.bitop(BitOP.ANDOR, dest, src1));
+  }
+
+  // ---- BITRANGEINTARRAY ----
+
+  private static final List<Long> FA_OFFSETS = Arrays.asList(0L, 7L, 8L, 15L, 16L, 23L, 24L, 31L);
+
+  /** FB: bytes 0, 7 and 8 full, bits 8 and 15, bit 73. */
+  private static final List<Long> FB_OFFSETS = concat(range(0, 8), longs(15), range(56, 71),
+    longs(73));
+
+  private static List<Long> longs(long... values) {
+    List<Long> out = new ArrayList<>();
+    for (long v : values) {
+      out.add(v);
+    }
+    return out;
+  }
+
+  private static List<Long> range(long from, long to) {
+    List<Long> out = new ArrayList<>();
+    for (long v = from; v <= to; v++) {
+      out.add(v);
+    }
+    return out;
+  }
+
+  @SafeVarargs
+  private static List<Long> concat(List<Long>... parts) {
+    List<Long> out = new ArrayList<>();
+    for (List<Long> p : parts) {
+      out.addAll(p);
+    }
+    return out;
+  }
+
+  private static List<Long> flatten(List<List<Long>> pages) {
+    List<Long> out = new ArrayList<>();
+    for (List<Long> p : pages) {
+      out.addAll(p);
+    }
+    return out;
+  }
+
+  private void setBits(String key, List<Long> offsets) {
+    for (long o : offsets) {
+      jedis.setbit(key, o, true);
+    }
+  }
+
+  private void writeFA(String key) {
+    setBits(key, FA_OFFSETS);
+  }
+
+  private void writeFB(String key) {
+    setBits(key, FB_OFFSETS);
+  }
+
+  private static BitRangeIntArrayParams params() {
+    return BitRangeIntArrayParams.bitRangeIntArrayParams();
+  }
+
+  /** Sets a configuration parameter on the server, or on every node of a cluster. */
+  protected void configSetEverywhere(String name, String value) {
+    if (jedis instanceof RedisClusterClient) {
+      for (ConnectionPool pool : ((RedisClusterClient) jedis).getClusterNodes().values()) {
+        try (Jedis node = new Jedis(pool.getResource())) {
+          node.configSet(name, value);
+        }
+      }
+    } else {
+      jedis.configSet(name, value);
+    }
+  }
+
+  /** One row of the FA range table: start, end, unit (null for none) and the expected offsets. */
+  private static final class FaRange {
+    final long start;
+    final long end;
+    final BitCountOption unit;
+    final List<Long> expected;
+
+    FaRange(long start, long end, BitCountOption unit, List<Long> expected) {
+      this.start = start;
+      this.end = end;
+      this.unit = unit;
+      this.expected = expected;
+    }
+
+    @Override
+    public String toString() {
+      return start + " " + end + " " + unit;
+    }
+  }
+
+  private static List<FaRange> faRanges() {
+    List<FaRange> rows = new ArrayList<>();
+    for (BitCountOption unit : new BitCountOption[] { null, BitCountOption.BYTE }) {
+      rows.add(new FaRange(1, 1, unit, longs(8, 15)));
+      rows.add(new FaRange(1, 2, unit, longs(8, 15, 16, 23)));
+      rows.add(new FaRange(-1, -1, unit, longs(24, 31)));
+      rows.add(new FaRange(-2, -1, unit, longs(16, 23, 24, 31)));
+      rows.add(new FaRange(2, 99, unit, longs(16, 23, 24, 31)));
+      rows.add(new FaRange(-99, 0, unit, longs(0, 7)));
+      rows.add(new FaRange(-99, -98, unit, longs(0, 7)));
+      rows.add(new FaRange(3, 1, unit, longs()));
+      rows.add(new FaRange(4, 9, unit, longs()));
+      rows.add(new FaRange(-1, -2, unit, longs()));
+    }
+    rows.add(new FaRange(0, 0, BitCountOption.BIT, longs(0)));
+    rows.add(new FaRange(7, 8, BitCountOption.BIT, longs(7, 8)));
+    rows.add(new FaRange(1, 6, BitCountOption.BIT, longs()));
+    rows.add(new FaRange(9, 15, BitCountOption.BIT, longs(15)));
+    rows.add(new FaRange(-8, -1, BitCountOption.BIT, longs(24, 31)));
+    rows.add(new FaRange(30, 1000, BitCountOption.BIT, longs(31)));
+    rows.add(new FaRange(32, 40, BitCountOption.BIT, longs()));
+    return rows;
+  }
+
+  private List<Long> call(String key, FaRange r) {
+    return r.unit == null ? jedis.bitrangeintarray(key, r.start, r.end)
+        : jedis.bitrangeintarray(key, r.start, r.end, params().unit(r.unit));
+  }
+
+  private void assertFaRanges(String key) {
+    for (FaRange r : faRanges()) {
+      assertEquals(r.expected, call(key, r), r.toString());
+    }
+  }
+
+  /** Pages through the whole value: in BIT units the next start is last + 1, in BYTE last / 8 + 1. */
+  private List<List<Long>> pages(String key, BitCountOption unit, long count) {
+    List<List<Long>> pages = new ArrayList<>();
+    long start = 0;
+    while (true) {
+      List<Long> page = jedis.bitrangeintarray(key, start, -1, params().unit(unit).limit(count));
+      pages.add(page);
+      if (page.size() < count) {
+        return pages;
+      }
+      long last = page.get(page.size() - 1);
+      start = unit == BitCountOption.BIT ? last + 1 : last / 8 + 1;
+    }
+  }
+
+  private void assertFbLimitCalls(String key) {
+    assertEquals(range(0, 7), jedis.bitrangeintarray(key, 0, -1, params().limit(1)));
+    assertEquals(concat(range(0, 8), longs(15)),
+      jedis.bitrangeintarray(key, 0, -1, params().limit(9)));
+    assertEquals(longs(8, 15), jedis.bitrangeintarray(key, 1, -1, params().limit(1)));
+    assertEquals(range(0, 8),
+      jedis.bitrangeintarray(key, 0, -1, params().unit(BitCountOption.BIT).limit(9)));
+    assertEquals(longs(57, 58),
+      jedis.bitrangeintarray(key, 57, -1, params().unit(BitCountOption.BIT).limit(2)));
+  }
+
+  private void assertFbBitPages(String key) {
+    List<List<Long>> pages = pages(key, BitCountOption.BIT, 9);
+    assertEquals(Arrays.asList(range(0, 8), concat(longs(15), range(56, 63)),
+      concat(range(64, 71), longs(73)), longs()), pages);
+    List<Long> joined = flatten(pages);
+    assertEquals(FB_OFFSETS, joined);
+    assertEquals(27, new HashSet<>(joined).size());
+  }
+
+  private void assertFbBytePages(String key) {
+    List<List<Long>> pages = pages(key, BitCountOption.BYTE, 9);
+    assertEquals(Arrays.asList(concat(range(0, 8), longs(15)), range(56, 71), longs(73)), pages);
+    List<Long> joined = flatten(pages);
+    assertEquals(FB_OFFSETS, joined);
+    assertEquals(27, new HashSet<>(joined).size());
+  }
+
+  /** Scenario BRIA-C01: the HLD range table on FA, in BYTE units (with and without a unit) and BIT. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayRanges() {
+    writeFA("fa");
+    assertFaRanges("fa");
+  }
+
+  /** Scenario BRIA-C02: for each FA range the reply's size equals BITCOUNT of the same range. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarraySizeMatchesBitcount() {
+    writeFA("fa");
+    for (FaRange r : faRanges()) {
+      long count = r.unit == null ? jedis.bitcount("fa", r.start, r.end)
+          : jedis.bitcount("fa", r.start, r.end, r.unit);
+      assertEquals(count, call("fa", r).size(), r.toString());
+    }
+  }
+
+  /** Scenario BRIA-C03: a missing key, an empty string and LIMIT 0 reply an empty list, never null. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayEmptyReplies() {
+    assertEquals(longs(), jedis.bitrangeintarray("missing", 0, -1));
+
+    jedis.set("empty", "");
+    assertEquals(longs(), jedis.bitrangeintarray("empty", 0, -1));
+    assertEquals(longs(),
+      jedis.bitrangeintarray("empty", 0, -1, params().unit(BitCountOption.BIT).zeros()));
+
+    writeFA("fa");
+    assertEquals(longs(), jedis.bitrangeintarray("fa", 0, -1, params().limit(0)));
+    assertEquals(longs(),
+      jedis.bitrangeintarray("fa", 0, -1, params().unit(BitCountOption.BYTE).limit(0)));
+    assertEquals(longs(),
+      jedis.bitrangeintarray("fa", 0, -1, params().unit(BitCountOption.BIT).limit(0)));
+  }
+
+  /** Scenario BRIA-C04: ZEROS reports clear bits inside the value only, unlike BITPOS. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayZerosInsideValue() {
+    setBits("fz1", concat(range(0, 7), range(9, 14)));
+    assertEquals(longs(8, 15), jedis.bitrangeintarray("fz1", 0, -1, params().zeros()));
+    assertEquals(longs(8, 15), jedis.bitrangeintarray("fz1", 0, 99, params().zeros()));
+
+    setBits("fz2", range(0, 15));
+    assertEquals(longs(), jedis.bitrangeintarray("fz2", 0, -1, params().zeros()));
+    assertEquals(16, jedis.bitpos("fz2", false));
+  }
+
+  /** Scenario BRIA-C05: LIMIT on FB in BYTE and BIT units. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayLimit() {
+    writeFB("fb");
+    assertFbLimitCalls("fb");
+  }
+
+  /** Scenario BRIA-C06: in BYTE units a LIMIT page can hold more offsets than the count. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayByteLimitCompletesByte() {
+    writeFB("fb");
+    List<Long> page = jedis.bitrangeintarray("fb", 0, -1, params().limit(9));
+    assertEquals(10, page.size());
+    assertEquals(concat(range(0, 8), longs(15)), page);
+  }
+
+  /** Scenario BRIA-C07: paging FB in BIT units with count 9 returns every offset once. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayPagingBit() {
+    writeFB("fb");
+    assertFbBitPages("fb");
+  }
+
+  /** Scenario BRIA-C08: paging FB in BYTE units with count 9 returns every offset once. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayPagingByte() {
+    writeFB("fb");
+    assertFbBytePages("fb");
+  }
+
+  /** Scenario BRIA-C09: ZEROS with LIMIT completes the byte in BYTE units and stops in BIT units. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayZerosLimit() {
+    writeFA("fa");
+    assertEquals(concat(range(1, 6), range(9, 14)),
+      jedis.bitrangeintarray("fa", 0, -1, params().limit(7).zeros()));
+    assertEquals(concat(range(1, 6), longs(9)),
+      jedis.bitrangeintarray("fa", 0, -1, params().unit(BitCountOption.BIT).limit(7).zeros()));
+  }
+
+  /** Scenario BRIA-C10: the widest 64-bit range covers the whole value, in BYTE and BIT units. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayExtremeRange() {
+    writeFA("fa");
+    assertEquals(FA_OFFSETS, jedis.bitrangeintarray("fa", Long.MIN_VALUE, Long.MAX_VALUE,
+      params().unit(BitCountOption.BYTE)));
+    assertEquals(FA_OFFSETS, jedis.bitrangeintarray("fa", Long.MIN_VALUE, Long.MAX_VALUE,
+      params().unit(BitCountOption.BIT)));
+  }
+
+  /** Scenario BRIA-C11: a count of Long.MAX_VALUE returns every offset, in BYTE and BIT units. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayMaxLimit() {
+    writeFA("fa");
+    assertEquals(FA_OFFSETS, jedis.bitrangeintarray("fa", 0, -1,
+      params().unit(BitCountOption.BYTE).limit(Long.MAX_VALUE)));
+    assertEquals(FA_OFFSETS, jedis.bitrangeintarray("fa", 0, -1,
+      params().unit(BitCountOption.BIT).limit(Long.MAX_VALUE)));
+  }
+
+  /** Scenario BRIA-C12: a key of the wrong type raises the server's WRONGTYPE error. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayWrongType() {
+    jedis.rpush("fl", "a");
+    JedisDataException e = assertThrows(JedisDataException.class,
+      () -> jedis.bitrangeintarray("fl", 0, -1));
+    assertEquals("WRONGTYPE Operation against a key holding the wrong kind of value",
+      e.getMessage());
+  }
+
+  /** Scenario BRIA-C13: a native bitmap built from FA is of type bitmap and replies the FA table. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayNativeRanges() {
+    try {
+      configSetEverywhere("bitmap-default-roaring", "yes");
+      writeFA("fn");
+      assertEquals("bitmap", jedis.type("fn"));
+      assertFaRanges("fn");
+    } finally {
+      configSetEverywhere("bitmap-default-roaring", "no");
+    }
+  }
+
+  /** Scenario BRIA-C14: a native bitmap built from FB replies the LIMIT calls and the pages of FB. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayNativeLimitPaging() {
+    try {
+      configSetEverywhere("bitmap-default-roaring", "yes");
+      writeFB("fn");
+      assertFbLimitCalls("fn");
+      assertFbBitPages("fn");
+      assertFbBytePages("fn");
+    } finally {
+      configSetEverywhere("bitmap-default-roaring", "no");
+    }
+  }
+
+  /** Scenario BRIA-C15: the byte[] key forms, without and with params. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayBinary() {
+    byte[] key = SafeEncoder.encode("fa");
+    for (long o : FA_OFFSETS) {
+      jedis.setbit(key, o, true);
+    }
+    assertEquals(FA_OFFSETS, jedis.bitrangeintarray(key, 0, -1));
+    assertEquals(longs(0, 7, 8),
+      jedis.bitrangeintarray(key, 0, -1, params().unit(BitCountOption.BIT).limit(3)));
+  }
+
+  /** Scenario BRIA-C16: unit, LIMIT and ZEROS together. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayAllOptions() {
+    writeFA("fa");
+    assertEquals(longs(1, 2, 3),
+      jedis.bitrangeintarray("fa", 0, -1, params().unit(BitCountOption.BIT).limit(3).zeros()));
+  }
+
+  /** Scenario BRIA-C17: the command leaves a string bitmap's type and length unchanged. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayLeavesStringUnchanged() {
+    writeFA("fa");
+    jedis.bitrangeintarray("fa", 0, -1);
+    assertEquals("string", jedis.type("fa"));
+    assertEquals(4, jedis.strlen("fa"));
   }
 
 }

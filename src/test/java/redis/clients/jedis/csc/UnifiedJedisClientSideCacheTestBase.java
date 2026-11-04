@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -18,6 +19,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.util.RedisConditions;
 
 public abstract class UnifiedJedisClientSideCacheTestBase {
 
@@ -47,6 +49,33 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       control.del("foo");
       await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
           .untilAsserted(() -> assertNull(jedis.get("foo")));
+    }
+  }
+
+  /**
+   * Scenario BRIA-F01: a BITRANGEINTARRAY reply is served from the cache, and a write to the key
+   * invalidates it.
+   */
+  @Test
+  public void bitrangeintarrayCachedAndInvalidated() {
+    assumeTrue(RedisConditions.of(control).hasCommand("BITRANGEINTARRAY"));
+    List<Long> fa = Arrays.asList(0L, 7L, 8L, 15L, 16L, 23L, 24L, 31L);
+    try (UnifiedJedis jedis = createCachedJedis(CacheConfig.builder().build())) {
+      Cache cache = jedis.getCache();
+      for (long offset : fa) {
+        control.setbit("fa", offset, true);
+      }
+
+      assertEquals(fa, jedis.bitrangeintarray("fa", 0, -1));
+      assertEquals(fa, jedis.bitrangeintarray("fa", 0, -1));
+      assertEquals(1, cache.getSize());
+      assertEquals(1, cache.getStats().getHitCount());
+
+      control.setbit("fa", 1, true);
+      List<Long> updated = Arrays.asList(0L, 1L, 7L, 8L, 15L, 16L, 23L, 24L, 31L);
+      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+          .untilAsserted(() -> assertEquals(updated, jedis.bitrangeintarray("fa", 0, -1)));
+      assertTrue(cache.getStats().getInvalidationCount() >= 1);
     }
   }
 

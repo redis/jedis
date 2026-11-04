@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.awaitility.Awaitility.await;
 import static redis.clients.jedis.Protocol.CLUSTER_HASHSLOTS;
 
 import java.io.IOException;
@@ -272,6 +273,49 @@ public class UnboundRedisClusterClientTest extends UnboundRedisClusterClientTest
 
     nodeSlave2.clusterReset(ClusterResetType.SOFT);
     nodeSlave2.flushDB();
+  }
+
+  /**
+   * Scenario BRIA-E01: a cluster replica serves BITRANGEINTARRAY through the explicit replica
+   * path, returning FA's offsets.
+   */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void testBitrangeintarrayFromReplicas() throws Exception {
+    node1.clusterMeet(LOCAL_IP, nodeInfoSlave2.getPort());
+    JedisClusterTestUtil.waitForClusterReady(node1, node2, node3, nodeSlave2);
+
+    for (String nodeInfo : node2.clusterNodes().split("\n")) {
+      if (nodeInfo.contains("myself")) {
+        nodeSlave2.clusterReplicate(nodeInfo.split(" ")[0]);
+        break;
+      }
+    }
+
+    // a key in node2's slots, so that nodeSlave2 holds it
+    String key = "test";
+    List<Long> fa = Arrays.asList(0L, 7L, 8L, 15L, 16L, 23L, 24L, 31L);
+    DefaultJedisClientConfig readReplicasConfig = DefaultJedisClientConfig.builder()
+        .password(endpoint.getPassword()).readOnlyForRedisClusterReplicas().build();
+    ClusterCommandObjects commandObjects = new ClusterCommandObjects(RedisProtocol.RESP2);
+    try (RedisClusterClient jedisCluster = RedisClusterClient.builder()
+        .nodes(Collections.singleton(nodeInfo1))
+        .clientConfig(readReplicasConfig)
+        .maxAttempts(DEFAULT_REDIRECTIONS)
+        .poolConfig(DEFAULT_POOL_CONFIG)
+        .build()) {
+      for (long offset : fa) {
+        jedisCluster.setbit(key, offset, true);
+      }
+
+      // the replica may still be syncing
+      await().atMost(10, TimeUnit.SECONDS).pollInterval(100, TimeUnit.MILLISECONDS)
+          .ignoreExceptions().untilAsserted(() -> assertEquals(fa,
+            jedisCluster.executeCommandToReplica(commandObjects.bitrangeintarray(key, 0, -1))));
+    } finally {
+      nodeSlave2.clusterReset(ClusterResetType.SOFT);
+      nodeSlave2.flushDB();
+    }
   }
 
   /**

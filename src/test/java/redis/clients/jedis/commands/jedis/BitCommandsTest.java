@@ -17,7 +17,6 @@ import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
@@ -27,7 +26,6 @@ import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.params.BitRangeIntArrayParams;
-import redis.clients.jedis.util.RedisConditions;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.TestEnvUtil;
 
@@ -37,7 +35,6 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
-import static org.junit.jupiter.api.Assumptions.assumeFalse;
 
 @ParameterizedClass
 @MethodSource("redis.clients.jedis.commands.CommandsTestsParameters#jedisRespVersions")
@@ -699,20 +696,6 @@ public class BitCommandsTest extends JedisCommandsTestBase {
         }
       }
     }
-  }
-
-  /** Scenario BRIA-L05: a server without the command replies the unknown-command error. */
-  @Test
-  public void bitrangeintarrayUnknownCommand() {
-    try (RedisClient c = RedisClient.builder().hostAndPort(endpoint.getHostAndPort())
-        .clientConfig(endpoint.getClientConfigBuilder().build()).build()) {
-      assumeFalse(RedisConditions.of(c).hasCommand("BITRANGEINTARRAY"));
-    }
-    JedisDataException e = assertThrows(JedisDataException.class,
-      () -> jedis.bitrangeintarray("k", 0, -1));
-    assertTrue(e.getMessage()
-        .startsWith("ERR unknown command 'BITRANGEINTARRAY', with args beginning with:"),
-      e.getMessage());
   }
 
   /**

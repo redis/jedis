@@ -14,8 +14,8 @@ import static redis.clients.jedis.CommandFlagsRegistry.ResponsePolicy;
  * <ul>
  * <li>Version: 8.11.241</li>
  * <li>Mode: standalone</li>
- * <li>Loaded Modules: search, timeseries, bf, vectorset, ReJSON</li>
- * <li>Generated at: 2026-11-03 11:06:31 TRT</li>
+ * <li>Loaded Modules: timeseries, bf, vectorset, search, ReJSON</li>
+ * <li>Generated at: 2026-11-05 16:26:30 EET</li>
  * </ul>
  */
 final class StaticCommandFlagsRegistryInitializer {

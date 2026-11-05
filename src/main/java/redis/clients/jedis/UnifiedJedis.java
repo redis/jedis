@@ -761,9 +761,14 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
    * @param batchCount COUNT for each batch execution
    * @param flag the flag to filter on
    * @return bless scan iteration
+   * @throws IllegalArgumentException if {@code flag} is {@code null}
    * @since 8.1
    */
   public BlessScanIteration blessScanIteration(int batchCount, BlessFlag flag) {
+    // checked before the iteration pulls a connection from every primary node
+    if (flag == null) {
+      throw new IllegalArgumentException("BlessFlag must not be null.");
+    }
     return new BlessScanIteration(provider, batchCount, flag);
   }
 

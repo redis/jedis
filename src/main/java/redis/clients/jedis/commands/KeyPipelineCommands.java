@@ -114,6 +114,7 @@ public interface KeyPipelineCommands {
    * @param key the key to protect
    * @param flag the flag to turn on
    * @return 1 if the flag was turned on, 0 if it was already on
+   * @throws IllegalArgumentException if {@code flag} is {@code null}
    * @since 8.1
    */
   Response<Long> blessSet(String key, BlessFlag flag);
@@ -123,6 +124,7 @@ public interface KeyPipelineCommands {
    * @param key the key to unprotect
    * @param flag the flag to turn off
    * @return 1 if the flag was turned off, 0 if it was already off
+   * @throws IllegalArgumentException if {@code flag} is {@code null}
    * @since 8.1
    */
   Response<Long> blessClear(String key, BlessFlag flag);
@@ -140,6 +142,7 @@ public interface KeyPipelineCommands {
    * @param cursor the cursor, {@code "0"} to start an iteration
    * @param flag the flag to filter on
    * @return the next cursor and the keys of this batch
+   * @throws IllegalArgumentException if {@code flag} is {@code null}
    * @since 8.1
    */
   Response<ScanResult<String>> blessScan(String cursor, BlessFlag flag);
@@ -150,6 +153,7 @@ public interface KeyPipelineCommands {
    * @param flag the flag to filter on
    * @param count hint for how many entries to visit per call, must be positive
    * @return the next cursor and the keys of this batch
+   * @throws IllegalArgumentException if {@code flag} is {@code null}
    * @since 8.1
    */
   Response<ScanResult<String>> blessScan(String cursor, BlessFlag flag, int count);

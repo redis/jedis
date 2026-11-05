@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
 import static org.hamcrest.Matchers.equalTo;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.lenient;
@@ -1773,6 +1774,12 @@ public class UnifiedJedisGenericCommandsTest extends UnifiedJedisMockedTestBase 
 
     verify(commandExecutor).executeCommand(scanResultBytesCommandObject);
     verify(commandObjects).blessScan(cursor, BlessFlag.NO_EVICT, 10);
+  }
+
+  @Test
+  public void testBlessScanIterationRejectsNullFlag() {
+    // tearDown verifies the provider was not asked for the primary nodes' connections
+    assertThrows(IllegalArgumentException.class, () -> jedis.blessScanIteration(10, null));
   }
 
   @Test

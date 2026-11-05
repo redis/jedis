@@ -461,19 +461,30 @@ public class CommandObjects {
   }
 
   // BLESS commands
+  // a null Rawable only fails inside Protocol.sendCommand, which marks the connection broken
+  private static void requireFlag(BlessFlag flag) {
+    if (flag == null) {
+      throw new IllegalArgumentException("BlessFlag must not be null.");
+    }
+  }
+
   public final CommandObject<Long> blessSet(String key, BlessFlag flag) {
+    requireFlag(flag);
     return new CommandObject<>(commandArguments(BLESS).add(Keyword.SET).key(key).add(flag), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> blessSet(byte[] key, BlessFlag flag) {
+    requireFlag(flag);
     return new CommandObject<>(commandArguments(BLESS).add(Keyword.SET).key(key).add(flag), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> blessClear(String key, BlessFlag flag) {
+    requireFlag(flag);
     return new CommandObject<>(commandArguments(BLESS).add(CLEAR).key(key).add(flag), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> blessClear(byte[] key, BlessFlag flag) {
+    requireFlag(flag);
     return new CommandObject<>(commandArguments(BLESS).add(CLEAR).key(key).add(flag), BuilderFactory.LONG);
   }
 
@@ -486,18 +497,22 @@ public class CommandObjects {
   }
 
   public CommandObject<ScanResult<String>> blessScan(String cursor, BlessFlag flag) {
+    requireFlag(flag);
     return new CommandObject<>(commandArguments(BLESS).add(Keyword.SCAN).add(cursor).add(flag), BuilderFactory.SCAN_RESPONSE);
   }
 
   public CommandObject<ScanResult<String>> blessScan(String cursor, BlessFlag flag, int count) {
+    requireFlag(flag);
     return new CommandObject<>(commandArguments(BLESS).add(Keyword.SCAN).add(cursor).add(flag).add(COUNT).add(count), BuilderFactory.SCAN_RESPONSE);
   }
 
   public CommandObject<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag) {
+    requireFlag(flag);
     return new CommandObject<>(commandArguments(BLESS).add(Keyword.SCAN).add(cursor).add(flag), BuilderFactory.SCAN_BINARY_RESPONSE);
   }
 
   public CommandObject<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag, int count) {
+    requireFlag(flag);
     return new CommandObject<>(commandArguments(BLESS).add(Keyword.SCAN).add(cursor).add(flag).add(COUNT).add(count), BuilderFactory.SCAN_BINARY_RESPONSE);
   }
 

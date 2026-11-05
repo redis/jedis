@@ -56,7 +56,8 @@ public class BitRangeIntArrayParams implements IParams {
    * the server completes the byte of the last offset, so a page can hold up to {@code count + 7}
    * offsets, and the next page starts at byte (last returned offset / 8) + 1. An empty page, or one
    * with fewer than {@code count} offsets, ends the scan. A count of 0 always returns an empty list
-   * and can't be used to page.
+   * and can't be used to page. Pages are separate calls: a write between them can make the sequence
+   * miss an offset, but no offset is returned twice.
    * @param count the number of offsets to return, not negative
    * @return BitRangeIntArrayParams
    * @throws IllegalArgumentException if {@code count} is negative

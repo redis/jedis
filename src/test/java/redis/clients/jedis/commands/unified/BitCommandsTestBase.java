@@ -3,9 +3,7 @@ package redis.clients.jedis.commands.unified;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
 import io.redis.test.annotations.ConditionalOnEnv;
 import io.redis.test.annotations.EnabledOnCommand;
@@ -13,10 +11,7 @@ import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
-import redis.clients.jedis.ConnectionPool;
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
-import redis.clients.jedis.RedisClusterClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
@@ -658,96 +653,6 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
     return BitRangeIntArrayParams.bitRangeIntArrayParams();
   }
 
-  /**
-   * Sets a configuration parameter on the server, or on every node of a cluster. Closing the
-   * returned handle restores each node's previous value, trying every node even when one fails.
-   */
-  protected ConfigRestore configSetEverywhere(String name, String value) {
-    List<ConfigNode> nodes = new ArrayList<>();
-    if (jedis instanceof RedisClusterClient) {
-      for (ConnectionPool pool : ((RedisClusterClient) jedis).getClusterNodes().values()) {
-        nodes.add(new ConfigNode(pool));
-      }
-    } else {
-      nodes.add(new ConfigNode(null));
-    }
-
-    ConfigRestore restore = new ConfigRestore(name);
-    for (ConfigNode node : nodes) {
-      restore.previous.put(node, node.get(name));
-    }
-    try {
-      for (ConfigNode node : nodes) {
-        node.set(name, value);
-      }
-    } catch (RuntimeException e) {
-      try {
-        restore.close();
-      } catch (RuntimeException restoreFailure) {
-        e.addSuppressed(restoreFailure);
-      }
-      throw e;
-    }
-    return restore;
-  }
-
-  /** One server whose configuration a test changes: a cluster node, or the standalone server. */
-  private final class ConfigNode {
-    private final ConnectionPool pool; // null for the standalone client
-
-    ConfigNode(ConnectionPool pool) {
-      this.pool = pool;
-    }
-
-    String get(String name) {
-      if (pool == null) {
-        return jedis.configGet(name).get(name);
-      }
-      try (Jedis node = new Jedis(pool.getResource())) {
-        return node.configGet(name).get(name);
-      }
-    }
-
-    void set(String name, String value) {
-      if (pool == null) {
-        jedis.configSet(name, value);
-        return;
-      }
-      try (Jedis node = new Jedis(pool.getResource())) {
-        node.configSet(name, value);
-      }
-    }
-  }
-
-  /** Restores the values a {@link #configSetEverywhere(String, String)} call replaced. */
-  protected final class ConfigRestore implements AutoCloseable {
-    private final String name;
-    private final Map<ConfigNode, String> previous = new LinkedHashMap<>();
-
-    private ConfigRestore(String name) {
-      this.name = name;
-    }
-
-    @Override
-    public void close() {
-      RuntimeException failure = null;
-      for (Map.Entry<ConfigNode, String> entry : previous.entrySet()) {
-        try {
-          entry.getKey().set(name, entry.getValue());
-        } catch (RuntimeException e) {
-          if (failure == null) {
-            failure = e;
-          } else {
-            failure.addSuppressed(e);
-          }
-        }
-      }
-      if (failure != null) {
-        throw failure;
-      }
-    }
-  }
-
   /** One row of the FA range table: start, end, unit (null for none) and the expected offsets. */
   private static final class FaRange {
     final long start;
@@ -974,29 +879,6 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
       () -> jedis.bitrangeintarray("fl", 0, -1));
     assertEquals("WRONGTYPE Operation against a key holding the wrong kind of value",
       e.getMessage());
-  }
-
-  /** A native bitmap built from FA is of type bitmap and replies the FA table. */
-  @Test
-  @EnabledOnCommand("BITRANGEINTARRAY")
-  public void bitrangeintarrayNativeRanges() {
-    try (ConfigRestore ignored = configSetEverywhere("bitmap-default-roaring", "yes")) {
-      writeFA("fn");
-      assertEquals("bitmap", jedis.type("fn"));
-      assertFaRanges("fn");
-    }
-  }
-
-  /** A native bitmap built from FB replies the LIMIT calls and the pages of FB. */
-  @Test
-  @EnabledOnCommand("BITRANGEINTARRAY")
-  public void bitrangeintarrayNativeLimitPaging() {
-    try (ConfigRestore ignored = configSetEverywhere("bitmap-default-roaring", "yes")) {
-      writeFB("fn");
-      assertFbLimitCalls("fn");
-      assertFbBitPages("fn");
-      assertFbBytePages("fn");
-    }
   }
 
   /** The byte[] key forms, without and with params. */

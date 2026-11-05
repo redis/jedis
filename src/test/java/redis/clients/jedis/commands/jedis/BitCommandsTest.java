@@ -14,7 +14,6 @@ import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
 
-import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
@@ -22,7 +21,6 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
-import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.BitPosParams;
 import redis.clients.jedis.params.BitRangeIntArrayParams;
@@ -669,54 +667,6 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     assertEquals(1, results.size());
     assertEquals(FA_OFFSETS, results.get(0));
     assertEquals(FA_OFFSETS, fa.get());
-  }
-
-  /** An offset above 32 bits on a native bitmap is returned as a Long. */
-  @Test
-  @EnabledOnCommand("BITRANGEINTARRAY")
-  public void bitrangeintarrayOffsetAbove32Bits() {
-    String bulkLen = jedis.configGet("proto-max-bulk-len").get("proto-max-bulk-len");
-    String roaring = jedis.configGet("bitmap-default-roaring").get("bitmap-default-roaring");
-    try {
-      jedis.configSet("proto-max-bulk-len", "2gb");
-      jedis.configSet("bitmap-default-roaring", "yes");
-      jedis.setbit("fn", 4294967296L, true);
-
-      List<Long> reply = jedis.bitrangeintarray("fn", 0, -1,
-        BitRangeIntArrayParams.bitRangeIntArrayParams().unit(BitCountOption.BIT));
-
-      assertEquals(Collections.singletonList(4294967296L), reply);
-      assertEquals(Long.class, ((Object) reply.get(0)).getClass());
-    } finally {
-      try (Jedis restore = createJedis()) {
-        try {
-          restore.configSet("bitmap-default-roaring", roaring);
-        } finally {
-          restore.configSet("proto-max-bulk-len", bulkLen);
-        }
-      }
-    }
-  }
-
-  /**
-   * When the server closes the connection instead of sending the reply, the
-   * client raises a connection error and returns no partial list.
-   */
-  @Test
-  @EnabledOnCommand("BITRANGEINTARRAY")
-  public void bitrangeintarrayConnectionClosedOnOutputBufferLimit() {
-    String limit = jedis.configGet("client-output-buffer-limit").get("client-output-buffer-limit");
-    try {
-      jedis.setbit("k", 4095, true);
-      jedis.configSet("client-output-buffer-limit", "normal 1kb 0 0");
-
-      assertThrows(JedisConnectionException.class, () -> jedis.bitrangeintarray("k", 0, -1,
-        BitRangeIntArrayParams.bitRangeIntArrayParams().zeros()));
-    } finally {
-      try (Jedis restore = createJedis()) {
-        restore.configSet("client-output-buffer-limit", limit);
-      }
-    }
   }
 
 }

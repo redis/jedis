@@ -48,7 +48,8 @@ public class BitRangeIntArrayParams implements IParams {
   }
 
   /**
-   * Return at most {@code count} offsets: the lowest ones of the range.
+   * Return the lowest offsets of the range: at most {@code count} in {@link BitCountOption#BIT BIT}
+   * units, and up to {@code count + 7} in {@link BitCountOption#BYTE BYTE} units, the default.
    * <p>
    * Paging: in {@link BitCountOption#BIT BIT} units a page holds at most {@code count} offsets, and
    * the next page starts at the last returned offset + 1. In {@link BitCountOption#BYTE BYTE} units
@@ -56,7 +57,7 @@ public class BitRangeIntArrayParams implements IParams {
    * offsets, and the next page starts at byte (last returned offset / 8) + 1. An empty page, or one
    * with fewer than {@code count} offsets, ends the scan. A count of 0 always returns an empty list
    * and can't be used to page.
-   * @param count the maximum number of offsets, not negative
+   * @param count the number of offsets to return, not negative
    * @return BitRangeIntArrayParams
    * @throws IllegalArgumentException if {@code count} is negative
    * @since 8.1

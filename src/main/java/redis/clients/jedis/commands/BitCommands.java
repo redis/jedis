@@ -89,9 +89,7 @@ public interface BitCommands {
    * from the end. Missing keys and empty ranges return an empty list.
    * <p>
    * Time complexity: O(N + M) where N is the number of bytes in the range for a string, or the
-   * number of bitmap containers in the range (and of runs of set bits in it, with ZEROS), and M
-   * is the number of returned integers. With LIMIT, the scan stops after count matches, or after
-   * completing their last byte in BYTE units.
+   * number of bitmap containers in the range, and M is the number of returned integers.
    * @param key the bitmap key
    * @param start the first byte of the range
    * @param end the last byte of the range
@@ -111,7 +109,10 @@ public interface BitCommands {
    * bits are assumed past its end. The whole range is returned as one list; bound it, and page
    * through it, with {@link BitRangeIntArrayParams#limit(long)}.
    * <p>
-   * Time complexity: as {@link #bitrangeintarray(String, long, long)}.
+   * Time complexity: O(N + M) where N is the number of bytes in the range for a string, or the
+   * number of bitmap containers in the range (and of runs of set bits in it, with ZEROS), and M
+   * is the number of returned integers. With LIMIT, the scan stops after count matches, or after
+   * completing their last byte in BYTE units.
    * @param key the bitmap key
    * @param start the first index of the range, in the unit
    * @param end the last index of the range, in the unit

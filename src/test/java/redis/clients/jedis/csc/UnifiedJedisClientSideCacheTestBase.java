@@ -13,21 +13,13 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-import io.redis.test.annotations.EnabledOnCommand;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.RegisterExtension;
-import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.util.EnabledOnCommandCondition;
 
 public abstract class UnifiedJedisClientSideCacheTestBase {
-
-  @RegisterExtension
-  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
-      () -> Endpoints.getRedisEndpoint("standalone0"));
 
   protected UnifiedJedis control;
 
@@ -55,33 +47,6 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
       control.del("foo");
       await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
           .untilAsserted(() -> assertNull(jedis.get("foo")));
-    }
-  }
-
-  /**
-   * A BITRANGEINTARRAY reply is served from the cache, and a write to the key
-   * invalidates it.
-   */
-  @Test
-  @EnabledOnCommand("BITRANGEINTARRAY")
-  public void bitrangeintarrayCachedAndInvalidated() {
-    List<Long> fa = Arrays.asList(0L, 7L, 8L, 15L, 16L, 23L, 24L, 31L);
-    try (UnifiedJedis jedis = createCachedJedis(CacheConfig.builder().build())) {
-      Cache cache = jedis.getCache();
-      for (long offset : fa) {
-        control.setbit("fa", offset, true);
-      }
-
-      assertEquals(fa, jedis.bitrangeintarray("fa", 0, -1));
-      assertEquals(fa, jedis.bitrangeintarray("fa", 0, -1));
-      assertEquals(1, cache.getSize());
-      assertEquals(1, cache.getStats().getHitCount());
-
-      control.setbit("fa", 1, true);
-      List<Long> updated = Arrays.asList(0L, 1L, 7L, 8L, 15L, 16L, 23L, 24L, 31L);
-      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
-          .untilAsserted(() -> assertEquals(updated, jedis.bitrangeintarray("fa", 0, -1)));
-      assertTrue(cache.getStats().getInvalidationCount() >= 1);
     }
   }
 

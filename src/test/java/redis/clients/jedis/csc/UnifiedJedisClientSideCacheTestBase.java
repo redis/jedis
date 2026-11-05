@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -14,14 +13,21 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.RegisterExtension;
+import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.util.RedisConditions;
+import redis.clients.jedis.util.EnabledOnCommandCondition;
 
 public abstract class UnifiedJedisClientSideCacheTestBase {
+
+  @RegisterExtension
+  public EnabledOnCommandCondition enabledOnCommandCondition = new EnabledOnCommandCondition(
+      () -> Endpoints.getRedisEndpoint("standalone0"));
 
   protected UnifiedJedis control;
 
@@ -57,8 +63,8 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
    * invalidates it.
    */
   @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayCachedAndInvalidated() {
-    assumeTrue(RedisConditions.of(control).hasCommand("BITRANGEINTARRAY"));
     List<Long> fa = Arrays.asList(0L, 7L, 8L, 15L, 16L, 23L, 24L, 31L);
     try (UnifiedJedis jedis = createCachedJedis(CacheConfig.builder().build())) {
       Cache cache = jedis.getCache();

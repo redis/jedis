@@ -103,11 +103,13 @@ public interface BitCommands {
   /**
    * <b><a href="https://redis.io/commands/bitrangeintarray">BITRANGEINTARRAY Command</a></b>
    * Return the offsets of the set bits, or of the clear bits with
-   * {@link BitRangeIntArrayParams#zeros()}, in a range of a bitmap, in ascending order. The unit of
-   * start and end is set with {@link BitRangeIntArrayParams#unit(BitCountOption)}; the offsets are
-   * bit offsets in both units. Clear bits are reported inside the value only: unlike BITPOS, no
-   * clear bits are assumed past its end. With {@link BitRangeIntArrayParams#limit(long)} the lowest
-   * offsets of the range are returned; see there for paging.
+   * {@link BitRangeIntArrayParams#zeros()}, in a range of a bitmap, in ascending order. The range
+   * is the one of BITCOUNT: start and end are inclusive, in the unit set with
+   * {@link BitRangeIntArrayParams#unit(BitCountOption)} (bytes by default), and a negative index
+   * counts from the end. The offsets are bit offsets in both units. Missing keys and empty ranges
+   * return an empty list. Clear bits are reported inside the value only: unlike BITPOS, no clear
+   * bits are assumed past its end. The whole range is returned as one list; bound it, and page
+   * through it, with {@link BitRangeIntArrayParams#limit(long)}.
    * <p>
    * Time complexity: as {@link #bitrangeintarray(String, long, long)}.
    * @param key the bitmap key

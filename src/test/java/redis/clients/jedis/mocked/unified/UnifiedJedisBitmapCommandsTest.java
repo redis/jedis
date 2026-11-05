@@ -2,6 +2,7 @@ package redis.clients.jedis.mocked.unified;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.sameInstance;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -13,6 +14,7 @@ import org.junit.jupiter.api.Test;
 import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.params.BitPosParams;
+import redis.clients.jedis.params.BitRangeIntArrayParams;
 
 public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisMockedTestBase {
 
@@ -363,6 +365,36 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisMockedTestBase {
 
     verify(commandExecutor).executeCommand(booleanCommandObject);
     verify(commandObjects).setbit(key, offset, value);
+  }
+
+  /**
+   * Every UnifiedJedis bitrangeintarray form delegates to the matching
+   * CommandObjects method and returns its result.
+   */
+  @Test
+  public void testBitrangeintarray() {
+    String key = "key";
+    byte[] bkey = "key".getBytes();
+    BitRangeIntArrayParams params = BitRangeIntArrayParams.bitRangeIntArrayParams()
+        .unit(BitCountOption.BIT).limit(3).zeros();
+    List<Long> expected = Arrays.asList(1L, 2L, 3L);
+
+    when(commandObjects.bitrangeintarray(key, 0, -1)).thenReturn(listLongCommandObject);
+    when(commandObjects.bitrangeintarray(key, 0, -1, params)).thenReturn(listLongCommandObject);
+    when(commandObjects.bitrangeintarray(bkey, 0, -1)).thenReturn(listLongCommandObject);
+    when(commandObjects.bitrangeintarray(bkey, 0, -1, params)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    assertThat(jedis.bitrangeintarray(key, 0, -1), sameInstance(expected));
+    assertThat(jedis.bitrangeintarray(key, 0, -1, params), sameInstance(expected));
+    assertThat(jedis.bitrangeintarray(bkey, 0, -1), sameInstance(expected));
+    assertThat(jedis.bitrangeintarray(bkey, 0, -1, params), sameInstance(expected));
+
+    verify(commandObjects).bitrangeintarray(key, 0, -1);
+    verify(commandObjects).bitrangeintarray(key, 0, -1, params);
+    verify(commandObjects).bitrangeintarray(bkey, 0, -1);
+    verify(commandObjects).bitrangeintarray(bkey, 0, -1, params);
+    verify(commandExecutor, times(4)).executeCommand(listLongCommandObject);
   }
 
 }

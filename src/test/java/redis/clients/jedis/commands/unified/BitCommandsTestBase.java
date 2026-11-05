@@ -1,8 +1,11 @@
 package redis.clients.jedis.commands.unified;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import io.redis.test.annotations.ConditionalOnEnv;
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
@@ -13,6 +16,7 @@ import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.BitPosParams;
+import redis.clients.jedis.params.BitRangeIntArrayParams;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.TestEnvUtil;
 
@@ -587,6 +591,132 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
     byte[] src1 = "{bitOp:key:}src1".getBytes();
 
     assertThrows(JedisDataException.class, () -> jedis.bitop(BitOP.ANDOR, dest, src1));
+  }
+
+  // ---- BITRANGEINTARRAY ----
+
+  private static final List<Long> FA_OFFSETS = Arrays.asList(0L, 7L, 8L, 15L, 16L, 23L, 24L, 31L);
+
+  private static List<Long> longs(long... values) {
+    List<Long> out = new ArrayList<>();
+    for (long v : values) {
+      out.add(v);
+    }
+    return out;
+  }
+
+  private void writeFA(String key) {
+    for (long o : FA_OFFSETS) {
+      jedis.setbit(key, o, true);
+    }
+  }
+
+  private static BitRangeIntArrayParams params() {
+    return BitRangeIntArrayParams.bitRangeIntArrayParams();
+  }
+
+  /** One row of the FA range table: start, end, unit (null for none) and the expected offsets. */
+  private static final class FaRange {
+    final long start;
+    final long end;
+    final BitCountOption unit;
+    final List<Long> expected;
+
+    FaRange(long start, long end, BitCountOption unit, List<Long> expected) {
+      this.start = start;
+      this.end = end;
+      this.unit = unit;
+      this.expected = expected;
+    }
+
+    @Override
+    public String toString() {
+      return start + " " + end + " " + unit;
+    }
+  }
+
+  private static List<FaRange> faRanges() {
+    List<FaRange> rows = new ArrayList<>();
+    for (BitCountOption unit : new BitCountOption[] { null, BitCountOption.BYTE }) {
+      rows.add(new FaRange(1, 1, unit, longs(8, 15)));
+      rows.add(new FaRange(1, 2, unit, longs(8, 15, 16, 23)));
+      rows.add(new FaRange(-1, -1, unit, longs(24, 31)));
+      rows.add(new FaRange(-2, -1, unit, longs(16, 23, 24, 31)));
+      rows.add(new FaRange(2, 99, unit, longs(16, 23, 24, 31)));
+      rows.add(new FaRange(-99, 0, unit, longs(0, 7)));
+      rows.add(new FaRange(-99, -98, unit, longs(0, 7)));
+      rows.add(new FaRange(3, 1, unit, longs()));
+      rows.add(new FaRange(4, 9, unit, longs()));
+      rows.add(new FaRange(-1, -2, unit, longs()));
+    }
+    rows.add(new FaRange(0, 0, BitCountOption.BIT, longs(0)));
+    rows.add(new FaRange(7, 8, BitCountOption.BIT, longs(7, 8)));
+    rows.add(new FaRange(1, 6, BitCountOption.BIT, longs()));
+    rows.add(new FaRange(9, 15, BitCountOption.BIT, longs(15)));
+    rows.add(new FaRange(-8, -1, BitCountOption.BIT, longs(24, 31)));
+    rows.add(new FaRange(30, 1000, BitCountOption.BIT, longs(31)));
+    rows.add(new FaRange(32, 40, BitCountOption.BIT, longs()));
+    return rows;
+  }
+
+  private List<Long> call(String key, FaRange r) {
+    return r.unit == null ? jedis.bitrangeintarray(key, r.start, r.end)
+        : jedis.bitrangeintarray(key, r.start, r.end, params().unit(r.unit));
+  }
+
+  private void assertFaRanges(String key) {
+    for (FaRange r : faRanges()) {
+      assertEquals(r.expected, call(key, r), r.toString());
+    }
+  }
+
+  /** The range cases on FA, in BYTE units (with and without a unit) and BIT. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayRanges() {
+    writeFA("fa");
+    assertFaRanges("fa");
+  }
+
+  /** A missing key, an empty string and LIMIT 0 reply an empty list, never null. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayEmptyReplies() {
+    assertEquals(longs(), jedis.bitrangeintarray("missing", 0, -1));
+
+    jedis.set("empty", "");
+    assertEquals(longs(), jedis.bitrangeintarray("empty", 0, -1));
+    assertEquals(longs(),
+      jedis.bitrangeintarray("empty", 0, -1, params().unit(BitCountOption.BIT).zeros()));
+
+    writeFA("fa");
+    assertEquals(longs(), jedis.bitrangeintarray("fa", 0, -1, params().limit(0)));
+    assertEquals(longs(),
+      jedis.bitrangeintarray("fa", 0, -1, params().unit(BitCountOption.BYTE).limit(0)));
+    assertEquals(longs(),
+      jedis.bitrangeintarray("fa", 0, -1, params().unit(BitCountOption.BIT).limit(0)));
+  }
+
+  /** The byte[] key forms, without and with params. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayBinary() {
+    byte[] key = SafeEncoder.encode("fa");
+    for (long o : FA_OFFSETS) {
+      jedis.setbit(key, o, true);
+    }
+    assertEquals(FA_OFFSETS, jedis.bitrangeintarray(key, 0, -1));
+    assertEquals(longs(0, 7, 8),
+      jedis.bitrangeintarray(key, 0, -1, params().unit(BitCountOption.BIT).limit(3)));
+  }
+
+  /** Unit, LIMIT and ZEROS together. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayAllOptions() {
+    writeFA("fa");
+    assertEquals(longs(1, 2, 3),
+      jedis.bitrangeintarray("fa", 0, -1, params().unit(BitCountOption.BIT).limit(3).zeros()));
   }
 
 }

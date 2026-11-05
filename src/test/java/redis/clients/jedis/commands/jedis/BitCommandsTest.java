@@ -679,6 +679,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayOffsetAbove32Bits() {
     String bulkLen = jedis.configGet("proto-max-bulk-len").get("proto-max-bulk-len");
+    String roaring = jedis.configGet("bitmap-default-roaring").get("bitmap-default-roaring");
     try {
       jedis.configSet("proto-max-bulk-len", "2gb");
       jedis.configSet("bitmap-default-roaring", "yes");
@@ -691,8 +692,11 @@ public class BitCommandsTest extends JedisCommandsTestBase {
       assertEquals(Long.class, ((Object) reply.get(0)).getClass());
     } finally {
       try (Jedis restore = createJedis()) {
-        restore.configSet("bitmap-default-roaring", "no");
-        restore.configSet("proto-max-bulk-len", bulkLen);
+        try {
+          restore.configSet("bitmap-default-roaring", roaring);
+        } finally {
+          restore.configSet("proto-max-bulk-len", bulkLen);
+        }
       }
     }
   }

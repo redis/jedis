@@ -626,7 +626,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     }
   }
 
-  /** Scenario BRIA-L01: Jedis.bitrangeintarray with String and byte[] keys, without and with params. */
+  /** Jedis.bitrangeintarray with String and byte[] keys, without and with params. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarray() {
@@ -643,7 +643,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     assertEquals(firstThree, jedis.bitrangeintarray(key, 0, -1, params));
   }
 
-  /** Scenario BRIA-L02: in a pipeline, FA's offsets and an empty list for a missing key. */
+  /** In a pipeline, FA's offsets and an empty list for a missing key. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayPipeline() {
@@ -657,7 +657,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     assertEquals(Collections.emptyList(), missing.get());
   }
 
-  /** Scenario BRIA-L03: in a transaction, the exec result holds FA's offsets. */
+  /** In a transaction, the exec result holds FA's offsets. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayTransaction() {
@@ -671,7 +671,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
     assertEquals(FA_OFFSETS, fa.get());
   }
 
-  /** Scenario BRIA-L04: an offset above 32 bits on a native bitmap is returned as a Long. */
+  /** An offset above 32 bits on a native bitmap is returned as a Long. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayOffsetAbove32Bits() {
@@ -699,7 +699,7 @@ public class BitCommandsTest extends JedisCommandsTestBase {
   }
 
   /**
-   * Scenario BRIA-G01: when the server closes the connection instead of sending the reply, the
+   * When the server closes the connection instead of sending the reply, the
    * client raises a connection error and returns no partial list.
    */
   @Test

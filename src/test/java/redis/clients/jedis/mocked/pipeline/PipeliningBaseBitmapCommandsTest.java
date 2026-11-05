@@ -263,7 +263,7 @@ public class PipeliningBaseBitmapCommandsTest extends PipeliningBaseMockedTestBa
   }
 
   /**
-   * Scenario BRIA-B04: every PipeliningBase bitrangeintarray form appends the matching
+   * Every PipeliningBase bitrangeintarray form appends the matching
    * CommandObjects command and returns its Response.
    */
   @Test

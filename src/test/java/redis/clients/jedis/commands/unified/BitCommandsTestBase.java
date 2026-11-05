@@ -846,7 +846,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertEquals(27, new HashSet<>(joined).size());
   }
 
-  /** Scenario BRIA-C01: the HLD range table on FA, in BYTE units (with and without a unit) and BIT. */
+  /** The range cases on FA, in BYTE units (with and without a unit) and BIT. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayRanges() {
@@ -854,7 +854,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertFaRanges("fa");
   }
 
-  /** Scenario BRIA-C02: for each FA range the reply's size equals BITCOUNT of the same range. */
+  /** For each FA range the reply's size equals BITCOUNT of the same range. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarraySizeMatchesBitcount() {
@@ -866,7 +866,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
     }
   }
 
-  /** Scenario BRIA-C03: a missing key, an empty string and LIMIT 0 reply an empty list, never null. */
+  /** A missing key, an empty string and LIMIT 0 reply an empty list, never null. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayEmptyReplies() {
@@ -885,7 +885,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
       jedis.bitrangeintarray("fa", 0, -1, params().unit(BitCountOption.BIT).limit(0)));
   }
 
-  /** Scenario BRIA-C04: ZEROS reports clear bits inside the value only, unlike BITPOS. */
+  /** ZEROS reports clear bits inside the value only, unlike BITPOS. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayZerosInsideValue() {
@@ -898,7 +898,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertEquals(16, jedis.bitpos("fz2", false));
   }
 
-  /** Scenario BRIA-C05: LIMIT on FB in BYTE and BIT units. */
+  /** LIMIT on FB in BYTE and BIT units. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayLimit() {
@@ -906,7 +906,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertFbLimitCalls("fb");
   }
 
-  /** Scenario BRIA-C06: in BYTE units a LIMIT page can hold more offsets than the count. */
+  /** In BYTE units a LIMIT page can hold more offsets than the count. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayByteLimitCompletesByte() {
@@ -916,7 +916,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertEquals(concat(range(0, 8), longs(15)), page);
   }
 
-  /** Scenario BRIA-C07: paging FB in BIT units with count 9 returns every offset once. */
+  /** Paging FB in BIT units with count 9 returns every offset once. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayPagingBit() {
@@ -924,7 +924,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertFbBitPages("fb");
   }
 
-  /** Scenario BRIA-C08: paging FB in BYTE units with count 9 returns every offset once. */
+  /** Paging FB in BYTE units with count 9 returns every offset once. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayPagingByte() {
@@ -932,7 +932,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertFbBytePages("fb");
   }
 
-  /** Scenario BRIA-C09: ZEROS with LIMIT completes the byte in BYTE units and stops in BIT units. */
+  /** ZEROS with LIMIT completes the byte in BYTE units and stops in BIT units. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayZerosLimit() {
@@ -943,7 +943,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
       jedis.bitrangeintarray("fa", 0, -1, params().unit(BitCountOption.BIT).limit(7).zeros()));
   }
 
-  /** Scenario BRIA-C10: the widest 64-bit range covers the whole value, in BYTE and BIT units. */
+  /** The widest 64-bit range covers the whole value, in BYTE and BIT units. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayExtremeRange() {
@@ -954,7 +954,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
       params().unit(BitCountOption.BIT)));
   }
 
-  /** Scenario BRIA-C11: a count of Long.MAX_VALUE returns every offset, in BYTE and BIT units. */
+  /** A count of Long.MAX_VALUE returns every offset, in BYTE and BIT units. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayMaxLimit() {
@@ -965,7 +965,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
       params().unit(BitCountOption.BIT).limit(Long.MAX_VALUE)));
   }
 
-  /** Scenario BRIA-C12: a key of the wrong type raises the server's WRONGTYPE error. */
+  /** A key of the wrong type raises the server's WRONGTYPE error. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayWrongType() {
@@ -976,7 +976,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
       e.getMessage());
   }
 
-  /** Scenario BRIA-C13: a native bitmap built from FA is of type bitmap and replies the FA table. */
+  /** A native bitmap built from FA is of type bitmap and replies the FA table. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayNativeRanges() {
@@ -987,7 +987,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
     }
   }
 
-  /** Scenario BRIA-C14: a native bitmap built from FB replies the LIMIT calls and the pages of FB. */
+  /** A native bitmap built from FB replies the LIMIT calls and the pages of FB. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayNativeLimitPaging() {
@@ -999,7 +999,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
     }
   }
 
-  /** Scenario BRIA-C15: the byte[] key forms, without and with params. */
+  /** The byte[] key forms, without and with params. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayBinary() {
@@ -1012,7 +1012,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
       jedis.bitrangeintarray(key, 0, -1, params().unit(BitCountOption.BIT).limit(3)));
   }
 
-  /** Scenario BRIA-C16: unit, LIMIT and ZEROS together. */
+  /** Unit, LIMIT and ZEROS together. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayAllOptions() {
@@ -1021,7 +1021,7 @@ public abstract class BitCommandsTestBase extends UnifiedJedisCommandsTestBase {
       jedis.bitrangeintarray("fa", 0, -1, params().unit(BitCountOption.BIT).limit(3).zeros()));
   }
 
-  /** Scenario BRIA-C17: the command leaves a string bitmap's type and length unchanged. */
+  /** The command leaves a string bitmap's type and length unchanged. */
   @Test
   @EnabledOnCommand("BITRANGEINTARRAY")
   public void bitrangeintarrayLeavesStringUnchanged() {

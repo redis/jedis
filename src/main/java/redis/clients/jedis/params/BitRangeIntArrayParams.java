@@ -36,8 +36,8 @@ public class BitRangeIntArrayParams implements IParams {
   }
 
   /**
-   * Set the unit of start and end: {@link BitCountOption#BYTE BYTE} (the server default) or
-   * {@link BitCountOption#BIT BIT}. The returned offsets are bit offsets in both units.
+   * The unit for start and end: {@link BitCountOption#BYTE BYTE} (the default) or
+   * {@link BitCountOption#BIT BIT}.
    * @param unit the unit, or {@code null} to send none
    * @return BitRangeIntArrayParams
    * @since 8.1
@@ -48,16 +48,11 @@ public class BitRangeIntArrayParams implements IParams {
   }
 
   /**
-   * Return the lowest offsets of the range: at most {@code count} in {@link BitCountOption#BIT BIT}
-   * units, and up to {@code count + 7} in {@link BitCountOption#BYTE BYTE} units, the default.
-   * <p>
-   * Paging: in {@link BitCountOption#BIT BIT} units a page holds at most {@code count} offsets, and
-   * the next page starts at the last returned offset + 1. In {@link BitCountOption#BYTE BYTE} units
-   * the server completes the byte of the last offset, so a page can hold up to {@code count + 7}
-   * offsets, and the next page starts at byte (last returned offset / 8) + 1. An empty page, or one
-   * with fewer than {@code count} offsets, ends the scan. A count of 0 always returns an empty list
-   * and can't be used to page. Pages are separate calls: a write between them can make the sequence
-   * miss an offset, but no offset is returned twice.
+   * Return the lowest matching offsets in the range. With {@link BitCountOption#BIT BIT}, the reply
+   * contains at most {@code count} offsets. With {@link BitCountOption#BYTE BYTE}, the command also
+   * returns the remaining matching offsets in the byte containing the {@code count}th match, so the
+   * reply can contain up to {@code count + 7} offsets. A count of 0 returns an empty list. Without
+   * a limit, every matching offset in the range is returned.
    * @param count the number of offsets to return, not negative
    * @return BitRangeIntArrayParams
    * @throws IllegalArgumentException if {@code count} is negative
@@ -72,8 +67,7 @@ public class BitRangeIntArrayParams implements IParams {
   }
 
   /**
-   * Return the offsets of the bits set to 0 instead of 1. Only the bits inside the value are
-   * reported: no clear bits are assumed past its end.
+   * Return clear-bit offsets instead of set-bit offsets within the range.
    * @return BitRangeIntArrayParams
    * @since 8.1
    */

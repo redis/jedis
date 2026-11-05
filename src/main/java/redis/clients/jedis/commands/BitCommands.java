@@ -84,40 +84,29 @@ public interface BitCommands {
 
   /**
    * <b><a href="https://redis.io/commands/bitrangeintarray">BITRANGEINTARRAY Command</a></b>
-   * Return the offsets of the bits set to 1 in a range of a bitmap, in ascending order. The range
-   * is the one of BITCOUNT: start and end are inclusive byte indexes, and a negative index counts
-   * from the end. Missing keys and empty ranges return an empty list.
-   * <p>
-   * Time complexity: O(N + M) where N is the number of bytes in the range for a string, or the
-   * number of bitmap containers in the range, and M is the number of returned integers.
+   * Return the offsets of the bits set to 1 in a byte range of a bitmap, in ascending order. As in
+   * BITCOUNT, start and end are inclusive and negative values count from the end.
    * @param key the bitmap key
    * @param start the first byte of the range
    * @param end the last byte of the range
-   * @return the bit offsets of the set bits in the range
+   * @return the offsets of the set bits, or an empty list
    * @since 8.1
    */
   List<Long> bitrangeintarray(String key, long start, long end);
 
   /**
    * <b><a href="https://redis.io/commands/bitrangeintarray">BITRANGEINTARRAY Command</a></b>
-   * Return the offsets of the set bits, or of the clear bits with
-   * {@link BitRangeIntArrayParams#zeros()}, in a range of a bitmap, in ascending order. The range
-   * is the one of BITCOUNT: start and end are inclusive, in the unit set with
-   * {@link BitRangeIntArrayParams#unit(BitCountOption)} (bytes by default), and a negative index
-   * counts from the end. The offsets are bit offsets in both units. Missing keys and empty ranges
-   * return an empty list. Clear bits are reported inside the value only: unlike BITPOS, no clear
-   * bits are assumed past its end. The whole range is returned as one list; bound it, and page
-   * through it, with {@link BitRangeIntArrayParams#limit(long)}.
-   * <p>
-   * Time complexity: O(N + M) where N is the number of bytes in the range for a string, or the
-   * number of bitmap containers in the range (and of runs of set bits in it, with ZEROS), and M
-   * is the number of returned integers. With LIMIT, the scan stops after count matches, or after
-   * completing their last byte in BYTE units.
+   * Same as {@link #bitrangeintarray(String, long, long)}, with these options from {@code params}:
+   * <ul>
+   * <li>{@code unit(BIT)}: start and end are bit indexes instead of byte indexes</li>
+   * <li>{@code limit(count)}: return at most {@code count} offsets</li>
+   * <li>{@code zeros()}: return the offsets of the bits set to 0 instead of 1</li>
+   * </ul>
    * @param key the bitmap key
-   * @param start the first index of the range, in the unit
-   * @param end the last index of the range, in the unit
+   * @param start the first index of the range, in the unit of {@code params}
+   * @param end the last index of the range, in the unit of {@code params}
    * @param params {@link BitRangeIntArrayParams}
-   * @return the bit offsets in the range
+   * @return the offsets in the range, or an empty list
    * @since 8.1
    */
   List<Long> bitrangeintarray(String key, long start, long end, BitRangeIntArrayParams params);

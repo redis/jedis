@@ -7,7 +7,7 @@ import redis.clients.jedis.Protocol;
 
 public class DefaultCacheableTest {
 
-  /** Scenario BRIA-B05: BITRANGEINTARRAY is cacheable by default. */
+  /** BITRANGEINTARRAY is cacheable by default. */
   @Test
   public void bitrangeintarrayIsDefaultCacheable() {
     assertTrue(DefaultCacheable.isDefaultCacheableCommand(Protocol.Command.BITRANGEINTARRAY));

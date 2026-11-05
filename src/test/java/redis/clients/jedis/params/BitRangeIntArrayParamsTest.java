@@ -47,27 +47,27 @@ public class BitRangeIntArrayParamsTest {
     return out;
   }
 
-  /** Scenario BRIA-A01: params with nothing set add no arguments. */
+  /** Params with nothing set add no arguments. */
   @Test
   public void nothingSetAddsNoArguments() {
     assertEquals(Collections.emptyList(), tokens(bitRangeIntArrayParams()));
   }
 
-  /** Scenario BRIA-A02: unit BIT adds BIT. */
+  /** Unit BIT adds BIT. */
   @Test
   public void unitBit() {
     assertEquals(Collections.singletonList("BIT"),
       tokens(bitRangeIntArrayParams().unit(BitCountOption.BIT)));
   }
 
-  /** Scenario BRIA-A02a: unit BYTE adds BYTE. */
+  /** Unit BYTE adds BYTE. */
   @Test
   public void unitByte() {
     assertEquals(Collections.singletonList("BYTE"),
       tokens(bitRangeIntArrayParams().unit(BitCountOption.BYTE)));
   }
 
-  /** Scenario BRIA-A03: a null unit adds no unit and clears one set before. */
+  /** A null unit adds no unit and clears one set before. */
   @Test
   public void nullUnitAddsNoUnit() {
     assertEquals(Collections.emptyList(), tokens(bitRangeIntArrayParams().unit(null)));
@@ -75,26 +75,26 @@ public class BitRangeIntArrayParamsTest {
       tokens(bitRangeIntArrayParams().unit(BitCountOption.BIT).unit(null)));
   }
 
-  /** Scenario BRIA-A04: limit(3) adds LIMIT 3. */
+  /** {@code limit(3)} adds LIMIT 3. */
   @Test
   public void limitThree() {
     assertEquals(Arrays.asList("LIMIT", "3"), tokens(bitRangeIntArrayParams().limit(3)));
   }
 
-  /** Scenario BRIA-A05: limit(0) is sent as LIMIT 0, not dropped. */
+  /** {@code limit(0)} is sent as LIMIT 0, not dropped. */
   @Test
   public void limitZeroIsSent() {
     assertEquals(Arrays.asList("LIMIT", "0"), tokens(bitRangeIntArrayParams().limit(0)));
   }
 
-  /** Scenario BRIA-A06: limit(Long.MAX_VALUE) is sent unchanged. */
+  /** {@code limit(Long.MAX_VALUE)} is sent unchanged. */
   @Test
   public void limitMaxValue() {
     assertEquals(Arrays.asList("LIMIT", "9223372036854775807"),
       tokens(bitRangeIntArrayParams().limit(Long.MAX_VALUE)));
   }
 
-  /** Scenario BRIA-A07: a negative count is rejected before anything is sent. */
+  /** A negative count is rejected before anything is sent. */
   @Test
   public void negativeLimitRejected() {
     assertThrows(IllegalArgumentException.class, () -> bitRangeIntArrayParams().limit(-1));
@@ -102,7 +102,7 @@ public class BitRangeIntArrayParamsTest {
       () -> bitRangeIntArrayParams().limit(Long.MIN_VALUE));
   }
 
-  /** Scenario BRIA-A08: zeros() adds one ZEROS, also when called twice. */
+  /** {@code zeros()} adds one ZEROS, also when called twice. */
   @Test
   public void zerosOnce() {
     assertEquals(Collections.singletonList("ZEROS"), tokens(bitRangeIntArrayParams().zeros()));
@@ -111,7 +111,7 @@ public class BitRangeIntArrayParamsTest {
   }
 
   /**
-   * Scenario BRIA-A09: the options are emitted as unit, LIMIT count, ZEROS whatever the call order.
+   * The options are emitted as unit, LIMIT count, ZEROS whatever the call order.
    */
   @Test
   public void fixedEmissionOrder() {
@@ -119,7 +119,7 @@ public class BitRangeIntArrayParamsTest {
       tokens(bitRangeIntArrayParams().zeros().limit(3).unit(BitCountOption.BIT)));
   }
 
-  /** Scenario BRIA-A10: the last unit and the last count win. */
+  /** The last unit and the last count win. */
   @Test
   public void lastCallWins() {
     assertEquals(Collections.singletonList("BYTE"),
@@ -127,7 +127,7 @@ public class BitRangeIntArrayParamsTest {
     assertEquals(Arrays.asList("LIMIT", "3"), tokens(bitRangeIntArrayParams().limit(1).limit(3)));
   }
 
-  /** Scenario BRIA-A11: equals and hashCode hold over unit, count and ZEROS. */
+  /** Equals and hashCode hold over unit, count and ZEROS. */
   @Test
   public void equalsAndHashCode() {
     BitRangeIntArrayParams a = bitRangeIntArrayParams().unit(BitCountOption.BIT).limit(3).zeros();
@@ -149,7 +149,7 @@ public class BitRangeIntArrayParamsTest {
 
     private final CommandObjects commandObjects = new CommandObjects(RedisProtocol.RESP2);
 
-    /** Scenario BRIA-B01: the command, key, range and options, for String and byte[] keys. */
+    /** The command, key, range and options, for String and byte[] keys. */
     @Test
     public void commandArguments() {
       BitRangeIntArrayParams params = bitRangeIntArrayParams().unit(BitCountOption.BIT).limit(3)
@@ -170,7 +170,7 @@ public class BitRangeIntArrayParamsTest {
         toBytes(commandObjects.bitrangeintarray(key, 0, -1, params).getArguments()));
     }
 
-    /** Scenario BRIA-B02: start Long.MIN_VALUE and end Long.MAX_VALUE are sent unchanged. */
+    /** Start Long.MIN_VALUE and end Long.MAX_VALUE are sent unchanged. */
     @Test
     public void extremeRangeSentUnchanged() {
       assertEquals(

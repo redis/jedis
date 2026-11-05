@@ -368,7 +368,7 @@ public class UnifiedJedisBitmapCommandsTest extends UnifiedJedisMockedTestBase {
   }
 
   /**
-   * Scenario BRIA-B03: every UnifiedJedis bitrangeintarray form delegates to the matching
+   * Every UnifiedJedis bitrangeintarray form delegates to the matching
    * CommandObjects method and returns its result.
    */
   @Test

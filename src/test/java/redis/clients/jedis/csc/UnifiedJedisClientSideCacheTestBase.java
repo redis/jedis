@@ -59,7 +59,7 @@ public abstract class UnifiedJedisClientSideCacheTestBase {
   }
 
   /**
-   * Scenario BRIA-F01: a BITRANGEINTARRAY reply is served from the cache, and a write to the key
+   * A BITRANGEINTARRAY reply is served from the cache, and a write to the key
    * invalidates it.
    */
   @Test

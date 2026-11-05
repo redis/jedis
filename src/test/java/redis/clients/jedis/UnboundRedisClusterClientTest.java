@@ -276,7 +276,7 @@ public class UnboundRedisClusterClientTest extends UnboundRedisClusterClientTest
   }
 
   /**
-   * Scenario BRIA-E01: a cluster replica serves BITRANGEINTARRAY through the explicit replica
+   * A cluster replica serves BITRANGEINTARRAY through the explicit replica
    * path, returning FA's offsets.
    */
   @Test

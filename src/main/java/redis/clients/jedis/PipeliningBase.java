@@ -1087,6 +1087,146 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<Long>> sexpire(String key, long seconds, String... members) {
+    return appendCommand(commandObjects.sexpire(key, seconds, members));
+  }
+
+  @Override
+  public Response<List<Long>> sexpire(String key, long seconds, ExpiryOption condition, String... members) {
+    return appendCommand(commandObjects.sexpire(key, seconds, condition, members));
+  }
+
+  @Override
+  public Response<List<Long>> spexpire(String key, long milliseconds, String... members) {
+    return appendCommand(commandObjects.spexpire(key, milliseconds, members));
+  }
+
+  @Override
+  public Response<List<Long>> spexpire(String key, long milliseconds, ExpiryOption condition, String... members) {
+    return appendCommand(commandObjects.spexpire(key, milliseconds, condition, members));
+  }
+
+  @Override
+  public Response<List<Long>> sexpireAt(String key, long unixTimeSeconds, String... members) {
+    return appendCommand(commandObjects.sexpireAt(key, unixTimeSeconds, members));
+  }
+
+  @Override
+  public Response<List<Long>> sexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String... members) {
+    return appendCommand(commandObjects.sexpireAt(key, unixTimeSeconds, condition, members));
+  }
+
+  @Override
+  public Response<List<Long>> spexpireAt(String key, long unixTimeMillis, String... members) {
+    return appendCommand(commandObjects.spexpireAt(key, unixTimeMillis, members));
+  }
+
+  @Override
+  public Response<List<Long>> spexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String... members) {
+    return appendCommand(commandObjects.spexpireAt(key, unixTimeMillis, condition, members));
+  }
+
+  @Override
+  public Response<List<Long>> sttl(String key, String... members) {
+    return appendCommand(commandObjects.sttl(key, members));
+  }
+
+  @Override
+  public Response<List<Long>> spttl(String key, String... members) {
+    return appendCommand(commandObjects.spttl(key, members));
+  }
+
+  @Override
+  public Response<List<Long>> sexpireTime(String key, String... members) {
+    return appendCommand(commandObjects.sexpireTime(key, members));
+  }
+
+  @Override
+  public Response<List<Long>> spexpireTime(String key, String... members) {
+    return appendCommand(commandObjects.spexpireTime(key, members));
+  }
+
+  @Override
+  public Response<List<Long>> spersist(String key, String... members) {
+    return appendCommand(commandObjects.spersist(key, members));
+  }
+
+  @Override
+  public Response<Long> sexpire(String key, long seconds, String member) {
+    return appendCommand(commandObjects.sexpire(key, seconds, member));
+  }
+
+  @Override
+  public Response<Long> sexpire(String key, long seconds, ExpiryOption condition, String member) {
+    return appendCommand(commandObjects.sexpire(key, seconds, condition, member));
+  }
+
+  @Override
+  public Response<Long> spexpire(String key, long milliseconds, String member) {
+    return appendCommand(commandObjects.spexpire(key, milliseconds, member));
+  }
+
+  @Override
+  public Response<Long> spexpire(String key, long milliseconds, ExpiryOption condition, String member) {
+    return appendCommand(commandObjects.spexpire(key, milliseconds, condition, member));
+  }
+
+  @Override
+  public Response<Long> sexpireAt(String key, long unixTimeSeconds, String member) {
+    return appendCommand(commandObjects.sexpireAt(key, unixTimeSeconds, member));
+  }
+
+  @Override
+  public Response<Long> sexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String member) {
+    return appendCommand(commandObjects.sexpireAt(key, unixTimeSeconds, condition, member));
+  }
+
+  @Override
+  public Response<Long> spexpireAt(String key, long unixTimeMillis, String member) {
+    return appendCommand(commandObjects.spexpireAt(key, unixTimeMillis, member));
+  }
+
+  @Override
+  public Response<Long> spexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String member) {
+    return appendCommand(commandObjects.spexpireAt(key, unixTimeMillis, condition, member));
+  }
+
+  @Override
+  public Response<Long> sttl(String key, String member) {
+    return appendCommand(commandObjects.sttl(key, member));
+  }
+
+  @Override
+  public Response<Long> spttl(String key, String member) {
+    return appendCommand(commandObjects.spttl(key, member));
+  }
+
+  @Override
+  public Response<Long> sexpireTime(String key, String member) {
+    return appendCommand(commandObjects.sexpireTime(key, member));
+  }
+
+  @Override
+  public Response<Long> spexpireTime(String key, String member) {
+    return appendCommand(commandObjects.spexpireTime(key, member));
+  }
+
+  @Override
+  public Response<Long> spersist(String key, String member) {
+    return appendCommand(commandObjects.spersist(key, member));
+  }
+
+  @Override
+  public Response<Long> saddex(String key, SAddExParams params, String... members) {
+    return appendCommand(commandObjects.saddex(key, params, members));
+  }
+
+  @Override
+  public Response<Long> saddex(String key, SAddExParams params, String member) {
+    return appendCommand(commandObjects.saddex(key, params, member));
+  }
+
+  @Override
   public Response<Long> zadd(String key, double score, String member) {
     return appendCommand(commandObjects.zadd(key, score, member));
   }
@@ -2999,6 +3139,56 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> blessSet(String key, BlessFlag flag) {
+    return appendCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public Response<Long> blessSet(byte[] key, BlessFlag flag) {
+    return appendCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public Response<Long> blessClear(String key, BlessFlag flag) {
+    return appendCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public Response<Long> blessClear(byte[] key, BlessFlag flag) {
+    return appendCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public Response<List<BlessFlag>> blessGet(String key) {
+    return appendCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public Response<List<byte[]>> blessGet(byte[] key) {
+    return appendCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public Response<ScanResult<String>> blessScan(String cursor, BlessFlag flag) {
+    return appendCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public Response<ScanResult<String>> blessScan(String cursor, BlessFlag flag, int count) {
+    return appendCommand(commandObjects.blessScan(cursor, flag, count));
+  }
+
+  @Override
+  public Response<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag) {
+    return appendCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public Response<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag, int count) {
+    return appendCommand(commandObjects.blessScan(cursor, flag, count));
+  }
+
+  @Override
   public Response<byte[]> randomBinaryKey() {
     return appendCommand(commandObjects.randomBinaryKey());
   }
@@ -3398,6 +3588,146 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> smove(byte[] srckey, byte[] dstkey, byte[] member) {
     return appendCommand(commandObjects.smove(srckey, dstkey, member));
+  }
+
+  @Override
+  public Response<List<Long>> sexpire(byte[] key, long seconds, byte[]... members) {
+    return appendCommand(commandObjects.sexpire(key, seconds, members));
+  }
+
+  @Override
+  public Response<List<Long>> sexpire(byte[] key, long seconds, ExpiryOption condition, byte[]... members) {
+    return appendCommand(commandObjects.sexpire(key, seconds, condition, members));
+  }
+
+  @Override
+  public Response<List<Long>> spexpire(byte[] key, long milliseconds, byte[]... members) {
+    return appendCommand(commandObjects.spexpire(key, milliseconds, members));
+  }
+
+  @Override
+  public Response<List<Long>> spexpire(byte[] key, long milliseconds, ExpiryOption condition, byte[]... members) {
+    return appendCommand(commandObjects.spexpire(key, milliseconds, condition, members));
+  }
+
+  @Override
+  public Response<List<Long>> sexpireAt(byte[] key, long unixTimeSeconds, byte[]... members) {
+    return appendCommand(commandObjects.sexpireAt(key, unixTimeSeconds, members));
+  }
+
+  @Override
+  public Response<List<Long>> sexpireAt(byte[] key, long unixTimeSeconds, ExpiryOption condition, byte[]... members) {
+    return appendCommand(commandObjects.sexpireAt(key, unixTimeSeconds, condition, members));
+  }
+
+  @Override
+  public Response<List<Long>> spexpireAt(byte[] key, long unixTimeMillis, byte[]... members) {
+    return appendCommand(commandObjects.spexpireAt(key, unixTimeMillis, members));
+  }
+
+  @Override
+  public Response<List<Long>> spexpireAt(byte[] key, long unixTimeMillis, ExpiryOption condition, byte[]... members) {
+    return appendCommand(commandObjects.spexpireAt(key, unixTimeMillis, condition, members));
+  }
+
+  @Override
+  public Response<List<Long>> sttl(byte[] key, byte[]... members) {
+    return appendCommand(commandObjects.sttl(key, members));
+  }
+
+  @Override
+  public Response<List<Long>> spttl(byte[] key, byte[]... members) {
+    return appendCommand(commandObjects.spttl(key, members));
+  }
+
+  @Override
+  public Response<List<Long>> sexpireTime(byte[] key, byte[]... members) {
+    return appendCommand(commandObjects.sexpireTime(key, members));
+  }
+
+  @Override
+  public Response<List<Long>> spexpireTime(byte[] key, byte[]... members) {
+    return appendCommand(commandObjects.spexpireTime(key, members));
+  }
+
+  @Override
+  public Response<List<Long>> spersist(byte[] key, byte[]... members) {
+    return appendCommand(commandObjects.spersist(key, members));
+  }
+
+  @Override
+  public Response<Long> sexpire(byte[] key, long seconds, byte[] member) {
+    return appendCommand(commandObjects.sexpire(key, seconds, member));
+  }
+
+  @Override
+  public Response<Long> sexpire(byte[] key, long seconds, ExpiryOption condition, byte[] member) {
+    return appendCommand(commandObjects.sexpire(key, seconds, condition, member));
+  }
+
+  @Override
+  public Response<Long> spexpire(byte[] key, long milliseconds, byte[] member) {
+    return appendCommand(commandObjects.spexpire(key, milliseconds, member));
+  }
+
+  @Override
+  public Response<Long> spexpire(byte[] key, long milliseconds, ExpiryOption condition, byte[] member) {
+    return appendCommand(commandObjects.spexpire(key, milliseconds, condition, member));
+  }
+
+  @Override
+  public Response<Long> sexpireAt(byte[] key, long unixTimeSeconds, byte[] member) {
+    return appendCommand(commandObjects.sexpireAt(key, unixTimeSeconds, member));
+  }
+
+  @Override
+  public Response<Long> sexpireAt(byte[] key, long unixTimeSeconds, ExpiryOption condition, byte[] member) {
+    return appendCommand(commandObjects.sexpireAt(key, unixTimeSeconds, condition, member));
+  }
+
+  @Override
+  public Response<Long> spexpireAt(byte[] key, long unixTimeMillis, byte[] member) {
+    return appendCommand(commandObjects.spexpireAt(key, unixTimeMillis, member));
+  }
+
+  @Override
+  public Response<Long> spexpireAt(byte[] key, long unixTimeMillis, ExpiryOption condition, byte[] member) {
+    return appendCommand(commandObjects.spexpireAt(key, unixTimeMillis, condition, member));
+  }
+
+  @Override
+  public Response<Long> sttl(byte[] key, byte[] member) {
+    return appendCommand(commandObjects.sttl(key, member));
+  }
+
+  @Override
+  public Response<Long> spttl(byte[] key, byte[] member) {
+    return appendCommand(commandObjects.spttl(key, member));
+  }
+
+  @Override
+  public Response<Long> sexpireTime(byte[] key, byte[] member) {
+    return appendCommand(commandObjects.sexpireTime(key, member));
+  }
+
+  @Override
+  public Response<Long> spexpireTime(byte[] key, byte[] member) {
+    return appendCommand(commandObjects.spexpireTime(key, member));
+  }
+
+  @Override
+  public Response<Long> spersist(byte[] key, byte[] member) {
+    return appendCommand(commandObjects.spersist(key, member));
+  }
+
+  @Override
+  public Response<Long> saddex(byte[] key, SAddExParams params, byte[]... members) {
+    return appendCommand(commandObjects.saddex(key, params, members));
+  }
+
+  @Override
+  public Response<Long> saddex(byte[] key, SAddExParams params, byte[] member) {
+    return appendCommand(commandObjects.saddex(key, params, member));
   }
 
   @Override
@@ -5069,8 +5399,20 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<String> cmsInitByDim(String key, long width, long depth,
+      CmsCellSize cellSize) {
+    return appendCommand(commandObjects.cmsInitByDim(key, width, depth, cellSize));
+  }
+
+  @Override
   public Response<String> cmsInitByProb(String key, double error, double probability) {
     return appendCommand(commandObjects.cmsInitByProb(key, error, probability));
+  }
+
+  @Override
+  public Response<String> cmsInitByProb(String key, double error, double probability,
+      CmsCellSize cellSize) {
+    return appendCommand(commandObjects.cmsInitByProb(key, error, probability, cellSize));
   }
 
   @Override

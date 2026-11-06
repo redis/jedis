@@ -32,7 +32,9 @@ It covers standalone, cluster, sentinel, and multi-db setups — with pipelining
 
 ### Test Conventions
 - Name new unit test classes using the `*Test` convention.
-- Name new integration test classes using the `*IT` convention. Do not use the `integration` tag for new tests.
+- Add a new integration test to the existing class that covers the same area or command group, even if that
+  class is a legacy `*Test` with `@Tag("integration")`. Do not create a new class just to get the `*IT` name.
+- Only when no matching class exists, create one named `*IT`, without the `integration` tag.
 
 ## Architecture
 

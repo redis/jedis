@@ -5,15 +5,15 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-/** A cluster recipe producing its {@link Effect}, with the requirements it can run under. */
+/** One mechanism producing an {@link Effect}, with the database requirements it can run under. */
 public final class Trigger {
 
-  private final StandaloneEffect effect;
+  private final EffectType effect;
   private final String name;
   private final String description;
   private final List<Requirement> requirements;
 
-  private Trigger(StandaloneEffect effect, String name, String description,
+  private Trigger(EffectType effect, String name, String description,
       List<Requirement> requirements) {
     this.effect = effect;
     this.name = name;
@@ -22,16 +22,17 @@ public final class Trigger {
   }
 
   @SuppressWarnings("unchecked")
-  static Trigger parse(StandaloneEffect effect, Map<String, Object> trigger) {
+  static Trigger parse(EffectType effect, Map<String, Object> trigger) {
     List<Requirement> requirements = new ArrayList<>();
-    for (Object r : (List<Object>) trigger.get("requirements")) {
-      requirements.add(Requirement.parse((Map<String, Object>) r));
+    List<Object> raw = (List<Object>) trigger.get("requirements");
+    for (int i = 0; i < raw.size(); i++) {
+      requirements.add(Requirement.parse((Map<String, Object>) raw.get(i), i));
     }
     return new Trigger(effect, (String) trigger.get("name"), (String) trigger.get("description"),
         requirements);
   }
 
-  public StandaloneEffect effect() {
+  public EffectType effect() {
     return effect;
   }
 
@@ -64,7 +65,7 @@ public final class Trigger {
     return requirements;
   }
 
-  /** The base 'single' variant — requirements[0]; TLS/scaled variants are FI-flag opt-ins. */
+  /** The base variant — requirements[0]; TLS/scaled/hostname variants are opt-ins. */
   public Requirement requirement() {
     return requirements.get(0);
   }

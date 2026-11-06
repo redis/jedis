@@ -3,6 +3,8 @@ package redis.clients.jedis.commands;
 import java.util.List;
 import java.util.Set;
 
+import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.params.SAddExParams;
 import redis.clients.jedis.params.SDiffCardParams;
 import redis.clients.jedis.params.SUnionCardParams;
 import redis.clients.jedis.params.ScanParams;
@@ -157,6 +159,9 @@ public interface SetCommands {
   /**
    * This command works exactly like {@link SetCommands#sdiff(String...) SDIFF} but instead of being
    * returned the resulting set is stored in dstkey.
+   * <p>
+   * Since Redis 8.12, members stored in dstkey keep the member expiration they have in the first
+   * set, if any (see {@link #sexpire(String, long, String...) SEXPIRE}).
    * @param dstkey
    * @param keys group of sets
    * @return The number of elements in the resulting set
@@ -240,6 +245,9 @@ public interface SetCommands {
    * <p>
    * Time complexity O(N*M) worst case where N is the cardinality of the smallest set and M the
    * number of sets
+   * <p>
+   * Since Redis 8.12, a member stored in dstkey keeps the nearest member expiration it has in any
+   * of the source sets; sources where it has no expiration are ignored.
    * @param dstkey
    * @param keys group of sets
    * @return The number of elements in the resulting set
@@ -289,6 +297,9 @@ public interface SetCommands {
    * over-written.
    * <p>
    * Time complexity O(N) where N is the total number of elements in all the provided sets
+   * <p>
+   * Since Redis 8.12, a member stored in dstkey keeps the farthest member expiration it has in any
+   * of the source sets; sources where it has no expiration are ignored.
    * @param dstkey
    * @param keys group of sets
    * @return The number of elements in the resulting set
@@ -364,11 +375,337 @@ public interface SetCommands {
    * An error is raised if the source or destination keys contain a non Set value.
    * <p>
    * Time complexity O(1)
+   * <p>
+   * Since Redis 8.12, the member moves with its member expiration, if any, replacing whatever
+   * expiration it had in the destination set.
    * @param srckey
    * @param dstkey
    * @param member
    * @return 1 if the element was moved, 0 if no operation was performed
    */
   long smove(String srckey, String dstkey, String member);
+
+  /**
+   * <b><a href="https://redis.io/commands/sexpire">SEXPIRE Command</a></b>
+   * Set an expiration on one or more members of the set stored at key, given as time to live in seconds, relative to now.
+   * Members without an expiration never expire on their own. A member whose expiration already
+   * passed is reported as missing.
+   * <p>
+   * Time complexity O(N) where N is the number of specified members
+   * @param key the set
+   * @param seconds time to live in seconds, relative to now
+   * @param members the members to expire
+   * @return one integer per member, in request order: -2 if the member (or the key) does not
+   * exist; 1 if the expiration was set or updated; 2 if the member was deleted because the given
+   * time is in the past
+   * @since 8.1
+   */
+  List<Long> sexpire(String key, long seconds, String... members);
+
+  /**
+   * <b><a href="https://redis.io/commands/sexpire">SEXPIRE Command</a></b>
+   * Set an expiration on one or more members of the set stored at key, given as time to live in seconds, relative to now, when the
+   * condition holds for that member. A member without an expiration counts as never expiring:
+   * NX and LT hold for it, XX and GT do not.
+   * <p>
+   * Time complexity O(N) where N is the number of specified members
+   * @param key the set
+   * @param seconds time to live in seconds, relative to now
+   * @param condition NX, XX, GT or LT, evaluated per member
+   * @param members the members to expire
+   * @return one integer per member, in request order: -2 if the member (or the key) does not
+   * exist; 0 if the condition was not met; 1 if the expiration was set or updated; 2 if the
+   * member was deleted because the given time is in the past
+   * @since 8.1
+   */
+  List<Long> sexpire(String key, long seconds, ExpiryOption condition, String... members);
+
+  /**
+   * <b><a href="https://redis.io/commands/spexpire">SPEXPIRE Command</a></b>
+   * Set an expiration on one or more members of the set stored at key, given as time to live in milliseconds, relative to now.
+   * Members without an expiration never expire on their own. A member whose expiration already
+   * passed is reported as missing.
+   * <p>
+   * Time complexity O(N) where N is the number of specified members
+   * @param key the set
+   * @param milliseconds time to live in milliseconds, relative to now
+   * @param members the members to expire
+   * @return one integer per member, in request order: -2 if the member (or the key) does not
+   * exist; 1 if the expiration was set or updated; 2 if the member was deleted because the given
+   * time is in the past
+   * @since 8.1
+   */
+  List<Long> spexpire(String key, long milliseconds, String... members);
+
+  /**
+   * <b><a href="https://redis.io/commands/spexpire">SPEXPIRE Command</a></b>
+   * Set an expiration on one or more members of the set stored at key, given as time to live in milliseconds, relative to now, when the
+   * condition holds for that member. A member without an expiration counts as never expiring:
+   * NX and LT hold for it, XX and GT do not.
+   * <p>
+   * Time complexity O(N) where N is the number of specified members
+   * @param key the set
+   * @param milliseconds time to live in milliseconds, relative to now
+   * @param condition NX, XX, GT or LT, evaluated per member
+   * @param members the members to expire
+   * @return one integer per member, in request order: -2 if the member (or the key) does not
+   * exist; 0 if the condition was not met; 1 if the expiration was set or updated; 2 if the
+   * member was deleted because the given time is in the past
+   * @since 8.1
+   */
+  List<Long> spexpire(String key, long milliseconds, ExpiryOption condition, String... members);
+
+  /**
+   * <b><a href="https://redis.io/commands/sexpireat">SEXPIREAT Command</a></b>
+   * Set an expiration on one or more members of the set stored at key, given as absolute Unix time in seconds at which the members expire.
+   * Members without an expiration never expire on their own. A member whose expiration already
+   * passed is reported as missing.
+   * <p>
+   * Time complexity O(N) where N is the number of specified members
+   * @param key the set
+   * @param unixTimeSeconds absolute Unix time in seconds at which the members expire
+   * @param members the members to expire
+   * @return one integer per member, in request order: -2 if the member (or the key) does not
+   * exist; 1 if the expiration was set or updated; 2 if the member was deleted because the given
+   * time is in the past
+   * @since 8.1
+   */
+  List<Long> sexpireAt(String key, long unixTimeSeconds, String... members);
+
+  /**
+   * <b><a href="https://redis.io/commands/sexpireat">SEXPIREAT Command</a></b>
+   * Set an expiration on one or more members of the set stored at key, given as absolute Unix time in seconds at which the members expire, when the
+   * condition holds for that member. A member without an expiration counts as never expiring:
+   * NX and LT hold for it, XX and GT do not.
+   * <p>
+   * Time complexity O(N) where N is the number of specified members
+   * @param key the set
+   * @param unixTimeSeconds absolute Unix time in seconds at which the members expire
+   * @param condition NX, XX, GT or LT, evaluated per member
+   * @param members the members to expire
+   * @return one integer per member, in request order: -2 if the member (or the key) does not
+   * exist; 0 if the condition was not met; 1 if the expiration was set or updated; 2 if the
+   * member was deleted because the given time is in the past
+   * @since 8.1
+   */
+  List<Long> sexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String... members);
+
+  /**
+   * <b><a href="https://redis.io/commands/spexpireat">SPEXPIREAT Command</a></b>
+   * Set an expiration on one or more members of the set stored at key, given as absolute Unix time in milliseconds at which the members expire.
+   * Members without an expiration never expire on their own. A member whose expiration already
+   * passed is reported as missing.
+   * <p>
+   * Time complexity O(N) where N is the number of specified members
+   * @param key the set
+   * @param unixTimeMillis absolute Unix time in milliseconds at which the members expire
+   * @param members the members to expire
+   * @return one integer per member, in request order: -2 if the member (or the key) does not
+   * exist; 1 if the expiration was set or updated; 2 if the member was deleted because the given
+   * time is in the past
+   * @since 8.1
+   */
+  List<Long> spexpireAt(String key, long unixTimeMillis, String... members);
+
+  /**
+   * <b><a href="https://redis.io/commands/spexpireat">SPEXPIREAT Command</a></b>
+   * Set an expiration on one or more members of the set stored at key, given as absolute Unix time in milliseconds at which the members expire, when the
+   * condition holds for that member. A member without an expiration counts as never expiring:
+   * NX and LT hold for it, XX and GT do not.
+   * <p>
+   * Time complexity O(N) where N is the number of specified members
+   * @param key the set
+   * @param unixTimeMillis absolute Unix time in milliseconds at which the members expire
+   * @param condition NX, XX, GT or LT, evaluated per member
+   * @param members the members to expire
+   * @return one integer per member, in request order: -2 if the member (or the key) does not
+   * exist; 0 if the condition was not met; 1 if the expiration was set or updated; 2 if the
+   * member was deleted because the given time is in the past
+   * @since 8.1
+   */
+  List<Long> spexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String... members);
+
+  /**
+   * <b><a href="https://redis.io/commands/sttl">STTL Command</a></b>
+   * Remaining time to live, in seconds rounded up, of one or more members of the set stored at key. The command only reads: it fires no notification and removes nothing.
+   * <p>
+   * Time complexity O(N) where N is the number of specified members
+   * @param key the set
+   * @param members the members to query
+   * @return one integer per member, in request order: -2 if the member (or the key) does not
+   * exist; -1 if the member has no expiration; otherwise the remaining time to live in seconds (never 0, it is rounded up)
+   * @since 8.1
+   */
+  List<Long> sttl(String key, String... members);
+
+  /**
+   * <b><a href="https://redis.io/commands/spttl">SPTTL Command</a></b>
+   * Remaining time to live, in exact milliseconds, of one or more members of the set stored at key. The command only reads: it fires no notification and removes nothing.
+   * <p>
+   * Time complexity O(N) where N is the number of specified members
+   * @param key the set
+   * @param members the members to query
+   * @return one integer per member, in request order: -2 if the member (or the key) does not
+   * exist; -1 if the member has no expiration; otherwise the remaining time to live in milliseconds (0 while the member is expiring now)
+   * @since 8.1
+   */
+  List<Long> spttl(String key, String... members);
+
+  /**
+   * <b><a href="https://redis.io/commands/sexpiretime">SEXPIRETIME Command</a></b>
+   * Absolute Unix time, in seconds rounded up, at which each of the given members of the set stored at key expires.
+   * <p>
+   * Time complexity O(N) where N is the number of specified members
+   * @param key the set
+   * @param members the members to query
+   * @return one integer per member, in request order: -2 if the member (or the key) does not
+   * exist; -1 if the member has no expiration; otherwise the absolute Unix expiration time in seconds
+   * @since 8.1
+   */
+  List<Long> sexpireTime(String key, String... members);
+
+  /**
+   * <b><a href="https://redis.io/commands/spexpiretime">SPEXPIRETIME Command</a></b>
+   * Absolute Unix time, in exact milliseconds, at which each of the given members of the set stored at key expires.
+   * <p>
+   * Time complexity O(N) where N is the number of specified members
+   * @param key the set
+   * @param members the members to query
+   * @return one integer per member, in request order: -2 if the member (or the key) does not
+   * exist; -1 if the member has no expiration; otherwise the absolute Unix expiration time in milliseconds
+   * @since 8.1
+   */
+  List<Long> spexpireTime(String key, String... members);
+
+  /**
+   * <b><a href="https://redis.io/commands/spersist">SPERSIST Command</a></b>
+   * Remove the expiration of one or more members of the set stored at key.
+   * <p>
+   * Time complexity O(N) where N is the number of specified members
+   * @param key the set
+   * @param members the members to persist
+   * @return one integer per member, in request order: -2 if the member (or the key) does not
+   * exist; -1 if the member has no expiration; 1 if the expiration was removed
+   * @since 8.1
+   */
+  List<Long> spersist(String key, String... members);
+
+  /**
+   * Single-member variant of {@link #sexpire(String, long, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long sexpire(String key, long seconds, String member);
+
+  /**
+   * Single-member variant of {@link #sexpire(String, long, ExpiryOption, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long sexpire(String key, long seconds, ExpiryOption condition, String member);
+
+  /**
+   * Single-member variant of {@link #spexpire(String, long, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long spexpire(String key, long milliseconds, String member);
+
+  /**
+   * Single-member variant of {@link #spexpire(String, long, ExpiryOption, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long spexpire(String key, long milliseconds, ExpiryOption condition, String member);
+
+  /**
+   * Single-member variant of {@link #sexpireAt(String, long, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long sexpireAt(String key, long unixTimeSeconds, String member);
+
+  /**
+   * Single-member variant of {@link #sexpireAt(String, long, ExpiryOption, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long sexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String member);
+
+  /**
+   * Single-member variant of {@link #spexpireAt(String, long, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long spexpireAt(String key, long unixTimeMillis, String member);
+
+  /**
+   * Single-member variant of {@link #spexpireAt(String, long, ExpiryOption, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long spexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String member);
+
+  /**
+   * Single-member variant of {@link #sttl(String, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long sttl(String key, String member);
+
+  /**
+   * Single-member variant of {@link #spttl(String, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long spttl(String key, String member);
+
+  /**
+   * Single-member variant of {@link #sexpireTime(String, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long sexpireTime(String key, String member);
+
+  /**
+   * Single-member variant of {@link #spexpireTime(String, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long spexpireTime(String key, String member);
+
+  /**
+   * Single-member variant of {@link #spersist(String, String...)}.
+   * @return the integer the array reply holds for the member
+   * @since 8.1
+   */
+  long spersist(String key, String member);
+
+  /**
+   * <b><a href="https://redis.io/commands/saddex">SADDEX Command</a></b>
+   * Add one or more members to the set stored at key, creating it if needed, and optionally set
+   * their expiration. Unlike SADD, a member that already exists is not skipped: its expiration is
+   * set to the given one, or discarded when no expiration option is given, unless KEEPTTL. With
+   * MNX the command applies only if none of the members exists; with MXX only if all of them
+   * exist. An expiration in the past deletes the members that exist and adds none.
+   * <p>
+   * Time complexity O(N) where N is the number of specified members
+   * @param key the set
+   * @param params condition (MNX or MXX) and expiration (EX, PX, EXAT, PXAT or KEEPTTL)
+   * @param members the members to add
+   * @return 1 if at least one member was added, updated or deleted; 0 if nothing was modified,
+   * that is when MNX or MXX did not hold, when every member already existed with the requested
+   * expiration, or when a past time was given and none of the members existed
+   * @see SAddExParams
+   * @since 8.1
+   */
+  long saddex(String key, SAddExParams params, String... members);
+
+  /**
+   * Single-member variant of {@link #saddex(String, SAddExParams, String...)}.
+   * @return 1 if the member was added, updated or deleted; 0 if nothing was modified
+   * @since 8.1
+   */
+  long saddex(String key, SAddExParams params, String member);
 
 }

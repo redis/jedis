@@ -157,4 +157,26 @@ public final class PushMessageTypes {
    */
   public static final String FAILED_OVER = "FAILED_OVER";
   public static final byte[] FAILED_OVER_BYTES = SafeEncoder.encode(FAILED_OVER);
+
+  // ==================== Cluster Maintenance Events ====================
+
+  /**
+   * Cluster slot migration starts — relax client timeouts until the matching SMIGRATED.
+   * <p>
+   * Format: ["SMIGRATING", seq, slots-or-ranges] — comma-separated slots and/or {@code from-to}
+   * ranges, e.g. {@code "123,456,789-1000"}.
+   * @since 8.1
+   */
+  public static final String SMIGRATING = "SMIGRATING";
+  public static final byte[] SMIGRATING_BYTES = SafeEncoder.encode(SMIGRATING);
+
+  /**
+   * Cluster slot migration complete — restore client timeouts and apply the slot delta.
+   * <p>
+   * Format: ["SMIGRATED", seq, [["src-host:port", "dest-host:port", slots-or-ranges], ...]] — each
+   * entry moves the given slots from the source node to the destination node.
+   * @since 8.1
+   */
+  public static final String SMIGRATED = "SMIGRATED";
+  public static final byte[] SMIGRATED_BYTES = SafeEncoder.encode(SMIGRATED);
 }

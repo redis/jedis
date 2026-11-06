@@ -5,7 +5,7 @@ package com.redis.test.fi;
  * Each effect is produced by one or more named triggers; see
  * {@link FaultInjectorClient#getStandaloneTriggers(StandaloneEffect)}.
  */
-public enum StandaloneEffect {
+public enum StandaloneEffect implements EffectType {
 
   /** Data moves and the endpoint rebinds (connection drop). */
   DATA_MOVEMENT_CONN_DROP("data_movement_conn_drop"),
@@ -22,7 +22,7 @@ public enum StandaloneEffect {
     this.wireName = wireName;
   }
 
-  /** The effect name as the fault injector API expects it. */
+  @Override
   public String wireName() {
     return wireName;
   }

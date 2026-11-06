@@ -1,5 +1,6 @@
 package redis.clients.jedis.util.server;
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -128,6 +129,41 @@ public class MaintenanceEventMessages {
    */
   public static Object[] moving(int sequenceNumber, int timeSeconds, String endpoint) {
     return new Object[] { "MOVING", sequenceNumber, timeSeconds, endpoint };
+  }
+
+  /**
+   * Create SMIGRATING message: a cluster slot migration is starting.
+   * <p>
+   * Format: SMIGRATING {@code <seq_number> <slots-or-ranges>}
+   * <p>
+   * Example: ["SMIGRATING", 6 (Long), "123,456,789-1000" (String)]
+   * @param sequenceNumber sequence number (encoded as RESP3 integer)
+   * @param slots comma-separated slots and/or inclusive {@code from-to} ranges
+   * @return push message arguments [SMIGRATING, seq (Long), slots (String)]
+   */
+  public static Object[] sMigrating(long sequenceNumber, String slots) {
+    return new Object[] { "SMIGRATING", sequenceNumber, slots };
+  }
+
+  /**
+   * Create SMIGRATED message: a cluster slot migration ended; each entry moves the given slots from
+   * the source node to the destination node.
+   * <p>
+   * Format: SMIGRATED {@code <seq_number> [[src, dest, slots-or-ranges], ...]}
+   * <p>
+   * Example: ["SMIGRATED", 7 (Long), [["h1:7000", "h2:7001", "0-100"]] (nested arrays)]
+   * @param sequenceNumber sequence number (encoded as RESP3 integer)
+   * @param entries migration entries, see {@link #entry(String, String, String)}; none yields an
+   *          empty delta, a closer that only ends the relax window
+   * @return push message arguments [SMIGRATED, seq (Long), entries (List of Lists)]
+   */
+  public static Object[] sMigrated(long sequenceNumber, List<?>... entries) {
+    return new Object[] { "SMIGRATED", sequenceNumber, Arrays.asList(entries) };
+  }
+
+  /** One SMIGRATED entry: {@code [src-host:port, dest-host:port, slots-or-ranges]}. */
+  public static List<Object> entry(String src, String dest, String slots) {
+    return Arrays.<Object> asList(src, dest, slots);
   }
 
 }

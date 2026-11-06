@@ -243,7 +243,7 @@ public class FaultInjectorClientTest {
     responses.add("{\"cluster\": {\"index\": 0, \"nodes\": 6}, \"triggers\": []}");
     responses.add("{\"cluster\": {\"index\": 0, \"nodes\": 6}, \"triggers\": []}");
 
-    StandaloneTriggerCatalog catalog = StandaloneTriggerCatalog.resolve(client);
+    TriggerCatalog catalog = TriggerCatalog.resolve(client, StandaloneEffect.class);
 
     assertEquals(2, catalog.allTriggers().size());
     Trigger migrate = catalog.effect(StandaloneEffect.DATA_MOVEMENT_NO_CONN_DROP)
@@ -264,8 +264,195 @@ public class FaultInjectorClientTest {
     assertThrows(IllegalArgumentException.class, () -> maintenance.requirement("no_such_config"));
 
     assertEquals(6, catalog.effect(StandaloneEffect.CONN_DROP).clusterNodes());
+    assertTrue(catalog.offers(
+      ScenarioKey.of(StandaloneEffect.DATA_MOVEMENT_CONN_DROP, "maintenance_mode", "single_tls")));
+    assertFalse(catalog.offers(
+      ScenarioKey.of(StandaloneEffect.DATA_MOVEMENT_CONN_DROP, "maintenance_mode", "no_such")));
+    assertFalse(
+      catalog.offers(ScenarioKey.of(StandaloneEffect.CONN_DROP, "no_such_trigger", "single")));
+    assertFalse(catalog.offers(ScenarioKey.of(SlotMigrateEffect.SLOT_SHUFFLE, "migrate", "x")));
+    assertEquals("single_tls",
+      catalog.scenario(
+        ScenarioKey.of(StandaloneEffect.DATA_MOVEMENT_CONN_DROP, "maintenance_mode", "single_tls"))
+          .requirement().config());
     assertThrows(IllegalArgumentException.class,
       () -> catalog.effect(StandaloneEffect.CONN_DROP).trigger("no_such_trigger"));
+    assertThrows(IllegalArgumentException.class,
+      () -> catalog.effect(SlotMigrateEffect.SLOT_SHUFFLE));
+  }
+
+  @Test
+  public void getSlotMigrateTriggersMergesBothAsmViewsAndNamesVariants() {
+    // asm=false: rladmin triggers; requirements carry no "config", only oss_cluster_api (+ tls)
+    responses.add("{\"cluster\": {\"index\": 0, \"nodes\": 3}, \"triggers\": ["
+        + " {\"name\": \"migrate\", \"description\": \"move one shard\", \"requirements\": ["
+        + "   {\"dbconfig\": {\"name\": \"sm-ip\"}, \"cluster\": {\"min_nodes\": 3},"
+        + "    \"oss_cluster_api\": {\"ip_type\": \"external\", \"endpoint_type\": \"ip\"}},"
+        + "   {\"dbconfig\": {\"name\": \"sm-host\"}, \"cluster\": {\"min_nodes\": 3},"
+        + "    \"oss_cluster_api\": {\"ip_type\": \"external\", \"endpoint_type\": \"hostname\"}},"
+        + "   {\"dbconfig\": {\"name\": \"sm-host-tls\"}, \"cluster\": {\"min_nodes\": 3}, \"tls\": true,"
+        + "    \"oss_cluster_api\": {\"ip_type\": \"external\", \"endpoint_type\": \"hostname\"}}]},"
+        + " {\"name\": \"failover\", \"description\": \"swap roles\", \"requirements\": ["
+        + "   {\"dbconfig\": {\"name\": \"sm-fo\"}, \"cluster\": {\"min_nodes\": 3},"
+        + "    \"oss_cluster_api\": {\"ip_type\": \"external\", \"endpoint_type\": \"ip\"}}]}]}");
+    // asm=true: the reshard trigger only
+    responses.add("{\"cluster\": {\"index\": 0, \"nodes\": 3}, \"triggers\": ["
+        + " {\"name\": \"reshard\", \"description\": \"ASM\", \"requirements\": ["
+        + "   {\"dbconfig\": {\"name\": \"sm-asm\"}, \"cluster\": {\"min_nodes\": 3}, \"asm\": true,"
+        + "    \"oss_cluster_api\": {\"ip_type\": \"external\", \"endpoint_type\": \"ip\"}}]}]}");
+
+    Effect effect = client.getSlotMigrateTriggers(SlotMigrateEffect.REMOVE);
+
+    assertEquals("/slot-migrate?effect=remove&cluster_index=0&include_tls=true&asm=false",
+      requests.get(0)[1]);
+    assertEquals("/slot-migrate?effect=remove&cluster_index=0&include_tls=true&asm=true",
+      requests.get(1)[1]);
+    assertEquals(SlotMigrateEffect.REMOVE, effect.type());
+    assertEquals(3, effect.triggers().size());
+    Trigger migrate = effect.trigger("migrate");
+    assertEquals("external/ip", migrate.requirement().config());
+    assertEquals("external/hostname", migrate.requirements().get(1).config());
+    assertEquals(1, migrate.requirements().get(1).index());
+    Requirement tls = migrate.requirement("external/hostname+tls");
+    assertTrue(tls.tls());
+    assertEquals("hostname", tls.endpointType());
+    assertEquals("sm-host-tls", tls.dbConfig().get("name"));
+    Requirement asm = effect.trigger("reshard").requirement("external/ip+asm");
+    assertTrue(asm.asm());
+    assertFalse(migrate.requirement().asm());
+    assertEquals("REMOVE/migrate[external/ip]", migrate.scenario().toString());
+  }
+
+  @Test
+  public void catalogWithoutDropsMatchingTriggersAndKeepsTheEffects() {
+    // SLOT_SHUFFLE: asm=false lists migrate, asm=true lists reshard; the other effects are empty
+    responses.add("{\"cluster\": {\"index\": 0, \"nodes\": 3}, \"triggers\": ["
+        + " {\"name\": \"migrate\", \"description\": \"move one shard\", \"requirements\": ["
+        + "   {\"dbconfig\": {\"name\": \"sm-ip\"}, \"cluster\": {\"min_nodes\": 3},"
+        + "    \"oss_cluster_api\": {\"ip_type\": \"external\", \"endpoint_type\": \"ip\"}}]}]}");
+    responses.add("{\"cluster\": {\"index\": 0, \"nodes\": 3}, \"triggers\": ["
+        + " {\"name\": \"reshard\", \"description\": \"ASM\", \"requirements\": ["
+        + "   {\"dbconfig\": {\"name\": \"sm-asm\"}, \"cluster\": {\"min_nodes\": 3}, \"asm\": true,"
+        + "    \"oss_cluster_api\": {\"ip_type\": \"external\", \"endpoint_type\": \"ip\"}}]}]}");
+    responses.add("{\"cluster\": {\"index\": 0, \"nodes\": 3}, \"triggers\": []}");
+    TriggerCatalog discovered = TriggerCatalog.resolve(client, SlotMigrateEffect.class);
+    ScenarioKey asmRow = ScenarioKey.of(SlotMigrateEffect.SLOT_SHUFFLE, "reshard",
+      "external/ip+asm");
+    ScenarioKey plainRow = ScenarioKey.of(SlotMigrateEffect.SLOT_SHUFFLE, "migrate", "external/ip");
+    assertTrue(discovered.offers(asmRow));
+
+    TriggerCatalog catalog = discovered
+        .without(t -> t.requirements().stream().allMatch(Requirement::asm));
+
+    assertFalse(catalog.offers(asmRow));
+    assertTrue(catalog.offers(plainRow));
+    assertEquals(1, catalog.allTriggers().size());
+    assertEquals(3, catalog.effect(SlotMigrateEffect.SLOT_SHUFFLE).clusterNodes());
+    assertEquals(0, catalog.effect(SlotMigrateEffect.ADD).triggers().size());
+    assertThrows(IllegalArgumentException.class, () -> catalog.scenario(asmRow));
+    // the discovered catalog is untouched
+    assertTrue(discovered.offers(asmRow));
+    assertEquals(2, discovered.allTriggers().size());
+  }
+
+  @Test
+  public void startEffectPostsTheSlotMigrateQueryRouteWithPinnedNodes() {
+    responses.add("{\"action_id\": \"s1\"}");
+    Map<String, Object> output = new HashMap<>();
+    output.put("bdb_id", 42);
+    output.put("endpoints", Collections.singletonList("redis://db.example:13000"));
+    Scenario scenario = slotMigrateScenario("remove-add", "migrate", false);
+
+    Map<String, Object> extra = new HashMap<>();
+    extra.put("source_node", 2);
+    String actionId = client.startEffect(Database.parse(output), scenario, extra);
+
+    assertEquals("s1", actionId);
+    assertEquals("POST", requests.get(0)[0]);
+    assertEquals(
+      "/slot-migrate?effect=remove-add&trigger=migrate&cluster_index=0&bdb_id=42&source_node=2",
+      requests.get(0)[1]);
+    assertEquals("", requests.get(0)[2], "query route takes no body");
+    assertEquals(Duration.ofSeconds(180), client.effectTimeout(scenario));
+  }
+
+  @Test
+  public void startEffectUsesTheSetupIdOfAnAsmDatabase() {
+    responses.add("{\"action_id\": \"s2\"}");
+    Map<String, Object> output = new HashMap<>();
+    output.put("bdb_id", 43);
+    output.put("setup_id", "setup-7");
+    output.put("endpoints", Collections.singletonList("redis://db.example:13001"));
+    Scenario scenario = slotMigrateScenario("remove", "reshard", true);
+
+    client.startEffect(Database.parse(output), scenario, Collections.emptyMap());
+
+    assertEquals("/slot-migrate?effect=remove&trigger=reshard&cluster_index=0&setup_id=setup-7",
+      requests.get(0)[1]);
+    assertEquals(Duration.ofSeconds(600), client.effectTimeout(scenario));
+  }
+
+  @Test
+  public void provisionAndReleaseUseSetupAndTeardownForAsmRequirements() {
+    responses.add("{\"setup_id\": \"setup-9\", \"bdb_id\": 44, \"password\": \"pw\","
+        + " \"tls\": false, \"endpoints\": [\"redis://db.example:13002\"]}");
+    responses.add("{}");
+    Scenario scenario = slotMigrateScenario("remove", "reshard", true);
+
+    Database database = client.provision(scenario);
+    client.release(database);
+
+    assertEquals("setup-9", database.setupId());
+    assertEquals(44L, database.id());
+    assertEquals("pw", database.clientConfig().build().getPassword());
+    assertEquals("POST", requests.get(0)[0]);
+    assertEquals(
+      "/slot-migrate/setup?effect=remove&trigger=reshard&cluster_index=0&variant_index=0",
+      requests.get(0)[1]);
+    assertEquals("/slot-migrate/teardown?setup_id=setup-9", requests.get(1)[1]);
+  }
+
+  @Test
+  public void provisionAndReleaseUseCreateAndDeleteOtherwise() {
+    responses.add("{\"action_id\": \"c1\"}");
+    responses.add("{\"status\": \"success\", \"output\": {\"bdb_id\": 45,"
+        + " \"endpoints\": [\"redis://db.example:13003\"]}}");
+    Scenario scenario = slotMigrateScenario("slot-shuffle", "migrate", false);
+
+    Database database = client.provision(scenario);
+
+    assertNull(database.setupId());
+    assertEquals("create_database", parse(requests.get(0)[2]).get("type"));
+
+    requests.clear();
+    responses.clear();
+    responses.add("{\"action_id\": \"d1\"}");
+    responses.add("{\"status\": \"success\"}");
+    client.release(database);
+    assertEquals("delete_database", parse(requests.get(0)[2]).get("type"));
+  }
+
+  @Test
+  public void actionStatusReadsTheStatusWithoutPolling() {
+    responses.add("{\"status\": \"running\"}");
+
+    assertEquals("running", client.actionStatus("a1"));
+    assertEquals(1, requests.size());
+    assertEquals("/action/a1", requests.get(0)[1]);
+  }
+
+  /** A slot-migrate scenario parsed from a minimal discovery response, no HTTP involved. */
+  private static Scenario slotMigrateScenario(String effect, String trigger, boolean asm) {
+    Map<String, Object> response = parse("{\"triggers\": [{\"name\": \"" + trigger + "\","
+        + " \"requirements\": [{\"dbconfig\": {\"name\": \"db\"}, \"asm\": " + asm + ","
+        + "  \"oss_cluster_api\": {\"ip_type\": \"external\", \"endpoint_type\": \"ip\"}}]}]}");
+    SlotMigrateEffect type = null;
+    for (SlotMigrateEffect candidate : SlotMigrateEffect.values()) {
+      if (candidate.wireName().equals(effect)) {
+        type = candidate;
+      }
+    }
+    return Effect.parse(type, response).trigger(trigger).scenario();
   }
 
   @Test

@@ -2215,6 +2215,146 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<Long> sexpire(String key, long seconds, String... members) {
+    return executeCommand(commandObjects.sexpire(key, seconds, members));
+  }
+
+  @Override
+  public List<Long> sexpire(String key, long seconds, ExpiryOption condition, String... members) {
+    return executeCommand(commandObjects.sexpire(key, seconds, condition, members));
+  }
+
+  @Override
+  public List<Long> spexpire(String key, long milliseconds, String... members) {
+    return executeCommand(commandObjects.spexpire(key, milliseconds, members));
+  }
+
+  @Override
+  public List<Long> spexpire(String key, long milliseconds, ExpiryOption condition, String... members) {
+    return executeCommand(commandObjects.spexpire(key, milliseconds, condition, members));
+  }
+
+  @Override
+  public List<Long> sexpireAt(String key, long unixTimeSeconds, String... members) {
+    return executeCommand(commandObjects.sexpireAt(key, unixTimeSeconds, members));
+  }
+
+  @Override
+  public List<Long> sexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String... members) {
+    return executeCommand(commandObjects.sexpireAt(key, unixTimeSeconds, condition, members));
+  }
+
+  @Override
+  public List<Long> spexpireAt(String key, long unixTimeMillis, String... members) {
+    return executeCommand(commandObjects.spexpireAt(key, unixTimeMillis, members));
+  }
+
+  @Override
+  public List<Long> spexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String... members) {
+    return executeCommand(commandObjects.spexpireAt(key, unixTimeMillis, condition, members));
+  }
+
+  @Override
+  public List<Long> sttl(String key, String... members) {
+    return executeCommand(commandObjects.sttl(key, members));
+  }
+
+  @Override
+  public List<Long> spttl(String key, String... members) {
+    return executeCommand(commandObjects.spttl(key, members));
+  }
+
+  @Override
+  public List<Long> sexpireTime(String key, String... members) {
+    return executeCommand(commandObjects.sexpireTime(key, members));
+  }
+
+  @Override
+  public List<Long> spexpireTime(String key, String... members) {
+    return executeCommand(commandObjects.spexpireTime(key, members));
+  }
+
+  @Override
+  public List<Long> spersist(String key, String... members) {
+    return executeCommand(commandObjects.spersist(key, members));
+  }
+
+  @Override
+  public long sexpire(String key, long seconds, String member) {
+    return executeCommand(commandObjects.sexpire(key, seconds, member));
+  }
+
+  @Override
+  public long sexpire(String key, long seconds, ExpiryOption condition, String member) {
+    return executeCommand(commandObjects.sexpire(key, seconds, condition, member));
+  }
+
+  @Override
+  public long spexpire(String key, long milliseconds, String member) {
+    return executeCommand(commandObjects.spexpire(key, milliseconds, member));
+  }
+
+  @Override
+  public long spexpire(String key, long milliseconds, ExpiryOption condition, String member) {
+    return executeCommand(commandObjects.spexpire(key, milliseconds, condition, member));
+  }
+
+  @Override
+  public long sexpireAt(String key, long unixTimeSeconds, String member) {
+    return executeCommand(commandObjects.sexpireAt(key, unixTimeSeconds, member));
+  }
+
+  @Override
+  public long sexpireAt(String key, long unixTimeSeconds, ExpiryOption condition, String member) {
+    return executeCommand(commandObjects.sexpireAt(key, unixTimeSeconds, condition, member));
+  }
+
+  @Override
+  public long spexpireAt(String key, long unixTimeMillis, String member) {
+    return executeCommand(commandObjects.spexpireAt(key, unixTimeMillis, member));
+  }
+
+  @Override
+  public long spexpireAt(String key, long unixTimeMillis, ExpiryOption condition, String member) {
+    return executeCommand(commandObjects.spexpireAt(key, unixTimeMillis, condition, member));
+  }
+
+  @Override
+  public long sttl(String key, String member) {
+    return executeCommand(commandObjects.sttl(key, member));
+  }
+
+  @Override
+  public long spttl(String key, String member) {
+    return executeCommand(commandObjects.spttl(key, member));
+  }
+
+  @Override
+  public long sexpireTime(String key, String member) {
+    return executeCommand(commandObjects.sexpireTime(key, member));
+  }
+
+  @Override
+  public long spexpireTime(String key, String member) {
+    return executeCommand(commandObjects.spexpireTime(key, member));
+  }
+
+  @Override
+  public long spersist(String key, String member) {
+    return executeCommand(commandObjects.spersist(key, member));
+  }
+
+  @Override
+  public long saddex(String key, SAddExParams params, String... members) {
+    return executeCommand(commandObjects.saddex(key, params, members));
+  }
+
+  @Override
+  public long saddex(String key, SAddExParams params, String member) {
+    return executeCommand(commandObjects.saddex(key, params, member));
+  }
+
+  @Override
   public Set<byte[]> sdiff(byte[]... keys) {
     return executeCommand(commandObjects.sdiff(keys));
   }
@@ -2287,6 +2427,146 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public long smove(byte[] srckey, byte[] dstkey, byte[] member) {
     return executeCommand(commandObjects.smove(srckey, dstkey, member));
+  }
+
+  @Override
+  public List<Long> sexpire(byte[] key, long seconds, byte[]... members) {
+    return executeCommand(commandObjects.sexpire(key, seconds, members));
+  }
+
+  @Override
+  public List<Long> sexpire(byte[] key, long seconds, ExpiryOption condition, byte[]... members) {
+    return executeCommand(commandObjects.sexpire(key, seconds, condition, members));
+  }
+
+  @Override
+  public List<Long> spexpire(byte[] key, long milliseconds, byte[]... members) {
+    return executeCommand(commandObjects.spexpire(key, milliseconds, members));
+  }
+
+  @Override
+  public List<Long> spexpire(byte[] key, long milliseconds, ExpiryOption condition, byte[]... members) {
+    return executeCommand(commandObjects.spexpire(key, milliseconds, condition, members));
+  }
+
+  @Override
+  public List<Long> sexpireAt(byte[] key, long unixTimeSeconds, byte[]... members) {
+    return executeCommand(commandObjects.sexpireAt(key, unixTimeSeconds, members));
+  }
+
+  @Override
+  public List<Long> sexpireAt(byte[] key, long unixTimeSeconds, ExpiryOption condition, byte[]... members) {
+    return executeCommand(commandObjects.sexpireAt(key, unixTimeSeconds, condition, members));
+  }
+
+  @Override
+  public List<Long> spexpireAt(byte[] key, long unixTimeMillis, byte[]... members) {
+    return executeCommand(commandObjects.spexpireAt(key, unixTimeMillis, members));
+  }
+
+  @Override
+  public List<Long> spexpireAt(byte[] key, long unixTimeMillis, ExpiryOption condition, byte[]... members) {
+    return executeCommand(commandObjects.spexpireAt(key, unixTimeMillis, condition, members));
+  }
+
+  @Override
+  public List<Long> sttl(byte[] key, byte[]... members) {
+    return executeCommand(commandObjects.sttl(key, members));
+  }
+
+  @Override
+  public List<Long> spttl(byte[] key, byte[]... members) {
+    return executeCommand(commandObjects.spttl(key, members));
+  }
+
+  @Override
+  public List<Long> sexpireTime(byte[] key, byte[]... members) {
+    return executeCommand(commandObjects.sexpireTime(key, members));
+  }
+
+  @Override
+  public List<Long> spexpireTime(byte[] key, byte[]... members) {
+    return executeCommand(commandObjects.spexpireTime(key, members));
+  }
+
+  @Override
+  public List<Long> spersist(byte[] key, byte[]... members) {
+    return executeCommand(commandObjects.spersist(key, members));
+  }
+
+  @Override
+  public long sexpire(byte[] key, long seconds, byte[] member) {
+    return executeCommand(commandObjects.sexpire(key, seconds, member));
+  }
+
+  @Override
+  public long sexpire(byte[] key, long seconds, ExpiryOption condition, byte[] member) {
+    return executeCommand(commandObjects.sexpire(key, seconds, condition, member));
+  }
+
+  @Override
+  public long spexpire(byte[] key, long milliseconds, byte[] member) {
+    return executeCommand(commandObjects.spexpire(key, milliseconds, member));
+  }
+
+  @Override
+  public long spexpire(byte[] key, long milliseconds, ExpiryOption condition, byte[] member) {
+    return executeCommand(commandObjects.spexpire(key, milliseconds, condition, member));
+  }
+
+  @Override
+  public long sexpireAt(byte[] key, long unixTimeSeconds, byte[] member) {
+    return executeCommand(commandObjects.sexpireAt(key, unixTimeSeconds, member));
+  }
+
+  @Override
+  public long sexpireAt(byte[] key, long unixTimeSeconds, ExpiryOption condition, byte[] member) {
+    return executeCommand(commandObjects.sexpireAt(key, unixTimeSeconds, condition, member));
+  }
+
+  @Override
+  public long spexpireAt(byte[] key, long unixTimeMillis, byte[] member) {
+    return executeCommand(commandObjects.spexpireAt(key, unixTimeMillis, member));
+  }
+
+  @Override
+  public long spexpireAt(byte[] key, long unixTimeMillis, ExpiryOption condition, byte[] member) {
+    return executeCommand(commandObjects.spexpireAt(key, unixTimeMillis, condition, member));
+  }
+
+  @Override
+  public long sttl(byte[] key, byte[] member) {
+    return executeCommand(commandObjects.sttl(key, member));
+  }
+
+  @Override
+  public long spttl(byte[] key, byte[] member) {
+    return executeCommand(commandObjects.spttl(key, member));
+  }
+
+  @Override
+  public long sexpireTime(byte[] key, byte[] member) {
+    return executeCommand(commandObjects.sexpireTime(key, member));
+  }
+
+  @Override
+  public long spexpireTime(byte[] key, byte[] member) {
+    return executeCommand(commandObjects.spexpireTime(key, member));
+  }
+
+  @Override
+  public long spersist(byte[] key, byte[] member) {
+    return executeCommand(commandObjects.spersist(key, member));
+  }
+
+  @Override
+  public long saddex(byte[] key, SAddExParams params, byte[]... members) {
+    return executeCommand(commandObjects.saddex(key, params, members));
+  }
+
+  @Override
+  public long saddex(byte[] key, SAddExParams params, byte[] member) {
+    return executeCommand(commandObjects.saddex(key, params, member));
   }
   // Set commands
 

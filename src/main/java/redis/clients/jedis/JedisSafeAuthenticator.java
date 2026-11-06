@@ -58,6 +58,29 @@ class JedisSafeAuthenticator {
     }
   }
 
+  protected void sendAndFlushCommandWithReplyHandler(Command command, Consumer<Object> handler,
+      Object... args) {
+    // A distinct entry lets a failed send remove only its own registration.
+    Consumer<Object> pendingHandler = new Consumer<Object>() {
+      @Override
+      public void accept(Object reply) {
+        handler.accept(reply);
+      }
+    };
+    boolean sent = false;
+    commandSync.lock();
+    try {
+      resultHandler.add(pendingHandler);
+      sendAndFlushCommand(command, args);
+      sent = true;
+    } finally {
+      if (!sent) {
+        resultHandler.remove(pendingHandler);
+      }
+      commandSync.unlock();
+    }
+  }
+
   protected void registerForAuthentication(Connection newClient) {
     Connection oldClient = this.client;
     if (oldClient == newClient) return;
@@ -81,8 +104,7 @@ class JedisSafeAuthenticator {
       if (newToken == null) {
         commandSync.lock();
         try {
-          sendAndFlushCommand(Command.AUTH, rawUser, rawPass);
-          resultHandler.add(this.authResultHandler);
+          sendAndFlushCommandWithReplyHandler(Command.AUTH, authResultHandler, rawUser, rawPass);
         } finally {
           pendingTokenRef.set(null);
           commandSync.unlock();

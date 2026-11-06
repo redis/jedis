@@ -1,6 +1,7 @@
 package redis.clients.jedis.authentication;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 import static org.mockito.Mockito.when;
@@ -8,25 +9,25 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 import static org.awaitility.Awaitility.await;
+import static org.awaitility.Durations.FIVE_SECONDS;
 import static org.awaitility.Durations.ONE_HUNDRED_MILLISECONDS;
 import static org.awaitility.Durations.ONE_SECOND;
 import static org.hamcrest.Matchers.greaterThan;
-import static org.hamcrest.MatcherAssert.assertThat;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
-import org.mockito.AdditionalAnswers;
-import org.mockito.ArgumentCaptor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,7 +35,6 @@ import redis.clients.authentication.core.IdentityProvider;
 import redis.clients.authentication.core.IdentityProviderConfig;
 import redis.clients.authentication.core.SimpleToken;
 import redis.clients.authentication.core.TokenAuthConfig;
-import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Connection;
 /*  */
 import redis.clients.jedis.DefaultJedisClientConfig;
@@ -44,7 +44,6 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.JedisPubSub;
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.RedisProtocol;
-import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisException;
 
 public class TokenBasedAuthenticationIntegrationTests {
@@ -176,7 +175,7 @@ public class TokenBasedAuthenticationIntegrationTests {
   }
 
   @Test
-  public void testJedisPubSubReauth() {
+  public void testJedisPubSubReauth() throws Exception {
     String user = "default";
     String password = endpointConfig.getPassword();
 
@@ -191,19 +190,13 @@ public class TokenBasedAuthenticationIntegrationTests {
         .identityProviderConfig(idProviderConfig).expirationRefreshRatio(0.8F)
         .lowerRefreshBoundMillis(4800).tokenRequestExecTimeoutInMs(1000).build();
 
-    AuthXManager authXManager = new AuthXManager(tokenAuthConfig);
-    authXManager = spy(authXManager);
-    List<Connection> connections = new ArrayList<>();
+    AuthXManager authXManager = spy(new AuthXManager(tokenAuthConfig));
+    AuthXEventListener listener = mock(AuthXEventListener.class);
+    authXManager.setListener(listener);
+    List<Connection> connections = new CopyOnWriteArrayList<>();
     doAnswer(invocation -> {
-      // A delegating mock records invocations for verify(...) but forwards every call to
-      // the one real Connection, unlike spy() which works on a shallow field-copy and
-      // would fork the connection's state from its push consumer chain.
-      Connection original = invocation.getArgument(0);
-      Connection connection = mock(Connection.class, AdditionalAnswers.delegatesTo(original));
-      invocation.getArguments()[0] = connection;
-      connections.add(connection);
-      Object result = invocation.callRealMethod();
-      return result;
+      connections.add(invocation.getArgument(0));
+      return invocation.callRealMethod();
     }).when(authXManager).addConnection(any(Connection.class));
 
     JedisClientConfig clientConfig = DefaultJedisClientConfig.builder().authXManager(authXManager)
@@ -216,27 +209,29 @@ public class TokenBasedAuthenticationIntegrationTests {
         .clientConfig(clientConfig)
         .build()) {
       ExecutorService executor = Executors.newSingleThreadExecutor();
-      executor.submit(() -> {
-        jedis.subscribe(pubSub, "channel1");
-      });
+      try {
+        Future<?> subscription = executor.submit(() -> jedis.subscribe(pubSub, "channel1"));
 
-      await().pollDelay(ONE_HUNDRED_MILLISECONDS).atMost(ONE_SECOND)
-          .until(pubSub::getSubscribedChannels, greaterThan(0));
+        await().pollDelay(ONE_HUNDRED_MILLISECONDS).atMost(ONE_SECOND)
+            .until(pubSub::getSubscribedChannels, greaterThan(0));
 
-      assertEquals(1, connections.size());
-      for (Connection connection : connections) {
-        await().pollDelay(ONE_HUNDRED_MILLISECONDS).atMost(ONE_SECOND).untilAsserted(() -> {
-          ArgumentCaptor<CommandArguments> captor = ArgumentCaptor.forClass(CommandArguments.class);
-
-          verify(connection, atLeast(3)).sendCommand(captor.capture());
-          assertThat(captor.getAllValues().stream()
-              .filter((item) -> item.getCommand() == Command.AUTH).count(),
-            greaterThan(3L));
-
-        });
+        assertEquals(1, connections.size());
+        await().pollDelay(ONE_HUNDRED_MILLISECONDS).atMost(FIVE_SECONDS)
+            .untilAsserted(() -> verify(authXManager, atLeast(5)).authenticateConnections(any()));
+        assertFalse(subscription.isDone());
+        assertFalse(connections.get(0).isBroken());
+        try {
+          pubSub.unsubscribe();
+        } finally {
+          subscription.get(5, TimeUnit.SECONDS);
+        }
+        assertFalse(connections.get(0).isBroken());
+        verify(listener, never()).onConnectionAuthenticationError(any());
+      } finally {
+        executor.shutdownNow();
       }
-      pubSub.unsubscribe();
-      executor.shutdown();
+    } finally {
+      authXManager.stop();
     }
   }
 

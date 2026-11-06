@@ -122,6 +122,23 @@ public final class BuilderFactory {
 
   };
 
+  /**
+   * The single integer of a one-element integer array reply, for the single-member variants of
+   * commands that reply with one integer per member (e.g. {@code SEXPIRE key 10 MEMBERS 1 m}).
+   */
+  public static final Builder<Long> LONG_FROM_LIST = new Builder<Long>() {
+    @Override
+    public Long build(Object data) {
+      List<Long> list = LONG_LIST.build(data);
+      return list == null || list.isEmpty() ? null : list.get(0);
+    }
+
+    @Override
+    public String toString() {
+      return "Long(List<Long>[0])";
+    }
+  };
+
   public static final Builder<Double> DOUBLE = new Builder<Double>() {
     @Override
     public Double build(Object data) {

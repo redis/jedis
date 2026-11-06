@@ -669,6 +669,9 @@
 						<include>**/SocketAddress*.java</include>
 						<include>**/sch/*.java</include>
 						<include>**/ConnectionFactoryRebindTest.java</include>
+						<include>**/CommandObjectsCountMinSketchTest.java</include>
+						<include>**/CmsCellSize.java</include>
+						<include>**/RedisBloomBuilderFactory*.java</include>
 						<include>**/JedisClusterInfoCache.java</include>
 						<include>**/ClusterMaintenance*.java</include>
 						<include>**/HashSlotRanges.java</include>

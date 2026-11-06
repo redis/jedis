@@ -5155,15 +5155,27 @@ public class CommandObjects {
         .add(depth), BuilderFactory.STRING);
   }
 
+  public final CommandObject<String> cmsInitByDim(String key, long width, long depth,
+      CmsCellSize cellSize) {
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.INITBYDIM).key(key).add(width)
+        .add(depth).add(RedisBloomKeyword.CELL_SIZE).add(cellSize), BuilderFactory.STRING);
+  }
+
   public final CommandObject<String> cmsInitByProb(String key, double error, double probability) {
     return new CommandObject<>(commandArguments(CountMinSketchCommand.INITBYPROB).key(key).add(error)
         .add(probability), BuilderFactory.STRING);
   }
 
+  public final CommandObject<String> cmsInitByProb(String key, double error, double probability,
+      CmsCellSize cellSize) {
+    return new CommandObject<>(commandArguments(CountMinSketchCommand.INITBYPROB).key(key).add(error)
+        .add(probability).add(RedisBloomKeyword.CELL_SIZE).add(cellSize), BuilderFactory.STRING);
+  }
+
   public final CommandObject<List<Long>> cmsIncrBy(String key, Map<String, Long> itemIncrements) {
     CommandArguments args = commandArguments(CountMinSketchCommand.INCRBY).key(key);
     itemIncrements.entrySet().forEach(entry -> args.add(entry.getKey()).add(entry.getValue()));
-    return new CommandObject<>(args, BuilderFactory.LONG_LIST);
+    return new CommandObject<>(args, RedisBloomBuilderFactory.CMS_INCRBY_LONG_LIST);
   }
 
   public final CommandObject<List<Long>> cmsQuery(String key, String... items) {

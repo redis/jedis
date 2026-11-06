@@ -38,8 +38,12 @@ public class RedisMultiDbClientSideCacheTest extends UnifiedJedisClientSideCache
 
   @Override
   protected MultiDbClient createCachedJedis(CacheConfig cacheConfig) {
+    // Health checks are off: clearIfOneDiesTest kills every server-side connection, including the
+    // health checker's own pooled one. A failed PING would otherwise mark the only database
+    // unhealthy and lock it out for the grace period, which is not what these tests exercise.
     DatabaseConfig dbConfig = DatabaseConfig
-        .builder(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build()).build();
+        .builder(endpoint.getHostAndPort(), endpoint.getClientConfigBuilder().build())
+        .healthCheckEnabled(false).build();
 
     MultiDbConfig multiDbConfig = MultiDbConfig.builder().database(dbConfig).build();
 

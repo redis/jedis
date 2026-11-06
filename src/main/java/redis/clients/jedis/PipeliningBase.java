@@ -2999,6 +2999,56 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<Long> blessSet(String key, BlessFlag flag) {
+    return appendCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public Response<Long> blessSet(byte[] key, BlessFlag flag) {
+    return appendCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public Response<Long> blessClear(String key, BlessFlag flag) {
+    return appendCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public Response<Long> blessClear(byte[] key, BlessFlag flag) {
+    return appendCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public Response<List<BlessFlag>> blessGet(String key) {
+    return appendCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public Response<List<byte[]>> blessGet(byte[] key) {
+    return appendCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public Response<ScanResult<String>> blessScan(String cursor, BlessFlag flag) {
+    return appendCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public Response<ScanResult<String>> blessScan(String cursor, BlessFlag flag, int count) {
+    return appendCommand(commandObjects.blessScan(cursor, flag, count));
+  }
+
+  @Override
+  public Response<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag) {
+    return appendCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public Response<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag, int count) {
+    return appendCommand(commandObjects.blessScan(cursor, flag, count));
+  }
+
+  @Override
   public Response<byte[]> randomBinaryKey() {
     return appendCommand(commandObjects.randomBinaryKey());
   }
@@ -5069,8 +5119,20 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<String> cmsInitByDim(String key, long width, long depth,
+      CmsCellSize cellSize) {
+    return appendCommand(commandObjects.cmsInitByDim(key, width, depth, cellSize));
+  }
+
+  @Override
   public Response<String> cmsInitByProb(String key, double error, double probability) {
     return appendCommand(commandObjects.cmsInitByProb(key, error, probability));
+  }
+
+  @Override
+  public Response<String> cmsInitByProb(String key, double error, double probability,
+      CmsCellSize cellSize) {
+    return appendCommand(commandObjects.cmsInitByProb(key, error, probability, cellSize));
   }
 
   @Override

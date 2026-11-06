@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.args.BlessFlag;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.ProfilingInfo;
 import redis.clients.jedis.search.SearchResult;
@@ -85,6 +86,7 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<List<StreamEntryID>> listStreamEntryIdCommandObject;
   @Mock protected CommandObject<List<StreamGroupInfo>> listStreamGroupInfoCommandObject;
   @Mock protected CommandObject<List<StreamPendingEntry>> listStreamPendingEntryCommandObject;
+  @Mock protected CommandObject<List<BlessFlag>> listBlessFlagCommandObject;
   @Mock protected CommandObject<List<String>> listStringCommandObject;
   @Mock protected CommandObject<List<TSElement>> listTsElementCommandObject;
   @Mock protected CommandObject<List<Tuple>> listTupleCommandObject;

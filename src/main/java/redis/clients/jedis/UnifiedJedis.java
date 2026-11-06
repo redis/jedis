@@ -705,6 +705,74 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public long blessSet(String key, BlessFlag flag) {
+    return executeCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public long blessSet(byte[] key, BlessFlag flag) {
+    return executeCommand(commandObjects.blessSet(key, flag));
+  }
+
+  @Override
+  public long blessClear(String key, BlessFlag flag) {
+    return executeCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public long blessClear(byte[] key, BlessFlag flag) {
+    return executeCommand(commandObjects.blessClear(key, flag));
+  }
+
+  @Override
+  public List<BlessFlag> blessGet(String key) {
+    return executeCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public List<byte[]> blessGet(byte[] key) {
+    return executeCommand(commandObjects.blessGet(key));
+  }
+
+  @Override
+  public ScanResult<String> blessScan(String cursor, BlessFlag flag) {
+    return executeCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public ScanResult<String> blessScan(String cursor, BlessFlag flag, int count) {
+    return executeCommand(commandObjects.blessScan(cursor, flag, count));
+  }
+
+  @Override
+  public ScanResult<byte[]> blessScan(byte[] cursor, BlessFlag flag) {
+    return executeCommand(commandObjects.blessScan(cursor, flag));
+  }
+
+  @Override
+  public ScanResult<byte[]> blessScan(byte[] cursor, BlessFlag flag, int count) {
+    return executeCommand(commandObjects.blessScan(cursor, flag, count));
+  }
+
+  /**
+   * Iterate the keys carrying {@code flag} on every primary node known to this client, each with
+   * its own {@code BLESS SCAN} cursor. This is the cluster-safe counterpart of
+   * {@link #blessScan(String, BlessFlag, int)}.
+   * @param batchCount COUNT for each batch execution
+   * @param flag the flag to filter on
+   * @return bless scan iteration
+   * @throws IllegalArgumentException if {@code flag} is {@code null}
+   * @since 8.1
+   */
+  public BlessScanIteration blessScanIteration(int batchCount, BlessFlag flag) {
+    // checked before the iteration pulls a connection from every primary node
+    if (flag == null) {
+      throw new IllegalArgumentException("BlessFlag must not be null.");
+    }
+    return new BlessScanIteration(provider, batchCount, flag);
+  }
+
+  @Override
   public String randomKey() {
     return executeCommand(commandObjects.randomKey());
   }

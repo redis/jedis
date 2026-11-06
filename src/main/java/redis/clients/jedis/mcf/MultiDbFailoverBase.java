@@ -7,6 +7,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.mcf.MultiDbConnectionProvider.Database;
+import redis.clients.jedis.mcf.MultiDbConnectionProvider.SwitchInfo;
 import redis.clients.jedis.util.IOUtils;
 
 /**
@@ -37,6 +38,10 @@ public class MultiDbFailoverBase implements AutoCloseable {
    * failure scenarios
    */
   protected void databaseFailover(Database database) {
+    // Only the decision is made under the lock. Publishing the switch and draining the old pool
+    // happen after it is released, so other callers are not queued behind user code or a drain
+    // that waits for in-flight connection attempts to time out.
+    SwitchInfo switchInfo = null;
     lock.lock();
 
     CircuitBreaker circuitBreaker = database.getCircuitBreaker();
@@ -62,7 +67,7 @@ public class MultiDbFailoverBase implements AutoCloseable {
         // Iterating the active database will allow subsequent calls to the executeCommand() to use
         // the next
         // database's connection pool - according to the configuration's prioritization/order/weight
-        provider.switchToHealthyDatabase(SwitchReason.CIRCUIT_BREAKER, database);
+        switchInfo = provider.switchToHealthyDatabase(SwitchReason.CIRCUIT_BREAKER, database);
       }
       // this check relies on the fact that many failover attempts can hit with the same CB,
       // only the first one will trigger a failover, and make the CB FORCED_OPEN.
@@ -72,11 +77,14 @@ public class MultiDbFailoverBase implements AutoCloseable {
       // an
       // exception
       else if (database == provider.getDatabase()) {
-        provider.switchToHealthyDatabase(SwitchReason.CIRCUIT_BREAKER, database);
+        switchInfo = provider.switchToHealthyDatabase(SwitchReason.CIRCUIT_BREAKER, database);
       }
       // Ignore exceptions since we are already in a failure state
     } finally {
       lock.unlock();
+    }
+    if (switchInfo != null) {
+      provider.postSwitch(switchInfo);
     }
   }
 

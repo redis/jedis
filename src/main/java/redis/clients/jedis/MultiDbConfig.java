@@ -620,9 +620,12 @@ public final class MultiDbConfig {
   /**
    * Maximum number of failover attempts.
    * <p>
-   * This setting controls how many times the system will attempt to failover to a different
-   * database before giving up. For example, if set to 3, the system will make 1 initial attempt
-   * plus 2 failover attempts for a total of 3 attempts.
+   * While no healthy database is available, up to this many counted attempts are reported with
+   * {@code JedisTemporarilyNotAvailableException} and the client keeps trying to recover. Once they
+   * are exceeded, the failure is reported with {@code JedisPermanentlyNotAvailableException} and
+   * Jedis gives no guarantee of automatic recovery: create a new client. Attempts are counted at
+   * most once per {@code delayInBetweenFailoverAttempts}, so the two settings together define how
+   * long an outage is treated as temporary.
    * </p>
    * <p>
    * <strong>Default:</strong> {@value #MAX_NUM_FAILOVER_ATTEMPTS_DEFAULT}
@@ -634,9 +637,9 @@ public final class MultiDbConfig {
   /**
    * Delay in milliseconds between failover attempts.
    * <p>
-   * This setting controls how long the system will wait before attempting to failover to a
-   * different database. For example, if set to 1000, the system will wait 1 second before
-   * attempting to failover to a different database.
+   * Minimum time between two counted failover attempts while no healthy database is available.
+   * Together with {@code maxNumFailoverAttempts} it defines how long an outage is treated as
+   * temporary, before Jedis reports it as permanent and gives no guarantee of automatic recovery.
    * </p>
    * <p>
    * <strong>Default:</strong> {@value #DELAY_IN_BETWEEN_FAILOVER_ATTEMPTS_DEFAULT} milliseconds
@@ -1476,9 +1479,12 @@ public final class MultiDbConfig {
     /**
      * Sets the maximum number of failover attempts.
      * <p>
-     * This setting controls how many times the system will attempt to failover to a different
-     * database before giving up. For example, if set to 3, the system will make 1 initial attempt
-     * plus 2 failover attempts for a total of 3 attempts.
+     * While no healthy database is available, up to this many counted attempts are reported with
+     * {@code JedisTemporarilyNotAvailableException} and the client keeps trying to recover. Once
+     * they are exceeded, the failure is reported with {@code JedisPermanentlyNotAvailableException}
+     * and Jedis gives no guarantee of automatic recovery: create a new client. Attempts are counted
+     * at most once per {@code delayInBetweenFailoverAttempts}, so the two settings together define
+     * how long an outage is treated as temporary.
      * </p>
      * <p>
      * <strong>Default:</strong> {@value #MAX_NUM_FAILOVER_ATTEMPTS_DEFAULT}
@@ -1494,9 +1500,9 @@ public final class MultiDbConfig {
     /**
      * Sets the delay in milliseconds between failover attempts.
      * <p>
-     * This setting controls how long the system will wait before attempting to failover to a
-     * different database. For example, if set to 1000, the system will wait 1 second before
-     * attempting to failover to a different database.
+     * Minimum time between two counted failover attempts while no healthy database is available.
+     * Together with {@code maxNumFailoverAttempts} it defines how long an outage is treated as
+     * temporary, before Jedis reports it as permanent and gives no guarantee of automatic recovery.
      * </p>
      * <p>
      * <strong>Default:</strong> {@value #DELAY_IN_BETWEEN_FAILOVER_ATTEMPTS_DEFAULT} milliseconds

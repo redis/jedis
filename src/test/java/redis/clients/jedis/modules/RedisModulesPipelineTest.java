@@ -2,6 +2,7 @@ package redis.clients.jedis.modules;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.contains;
+import static org.hamcrest.Matchers.empty;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.nullValue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -323,5 +324,41 @@ public class RedisModulesPipelineTest extends RedisModuleCommandsTestBase {
     assertThat(set.get(), equalTo("OK"));
     assertThat(popFromEmptyArrays.get(), contains(nullValue(), nullValue()));
     assertThat(popFromString.get(), contains(nullValue()));
+  }
+
+  @Test
+  public void jsonNumIncrByAsNumbers() {
+    String key = keys.key("doc");
+    Pipeline p = (Pipeline) client.pipelined();
+
+    Response<String> set = p.jsonSet(key, Path2.ROOT_PATH, "{\"int\":10,\"dec\":10.5}");
+    Response<List<Number>> incrInt = p.jsonNumIncrByAsNumbers(key, Path2.of("$.int"), 5);
+    Response<List<Number>> incrDec = p.jsonNumIncrByAsNumbers(key, Path2.of("$.dec"), 2.5);
+    Response<List<Number>> incrIntByDec = p.jsonNumIncrByAsNumbers(key, Path2.of("$.int"), 0.5);
+
+    p.sync();
+
+    assertThat(set.get(), equalTo("OK"));
+    assertThat(incrInt.get(), contains(15L));
+    assertThat(incrDec.get(), contains(13.0));
+    assertThat(incrIntByDec.get(), contains(15.5));
+  }
+
+  @Test
+  public void jsonNumIncrByAsNumbers_NonExistingPathOrNotANumber() {
+    String key = keys.key("doc");
+    Pipeline p = (Pipeline) client.pipelined();
+
+    Response<String> set = p.jsonSet(key, Path2.ROOT_PATH, "{\"str\":\"a\",\"nums\":[1,\"b\",2]}");
+    Response<List<Number>> missingPath = p.jsonNumIncrByAsNumbers(key, Path2.of("$.missing"), 1);
+    Response<List<Number>> notANumber = p.jsonNumIncrByAsNumbers(key, Path2.of("$.str"), 1);
+    Response<List<Number>> mixed = p.jsonNumIncrByAsNumbers(key, Path2.of("$.nums[*]"), 1);
+
+    p.sync();
+
+    assertThat(set.get(), equalTo("OK"));
+    assertThat(missingPath.get(), empty());
+    assertThat(notANumber.get(), contains(nullValue()));
+    assertThat(mixed.get(), contains(2L, null, 3L));
   }
 }

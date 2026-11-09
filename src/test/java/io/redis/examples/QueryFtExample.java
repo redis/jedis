@@ -41,7 +41,8 @@ public class QueryFtExample {
         jedis.ftCreate("idx:bicycle",
             FTCreateParams.createParams()
                     .on(IndexDataType.JSON)
-                    .addPrefix("bicycle:"),
+                    .addPrefix("bicycle:")
+                    .skipInitialScan(),
             schema
         );
 

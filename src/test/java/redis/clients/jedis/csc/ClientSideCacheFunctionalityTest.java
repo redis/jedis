@@ -6,6 +6,7 @@ import static org.hamcrest.Matchers.aMapWithSize;
 import static org.hamcrest.Matchers.hasSize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -16,6 +17,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.stream.Collectors;
 
@@ -33,6 +35,7 @@ import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisClient;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
+import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.TestEnvUtil;
 
 public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
@@ -88,18 +91,22 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       // 3. Trigger NULL invalidation (via flushAll)
       control.flushAll();
 
-      // 4. Access a key to trigger cache invalidation synchronously
-      long invalidationStartTime = System.nanoTime();
-      jedis.get("key0");
-      long invalidationElapsedNanos = System.nanoTime() - invalidationStartTime;
-
-      assertEquals(1, cache.getSize());
+      // 4. The invalidation push isn't ordered with the control connection's reply, and cache hits
+      // only drain pushes already on the socket, so poll and time the access that applies it.
+      AtomicLong invalidationElapsedNanos = new AtomicLong();
+      await().atMost(5, TimeUnit.SECONDS).pollInterval(50, TimeUnit.MILLISECONDS)
+              .untilAsserted(() -> {
+                long invalidationStartTime = System.nanoTime();
+                jedis.get("key0");
+                invalidationElapsedNanos.set(System.nanoTime() - invalidationStartTime);
+                assertEquals(1, cache.getSize());
+              });
 
       CacheStats stats = cache.getStats();
-      double keysPerSec = (count * 1_000_000_000.0) / invalidationElapsedNanos;
+      double keysPerSec = (count * 1_000_000_000.0) / invalidationElapsedNanos.get();
 
       log.info("invalidateAllWithLargeCacheTest: NULL invalidation flushed {} entries in {} ns ({} keys/sec)", count,
-              invalidationElapsedNanos, String.format("%.2f", keysPerSec));
+              invalidationElapsedNanos.get(), String.format("%.2f", keysPerSec));
       log.info("cache stats: {}", stats);
     }
   }
@@ -438,6 +445,25 @@ public class ClientSideCacheFunctionalityTest extends ClientSideCacheTestBase {
       assertEquals(expected, fromMap);
       assertTrue(members1 != members2);
       assertTrue(members1 != fromMap);
+    }
+  }
+
+  @Test
+  public void nonSerializableValueIsCached() {
+    try (RedisClient jedis = RedisClient.builder()
+        .hostAndPort(hnp)
+        .clientConfig(clientConfig.get())
+        .cacheConfig(CacheConfig.builder().build())
+        .build()) {
+      jedis.zadd("foo", 1, "a");
+
+      // Tuple is not Serializable
+      List<Tuple> first = jedis.zrangeWithScores("foo", 0, -1);
+      List<Tuple> second = jedis.zrangeWithScores("foo", 0, -1);
+
+      assertEquals(Collections.singletonList(new Tuple("a", 1d)), second);
+      assertEquals(1, jedis.getCache().getStats().getHitCount());
+      assertNotSame(first, second);
     }
   }
 

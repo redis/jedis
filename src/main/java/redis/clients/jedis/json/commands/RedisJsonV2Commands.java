@@ -61,6 +61,20 @@ public interface RedisJsonV2Commands {
 
   Object jsonNumIncrBy(String key, Path2 path, Number value);
 
+  /**
+   * <b><a href="https://redis.io/commands/json.numincrby">JSON.NUMINCRBY Command</a></b> Increments
+   * the number value stored at path by value, returning each incremented value as a {@literal Long}
+   * or {@literal Double}.
+   * @param key the key holding the JSON document
+   * @param path the JSONPath to the array(s)
+   * @param value the number value to increment
+   * @return the incremented value as a {@link Long} or {@link Double}, one per matched path, or
+   *         {@code null} for a matched value that is not a number. Missing paths return an empty
+   *         list
+   * @since 8.1
+   */
+  List<Number> jsonNumIncrByAsNumbers(String key, Path2 path, Number value);
+
   List<Long> jsonArrAppend(String key, Path2 path, Object... objects);
 
   List<Long> jsonArrAppendWithEscape(String key, Path2 path, Object... objects);

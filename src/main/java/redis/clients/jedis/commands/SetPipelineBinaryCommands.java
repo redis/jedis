@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Set;
 
 import redis.clients.jedis.Response;
+import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.params.SAddExParams;
 import redis.clients.jedis.params.SDiffCardParams;
 import redis.clients.jedis.params.SUnionCardParams;
 import redis.clients.jedis.params.ScanParams;
@@ -90,5 +92,173 @@ public interface SetPipelineBinaryCommands {
   Response<Long> sunioncard(byte[][] keys, SUnionCardParams params);
 
   Response<Long> smove(byte[] srckey, byte[] dstkey, byte[] member);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#sexpire(byte[], long, byte[]...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> sexpire(byte[] key, long seconds, byte[]... members);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#sexpire(byte[], long, ExpiryOption, byte[]...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> sexpire(byte[] key, long seconds, ExpiryOption condition, byte[]... members);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#spexpire(byte[], long, byte[]...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> spexpire(byte[] key, long milliseconds, byte[]... members);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#spexpire(byte[], long, ExpiryOption, byte[]...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> spexpire(byte[] key, long milliseconds, ExpiryOption condition, byte[]... members);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#sexpireAt(byte[], long, byte[]...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> sexpireAt(byte[] key, long unixTimeSeconds, byte[]... members);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#sexpireAt(byte[], long, ExpiryOption, byte[]...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> sexpireAt(byte[] key, long unixTimeSeconds, ExpiryOption condition, byte[]... members);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#spexpireAt(byte[], long, byte[]...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> spexpireAt(byte[] key, long unixTimeMillis, byte[]... members);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#spexpireAt(byte[], long, ExpiryOption, byte[]...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> spexpireAt(byte[] key, long unixTimeMillis, ExpiryOption condition, byte[]... members);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#sttl(byte[], byte[]...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> sttl(byte[] key, byte[]... members);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#spttl(byte[], byte[]...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> spttl(byte[] key, byte[]... members);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#sexpireTime(byte[], byte[]...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> sexpireTime(byte[] key, byte[]... members);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#spexpireTime(byte[], byte[]...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> spexpireTime(byte[] key, byte[]... members);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#spersist(byte[], byte[]...)}.
+   * @since 8.1
+   */
+  Response<List<Long>> spersist(byte[] key, byte[]... members);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#sexpire(byte[], long, byte[])}.
+   * @since 8.1
+   */
+  Response<Long> sexpire(byte[] key, long seconds, byte[] member);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#sexpire(byte[], long, ExpiryOption, byte[])}.
+   * @since 8.1
+   */
+  Response<Long> sexpire(byte[] key, long seconds, ExpiryOption condition, byte[] member);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#spexpire(byte[], long, byte[])}.
+   * @since 8.1
+   */
+  Response<Long> spexpire(byte[] key, long milliseconds, byte[] member);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#spexpire(byte[], long, ExpiryOption, byte[])}.
+   * @since 8.1
+   */
+  Response<Long> spexpire(byte[] key, long milliseconds, ExpiryOption condition, byte[] member);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#sexpireAt(byte[], long, byte[])}.
+   * @since 8.1
+   */
+  Response<Long> sexpireAt(byte[] key, long unixTimeSeconds, byte[] member);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#sexpireAt(byte[], long, ExpiryOption, byte[])}.
+   * @since 8.1
+   */
+  Response<Long> sexpireAt(byte[] key, long unixTimeSeconds, ExpiryOption condition, byte[] member);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#spexpireAt(byte[], long, byte[])}.
+   * @since 8.1
+   */
+  Response<Long> spexpireAt(byte[] key, long unixTimeMillis, byte[] member);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#spexpireAt(byte[], long, ExpiryOption, byte[])}.
+   * @since 8.1
+   */
+  Response<Long> spexpireAt(byte[] key, long unixTimeMillis, ExpiryOption condition, byte[] member);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#sttl(byte[], byte[])}.
+   * @since 8.1
+   */
+  Response<Long> sttl(byte[] key, byte[] member);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#spttl(byte[], byte[])}.
+   * @since 8.1
+   */
+  Response<Long> spttl(byte[] key, byte[] member);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#sexpireTime(byte[], byte[])}.
+   * @since 8.1
+   */
+  Response<Long> sexpireTime(byte[] key, byte[] member);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#spexpireTime(byte[], byte[])}.
+   * @since 8.1
+   */
+  Response<Long> spexpireTime(byte[] key, byte[] member);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#spersist(byte[], byte[])}.
+   * @since 8.1
+   */
+  Response<Long> spersist(byte[] key, byte[] member);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#saddex(byte[], SAddExParams, byte[]...)}.
+   * @since 8.1
+   */
+  Response<Long> saddex(byte[] key, SAddExParams params, byte[]... members);
+
+  /**
+   * Pipeline variant of {@link SetBinaryCommands#saddex(byte[], SAddExParams, byte[])}.
+   * @since 8.1
+   */
+  Response<Long> saddex(byte[] key, SAddExParams params, byte[] member);
 
 }

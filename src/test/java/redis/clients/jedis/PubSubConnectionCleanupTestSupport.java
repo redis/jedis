@@ -10,18 +10,12 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.Duration;
-import java.util.Arrays;
 import java.util.HashSet;
 import java.util.UUID;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Stream;
-
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.exceptions.JedisConnectionException;
@@ -30,9 +24,9 @@ import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.providers.PooledConnectionProvider;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
-public class JedisPubSubConnectionCleanupIT {
+public final class PubSubConnectionCleanupTestSupport {
 
-  private enum SubscriptionType {
+  public enum SubscriptionType {
     SUBSCRIBE, PSUBSCRIBE, SSUBSCRIBE, LEGACY_SSUBSCRIBE;
 
     boolean isSharded() {
@@ -40,68 +34,15 @@ public class JedisPubSubConnectionCleanupIT {
     }
   }
 
-  private enum ExitMode {
+  public enum ExitMode {
     CALLBACK_FAILURE, INTERRUPT, UNSUBSCRIBE
   }
 
-  private static Stream<Arguments> subscriptions() {
-    return Arrays.stream(SubscriptionType.values())
-        .flatMap(type -> Stream.of(RedisProtocol.RESP2, RedisProtocol.RESP3)
-            .map(protocol -> Arguments.of(type, protocol)));
+  private PubSubConnectionCleanupTestSupport() {
   }
 
-  private static Stream<Arguments> nonPooledSubscriptions() {
-    return Stream.of(false, true)
-        .flatMap(patterns -> Stream.of(RedisProtocol.RESP2, RedisProtocol.RESP3)
-            .map(protocol -> Arguments.of(patterns, protocol)));
-  }
-
-  @ParameterizedTest
-  @MethodSource("subscriptions")
-  public void discardsConnectionAfterCallbackFailure(SubscriptionType type, RedisProtocol protocol)
-      throws Exception {
-    assertCleanup(type, protocol, ExitMode.CALLBACK_FAILURE);
-  }
-
-  @ParameterizedTest
-  @MethodSource("subscriptions")
-  public void discardsConnectionAfterInterruptedCallback(SubscriptionType type,
-      RedisProtocol protocol) throws Exception {
-    assertCleanup(type, protocol, ExitMode.INTERRUPT);
-  }
-
-  @ParameterizedTest
-  @MethodSource("subscriptions")
-  public void reusesConnectionAfterUnsubscribeConfirmation(SubscriptionType type,
-      RedisProtocol protocol) throws Exception {
-    assertCleanup(type, protocol, ExitMode.UNSUBSCRIBE);
-  }
-
-  @ParameterizedTest
-  @MethodSource("nonPooledSubscriptions")
-  public void rejectsNonPooledConnectionAfterCallbackFailure(boolean patterns,
-      RedisProtocol protocol) throws Exception {
-    assertNonPooledCleanup(patterns, protocol, ExitMode.CALLBACK_FAILURE);
-  }
-
-  @ParameterizedTest
-  @MethodSource("nonPooledSubscriptions")
-  public void rejectsNonPooledConnectionAfterInterruptedCallback(boolean patterns,
-      RedisProtocol protocol) throws Exception {
-    assertNonPooledCleanup(patterns, protocol, ExitMode.INTERRUPT);
-  }
-
-  @ParameterizedTest
-  @MethodSource("nonPooledSubscriptions")
-  public void reusesNonPooledConnectionAfterUnsubscribeConfirmation(boolean patterns,
-      RedisProtocol protocol) throws Exception {
-    assertNonPooledCleanup(patterns, protocol, ExitMode.UNSUBSCRIBE);
-  }
-
-  private void assertCleanup(SubscriptionType type, RedisProtocol protocol, ExitMode exit)
-      throws Exception {
-    EndpointConfig endpoint = Endpoints
-        .getRedisEndpoint(type.isSharded() ? "cluster-stable" : "standalone0");
+  public static void assertPooledCleanup(EndpointConfig endpoint, SubscriptionType type,
+      RedisProtocol protocol, ExitMode exit) throws Exception {
     JedisClientConfig config = endpoint.getClientConfigBuilder().protocol(protocol)
         .connectionTimeoutMillis(2000).socketTimeoutMillis(2000).build();
     ConnectionPoolConfig poolConfig = new ConnectionPoolConfig();
@@ -182,9 +123,8 @@ public class JedisPubSubConnectionCleanupIT {
     }
   }
 
-  private void assertNonPooledCleanup(boolean patterns, RedisProtocol protocol, ExitMode exit)
-      throws Exception {
-    EndpointConfig endpoint = Endpoints.getRedisEndpoint("standalone0");
+  public static void assertNonPooledCleanup(EndpointConfig endpoint, boolean patterns,
+      RedisProtocol protocol, ExitMode exit) throws Exception {
     JedisClientConfig config = endpoint.getClientConfigBuilder().protocol(protocol)
         .connectionTimeoutMillis(2000).socketTimeoutMillis(2000).build();
     String channel = "jedis-4722-non-pooled-" + UUID.randomUUID();
@@ -256,7 +196,7 @@ public class JedisPubSubConnectionCleanupIT {
     }
   }
 
-  private UnifiedJedis createClient(SubscriptionType type, EndpointConfig endpoint,
+  private static UnifiedJedis createClient(SubscriptionType type, EndpointConfig endpoint,
       JedisClientConfig config, ConnectionProvider provider) {
     if (type == SubscriptionType.LEGACY_SSUBSCRIBE) {
       return new JedisCluster((ClusterConnectionProvider) provider, 1, Duration.ofSeconds(2));
@@ -268,14 +208,15 @@ public class JedisPubSubConnectionCleanupIT {
     return new UnifiedJedis(provider, config.getRedisProtocol());
   }
 
-  private Connection borrow(ConnectionProvider provider, SubscriptionType type, String channel) {
+  private static Connection borrow(ConnectionProvider provider, SubscriptionType type,
+      String channel) {
     return type.isSharded()
         ? ((ClusterConnectionProvider) provider)
             .getConnectionFromSlot(JedisClusterCRC16.getSlot(channel))
         : provider.getConnection();
   }
 
-  private Runnable subscription(SubscriptionType type, UnifiedJedis client, String channel,
+  private static Runnable subscription(SubscriptionType type, UnifiedJedis client, String channel,
       CountDownLatch subscribed, ExitMode exit, RuntimeException failure) {
     if (type.isSharded()) {
       JedisShardedPubSub pubSub = new JedisShardedPubSub() {
@@ -299,7 +240,8 @@ public class JedisPubSubConnectionCleanupIT {
         : () -> client.subscribe(pubSub, channel);
   }
 
-  private JedisPubSub pubSub(CountDownLatch subscribed, ExitMode exit, RuntimeException failure) {
+  private static JedisPubSub pubSub(CountDownLatch subscribed, ExitMode exit,
+      RuntimeException failure) {
     return new JedisPubSub() {
       @Override
       public void onSubscribe(String channel, int subscribedChannels) {
@@ -323,7 +265,7 @@ public class JedisPubSubConnectionCleanupIT {
     };
   }
 
-  private void exit(ExitMode exit, RuntimeException failure, Runnable unsubscribe) {
+  private static void exit(ExitMode exit, RuntimeException failure, Runnable unsubscribe) {
     switch (exit) {
       case CALLBACK_FAILURE:
         throw failure;

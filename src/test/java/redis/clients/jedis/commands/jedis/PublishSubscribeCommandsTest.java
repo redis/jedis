@@ -9,11 +9,13 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
+import static org.junit.jupiter.api.DynamicTest.dynamicTest;
 import static redis.clients.jedis.Protocol.Command.CLIENT;
 
 import java.io.IOException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -24,7 +26,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import io.redis.test.annotations.ConditionalOnEnv;
+import org.junit.jupiter.api.DynamicTest;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestFactory;
 import org.junit.jupiter.api.Timeout;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -32,6 +36,9 @@ import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.BinaryJedisPubSub;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisPubSub;
+import redis.clients.jedis.PubSubConnectionCleanupTestSupport;
+import redis.clients.jedis.PubSubConnectionCleanupTestSupport.ExitMode;
+import redis.clients.jedis.PubSubConnectionCleanupTestSupport.SubscriptionType;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.exceptions.JedisException;
 import redis.clients.jedis.util.SafeEncoder;
@@ -44,6 +51,28 @@ public class PublishSubscribeCommandsTest extends JedisCommandsTestBase {
 
   public PublishSubscribeCommandsTest(RedisProtocol protocol) {
     super(protocol);
+  }
+
+  @TestFactory
+  List<DynamicTest> pubSubConnectionCleanup() {
+    // Keep the cleanup matrix on explicit RESP2 and RESP3, not the legacy HELLO-less fixture.
+    if (protocol == null) {
+      return Collections.emptyList();
+    }
+    List<DynamicTest> cases = new ArrayList<>();
+    for (SubscriptionType type : Arrays.asList(SubscriptionType.SUBSCRIBE,
+        SubscriptionType.PSUBSCRIBE)) {
+      for (ExitMode exit : ExitMode.values()) {
+        String scenario = type + " " + protocol + " " + exit;
+        cases.add(dynamicTest("pooled " + scenario,
+            () -> PubSubConnectionCleanupTestSupport.assertPooledCleanup(endpoint, type, protocol,
+                exit)));
+        cases.add(dynamicTest("non-pooled " + scenario,
+            () -> PubSubConnectionCleanupTestSupport.assertNonPooledCleanup(endpoint,
+                type == SubscriptionType.PSUBSCRIBE, protocol, exit)));
+      }
+    }
+    return cases;
   }
 
   private void publishOne(final String channel, final String message) {

@@ -120,7 +120,7 @@ public class RedisBloomProtocol {
   public enum RedisBloomKeyword implements Rawable {
 
     CAPACITY, ERROR, NOCREATE, EXPANSION, NONSCALING, BUCKETSIZE, MAXITERATIONS, ITEMS, WEIGHTS,
-    COMPRESSION, OVERRIDE, WITHCOUNT;
+    COMPRESSION, OVERRIDE, WITHCOUNT, CELL_SIZE;
 
     private final byte[] raw;
 

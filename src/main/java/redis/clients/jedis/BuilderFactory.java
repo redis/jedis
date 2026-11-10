@@ -4,6 +4,7 @@ import java.io.Serializable;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import redis.clients.jedis.args.BlessFlag;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.resps.LCSMatchResult.MatchedPosition;
@@ -119,6 +120,23 @@ public final class BuilderFactory {
       return "List<Long>";
     }
 
+  };
+
+  /**
+   * The single integer of a one-element integer array reply, for the single-member variants of
+   * commands that reply with one integer per member (e.g. {@code SEXPIRE key 10 MEMBERS 1 m}).
+   */
+  public static final Builder<Long> LONG_FROM_LIST = new Builder<Long>() {
+    @Override
+    public Long build(Object data) {
+      List<Long> list = LONG_LIST.build(data);
+      return list == null || list.isEmpty() ? null : list.get(0);
+    }
+
+    @Override
+    public String toString() {
+      return "Long(List<Long>[0])";
+    }
   };
 
   public static final Builder<Double> DOUBLE = new Builder<Double>() {
@@ -300,6 +318,24 @@ public final class BuilderFactory {
     @Override
     public String toString() {
       return "List<String>";
+    }
+  };
+
+  /**
+   * {@code BLESS GET} reply: each wire token becomes a {@link BlessFlag}, so tokens from newer
+   * servers stay representable.
+   * @since 8.1
+   */
+  public static final Builder<List<BlessFlag>> BLESS_FLAG_LIST = new Builder<List<BlessFlag>>() {
+    @Override
+    public List<BlessFlag> build(Object data) {
+      if (null == data) return null;
+      return STRING_LIST.build(data).stream().map(BlessFlag::of).collect(Collectors.toList());
+    }
+
+    @Override
+    public String toString() {
+      return "List<BlessFlag>";
     }
   };
 

@@ -171,7 +171,7 @@ runs:
 
     - name: Publish Test Results
       uses: EnricoMi/publish-unit-test-result-action@v2
-      if: github.actor != 'dependabot[bot]' && github.event_name != 'schedule'
+      if: github.actor != 'dependabot[bot]'
       with:
         # Results go to this job's summary only: API-created check runs get filed under
         # whichever workflow ran first on the commit, which mislabels them in the PR

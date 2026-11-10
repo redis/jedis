@@ -207,8 +207,7 @@ public class MultiDbConnectionProviderTest {
         }
       });
 
-      MultiDbConnectionProviderHelper.switchToHealthyDatabase(localProvider,
-        SwitchReason.HEALTH_CHECK, initial);
+      localProvider.setActiveDatabase(endpointStandalone1.getHostAndPort());
 
       // Active again on a fresh pool the late drain could not reach; only the retired pool and the
       // connection handed out from it are gone

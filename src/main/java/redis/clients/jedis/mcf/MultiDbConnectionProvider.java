@@ -1108,7 +1108,8 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     }
 
     /**
-     * @deprecated Not used by Jedis any more and will be removed entirely in a future release.
+     * @deprecated Since 8.1. Not used by Jedis any more and will be removed entirely in a future
+     *             release.
      */
     @Deprecated
     public void forceDisconnect() {

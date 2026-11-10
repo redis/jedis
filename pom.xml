@@ -58,13 +58,15 @@
 		<slf4j.version>1.7.36</slf4j.version>
 		<resilience4j.version>1.7.1</resilience4j.version>
 		<jackson.version>2.22.4</jackson.version>
-		<maven.surefire.version>3.5.6</maven.surefire.version>
+		<maven.surefire.version>3.6.1</maven.surefire.version>
 		<junit.version>5.14.4</junit.version>
 		<!-- Default JVM options for tests -->
 		<JVM_OPTS></JVM_OPTS>
 		<!-- Default excluded groups for tests - can be overridden from command line -->
 		<excludedGroupsForUnitTests>integration,scenario</excludedGroupsForUnitTests>
-		<skipUnitTests>false</skipUnitTests>
+		<skipTests>false</skipTests>
+		<!-- -DskipTests skips unit tests; skipUnitTests stays as an alias for callers that still pass it -->
+		<skipUnitTests>${skipTests}</skipUnitTests>
 		<skipIntegrationTests>false</skipIntegrationTests>
 		<skipScenarioTests>true</skipScenarioTests>
 	</properties>

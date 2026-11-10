@@ -1010,8 +1010,8 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     }
 
     /**
-     * @deprecated The pool is an implementation detail of the database and will become internal in
-     *             a future release; do not rely on it.
+     * @deprecated Since 8.1. The pool is an implementation detail of the database and will become
+     *             internal in a future release; do not rely on it.
      */
     @Deprecated
     @VisibleForTesting

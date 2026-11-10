@@ -171,8 +171,7 @@ public class MultiDbConnectionProviderTest {
       });
 
       IllegalStateException ex = assertThrows(IllegalStateException.class,
-        () -> MultiDbConnectionProviderHelper.switchToHealthyDatabase(localProvider,
-          SwitchReason.HEALTH_CHECK, initial));
+        () -> localProvider.setActiveDatabase(endpointStandalone1.getHostAndPort()));
       assertEquals("listener failed", ex.getMessage());
 
       // The listener's failure propagates, but the switch and the drain still happened

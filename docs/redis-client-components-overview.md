@@ -418,10 +418,9 @@ getDatabase() → activeDatabase (highest weight healthy database)
 2. Circuit breaker transitions to OPEN state
 3. MultiDbCommandExecutor triggers failover
 4. Select next healthy database by weight
-5. Switch activeDatabase (under the provider lock)
-6. Emit DatabaseSwitchEvent (outside the lock)
-7. With fastFailover: force-close connections to the previous database
-8. Continue operations on new database
+5. Switch activeDatabase
+6. Emit DatabaseSwitchEvent
+7. Continue operations on new database
 ```
 
 **Failback Process:**

@@ -938,9 +938,9 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
   /**
    * Publishes a switch to the registered listener.
-   * @deprecated Internal to the provider and not meant to be called by applications. It will stop
-   *             being public in a future release; do not rely on it. To be notified of switches,
-   *             register a listener with {@link #setDatabaseSwitchListener(Consumer)}.
+   * @deprecated Since 8.1. Internal to the provider and not meant to be called by applications. It
+   *             will stop being public in a future release; do not rely on it. To be notified of
+   *             switches, register a listener with {@link #setDatabaseSwitchListener(Consumer)}.
    */
   @Deprecated
   public void onDatabaseSwitch(SwitchReason reason, Endpoint endpoint, Database database) {

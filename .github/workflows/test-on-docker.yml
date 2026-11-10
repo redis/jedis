@@ -56,35 +56,6 @@ jobs:
           redis_env_work_dir: ${{ github.workspace }}/redis-env-work
           redis_env_conf_dir: ${{ github.workspace }}/src/test/resources/env
 
-      - name: Upload integration test results
-        if: (!cancelled()) && github.event_name != 'schedule'
-        uses: actions/upload-artifact@v5
-        with:
-          name: integration-test-results-${{ matrix.redis_version }}
-          path: target/failsafe-reports/TEST-*.xml
-          if-no-files-found: ignore
-          retention-days: 7
-
-  # One merged check and PR comment across the matrix: a test counts as failed if it fails
-  # on any version, and as skipped only if every version skips it. Nightly runs don't publish.
-  publish-integration-test-results:
-    name: Publish Integration Test Results
-    needs: build
-    if: (!cancelled()) && needs.build.result != 'skipped' && github.event_name != 'schedule' && github.actor != 'dependabot[bot]'
-    runs-on: ubuntu-latest
-    steps:
-      - name: Download integration test results
-        uses: actions/download-artifact@v5
-        with:
-          pattern: integration-test-results-*
-          path: integration-test-results
-
-      - name: Publish Integration Test Results
-        uses: EnricoMi/publish-unit-test-result-action@v2
-        with:
-          check_name: Integration Test Results
-          files: integration-test-results/**/*.xml
-
   build_using_custom_image:
     name: Build and Test using custom image
     if: github.event.inputs.client_libs_test_image_tag != ''

@@ -173,10 +173,12 @@ runs:
       uses: EnricoMi/publish-unit-test-result-action@v2
       if: github.actor != 'dependabot[bot]' && github.event_name != 'schedule'
       with:
-        # Unique per job: the ± deltas compare against the same-named check on the earlier commit
-        check_name: Integration Test Results (${{ steps.args.outputs.redis_version_label }})
-        # PRs get one merged comment from the workflow's publish job instead
+        # Results go to this job's summary only: API-created check runs get filed under
+        # whichever workflow ran first on the commit, which mislabels them in the PR
+        check_run: 'false'
         comment_mode: 'off'
+        # Heading of the job summary
+        check_name: Integration Test Results (${{ steps.args.outputs.redis_version_label }})
         files: |
           target/surefire-reports/**/*.xml
           target/failsafe-reports/**/*.xml

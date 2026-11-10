@@ -64,7 +64,9 @@
 		<JVM_OPTS></JVM_OPTS>
 		<!-- Default excluded groups for tests - can be overridden from command line -->
 		<excludedGroupsForUnitTests>integration,scenario</excludedGroupsForUnitTests>
-		<skipUnitTests>false</skipUnitTests>
+		<skipTests>false</skipTests>
+		<!-- -DskipTests skips unit tests; skipUnitTests stays as an alias for callers that still pass it -->
+		<skipUnitTests>${skipTests}</skipUnitTests>
 		<skipIntegrationTests>false</skipIntegrationTests>
 		<skipScenarioTests>true</skipScenarioTests>
 	</properties>

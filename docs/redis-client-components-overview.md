@@ -738,7 +738,7 @@ MultiDbCommandExecutor.executeCommand()
   │   ├─ databaseFailover()
   │   ├─ switchToHealthyDatabase(): select next healthy database → dr (weight=0.5)
   │   │   └─ switchActiveDatabase(dr)
-  │   └─ postSwitch(): emit DatabaseSwitchEvent, then (fastFailover) disconnect primary
+  │   └─ postSwitch(): emit DatabaseSwitchEvent
   ├─ Recursive call: executeCommand() on dr
   │   ├─ database.getConnection()
   │   ├─ connection.executeCommand(GET mykey)

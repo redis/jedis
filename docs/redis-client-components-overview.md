@@ -736,9 +736,9 @@ MultiDbCommandExecutor.executeCommand()
   ├─ Circuit breaker transitions to OPEN
   ├─ Fallback triggered:
   │   ├─ databaseFailover()
-  │   ├─ Select next healthy database → dr (weight=0.5)
-  │   ├─ setActiveDatabase(dr)
-  │   └─ Emit DatabaseSwitchEvent
+  │   ├─ switchToHealthyDatabase(): select next healthy database → dr (weight=0.5)
+  │   │   └─ switchActiveDatabase(dr)
+  │   └─ postSwitch(): emit DatabaseSwitchEvent
   ├─ Recursive call: executeCommand() on dr
   │   ├─ database.getConnection()
   │   ├─ connection.executeCommand(GET mykey)

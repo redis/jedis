@@ -459,6 +459,16 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<Long>> bitrangeintarray(String key, long start, long end) {
+    return appendCommand(commandObjects.bitrangeintarray(key, start, end));
+  }
+
+  @Override
+  public Response<List<Long>> bitrangeintarray(String key, long start, long end, BitRangeIntArrayParams params) {
+    return appendCommand(commandObjects.bitrangeintarray(key, start, end, params));
+  }
+
+  @Override
   public Response<List<Long>> bitfield(String key, String... arguments) {
     return appendCommand(commandObjects.bitfield(key, arguments));
   }
@@ -4523,6 +4533,16 @@ public abstract class PipeliningBase
   @Override
   public Response<Long> bitpos(byte[] key, boolean value, BitPosParams params) {
     return appendCommand(commandObjects.bitpos(key, value, params));
+  }
+
+  @Override
+  public Response<List<Long>> bitrangeintarray(byte[] key, long start, long end) {
+    return appendCommand(commandObjects.bitrangeintarray(key, start, end));
+  }
+
+  @Override
+  public Response<List<Long>> bitrangeintarray(byte[] key, long start, long end, BitRangeIntArrayParams params) {
+    return appendCommand(commandObjects.bitrangeintarray(key, start, end, params));
   }
 
   @Override

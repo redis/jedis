@@ -56,6 +56,12 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         if: always() && github.actor != 'dependabot[bot]'
         with:
+          # Job summary only: API-created check runs get filed under whichever workflow
+          # ran first on the commit, and without them the PR comment has no comparison
+          check_run: 'false'
+          comment_mode: 'off'
+          # Heading of the job summary
+          check_name: Unit Test Results
           files: |
             target/surefire-reports/**/*.xml
 

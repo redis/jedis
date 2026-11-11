@@ -614,6 +614,7 @@
                         <include>**/XNack*.java</include>
 						<include>**/*SubkeyNotifications*.java</include>
 						<include>**/PubSubHelpers.java</include>
+						<include>**/*PubSubConnectionCleanup*.java</include>
 						<include>**/JedisPubSubReplyHandlerTest.java</include>
 						<include>**/JedisSafeAuthenticatorTest.java</include>
 

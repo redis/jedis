@@ -476,50 +476,50 @@ public class CommandObjects {
 
   public final CommandObject<Long> blessSet(String key, BlessFlag flag) {
     requireFlag(flag);
-    return new CommandObject<>(commandArguments(BLESS).add(Keyword.SET).key(key).add(flag), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(BLESS, Keyword.SET).key(key).add(flag), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> blessSet(byte[] key, BlessFlag flag) {
     requireFlag(flag);
-    return new CommandObject<>(commandArguments(BLESS).add(Keyword.SET).key(key).add(flag), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(BLESS, Keyword.SET).key(key).add(flag), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> blessClear(String key, BlessFlag flag) {
     requireFlag(flag);
-    return new CommandObject<>(commandArguments(BLESS).add(CLEAR).key(key).add(flag), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(BLESS, CLEAR).key(key).add(flag), BuilderFactory.LONG);
   }
 
   public final CommandObject<Long> blessClear(byte[] key, BlessFlag flag) {
     requireFlag(flag);
-    return new CommandObject<>(commandArguments(BLESS).add(CLEAR).key(key).add(flag), BuilderFactory.LONG);
+    return new CommandObject<>(commandArguments(BLESS, CLEAR).key(key).add(flag), BuilderFactory.LONG);
   }
 
   public final CommandObject<List<BlessFlag>> blessGet(String key) {
-    return new CommandObject<>(commandArguments(BLESS).add(Keyword.GET).key(key), BuilderFactory.BLESS_FLAG_LIST);
+    return new CommandObject<>(commandArguments(BLESS, Keyword.GET).key(key), BuilderFactory.BLESS_FLAG_LIST);
   }
 
   public final CommandObject<List<byte[]>> blessGet(byte[] key) {
-    return new CommandObject<>(commandArguments(BLESS).add(Keyword.GET).key(key), BuilderFactory.BINARY_LIST);
+    return new CommandObject<>(commandArguments(BLESS, Keyword.GET).key(key), BuilderFactory.BINARY_LIST);
   }
 
   public CommandObject<ScanResult<String>> blessScan(String cursor, BlessFlag flag) {
     requireFlag(flag);
-    return new CommandObject<>(commandArguments(BLESS).add(Keyword.SCAN).add(cursor).add(flag), BuilderFactory.SCAN_RESPONSE);
+    return new CommandObject<>(commandArguments(BLESS, Keyword.SCAN).add(cursor).add(flag), BuilderFactory.SCAN_RESPONSE);
   }
 
   public CommandObject<ScanResult<String>> blessScan(String cursor, BlessFlag flag, int count) {
     requireFlag(flag);
-    return new CommandObject<>(commandArguments(BLESS).add(Keyword.SCAN).add(cursor).add(flag).add(COUNT).add(count), BuilderFactory.SCAN_RESPONSE);
+    return new CommandObject<>(commandArguments(BLESS, Keyword.SCAN).add(cursor).add(flag).add(COUNT).add(count), BuilderFactory.SCAN_RESPONSE);
   }
 
   public CommandObject<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag) {
     requireFlag(flag);
-    return new CommandObject<>(commandArguments(BLESS).add(Keyword.SCAN).add(cursor).add(flag), BuilderFactory.SCAN_BINARY_RESPONSE);
+    return new CommandObject<>(commandArguments(BLESS, Keyword.SCAN).add(cursor).add(flag), BuilderFactory.SCAN_BINARY_RESPONSE);
   }
 
   public CommandObject<ScanResult<byte[]>> blessScan(byte[] cursor, BlessFlag flag, int count) {
     requireFlag(flag);
-    return new CommandObject<>(commandArguments(BLESS).add(Keyword.SCAN).add(cursor).add(flag).add(COUNT).add(count), BuilderFactory.SCAN_BINARY_RESPONSE);
+    return new CommandObject<>(commandArguments(BLESS, Keyword.SCAN).add(cursor).add(flag).add(COUNT).add(count), BuilderFactory.SCAN_BINARY_RESPONSE);
   }
 
   public final CommandObject<String> randomKey() {

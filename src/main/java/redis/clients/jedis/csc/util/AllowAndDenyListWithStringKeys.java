@@ -6,6 +6,7 @@ import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.csc.DefaultCacheable;
 import redis.clients.jedis.csc.Cacheable;
 
+@Deprecated
 public class AllowAndDenyListWithStringKeys implements Cacheable {
 
   private final Set<ProtocolCommand> allowCommands;
@@ -14,8 +15,9 @@ public class AllowAndDenyListWithStringKeys implements Cacheable {
   private final Set<String> allowKeys;
   private final Set<String> denyKeys;
 
-  public AllowAndDenyListWithStringKeys(Set<ProtocolCommand> allowCommands, Set<ProtocolCommand> denyCommands,
-      Set<String> allowKeys, Set<String> denyKeys) {
+  @Deprecated
+  public AllowAndDenyListWithStringKeys(Set<ProtocolCommand> allowCommands,
+      Set<ProtocolCommand> denyCommands, Set<String> allowKeys, Set<String> denyKeys) {
     this.allowCommands = allowCommands;
     this.denyCommands = denyCommands;
     this.allowKeys = allowKeys;
@@ -23,6 +25,7 @@ public class AllowAndDenyListWithStringKeys implements Cacheable {
   }
 
   @Override
+  @Deprecated
   public boolean isCacheable(ProtocolCommand command, List<Object> keys) {
     if (allowCommands != null && !allowCommands.contains(command)) {
       return false;

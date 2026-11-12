@@ -1,19 +1,19 @@
 {
-  "redisVersion": "8.10.0",
+  "redisVersion": "8.11.241",
   "redisMode": "standalone",
   "modules": [
-    "search",
-    "vectorset",
-    "timeseries",
     "bf",
+    "timeseries",
+    "vectorset",
+    "search",
     "ReJSON"
   ],
-  "generatedAt": "2026-08-20 10:17:52 TRT",
+  "generatedAt": "2026-11-12 13:40:50 TRT",
   "source": "COMMAND INFO (localhost:6379)",
   "counts": {
-    "commands": 447,
-    "subcommands": 218,
-    "total": 665
+    "commands": 458,
+    "subcommands": 232,
+    "total": 690
   },
   "commands": {
     "ACL": {
@@ -1540,6 +1540,158 @@
         }
       ]
     },
+    "BITRANGEINTARRAY": {
+      "name": "BITRANGEINTARRAY",
+      "flags": [
+        "readonly"
+      ],
+      "tips": [],
+      "firstKey": 1,
+      "lastKey": 1,
+      "step": 1,
+      "keySpecs": [
+        {
+          "flags": [
+            "ro",
+            "access"
+          ],
+          "beginSearch": {
+            "type": "index",
+            "spec": {
+              "index": 1
+            }
+          },
+          "findKeys": {
+            "type": "range",
+            "spec": {
+              "lastkey": 0,
+              "keystep": 1,
+              "limit": 0
+            }
+          }
+        }
+      ]
+    },
+    "BLESS": {
+      "name": "BLESS",
+      "flags": [],
+      "tips": [],
+      "firstKey": 0,
+      "lastKey": 0,
+      "step": 0,
+      "keySpecs": [],
+      "subcommands": {
+        "BLESS|CLEAR": {
+          "name": "BLESS|CLEAR",
+          "flags": [
+            "fast",
+            "write"
+          ],
+          "tips": [],
+          "firstKey": 2,
+          "lastKey": 2,
+          "step": 1,
+          "keySpecs": [
+            {
+              "flags": [
+                "rw"
+              ],
+              "beginSearch": {
+                "type": "index",
+                "spec": {
+                  "index": 2
+                }
+              },
+              "findKeys": {
+                "type": "range",
+                "spec": {
+                  "lastkey": 0,
+                  "keystep": 1,
+                  "limit": 0
+                }
+              }
+            }
+          ]
+        },
+        "BLESS|GET": {
+          "name": "BLESS|GET",
+          "flags": [
+            "fast"
+          ],
+          "tips": [],
+          "firstKey": 2,
+          "lastKey": 2,
+          "step": 1,
+          "keySpecs": [
+            {
+              "flags": [
+                "ro"
+              ],
+              "beginSearch": {
+                "type": "index",
+                "spec": {
+                  "index": 2
+                }
+              },
+              "findKeys": {
+                "type": "range",
+                "spec": {
+                  "lastkey": 0,
+                  "keystep": 1,
+                  "limit": 0
+                }
+              }
+            }
+          ]
+        },
+        "BLESS|SCAN": {
+          "name": "BLESS|SCAN",
+          "flags": [],
+          "tips": [
+            "nondeterministic_output",
+            "request_policy:special",
+            "response_policy:special"
+          ],
+          "firstKey": 0,
+          "lastKey": 0,
+          "step": 0,
+          "keySpecs": []
+        },
+        "BLESS|SET": {
+          "name": "BLESS|SET",
+          "flags": [
+            "denyoom",
+            "fast",
+            "write"
+          ],
+          "tips": [],
+          "firstKey": 2,
+          "lastKey": 2,
+          "step": 1,
+          "keySpecs": [
+            {
+              "flags": [
+                "rw"
+              ],
+              "beginSearch": {
+                "type": "index",
+                "spec": {
+                  "index": 2
+                }
+              },
+              "findKeys": {
+                "type": "range",
+                "spec": {
+                  "lastkey": 0,
+                  "keystep": 1,
+                  "limit": 0
+                }
+              }
+            }
+          ]
+        }
+      }
+    },
     "BLMOVE": {
       "name": "BLMOVE",
       "flags": [
@@ -1993,9 +2145,7 @@
       "keySpecs": [
         {
           "flags": [
-            "rw",
-            "access",
-            "update"
+            "rw"
           ],
           "beginSearch": {
             "type": "index",
@@ -3208,6 +3358,7 @@
       "flags": [
         "denyoom",
         "module",
+        "movablekeys",
         "write"
       ],
       "tips": [],
@@ -3231,6 +3382,25 @@
               "lastkey": 0,
               "keystep": 1,
               "limit": 0
+            }
+          }
+        },
+        {
+          "flags": [
+            "ro"
+          ],
+          "beginSearch": {
+            "type": "index",
+            "spec": {
+              "index": 2
+            }
+          },
+          "findKeys": {
+            "type": "keynum",
+            "spec": {
+              "keynumidx": 0,
+              "firstkey": 1,
+              "keystep": 1
             }
           }
         }
@@ -7484,7 +7654,7 @@
       ],
       "tips": [],
       "firstKey": 1,
-      "lastKey": 1,
+      "lastKey": -2,
       "step": 1,
       "keySpecs": [
         {
@@ -7501,7 +7671,7 @@
           "findKeys": {
             "type": "range",
             "spec": {
-              "lastkey": 0,
+              "lastkey": -2,
               "keystep": 1,
               "limit": 0
             }
@@ -10205,6 +10375,40 @@
         }
       ]
     },
+    "SADDEX": {
+      "name": "SADDEX",
+      "flags": [
+        "denyoom",
+        "fast",
+        "write"
+      ],
+      "tips": [],
+      "firstKey": 1,
+      "lastKey": 1,
+      "step": 1,
+      "keySpecs": [
+        {
+          "flags": [
+            "rw",
+            "update"
+          ],
+          "beginSearch": {
+            "type": "index",
+            "spec": {
+              "index": 1
+            }
+          },
+          "findKeys": {
+            "type": "range",
+            "spec": {
+              "lastkey": 0,
+              "keystep": 1,
+              "limit": 0
+            }
+          }
+        }
+      ]
+    },
     "SAVE": {
       "name": "SAVE",
       "flags": [
@@ -10509,22 +10713,6 @@
       "step": 0,
       "keySpecs": []
     },
-    "SEARCH.CLUSTERSET": {
-      "name": "SEARCH.CLUSTERSET",
-      "flags": [
-        "loading",
-        "module",
-        "noscript",
-        "readonly"
-      ],
-      "tips": [
-        "dont_cache"
-      ],
-      "firstKey": 0,
-      "lastKey": 0,
-      "step": 0,
-      "keySpecs": []
-    },
     "SELECT": {
       "name": "SELECT",
       "flags": [
@@ -10690,6 +10878,105 @@
           "flags": [
             "rw",
             "update"
+          ],
+          "beginSearch": {
+            "type": "index",
+            "spec": {
+              "index": 1
+            }
+          },
+          "findKeys": {
+            "type": "range",
+            "spec": {
+              "lastkey": 0,
+              "keystep": 1,
+              "limit": 0
+            }
+          }
+        }
+      ]
+    },
+    "SEXPIRE": {
+      "name": "SEXPIRE",
+      "flags": [
+        "fast",
+        "write"
+      ],
+      "tips": [],
+      "firstKey": 1,
+      "lastKey": 1,
+      "step": 1,
+      "keySpecs": [
+        {
+          "flags": [
+            "rw",
+            "update"
+          ],
+          "beginSearch": {
+            "type": "index",
+            "spec": {
+              "index": 1
+            }
+          },
+          "findKeys": {
+            "type": "range",
+            "spec": {
+              "lastkey": 0,
+              "keystep": 1,
+              "limit": 0
+            }
+          }
+        }
+      ]
+    },
+    "SEXPIREAT": {
+      "name": "SEXPIREAT",
+      "flags": [
+        "fast",
+        "write"
+      ],
+      "tips": [],
+      "firstKey": 1,
+      "lastKey": 1,
+      "step": 1,
+      "keySpecs": [
+        {
+          "flags": [
+            "rw",
+            "update"
+          ],
+          "beginSearch": {
+            "type": "index",
+            "spec": {
+              "index": 1
+            }
+          },
+          "findKeys": {
+            "type": "range",
+            "spec": {
+              "lastkey": 0,
+              "keystep": 1,
+              "limit": 0
+            }
+          }
+        }
+      ]
+    },
+    "SEXPIRETIME": {
+      "name": "SEXPIRETIME",
+      "flags": [
+        "fast",
+        "readonly"
+      ],
+      "tips": [],
+      "firstKey": 1,
+      "lastKey": 1,
+      "step": 1,
+      "keySpecs": [
+        {
+          "flags": [
+            "ro",
+            "access"
           ],
           "beginSearch": {
             "type": "index",
@@ -11195,6 +11482,138 @@
         }
       ]
     },
+    "SPERSIST": {
+      "name": "SPERSIST",
+      "flags": [
+        "fast",
+        "write"
+      ],
+      "tips": [],
+      "firstKey": 1,
+      "lastKey": 1,
+      "step": 1,
+      "keySpecs": [
+        {
+          "flags": [
+            "rw",
+            "update"
+          ],
+          "beginSearch": {
+            "type": "index",
+            "spec": {
+              "index": 1
+            }
+          },
+          "findKeys": {
+            "type": "range",
+            "spec": {
+              "lastkey": 0,
+              "keystep": 1,
+              "limit": 0
+            }
+          }
+        }
+      ]
+    },
+    "SPEXPIRE": {
+      "name": "SPEXPIRE",
+      "flags": [
+        "fast",
+        "write"
+      ],
+      "tips": [],
+      "firstKey": 1,
+      "lastKey": 1,
+      "step": 1,
+      "keySpecs": [
+        {
+          "flags": [
+            "rw",
+            "update"
+          ],
+          "beginSearch": {
+            "type": "index",
+            "spec": {
+              "index": 1
+            }
+          },
+          "findKeys": {
+            "type": "range",
+            "spec": {
+              "lastkey": 0,
+              "keystep": 1,
+              "limit": 0
+            }
+          }
+        }
+      ]
+    },
+    "SPEXPIREAT": {
+      "name": "SPEXPIREAT",
+      "flags": [
+        "fast",
+        "write"
+      ],
+      "tips": [],
+      "firstKey": 1,
+      "lastKey": 1,
+      "step": 1,
+      "keySpecs": [
+        {
+          "flags": [
+            "rw",
+            "update"
+          ],
+          "beginSearch": {
+            "type": "index",
+            "spec": {
+              "index": 1
+            }
+          },
+          "findKeys": {
+            "type": "range",
+            "spec": {
+              "lastkey": 0,
+              "keystep": 1,
+              "limit": 0
+            }
+          }
+        }
+      ]
+    },
+    "SPEXPIRETIME": {
+      "name": "SPEXPIRETIME",
+      "flags": [
+        "fast",
+        "readonly"
+      ],
+      "tips": [],
+      "firstKey": 1,
+      "lastKey": 1,
+      "step": 1,
+      "keySpecs": [
+        {
+          "flags": [
+            "ro",
+            "access"
+          ],
+          "beginSearch": {
+            "type": "index",
+            "spec": {
+              "index": 1
+            }
+          },
+          "findKeys": {
+            "type": "range",
+            "spec": {
+              "lastkey": 0,
+              "keystep": 1,
+              "limit": 0
+            }
+          }
+        }
+      ]
+    },
     "SPOP": {
       "name": "SPOP",
       "flags": [
@@ -11213,6 +11632,41 @@
             "rw",
             "access",
             "delete"
+          ],
+          "beginSearch": {
+            "type": "index",
+            "spec": {
+              "index": 1
+            }
+          },
+          "findKeys": {
+            "type": "range",
+            "spec": {
+              "lastkey": 0,
+              "keystep": 1,
+              "limit": 0
+            }
+          }
+        }
+      ]
+    },
+    "SPTTL": {
+      "name": "SPTTL",
+      "flags": [
+        "fast",
+        "readonly"
+      ],
+      "tips": [
+        "nondeterministic_output"
+      ],
+      "firstKey": 1,
+      "lastKey": 1,
+      "step": 1,
+      "keySpecs": [
+        {
+          "flags": [
+            "ro",
+            "access"
           ],
           "beginSearch": {
             "type": "index",
@@ -11415,6 +11869,41 @@
         {
           "flags": [
             "ro"
+          ],
+          "beginSearch": {
+            "type": "index",
+            "spec": {
+              "index": 1
+            }
+          },
+          "findKeys": {
+            "type": "range",
+            "spec": {
+              "lastkey": 0,
+              "keystep": 1,
+              "limit": 0
+            }
+          }
+        }
+      ]
+    },
+    "STTL": {
+      "name": "STTL",
+      "flags": [
+        "fast",
+        "readonly"
+      ],
+      "tips": [
+        "nondeterministic_output"
+      ],
+      "firstKey": 1,
+      "lastKey": 1,
+      "step": 1,
+      "keySpecs": [
+        {
+          "flags": [
+            "ro",
+            "access"
           ],
           "beginSearch": {
             "type": "index",
@@ -15931,8 +16420,56 @@
           "step": 0,
           "keySpecs": []
         },
+        "_FT.DEBUG|DISK_FLUSH_NOWAIT": {
+          "name": "_FT.DEBUG|DISK_FLUSH_NOWAIT",
+          "flags": [
+            "module",
+            "readonly"
+          ],
+          "tips": [],
+          "firstKey": 0,
+          "lastKey": 0,
+          "step": 0,
+          "keySpecs": []
+        },
         "_FT.DEBUG|DISK_IO_CONTROL": {
           "name": "_FT.DEBUG|DISK_IO_CONTROL",
+          "flags": [
+            "module",
+            "readonly"
+          ],
+          "tips": [],
+          "firstKey": 0,
+          "lastKey": 0,
+          "step": 0,
+          "keySpecs": []
+        },
+        "_FT.DEBUG|DISK_LIVE_SNAPSHOTS": {
+          "name": "_FT.DEBUG|DISK_LIVE_SNAPSHOTS",
+          "flags": [
+            "module",
+            "readonly"
+          ],
+          "tips": [],
+          "firstKey": 0,
+          "lastKey": 0,
+          "step": 0,
+          "keySpecs": []
+        },
+        "_FT.DEBUG|DISK_PAUSE_BG_WORK": {
+          "name": "_FT.DEBUG|DISK_PAUSE_BG_WORK",
+          "flags": [
+            "module",
+            "readonly"
+          ],
+          "tips": [],
+          "firstKey": 0,
+          "lastKey": 0,
+          "step": 0,
+          "keySpecs": []
+        },
+        "_FT.DEBUG|DISK_RESUME_BG_WORK": {
+          "name": "_FT.DEBUG|DISK_RESUME_BG_WORK",
           "flags": [
             "module",
             "readonly"
@@ -16111,6 +16648,18 @@
           "step": 0,
           "keySpecs": []
         },
+        "_FT.DEBUG|FORCE_PLAIN_HASH_NOTIFICATIONS": {
+          "name": "_FT.DEBUG|FORCE_PLAIN_HASH_NOTIFICATIONS",
+          "flags": [
+            "module",
+            "readonly"
+          ],
+          "tips": [],
+          "firstKey": 0,
+          "lastKey": 0,
+          "step": 0,
+          "keySpecs": []
+        },
         "_FT.DEBUG|FT.AGGREGATE": {
           "name": "_FT.DEBUG|FT.AGGREGATE",
           "flags": [
@@ -16219,6 +16768,18 @@
           "step": 0,
           "keySpecs": []
         },
+        "_FT.DEBUG|GC_TIMER_ARMS": {
+          "name": "_FT.DEBUG|GC_TIMER_ARMS",
+          "flags": [
+            "module",
+            "readonly"
+          ],
+          "tips": [],
+          "firstKey": 0,
+          "lastKey": 0,
+          "step": 0,
+          "keySpecs": []
+        },
         "_FT.DEBUG|GC_WAIT_FOR_JOBS": {
           "name": "_FT.DEBUG|GC_WAIT_FOR_JOBS",
           "flags": [
@@ -16257,6 +16818,18 @@
         },
         "_FT.DEBUG|GIT_SHA": {
           "name": "_FT.DEBUG|GIT_SHA",
+          "flags": [
+            "module",
+            "readonly"
+          ],
+          "tips": [],
+          "firstKey": 0,
+          "lastKey": 0,
+          "step": 0,
+          "keySpecs": []
+        },
+        "_FT.DEBUG|HASH_SUBKEY_NOTIFICATIONS": {
+          "name": "_FT.DEBUG|HASH_SUBKEY_NOTIFICATIONS",
           "flags": [
             "module",
             "readonly"
@@ -16341,6 +16914,30 @@
         },
         "_FT.DEBUG|INVIDX_SUMMARY": {
           "name": "_FT.DEBUG|INVIDX_SUMMARY",
+          "flags": [
+            "module",
+            "readonly"
+          ],
+          "tips": [],
+          "firstKey": 0,
+          "lastKey": 0,
+          "step": 0,
+          "keySpecs": []
+        },
+        "_FT.DEBUG|MOCK_REVALIDATE_TIMEOUT": {
+          "name": "_FT.DEBUG|MOCK_REVALIDATE_TIMEOUT",
+          "flags": [
+            "module",
+            "readonly"
+          ],
+          "tips": [],
+          "firstKey": 0,
+          "lastKey": 0,
+          "step": 0,
+          "keySpecs": []
+        },
+        "_FT.DEBUG|NUMERIC_BUCKET_MAP": {
+          "name": "_FT.DEBUG|NUMERIC_BUCKET_MAP",
           "flags": [
             "module",
             "readonly"
@@ -16509,6 +17106,18 @@
         },
         "_FT.DEBUG|VECSIM_MOCK_TIMEOUT": {
           "name": "_FT.DEBUG|VECSIM_MOCK_TIMEOUT",
+          "flags": [
+            "module",
+            "readonly"
+          ],
+          "tips": [],
+          "firstKey": 0,
+          "lastKey": 0,
+          "step": 0,
+          "keySpecs": []
+        },
+        "_FT.DEBUG|VECSIM_RELABEL_SUPPORTED": {
+          "name": "_FT.DEBUG|VECSIM_RELABEL_SUPPORTED",
           "flags": [
             "module",
             "readonly"

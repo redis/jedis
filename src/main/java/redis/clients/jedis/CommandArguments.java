@@ -96,55 +96,6 @@ public class CommandArguments implements Iterable<Rawable> {
     return this;
   }
 
-  private ProtocolCommand mergeWithPipe(ProtocolCommand command, Keyword subcommand) {
-    byte[] cmdBytes = command.getRaw();
-    byte[] subBytes = subcommand.getRaw();
-
-    byte[] merged = new byte[cmdBytes.length + 1 + subBytes.length];
-    System.arraycopy(cmdBytes, 0, merged, 0, cmdBytes.length);
-    merged[cmdBytes.length] = '|';
-    System.arraycopy(subBytes, 0, merged, cmdBytes.length + 1, subBytes.length);
-
-    return new MergedProtocolCommand(merged);
-  }
-
-  /**
-   * A pipe-merged {@code PARENT|CHILD} command. Value-equal by its raw bytes, so any two
-   * {@link CommandArguments} built from the same command and subcommand produce interchangeable
-   * map keys.
-   */
-  private static final class MergedProtocolCommand implements ProtocolCommand {
-
-    private final byte[] raw;
-    private final int hashCode;
-
-    MergedProtocolCommand(byte[] raw) {
-      this.raw = raw;
-      this.hashCode = Arrays.hashCode(raw);
-    }
-
-    @Override
-    public byte[] getRaw() {
-      return raw;
-    }
-
-    @Override
-    public int hashCode() {
-      return hashCode;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-      if (this == obj) {
-        return true;
-      }
-      if (!(obj instanceof ProtocolCommand)) {
-        return false;
-      }
-      return Arrays.equals(raw, ((ProtocolCommand) obj).getRaw());
-    }
-  }
-
   public ProtocolCommand getCommand() {
     return (ProtocolCommand) args.get(0);
   }

@@ -266,7 +266,8 @@ public final class MetadataResolver {
   }
 
   // GENERATED-METADATA-BEGIN (managed by CommandMetadataUtil, do not edit)
-  // Source: CommandMetadata.json (Redis 8.10.0). Generated at 2026-08-20 13:52:45 TRT.
+  // Source: COMMAND INFO from Redis 8.11.241 (standalone; modules: bf, timeseries, vectorset,
+  // search, ReJSON). Generated at 2026-11-12 13:40:50 TRT.
   private static void init0(Map<String, CommandMetadata> t) {
     CommandMetadata aclMetadata = add(t, "ACL", Collections.emptySet(), Collections.emptySet(), 0,
       0, 0, false);
@@ -404,6 +405,21 @@ public final class MetadataResolver {
       1, true);
     add(t, "BITPOS", new HashSet<>(Arrays.asList("readonly")), Collections.emptySet(), 1, 1, 1,
       true);
+    add(t, "BITRANGEINTARRAY", new HashSet<>(Arrays.asList("readonly")), Collections.emptySet(), 1,
+      1, 1, true);
+    CommandMetadata blessMetadata = add(t, "BLESS", Collections.emptySet(), Collections.emptySet(),
+      0, 0, 0, false);
+    blessMetadata.addSubcommand(add(t, "BLESS|CLEAR", new HashSet<>(Arrays.asList("fast", "write")),
+      Collections.emptySet(), 2, 2, 1, true));
+    blessMetadata.addSubcommand(add(t, "BLESS|GET", new HashSet<>(Arrays.asList("fast")),
+      Collections.emptySet(), 2, 2, 1, true));
+    blessMetadata.addSubcommand(add(
+      t, "BLESS|SCAN", Collections.emptySet(), new HashSet<>(Arrays
+          .asList("nondeterministic_output", "request_policy:special", "response_policy:special")),
+      0, 0, 0, false));
+    blessMetadata
+        .addSubcommand(add(t, "BLESS|SET", new HashSet<>(Arrays.asList("denyoom", "fast", "write")),
+          Collections.emptySet(), 2, 2, 1, true));
     add(t, "BLMOVE", new HashSet<>(Arrays.asList("blocking", "denyoom", "write")),
       Collections.emptySet(), 1, 2, 1, true);
     add(t, "BLMOVEM", new HashSet<>(Arrays.asList("blocking", "denyoom", "write")),
@@ -607,7 +623,7 @@ public final class MetadataResolver {
       Collections.emptySet(), 1, 1, 1, true);
     add(t, "CMS.INITBYPROB", new HashSet<>(Arrays.asList("denyoom", "module", "write")),
       Collections.emptySet(), 1, 1, 1, true);
-    add(t, "CMS.MERGE", new HashSet<>(Arrays.asList("denyoom", "module", "write")),
+    add(t, "CMS.MERGE", new HashSet<>(Arrays.asList("denyoom", "module", "movablekeys", "write")),
       Collections.emptySet(), 1, 1, 1, true);
     add(t, "CMS.QUERY", new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(),
       1, 1, 1, true);
@@ -859,6 +875,9 @@ public final class MetadataResolver {
       Collections.emptySet(), 1, 1, 1, true);
     add(t, "GEORADIUSBYMEMBER_RO", new HashSet<>(Arrays.asList("readonly")), Collections.emptySet(),
       1, 1, 1, true);
+  }
+
+  private static void init1(Map<String, CommandMetadata> t) {
     add(t, "GEORADIUS_RO", new HashSet<>(Arrays.asList("readonly")), Collections.emptySet(), 1, 1,
       1, true);
     add(t, "GEOSEARCH", new HashSet<>(Arrays.asList("readonly")), Collections.emptySet(), 1, 1, 1,
@@ -871,9 +890,6 @@ public final class MetadataResolver {
       1, true);
     add(t, "GETDEL", new HashSet<>(Arrays.asList("fast", "write")), Collections.emptySet(), 1, 1, 1,
       true);
-  }
-
-  private static void init1(Map<String, CommandMetadata> t) {
     add(t, "GETEX", new HashSet<>(Arrays.asList("fast", "write")), Collections.emptySet(), 1, 1, 1,
       true);
     add(t, "GETRANGE", new HashSet<>(Arrays.asList("readonly")), Collections.emptySet(), 1, 1, 1,
@@ -1002,7 +1018,7 @@ public final class MetadataResolver {
     add(t, "JSON.MERGE", new HashSet<>(Arrays.asList("denyoom", "module", "write")),
       Collections.emptySet(), 1, 1, 1, true);
     add(t, "JSON.MGET", new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(),
-      1, 1, 1, true);
+      1, -2, 1, true);
     add(t, "JSON.MSET", new HashSet<>(Arrays.asList("denyoom", "module", "write")),
       Collections.emptySet(), 1, -1, 3, true);
     add(t, "JSON.NUMINCRBY", new HashSet<>(Arrays.asList("module", "write")),
@@ -1252,6 +1268,8 @@ public final class MetadataResolver {
       Collections.emptySet(), 1, 1, 1, true);
     add(t, "SADD", new HashSet<>(Arrays.asList("denyoom", "fast", "write")), Collections.emptySet(),
       1, 1, 1, true);
+    add(t, "SADDEX", new HashSet<>(Arrays.asList("denyoom", "fast", "write")),
+      Collections.emptySet(), 1, 1, 1, true);
     add(t, "SAVE",
       new HashSet<>(Arrays.asList("admin", "no_async_loading", "no_multi", "noscript")),
       Collections.emptySet(), 0, 0, 0, false);
@@ -1292,9 +1310,6 @@ public final class MetadataResolver {
       new HashSet<>(Arrays.asList("dont_cache")), 0, 0, 0, false);
     add(t, "SEARCH.CLUSTERREFRESH", new HashSet<>(Arrays.asList("module", "noscript", "readonly")),
       new HashSet<>(Arrays.asList("dont_cache")), 0, 0, 0, false);
-    add(t, "SEARCH.CLUSTERSET",
-      new HashSet<>(Arrays.asList("loading", "module", "noscript", "readonly")),
-      new HashSet<>(Arrays.asList("dont_cache")), 0, 0, 0, false);
     add(t, "SELECT", new HashSet<>(Arrays.asList("fast", "loading", "stale")),
       Collections.emptySet(), 0, 0, 0, false);
     add(t, "SET", new HashSet<>(Arrays.asList("denyoom", "write")), Collections.emptySet(), 1, 1, 1,
@@ -1307,6 +1322,12 @@ public final class MetadataResolver {
       Collections.emptySet(), 1, 1, 1, true);
     add(t, "SETRANGE", new HashSet<>(Arrays.asList("denyoom", "write")), Collections.emptySet(), 1,
       1, 1, true);
+    add(t, "SEXPIRE", new HashSet<>(Arrays.asList("fast", "write")), Collections.emptySet(), 1, 1,
+      1, true);
+    add(t, "SEXPIREAT", new HashSet<>(Arrays.asList("fast", "write")), Collections.emptySet(), 1, 1,
+      1, true);
+    add(t, "SEXPIRETIME", new HashSet<>(Arrays.asList("fast", "readonly")), Collections.emptySet(),
+      1, 1, 1, true);
     add(t, "SHUTDOWN",
       new HashSet<>(
           Arrays.asList("admin", "allow_busy", "loading", "no_multi", "noscript", "stale")),
@@ -1349,7 +1370,17 @@ public final class MetadataResolver {
       Collections.emptySet(), 1, 1, 1, true);
     add(t, "SORT_RO", new HashSet<>(Arrays.asList("movablekeys", "readonly")),
       Collections.emptySet(), 1, 1, 1, true);
+    add(t, "SPERSIST", new HashSet<>(Arrays.asList("fast", "write")), Collections.emptySet(), 1, 1,
+      1, true);
+    add(t, "SPEXPIRE", new HashSet<>(Arrays.asList("fast", "write")), Collections.emptySet(), 1, 1,
+      1, true);
+    add(t, "SPEXPIREAT", new HashSet<>(Arrays.asList("fast", "write")), Collections.emptySet(), 1,
+      1, 1, true);
+    add(t, "SPEXPIRETIME", new HashSet<>(Arrays.asList("fast", "readonly")), Collections.emptySet(),
+      1, 1, 1, true);
     add(t, "SPOP", new HashSet<>(Arrays.asList("fast", "write")),
+      new HashSet<>(Arrays.asList("nondeterministic_output")), 1, 1, 1, true);
+    add(t, "SPTTL", new HashSet<>(Arrays.asList("fast", "readonly")),
       new HashSet<>(Arrays.asList("nondeterministic_output")), 1, 1, 1, true);
     add(t, "SPUBLISH", new HashSet<>(Arrays.asList("fast", "loading", "pubsub", "stale")),
       Collections.emptySet(), 1, 1, 1, false);
@@ -1364,6 +1395,8 @@ public final class MetadataResolver {
       Collections.emptySet(), 1, -1, 1, false);
     add(t, "STRLEN", new HashSet<>(Arrays.asList("fast", "readonly")), Collections.emptySet(), 1, 1,
       1, true);
+    add(t, "STTL", new HashSet<>(Arrays.asList("fast", "readonly")),
+      new HashSet<>(Arrays.asList("nondeterministic_output")), 1, 1, 1, true);
     add(t, "SUBSCRIBE",
       new HashSet<>(Arrays.asList("denyoom", "loading", "noscript", "pubsub", "stale")),
       Collections.emptySet(), 0, 0, 0, false);
@@ -1415,6 +1448,9 @@ public final class MetadataResolver {
       new HashSet<>(Arrays.asList("nondeterministic_output")), 0, 0, 0, false);
     add(t, "TIMESERIES.CLUSTERSET", new HashSet<>(Arrays.asList("module", "noscript", "readonly")),
       Collections.emptySet(), 0, 0, 0, false);
+  }
+
+  private static void init2(Map<String, CommandMetadata> t) {
     add(t, "TIMESERIES.REFRESHCLUSTER",
       new HashSet<>(Arrays.asList("module", "noscript", "readonly")), Collections.emptySet(), 0, 0,
       0, false);
@@ -1447,9 +1483,6 @@ public final class MetadataResolver {
       Collections.emptySet(), 1, 2, 1, true);
     add(t, "TS.DECRBY", new HashSet<>(Arrays.asList("denyoom", "module", "write")),
       Collections.emptySet(), 1, 1, 1, true);
-  }
-
-  private static void init2(Map<String, CommandMetadata> t) {
     add(t, "TS.DEL", new HashSet<>(Arrays.asList("module", "write")), Collections.emptySet(), 1, 1,
       1, true);
     add(t, "TS.DELETERULE", new HashSet<>(Arrays.asList("module", "write")), Collections.emptySet(),
@@ -1678,7 +1711,15 @@ public final class MetadataResolver {
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
     _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|DISK_FLUSH",
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
+    _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|DISK_FLUSH_NOWAIT",
+      new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
     _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|DISK_IO_CONTROL",
+      new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
+    _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|DISK_LIVE_SNAPSHOTS",
+      new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
+    _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|DISK_PAUSE_BG_WORK",
+      new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
+    _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|DISK_RESUME_BG_WORK",
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
     _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|DOCIDTOID",
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
@@ -1708,6 +1749,8 @@ public final class MetadataResolver {
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
     _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|DUMP_TERMS",
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
+    _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|FORCE_PLAIN_HASH_NOTIFICATIONS",
+      new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
     _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|FT.AGGREGATE",
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
     _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|FT.HYBRID",
@@ -1726,6 +1769,8 @@ public final class MetadataResolver {
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
     _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|GC_STOP_SCHEDULE",
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
+    _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|GC_TIMER_ARMS",
+      new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
     _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|GC_WAIT_FOR_JOBS",
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
     _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|GET_HIDE_USER_DATA_FROM_LOGS",
@@ -1733,6 +1778,8 @@ public final class MetadataResolver {
     _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|GET_MAX_DOC_ID",
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
     _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|GIT_SHA",
+      new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
+    _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|HASH_SUBKEY_NOTIFICATIONS",
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
     _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|HELP",
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
@@ -1747,6 +1794,10 @@ public final class MetadataResolver {
     _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|INFO_TAGIDX",
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
     _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|INVIDX_SUMMARY",
+      new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
+    _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|MOCK_REVALIDATE_TIMEOUT",
+      new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
+    _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|NUMERIC_BUCKET_MAP",
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
     _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|NUMIDX_SUMMARY",
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
@@ -1775,6 +1826,8 @@ public final class MetadataResolver {
     _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|VECSIM_INFO",
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
     _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|VECSIM_MOCK_TIMEOUT",
+      new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
+    _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|VECSIM_RELABEL_SUPPORTED",
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));
     _ftDebugMetadata.addSubcommand(add(t, "_FT.DEBUG|WORKERS",
       new HashSet<>(Arrays.asList("module", "readonly")), Collections.emptySet(), 0, 0, 0, false));

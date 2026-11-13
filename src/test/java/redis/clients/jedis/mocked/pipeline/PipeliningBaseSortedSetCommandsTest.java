@@ -1922,7 +1922,7 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
     assertThat(response, is(predefinedResponse));
   }
 
-  /** Scenario ZMOV-M02: PipeliningBase zmove appends its command object. */
+  /** PipeliningBase zmove appends its command object. */
   @Test
   public void testZmove() {
     ZMoveParams params = ZMoveParams.min().count(2);
@@ -1934,7 +1934,7 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
     assertThat(response, is(predefinedResponse));
   }
 
-  /** Scenario ZMOV-M02: PipeliningBase zmove (byte[]) appends its command object. */
+  /** PipeliningBase zmove (byte[]) appends its command object. */
   @Test
   public void testZmoveBinary() {
     byte[] src = SafeEncoder.encode("{z}s");
@@ -1948,7 +1948,7 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
     assertThat(response, is(predefinedResponse));
   }
 
-  /** Scenario ZMOV-M02: PipeliningBase bzmove appends its command object. */
+  /** PipeliningBase bzmove appends its command object. */
   @Test
   public void testBzmove() {
     BZMoveParams params = BZMoveParams.max(1).count(2);
@@ -1960,7 +1960,7 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
     assertThat(response, is(predefinedResponse));
   }
 
-  /** Scenario ZMOV-M02: PipeliningBase bzmove (byte[]) appends its command object. */
+  /** PipeliningBase bzmove (byte[]) appends its command object. */
   @Test
   public void testBzmoveBinary() {
     byte[] src = SafeEncoder.encode("{z}s");
@@ -1974,7 +1974,7 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
     assertThat(response, is(predefinedResponse));
   }
 
-  /** Scenario ZMOV-M02: PipeliningBase zmovemember with one member appends its command object. */
+  /** PipeliningBase zmovemember with one member appends its command object. */
   @Test
   public void testZmovememberSingle() {
     when(commandObjects.zmovemember("{z}s", "{z}d", "a")).thenReturn(listTupleCommandObject);
@@ -1985,7 +1985,7 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
     assertThat(response, is(predefinedResponse));
   }
 
-  /** Scenario ZMOV-M02: PipeliningBase zmovemember with one member (byte[]) appends its command object. */
+  /** PipeliningBase zmovemember with one member (byte[]) appends its command object. */
   @Test
   public void testZmovememberSingleBinary() {
     byte[] src = SafeEncoder.encode("{z}s");
@@ -1999,7 +1999,7 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
     assertThat(response, is(predefinedResponse));
   }
 
-  /** Scenario ZMOV-M02: PipeliningBase zmovemember with many members appends its command object. */
+  /** PipeliningBase zmovemember with many members appends its command object. */
   @Test
   public void testZmovememberVarargs() {
     when(commandObjects.zmovemember("{z}s", "{z}d", "a", "b")).thenReturn(listTupleCommandObject);
@@ -2010,7 +2010,7 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
     assertThat(response, is(predefinedResponse));
   }
 
-  /** Scenario ZMOV-M02: PipeliningBase zmovemember with many members (byte[]) appends its command object. */
+  /** PipeliningBase zmovemember with many members (byte[]) appends its command object. */
   @Test
   public void testZmovememberVarargsBinary() {
     byte[] src = SafeEncoder.encode("{z}s");
@@ -2025,7 +2025,7 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
     assertThat(response, is(predefinedResponse));
   }
 
-  /** Scenario ZMOV-M02: PipeliningBase zmovemember with params and one member appends its command object. */
+  /** PipeliningBase zmovemember with params and one member appends its command object. */
   @Test
   public void testZmovememberParamsSingle() {
     ZMoveMemberParams params = ZMoveMemberParams.zMoveMemberParams().nx();
@@ -2037,7 +2037,7 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
     assertThat(response, is(predefinedResponse));
   }
 
-  /** Scenario ZMOV-M02: PipeliningBase zmovemember with params and one member (byte[]) appends its command object. */
+  /** PipeliningBase zmovemember with params and one member (byte[]) appends its command object. */
   @Test
   public void testZmovememberParamsSingleBinary() {
     byte[] src = SafeEncoder.encode("{z}s");
@@ -2052,7 +2052,7 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
     assertThat(response, is(predefinedResponse));
   }
 
-  /** Scenario ZMOV-M02: PipeliningBase zmovemember with params and many members appends its command object. */
+  /** PipeliningBase zmovemember with params and many members appends its command object. */
   @Test
   public void testZmovememberParamsVarargs() {
     ZMoveMemberParams params = ZMoveMemberParams.zMoveMemberParams().xx();
@@ -2064,7 +2064,7 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
     assertThat(response, is(predefinedResponse));
   }
 
-  /** Scenario ZMOV-M02: PipeliningBase zmovemember with params and many members (byte[]) appends its command object. */
+  /** PipeliningBase zmovemember with params and many members (byte[]) appends its command object. */
   @Test
   public void testZmovememberParamsVarargsBinary() {
     byte[] src = SafeEncoder.encode("{z}s");

@@ -1734,7 +1734,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
   }
 
   /**
-   * Scenario ZMOV-L01: legacy Jedis zmove moves MIN with count 2; a missing source is null.
+   * Legacy Jedis zmove moves MIN with count 2; a missing source is null.
    */
   @Test
   @EnabledOnCommand("ZMOVE")
@@ -1748,7 +1748,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
   }
 
   /**
-   * Scenario ZMOV-L02: legacy Jedis bzmove times out to null; XX with a missing destination is null.
+   * Legacy Jedis bzmove times out to null; XX with a missing destination is null.
    */
   @Test
   @EnabledOnCommand("BZMOVE")
@@ -1760,7 +1760,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
   }
 
   /**
-   * Scenario ZMOV-L03: the byte[] twins of the legacy zmove, bzmove and zmovemember.
+   * The byte[] twins of the legacy zmove, bzmove and zmovemember.
    */
   @Test
   @EnabledOnCommand("ZMOVEMEMBER")

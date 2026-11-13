@@ -2887,7 +2887,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
     verify(commandObjects).zunionstore(dstkey, params, sets);
   }
 
-  /** Scenario ZMOV-M01: UnifiedJedis zmove delegates to CommandObjects. */
+  /** UnifiedJedis zmove delegates to CommandObjects. */
   @Test
   public void testZmove() {
     ZMoveParams params = ZMoveParams.min().count(2);
@@ -2904,7 +2904,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
     verify(commandObjects).zmove("{z}s", "{z}d", params);
   }
 
-  /** Scenario ZMOV-M01: UnifiedJedis zmove (byte[]) delegates to CommandObjects. */
+  /** UnifiedJedis zmove (byte[]) delegates to CommandObjects. */
   @Test
   public void testZmoveBinary() {
     byte[] src = SafeEncoder.encode("{z}s");
@@ -2923,7 +2923,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
     verify(commandObjects).zmove(src, dst, params);
   }
 
-  /** Scenario ZMOV-M01: UnifiedJedis bzmove delegates to CommandObjects. */
+  /** UnifiedJedis bzmove delegates to CommandObjects. */
   @Test
   public void testBzmove() {
     BZMoveParams params = BZMoveParams.max(1).count(2);
@@ -2940,7 +2940,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
     verify(commandObjects).bzmove("{z}s", "{z}d", params);
   }
 
-  /** Scenario ZMOV-M01: UnifiedJedis bzmove (byte[]) delegates to CommandObjects. */
+  /** UnifiedJedis bzmove (byte[]) delegates to CommandObjects. */
   @Test
   public void testBzmoveBinary() {
     byte[] src = SafeEncoder.encode("{z}s");
@@ -2959,7 +2959,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
     verify(commandObjects).bzmove(src, dst, params);
   }
 
-  /** Scenario ZMOV-M01: UnifiedJedis zmovemember with one member delegates to CommandObjects. */
+  /** UnifiedJedis zmovemember with one member delegates to CommandObjects. */
   @Test
   public void testZmovememberSingle() {
     List<Tuple> expected = Collections.singletonList(new Tuple("a", 1.0));
@@ -2975,7 +2975,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
     verify(commandObjects).zmovemember("{z}s", "{z}d", "a");
   }
 
-  /** Scenario ZMOV-M01: UnifiedJedis zmovemember with one member (byte[]) delegates to CommandObjects. */
+  /** UnifiedJedis zmovemember with one member (byte[]) delegates to CommandObjects. */
   @Test
   public void testZmovememberSingleBinary() {
     byte[] src = SafeEncoder.encode("{z}s");
@@ -2994,7 +2994,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
     verify(commandObjects).zmovemember(src, dst, member);
   }
 
-  /** Scenario ZMOV-M01: UnifiedJedis zmovemember with many members delegates to CommandObjects. */
+  /** UnifiedJedis zmovemember with many members delegates to CommandObjects. */
   @Test
   public void testZmovememberVarargs() {
     List<Tuple> expected = Collections.singletonList(new Tuple("a", 1.0));
@@ -3010,7 +3010,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
     verify(commandObjects).zmovemember("{z}s", "{z}d", "a", "b");
   }
 
-  /** Scenario ZMOV-M01: UnifiedJedis zmovemember with many members (byte[]) delegates to CommandObjects. */
+  /** UnifiedJedis zmovemember with many members (byte[]) delegates to CommandObjects. */
   @Test
   public void testZmovememberVarargsBinary() {
     byte[] src = SafeEncoder.encode("{z}s");
@@ -3030,7 +3030,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
     verify(commandObjects).zmovemember(src, dst, member, member2);
   }
 
-  /** Scenario ZMOV-M01: UnifiedJedis zmovemember with params and one member delegates to CommandObjects. */
+  /** UnifiedJedis zmovemember with params and one member delegates to CommandObjects. */
   @Test
   public void testZmovememberParamsSingle() {
     ZMoveMemberParams params = ZMoveMemberParams.zMoveMemberParams().nx();
@@ -3047,7 +3047,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
     verify(commandObjects).zmovemember("{z}s", "{z}d", params, "a");
   }
 
-  /** Scenario ZMOV-M01: UnifiedJedis zmovemember with params and one member (byte[]) delegates to CommandObjects. */
+  /** UnifiedJedis zmovemember with params and one member (byte[]) delegates to CommandObjects. */
   @Test
   public void testZmovememberParamsSingleBinary() {
     byte[] src = SafeEncoder.encode("{z}s");
@@ -3067,7 +3067,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
     verify(commandObjects).zmovemember(src, dst, params, member);
   }
 
-  /** Scenario ZMOV-M01: UnifiedJedis zmovemember with params and many members delegates to CommandObjects. */
+  /** UnifiedJedis zmovemember with params and many members delegates to CommandObjects. */
   @Test
   public void testZmovememberParamsVarargs() {
     ZMoveMemberParams params = ZMoveMemberParams.zMoveMemberParams().xx();
@@ -3084,7 +3084,7 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
     verify(commandObjects).zmovemember("{z}s", "{z}d", params, "a", "b");
   }
 
-  /** Scenario ZMOV-M01: UnifiedJedis zmovemember with params and many members (byte[]) delegates to CommandObjects. */
+  /** UnifiedJedis zmovemember with params and many members (byte[]) delegates to CommandObjects. */
   @Test
   public void testZmovememberParamsVarargsBinary() {
     byte[] src = SafeEncoder.encode("{z}s");

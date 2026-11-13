@@ -885,54 +885,37 @@ public interface SortedSetCommands {
   KeyValue<String, List<Tuple>> bzmpop(double timeout, SortedSetOption option, int count, String... keys);
 
   /**
-   * <b>ZMOVE Command</b>
-   * Atomically move members from the sorted set at {@code srcKey} to the sorted set at
-   * {@code dstKey}, keeping their scores. {@code params} selects the members: the lowest
-   * ({@link ZMoveParams#min()}), the highest ({@link ZMoveParams#max()}), or those in a score
-   * range ({@link ZMoveParams#byScore(String, String)}), optionally up to a count. Without a
-   * count, MIN and MAX move one member and a score range moves every member in the range.
-   * A member the destination already has takes the source score. The source is deleted when it
-   * becomes empty. Both keys must hash to the same slot in a cluster.
-   * <p>
-   * Time complexity: O(M*log(N)) where M is the number of members moved
+   * <b><a href="https://redis.io/commands/zmove">ZMOVE Command</a></b>
+   * Atomically move members, with their scores, from the sorted set at {@code srcKey} to the one at
+   * {@code dstKey}. {@code params} selects the lowest ({@link ZMoveParams#min()}) or highest
+   * ({@link ZMoveParams#max()}) members, or those in a score range
+   * ({@link ZMoveParams#byScore(String, String)}), and optionally how many to move. Both keys must
+   * hash to the same slot in a cluster.
    * @param srcKey the source sorted set
    * @param dstKey the destination sorted set
-   * @param params the selection and the count
-   * @return the moved members with their scores, in the order they were taken (ascending for
-   *         MIN and a score range, descending for MAX), or {@code null} if nothing moved
+   * @param params {@link ZMoveParams}
+   * @return the moved members with their scores, or {@code null} if nothing moved
    * @since 8.1
    */
   List<Tuple> zmove(String srcKey, String dstKey, ZMoveParams params);
 
   /**
-   * <b>BZMOVE Command</b>
+   * <b><a href="https://redis.io/commands/bzmove">BZMOVE Command</a></b>
    * The blocking variant of {@link #zmove(String, String, ZMoveParams)} for the lowest or highest
-   * members. When the source is empty, the command waits until a member is added to it or the
-   * timeout in {@code params} passes, except inside a transaction, where it replies at once; once
-   * the source has members, it moves up to the count without waiting for more. The timeout is in
-   * seconds and may have a fraction; {@code 0} waits without limit, and the server rejects an
-   * infinite, NaN or negative timeout. When the source and destination are the same key, it
-   * replies at once.
-   * Both keys must hash to the same slot in a cluster.
-   * <p>
-   * Time complexity: O(M*log(N)) where M is the number of members moved
+   * members: when the source is empty, it waits up to the timeout in {@code params} for a member to
+   * be added. Both keys must hash to the same slot in a cluster.
    * @param srcKey the source sorted set
    * @param dstKey the destination sorted set
-   * @param params the end to take from, the timeout and the count
-   * @return the moved members with their scores, in the order they were taken (ascending for
-   *         MIN, descending for MAX), or {@code null} if nothing moved: the timeout passed, the
-   *         source and destination are the same key, or the source was empty inside a transaction
+   * @param params {@link BZMoveParams}
+   * @return the moved members with their scores, or {@code null} if nothing moved
    * @since 8.1
    */
   List<Tuple> bzmove(String srcKey, String dstKey, BZMoveParams params);
 
   /**
-   * <b>ZMOVEMEMBER Command</b>
-   * Atomically move the given member from {@code srcKey} to {@code dstKey}, keeping its score.
-   * A member the destination already has takes the source score. The source is deleted when it
-   * becomes empty. Both keys must hash to the same slot in a cluster.
-   * <p>
-   * Time complexity: O(log(N))
+   * <b><a href="https://redis.io/commands/zmovemember">ZMOVEMEMBER Command</a></b>
+   * Atomically move a member, with its score, from the sorted set at {@code srcKey} to the one at
+   * {@code dstKey}. Both keys must hash to the same slot in a cluster.
    * @param srcKey the source sorted set
    * @param dstKey the destination sorted set
    * @param member the member to move
@@ -942,34 +925,25 @@ public interface SortedSetCommands {
   List<Tuple> zmovemember(String srcKey, String dstKey, String member);
 
   /**
-   * <b>ZMOVEMEMBER Command</b>
-   * Atomically move the given members from {@code srcKey} to {@code dstKey}, keeping their scores.
-   * Members are taken in argument order; a member the source lacks is skipped and a repeated
-   * member moves once. A member the destination already has takes the source score. The source is
-   * deleted when it becomes empty. Both keys must hash to the same slot in a cluster.
-   * <p>
-   * Time complexity: O(M*log(N)) where M is the number of members given
+   * <b><a href="https://redis.io/commands/zmovemember">ZMOVEMEMBER Command</a></b>
+   * Atomically move the given members, with their scores, from the sorted set at {@code srcKey} to
+   * the one at {@code dstKey}. Both keys must hash to the same slot in a cluster.
    * @param srcKey the source sorted set
    * @param dstKey the destination sorted set
-   * @param members the members to move; an empty array is sent as is and the server rejects it
-   * @return the moved members with their scores, in argument order, or {@code null} if nothing
-   *         moved
+   * @param members the members to move
+   * @return the moved members with their scores, or {@code null} if nothing moved
    * @since 8.1
    */
   List<Tuple> zmovemember(String srcKey, String dstKey, String... members);
 
   /**
-   * <b>ZMOVEMEMBER Command</b>
-   * Atomically move the given member from {@code srcKey} to {@code dstKey}, keeping its score,
-   * under the destination condition in {@code params}: {@link ZMoveMemberParams#nx()} moves the
-   * member only if the destination lacks it, {@link ZMoveMemberParams#xx()} only if it has it. A
-   * member the condition leaves out stays in the source and is not in the reply. Both keys must
-   * hash to the same slot in a cluster.
-   * <p>
-   * Time complexity: O(log(N))
+   * <b><a href="https://redis.io/commands/zmovemember">ZMOVEMEMBER Command</a></b>
+   * Same as {@link #zmovemember(String, String, String)}, with a destination condition from
+   * {@code params}: {@link ZMoveMemberParams#nx()} moves the member only if the destination does
+   * not have it, {@link ZMoveMemberParams#xx()} only if it does.
    * @param srcKey the source sorted set
    * @param dstKey the destination sorted set
-   * @param params the destination condition
+   * @param params {@link ZMoveMemberParams}
    * @param member the member to move
    * @return the moved member with its score, or {@code null} if nothing moved
    * @since 8.1
@@ -977,21 +951,15 @@ public interface SortedSetCommands {
   List<Tuple> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String member);
 
   /**
-   * <b>ZMOVEMEMBER Command</b>
-   * Atomically move the given members from {@code srcKey} to {@code dstKey}, keeping their scores,
-   * under the destination condition in {@code params}: {@link ZMoveMemberParams#nx()} moves a
-   * member only if the destination lacks it, {@link ZMoveMemberParams#xx()} only if it has it. A
-   * member the condition leaves out stays in the source and is not in the reply. Members are taken
-   * in argument order; a member the source lacks is skipped and a repeated member moves once. Both
-   * keys must hash to the same slot in a cluster.
-   * <p>
-   * Time complexity: O(M*log(N)) where M is the number of members given
+   * <b><a href="https://redis.io/commands/zmovemember">ZMOVEMEMBER Command</a></b>
+   * Same as {@link #zmovemember(String, String, String...)}, with a destination condition from
+   * {@code params}: {@link ZMoveMemberParams#nx()} moves a member only if the destination does not
+   * have it, {@link ZMoveMemberParams#xx()} only if it does.
    * @param srcKey the source sorted set
    * @param dstKey the destination sorted set
-   * @param params the destination condition
-   * @param members the members to move; an empty array is sent as is and the server rejects it
-   * @return the moved members with their scores, in argument order, or {@code null} if nothing
-   *         moved
+   * @param params {@link ZMoveMemberParams}
+   * @param members the members to move
+   * @return the moved members with their scores, or {@code null} if nothing moved
    * @since 8.1
    */
   List<Tuple> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String... members);

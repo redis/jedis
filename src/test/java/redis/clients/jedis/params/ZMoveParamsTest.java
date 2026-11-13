@@ -39,31 +39,31 @@ public class ZMoveParamsTest {
     return out.subList(1, out.size());
   }
 
-  /** Scenario ZMOV-A01: {@code min()} adds MIN. */
+  /** {@code min()} adds MIN. */
   @Test
   public void minAddsMin() {
     assertEquals(Collections.singletonList("MIN"), tokens(ZMoveParams.min()));
   }
 
-  /** Scenario ZMOV-A02: {@code max()} adds MAX. */
+  /** {@code max()} adds MAX. */
   @Test
   public void maxAddsMax() {
     assertEquals(Collections.singletonList("MAX"), tokens(ZMoveParams.max()));
   }
 
-  /** Scenario ZMOV-A03: {@code min()} without a count adds no COUNT. */
+  /** {@code min()} without a count adds no COUNT. */
   @Test
   public void minWithoutCountAddsNoCount() {
     assertFalse(tokens(ZMoveParams.min()).contains("COUNT"));
   }
 
-  /** Scenario ZMOV-A04: a text score range without a count adds the bounds as given, no COUNT. */
+  /** A text score range without a count adds the bounds as given, no COUNT. */
   @Test
   public void textRangeWithoutCount() {
     assertEquals(Arrays.asList("BYSCORE", "(1", "3"), tokens(ZMoveParams.byScore("(1", "3")));
   }
 
-  /** Scenario ZMOV-A05: infinite double bounds are sent as -inf and +inf. */
+  /** Infinite double bounds are sent as -inf and +inf. */
   @Test
   public void infiniteDoubleBounds() {
     double lo = Double.NEGATIVE_INFINITY;
@@ -72,7 +72,7 @@ public class ZMoveParamsTest {
     assertEquals(expected, tokens(ZMoveParams.byScore(lo, hi).count(2)));
   }
 
-  /** Scenario ZMOV-A06: double bounds are sent in Java's spelling: selection, bounds, COUNT. */
+  /** Double bounds are sent in Java's spelling: selection, bounds, COUNT. */
   @Test
   public void doubleBoundsSpelling() {
     List<String> decimal = tokens(ZMoveParams.byScore(1.0, 3.0).count(2));
@@ -83,7 +83,7 @@ public class ZMoveParamsTest {
     assertEquals(Arrays.asList("BYSCORE", "NaN", "1.0"), nan);
   }
 
-  /** Scenario ZMOV-A07: binary bounds are sent as the given bytes. */
+  /** Binary bounds are sent as the given bytes. */
   @Test
   public void binaryBounds() {
     byte[] min = SafeEncoder.encode("(1");
@@ -95,7 +95,7 @@ public class ZMoveParamsTest {
     assertArrayEquals(max, raw.get(2));
   }
 
-  /** Scenario ZMOV-A08: any count is accepted and sent as given. */
+  /** Any count is accepted and sent as given. */
   @Test
   public void anyCountIsSent() {
     assertEquals(Arrays.asList("MIN", "COUNT", "0"), tokens(ZMoveParams.min().count(0)));
@@ -104,7 +104,7 @@ public class ZMoveParamsTest {
     assertEquals(Arrays.asList("MIN", "COUNT", "9223372036854775807"), max);
   }
 
-  /** Scenario ZMOV-A09: a null bound is rejected by the factory. */
+  /** A null bound is rejected by the factory. */
   @Test
   public void nullBoundRejected() {
     byte[] one = SafeEncoder.encode("1");
@@ -114,7 +114,7 @@ public class ZMoveParamsTest {
     assertThrows(IllegalArgumentException.class, () -> ZMoveParams.byScore(one, (byte[]) null));
   }
 
-  /** Scenario ZMOV-A09a: equals and hashCode hold over selection, bounds and count. */
+  /** Equals and hashCode hold over selection, bounds and count. */
   @Test
   public void equalsAndHashCode() {
     ZMoveParams a = ZMoveParams.min().count(2);

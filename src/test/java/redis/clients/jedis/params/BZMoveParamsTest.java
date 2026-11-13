@@ -28,19 +28,19 @@ public class BZMoveParamsTest {
     return out.subList(1, out.size());
   }
 
-  /** Scenario ZMOV-A10: {@code min(0.5)} adds MIN 0.5. */
+  /** {@code min(0.5)} adds MIN 0.5. */
   @Test
   public void minWithTimeout() {
     assertEquals(Arrays.asList("MIN", "0.5"), tokens(BZMoveParams.min(0.5)));
   }
 
-  /** Scenario ZMOV-A11: end, timeout, then COUNT. */
+  /** End, timeout, then COUNT. */
   @Test
   public void maxWithTimeoutAndCount() {
     assertEquals(Arrays.asList("MAX", "0.0", "COUNT", "5"), tokens(BZMoveParams.max(0).count(5)));
   }
 
-  /** Scenario ZMOV-A12: the timeout keeps its fraction in Java's spelling. */
+  /** The timeout keeps its fraction in Java's spelling. */
   @Test
   public void timeoutFractionKept() {
     assertEquals(Arrays.asList("MIN", "0.1"), tokens(BZMoveParams.min(0.1)));
@@ -48,7 +48,7 @@ public class BZMoveParamsTest {
     assertEquals(Arrays.asList("MIN", "1.000000001"), tokens(BZMoveParams.min(1.000000001)));
   }
 
-  /** Scenario ZMOV-A13: a negative, infinite or NaN timeout is sent as given. */
+  /** A negative, infinite or NaN timeout is sent as given. */
   @Test
   public void outOfRangeTimeoutsAreSent() {
     assertEquals(Arrays.asList("MIN", "-1.0"), tokens(BZMoveParams.min(-1)));
@@ -56,13 +56,13 @@ public class BZMoveParamsTest {
     assertEquals(Arrays.asList("MIN", "NaN"), tokens(BZMoveParams.min(Double.NaN)));
   }
 
-  /** Scenario ZMOV-A14: no count adds no COUNT. */
+  /** No count adds no COUNT. */
   @Test
   public void noCountAddsNoCount() {
     assertFalse(tokens(BZMoveParams.min(1)).contains("COUNT"));
   }
 
-  /** Scenario ZMOV-A15: equals and hashCode hold over end, timeout and count. */
+  /** Equals and hashCode hold over end, timeout and count. */
   @Test
   public void equalsAndHashCode() {
     BZMoveParams a = BZMoveParams.min(1).count(2);

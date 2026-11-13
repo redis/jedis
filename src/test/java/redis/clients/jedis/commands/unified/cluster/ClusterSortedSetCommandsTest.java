@@ -326,7 +326,7 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
   }
 
   /**
-   * Scenario ZMOV-K01: keys in two slots are rejected before a round trip; nothing moves.
+   * Keys in two slots are rejected before a round trip; nothing moves.
    */
   @Test
   @EnabledOnCommand("ZMOVE")
@@ -349,7 +349,7 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
   }
 
   /**
-   * Scenario ZMOV-K02: hash-tagged keys of one slot move on the cluster.
+   * Hash-tagged keys of one slot move on the cluster.
    */
   @Test
   @EnabledOnCommand("ZMOVEMEMBER")

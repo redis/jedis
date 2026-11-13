@@ -7,13 +7,8 @@ import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.SortedSetOption;
 
 /**
- * Arguments for the {@code BZMOVE} command: which end of the source sorted set to take members
- * from, how long to block when it is empty, and, optionally, how many members to move.
- * <p>
- * An instance is created by {@link #min(double)} or {@link #max(double)}, each carrying the
- * mandatory end and timeout. The wire arguments are emitted in the order
- * {@code <MIN | MAX> timeout [COUNT count]}; {@code COUNT} is sent only when {@link #count(long)}
- * was called.
+ * Arguments for {@code BZMOVE}: the end to move from and the timeout, created with
+ * {@link #min(double)} or {@link #max(double)}, and optionally how many members to move.
  * @since 8.1
  */
 public class BZMoveParams implements IParams {
@@ -28,10 +23,8 @@ public class BZMoveParams implements IParams {
   }
 
   /**
-   * Take the members with the lowest scores.
-   * @param timeout the longest time to wait, in seconds, a fraction allowed; {@code 0} waits
-   *          without limit. The server rejects an infinite, NaN or negative timeout, so
-   *          {@link Double#POSITIVE_INFINITY} is not a way to wait without limit.
+   * Move the members with the lowest scores.
+   * @param timeout seconds, fractions allowed; 0 blocks indefinitely
    * @return BZMoveParams
    */
   public static BZMoveParams min(double timeout) {
@@ -39,10 +32,8 @@ public class BZMoveParams implements IParams {
   }
 
   /**
-   * Take the members with the highest scores.
-   * @param timeout the longest time to wait, in seconds, a fraction allowed; {@code 0} waits
-   *          without limit. The server rejects an infinite, NaN or negative timeout, so
-   *          {@link Double#POSITIVE_INFINITY} is not a way to wait without limit.
+   * Move the members with the highest scores.
+   * @param timeout seconds, fractions allowed; 0 blocks indefinitely
    * @return BZMoveParams
    */
   public static BZMoveParams max(double timeout) {
@@ -50,7 +41,7 @@ public class BZMoveParams implements IParams {
   }
 
   /**
-   * Move up to {@code count} members. Without a count, one member is moved.
+   * Move up to {@code count} members.
    * @param count the largest number of members to move
    * @return BZMoveParams
    */

@@ -1821,7 +1821,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     return result;
   }
 
-  /** Scenario ZMOV-SA01: MIN without a count moves one member, replied as a list of one pair. */
+  /** MIN without a count moves one member, replied as a list of one pair. */
   @Test
   @EnabledOnCommand("ZMOVE")
   public void zmoveMinWithoutCountMovesOne() {
@@ -1830,7 +1830,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(Double.valueOf(1), jedis.zscore(ZDST, "a"));
   }
 
-  /** Scenario ZMOV-SA02: MIN with count 2 moves the two lowest, in ascending order. */
+  /** MIN with count 2 moves the two lowest, in ascending order. */
   @Test
   @EnabledOnCommand("ZMOVE")
   public void zmoveMinCount() {
@@ -1840,7 +1840,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(1, jedis.zcard(ZSRC));
   }
 
-  /** Scenario ZMOV-SA03: MAX with count 2 moves the two highest, in descending order. */
+  /** MAX with count 2 moves the two highest, in descending order. */
   @Test
   @EnabledOnCommand("ZMOVE")
   public void zmoveMaxCount() {
@@ -1848,7 +1848,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(tuples("c", 3, "b", 2), jedis.zmove(ZSRC, ZDST, ZMoveParams.max().count(2)));
   }
 
-  /** Scenario ZMOV-SA04: a score range without a count moves the whole range. */
+  /** A score range without a count moves the whole range. */
   @Test
   @EnabledOnCommand("ZMOVE")
   public void zmoveByScoreExclusiveWholeRange() {
@@ -1857,7 +1857,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(tuples("a", 1, "e", 4), jedis.zrangeWithScores(ZSRC, 0, -1));
   }
 
-  /** Scenario ZMOV-SA05: a text range from -inf to +inf with count 2; exclusive infinities too. */
+  /** A text range from -inf to +inf with count 2; exclusive infinities too. */
   @Test
   @EnabledOnCommand("ZMOVE")
   public void zmoveByScoreInfiniteTextBounds() {
@@ -1871,7 +1871,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(tuples("a", 1, "b", 2), jedis.zmove(ZSRC, ZDST, exclusive));
   }
 
-  /** Scenario ZMOV-SA06: equal scores are taken in member order. */
+  /** Equal scores are taken in member order. */
   @Test
   @EnabledOnCommand("ZMOVE")
   public void zmoveTiesByMember() {
@@ -1880,7 +1880,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(Collections.singletonList("c"), jedis.zrange(ZSRC, 0, -1));
   }
 
-  /** Scenario ZMOV-SA07: an infinite score reads as positive infinity. */
+  /** An infinite score reads as positive infinity. */
   @Test
   @EnabledOnCommand("ZMOVE")
   public void zmoveInfiniteScore() {
@@ -1890,7 +1890,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(Double.POSITIVE_INFINITY, moved.get(0).getScore(), 0d);
   }
 
-  /** Scenario ZMOV-SA08: an empty score range replies null, and no destination is created. */
+  /** An empty score range replies null, and no destination is created. */
   @Test
   @EnabledOnCommand("ZMOVE")
   public void zmoveEmptyRangeIsNull() {
@@ -1899,7 +1899,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertFalse(jedis.exists(ZDST));
   }
 
-  /** Scenario ZMOV-SA09: a missing source replies null, also with a string destination. */
+  /** A missing source replies null, also with a string destination. */
   @Test
   @EnabledOnCommand("ZMOVEMEMBER")
   public void missingSourceIsNull() {
@@ -1910,7 +1910,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertNull(jedis.zmovemember(ZSRC, ZDST, "a"));
   }
 
-  /** Scenario ZMOV-SA10: the same key as source and destination replies null at once. */
+  /** The same key as source and destination replies null at once. */
   @Test
   @EnabledOnCommand("BZMOVE")
   public void sameKeyIsNull() {
@@ -1924,7 +1924,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertNull(atOnce(() -> jedis.bzmove(missing, missing, BZMoveParams.min(0))));
   }
 
-  /** Scenario ZMOV-SA11: a count above the size moves all; the emptied source is deleted. */
+  /** A count above the size moves all; the emptied source is deleted. */
   @Test
   @EnabledOnCommand("ZMOVE")
   public void zmoveEmptiesAndDeletesSource() {
@@ -1934,7 +1934,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(2, jedis.zcard(ZDST));
   }
 
-  /** Scenario ZMOV-SA12: members move in argument order; missing skipped, a repeat moves once. */
+  /** Members move in argument order; missing skipped, a repeat moves once. */
   @Test
   @EnabledOnCommand("ZMOVEMEMBER")
   public void zmovememberOrderSkipAndRepeat() {
@@ -1944,7 +1944,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(Collections.singletonList("b"), jedis.zrange(ZSRC, 0, -1));
   }
 
-  /** Scenario ZMOV-SA13: a member the destination has takes the source score. */
+  /** A member the destination has takes the source score. */
   @Test
   @EnabledOnCommand("ZMOVEMEMBER")
   public void zmovememberOverwritesScore() {
@@ -1955,7 +1955,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertFalse(jedis.exists(ZSRC));
   }
 
-  /** Scenario ZMOV-SA14: an equal score in the destination still moves. */
+  /** An equal score in the destination still moves. */
   @Test
   @EnabledOnCommand("ZMOVEMEMBER")
   public void zmovememberEqualScoreStillMoves() {
@@ -1965,7 +1965,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertFalse(jedis.exists(ZSRC));
   }
 
-  /** Scenario ZMOV-SA15: NX moves only members the destination lacks. */
+  /** NX moves only members the destination lacks. */
   @Test
   @EnabledOnCommand("ZMOVEMEMBER")
   public void zmovememberNx() {
@@ -1977,7 +1977,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(Double.valueOf(1), jedis.zscore(ZDST, "a"));
   }
 
-  /** Scenario ZMOV-SA16: XX moves only members the destination has. */
+  /** XX moves only members the destination has. */
   @Test
   @EnabledOnCommand("ZMOVEMEMBER")
   public void zmovememberXx() {
@@ -1988,7 +1988,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(Double.valueOf(6), jedis.zscore(ZSRC, "b"));
   }
 
-  /** Scenario ZMOV-SA17: XX with a missing destination replies null and creates nothing. */
+  /** XX with a missing destination replies null and creates nothing. */
   @Test
   @EnabledOnCommand("ZMOVEMEMBER")
   public void zmovememberXxMissingDestination() {
@@ -1999,7 +1999,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(Double.valueOf(5), jedis.zscore(ZSRC, "a"));
   }
 
-  /** Scenario ZMOV-SA18: members named like keywords are data. */
+  /** Members named like keywords are data. */
   @Test
   @EnabledOnCommand("ZMOVEMEMBER")
   public void zmovememberKeywordNamedMembers() {
@@ -2009,7 +2009,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertFalse(jedis.exists(ZSRC));
   }
 
-  /** Scenario ZMOV-SA35: TTLs: an existing destination and a remaining source keep theirs. */
+  /** TTLs: an existing destination and a remaining source keep theirs. */
   @Test
   @EnabledOnCommand("ZMOVE")
   public void zmoveKeepsTtls() {
@@ -2027,7 +2027,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertTrue(jedis.ttl(ZSRC) > 0);
   }
 
-  /** Scenario ZMOV-SA19: a count of 0 or -1 gets the server's count error, before WRONGTYPE. */
+  /** A count of 0 or -1 gets the server's count error, before WRONGTYPE. */
   @Test
   @EnabledOnCommand("ZMOVE")
   public void zmoveCountErrors() {
@@ -2047,7 +2047,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertServerError(ERR_COUNT, () -> jedis.zmove(text, ZDST, ZMoveParams.min().count(-1)));
   }
 
-  /** Scenario ZMOV-SA22: a NaN bound gets the server's error; inverted bounds reply null. */
+  /** A NaN bound gets the server's error; inverted bounds reply null. */
   @Test
   @EnabledOnCommand("ZMOVE")
   public void zmoveNanAndInvertedBounds() {
@@ -2061,7 +2061,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(3, jedis.zcard(ZSRC));
   }
 
-  /** Scenario ZMOV-SA23: a wrong-type source or destination gets WRONGTYPE at once. */
+  /** A wrong-type source or destination gets WRONGTYPE at once. */
   @Test
   @EnabledOnCommand("BZMOVE")
   public void wrongTypeKeys() {
@@ -2076,7 +2076,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(tuples("a", 1), jedis.zrangeWithScores(ZSRC, 0, -1));
   }
 
-  /** Scenario ZMOV-SA27: an empty member list gets the server's error, with and without NX. */
+  /** An empty member list gets the server's error, with and without NX. */
   @Test
   @EnabledOnCommand("ZMOVEMEMBER")
   public void zmovememberEmptyList() {
@@ -2089,7 +2089,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(1, jedis.zcard(ZSRC));
   }
 
-  /** Scenario ZMOV-SA28: BZMOVE on a non-empty source moves at once, in descending order. */
+  /** BZMOVE on a non-empty source moves at once, in descending order. */
   @Test
   @EnabledOnCommand("BZMOVE")
   public void bzmoveNonEmptySourceAtOnce() {
@@ -2098,14 +2098,14 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(tuples("b", 2, "a", 1), atOnce(() -> jedis.bzmove(ZSRC, ZDST, params)));
   }
 
-  /** Scenario ZMOV-SA29: a 100 ms timeout on a missing source replies null. */
+  /** A 100 ms timeout on a missing source replies null. */
   @Test
   @EnabledOnCommand("BZMOVE")
   public void bzmoveFractionalTimeout() {
     assertNull(atOnce(() -> jedis.bzmove(ZSRC, ZDST, BZMoveParams.min(0.1))));
   }
 
-  /** Scenario ZMOV-SA31: BZMOVE count 0, a negative and an infinite timeout get errors at once. */
+  /** BZMOVE count 0, a negative and an infinite timeout get errors at once. */
   @Test
   @EnabledOnCommand("BZMOVE")
   public void bzmoveErrors() {
@@ -2119,7 +2119,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
         () -> atOnce(() -> jedis.bzmove(ZSRC, ZDST, infinite)));
   }
 
-  /** Scenario ZMOV-SA34: a sub-millisecond and a long fractional timeout reply null. */
+  /** A sub-millisecond and a long fractional timeout reply null. */
   @Test
   @EnabledOnCommand("BZMOVE")
   public void bzmoveSubMillisecondAndLongFraction() {
@@ -2130,7 +2130,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertTrue(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) >= 900);
   }
 
-  /** Scenario ZMOV-C01: an exponent-spelled bound matches; the score compares as a double. */
+  /** An exponent-spelled bound matches; the score compares as a double. */
   @Test
   @EnabledOnCommand("ZMOVE")
   public void zmoveExponentBound() {
@@ -2141,7 +2141,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(1.0E-5, moved.get(0).getScore(), 0d);
   }
 
-  /** Scenario ZMOV-C02: decimal double bounds with count 2. */
+  /** Decimal double bounds with count 2. */
   @Test
   @EnabledOnCommand("ZMOVE")
   public void zmoveDecimalBounds() {
@@ -2150,7 +2150,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(tuples("a", 1, "b", 2), jedis.zmove(ZSRC, ZDST, params));
   }
 
-  /** Scenario ZMOV-C03: infinite double bounds move all members in ascending order. */
+  /** Infinite double bounds move all members in ascending order. */
   @Test
   @EnabledOnCommand("ZMOVE")
   public void zmoveInfiniteDoubleBounds() {
@@ -2160,7 +2160,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertFalse(jedis.exists(ZSRC));
   }
 
-  /** Scenario ZMOV-C04: count Long.MAX_VALUE is accepted and moves all. */
+  /** Count Long.MAX_VALUE is accepted and moves all. */
   @Test
   @EnabledOnCommand("ZMOVE")
   public void zmoveCountLongMax() {
@@ -2170,7 +2170,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertFalse(jedis.exists(ZSRC));
   }
 
-  /** Scenario ZMOV-C05: count Integer.MAX_VALUE moves all. */
+  /** Count Integer.MAX_VALUE moves all. */
   @Test
   @EnabledOnCommand("ZMOVE")
   public void zmoveCountIntMax() {
@@ -2179,14 +2179,14 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(tuples("a", 1, "b", 2, "c", 3), jedis.zmove(ZSRC, ZDST, params));
   }
 
-  /** Scenario ZMOV-C06: a 0.5 ms timeout replies null well under a second. */
+  /** A 0.5 ms timeout replies null well under a second. */
   @Test
   @EnabledOnCommand("BZMOVE")
   public void bzmoveExponentTimeout() {
     assertNull(atOnce(() -> jedis.bzmove(ZSRC, ZDST, BZMoveParams.min(0.0005))));
   }
 
-  /** Scenario ZMOV-C07: out-of-range, negative and NaN timeouts get the server's errors at once. */
+  /** Out-of-range, negative and NaN timeouts get the server's errors at once. */
   @Test
   @EnabledOnCommand("BZMOVE")
   public void bzmoveTimeoutErrors() {
@@ -2203,7 +2203,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
         () -> atOnce(() -> jedis.bzmove(ZSRC, ZDST, nan)));
   }
 
-  /** Scenario ZMOV-C08: a 1 s timeout on a missing source replies null after about a second. */
+  /** A 1 s timeout on a missing source replies null after about a second. */
   @Test
   @EnabledOnCommand("BZMOVE")
   public void bzmoveOneSecondTimeout() {
@@ -2213,7 +2213,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertTrue(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) >= 900);
   }
 
-  /** Scenario ZMOV-C10: the single-member overload overwrites the score; then NX moves b. */
+  /** The single-member overload overwrites the score; then NX moves b. */
   @Test
   @EnabledOnCommand("ZMOVEMEMBER")
   public void zmovememberSingleAndNx() {
@@ -2225,7 +2225,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(tuples("b", 6), jedis.zmovemember(ZSRC, ZDST, nx, "b"));
   }
 
-  /** Scenario ZMOV-C11: the byte[] twins move the same pairs; members come back as bytes. */
+  /** The byte[] twins move the same pairs; members come back as bytes. */
   @Test
   @EnabledOnCommand("ZMOVEMEMBER")
   public void binaryTwins() {
@@ -2249,7 +2249,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertArrayEquals(SafeEncoder.encode("c"), many.get(0).getBinaryElement());
   }
 
-  /** Scenario ZMOV-C12: the reply is the same list of tuples on RESP2 and RESP3. */
+  /** The reply is the same list of tuples on RESP2 and RESP3. */
   @Test
   @EnabledOnCommand("ZMOVE")
   public void zmoveReplyShapeAcrossProtocols() {

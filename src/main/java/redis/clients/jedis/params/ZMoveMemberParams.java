@@ -6,11 +6,8 @@ import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Keyword;
 
 /**
- * Optional arguments for the {@code ZMOVEMEMBER} command: a condition on the destination sorted
- * set.
- * <p>
- * {@link #nx()} and {@link #xx()} are mutually exclusive; the last call wins. The condition is
- * emitted before the {@code MEMBERS} block; an instance with no condition emits nothing.
+ * Optional destination condition for {@code ZMOVEMEMBER}: {@link #nx()} or {@link #xx()}; the last
+ * call wins.
  * @since 8.1
  */
 public class ZMoveMemberParams implements IParams {
@@ -32,7 +29,7 @@ public class ZMoveMemberParams implements IParams {
   }
 
   /**
-   * Move a member only if the destination does not have it. A member left out stays in the source.
+   * Move a member only if the destination does not have it.
    * @return ZMoveMemberParams
    */
   public ZMoveMemberParams nx() {
@@ -41,7 +38,7 @@ public class ZMoveMemberParams implements IParams {
   }
 
   /**
-   * Move a member only if the destination already has it. A member left out stays in the source.
+   * Move a member only if the destination already has it.
    * @return ZMoveMemberParams
    */
   public ZMoveMemberParams xx() {

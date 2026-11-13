@@ -62,7 +62,7 @@ public class ZMoveCommandObjectsTest {
     return Arrays.asList(member, score);
   }
 
-  /** Scenario ZMOV-B01: ZMOVE MIN COUNT 2; both keys are recorded as keys. */
+  /** ZMOVE MIN COUNT 2; both keys are recorded as keys. */
   @Test
   public void zmoveMinCount() {
     CommandObject<List<Tuple>> command = commandObjects.zmove(SRC, DST, ZMoveParams.min().count(2));
@@ -71,7 +71,7 @@ public class ZMoveCommandObjectsTest {
     assertEquals(Arrays.asList(SRC, DST), keyStrings(command));
   }
 
-  /** Scenario ZMOV-B02: ZMOVE with a text score range and a count. */
+  /** ZMOVE with a text score range and a count. */
   @Test
   public void zmoveByScoreText() {
     ZMoveParams params = ZMoveParams.byScore("-inf", "(1700000000").count(500);
@@ -81,7 +81,7 @@ public class ZMoveCommandObjectsTest {
     assertEquals(expected, argStrings(commandObjects.zmove(SRC, DST, params)));
   }
 
-  /** Scenario ZMOV-B03: BZMOVE MAX 30.0 COUNT 10, marked blocking. */
+  /** BZMOVE MAX 30.0 COUNT 10, marked blocking. */
   @Test
   public void bzmoveMaxCountBlocking() {
     BZMoveParams params = BZMoveParams.max(30).count(10);
@@ -92,21 +92,21 @@ public class ZMoveCommandObjectsTest {
     assertEquals(Arrays.asList(SRC, DST), keyStrings(command));
   }
 
-  /** Scenario ZMOV-B04: BZMOVE with a zero timeout sends 0.0. */
+  /** BZMOVE with a zero timeout sends 0.0. */
   @Test
   public void bzmoveZeroTimeout() {
     CommandObject<List<Tuple>> command = commandObjects.bzmove(SRC, DST, BZMoveParams.min(0));
     assertEquals(Arrays.asList("BZMOVE", SRC, DST, "MIN", "0.0"), argStrings(command));
   }
 
-  /** Scenario ZMOV-B05: a 100 ms timeout is sent as 0.1, not 1 or 0. */
+  /** A 100 ms timeout is sent as 0.1, not 1 or 0. */
   @Test
   public void bzmoveFractionalTimeout() {
     CommandObject<List<Tuple>> command = commandObjects.bzmove(SRC, DST, BZMoveParams.min(0.1));
     assertEquals("0.1", argStrings(command).get(4));
   }
 
-  /** Scenario ZMOV-B06: one member is sent as MEMBERS 1 a. */
+  /** One member is sent as MEMBERS 1 a. */
   @Test
   public void zmovememberSingle() {
     CommandObject<List<Tuple>> command = commandObjects.zmovemember(SRC, DST, "a");
@@ -115,7 +115,7 @@ public class ZMoveCommandObjectsTest {
     assertEquals(Arrays.asList(SRC, DST), keyStrings(command));
   }
 
-  /** Scenario ZMOV-B07: members are sent as given, not de-duplicated or re-ordered. */
+  /** Members are sent as given, not de-duplicated or re-ordered. */
   @Test
   public void zmovememberMembersAsGiven() {
     String[] members = { "c", "a", "missing", "a" };
@@ -125,7 +125,7 @@ public class ZMoveCommandObjectsTest {
     assertEquals(expected, argStrings(command));
   }
 
-  /** Scenario ZMOV-B08: the condition comes before the list; keyword-named members are data. */
+  /** The condition comes before the list; keyword-named members are data. */
   @Test
   public void zmovememberConditionBeforeList() {
     ZMoveMemberParams xx = zMoveMemberParams().xx();
@@ -136,7 +136,7 @@ public class ZMoveCommandObjectsTest {
     assertEquals(expected, argStrings(command));
   }
 
-  /** Scenario ZMOV-B09: an empty member list is sent as MEMBERS 0, with and without NX. */
+  /** An empty member list is sent as MEMBERS 0, with and without NX. */
   @Test
   public void zmovememberEmptyList() {
     List<String> bare = argStrings(commandObjects.zmovemember("src", "dst"));
@@ -146,21 +146,21 @@ public class ZMoveCommandObjectsTest {
     assertEquals(Arrays.asList("ZMOVEMEMBER", "src", "dst", "NX", "MEMBERS", "0"), nx);
   }
 
-  /** Scenario ZMOV-B10: a null member is rejected before any command is sent. */
+  /** A null member is rejected before any command is sent. */
   @Test
   public void zmovememberNullMemberRejected() {
     String none = null;
     assertThrows(IllegalArgumentException.class, () -> commandObjects.zmovemember(SRC, DST, none));
   }
 
-  /** Scenario ZMOV-B10: a null key is rejected by the key path before any command is sent. */
+  /** A null key is rejected by the key path before any command is sent. */
   @Test
   public void zmovememberNullKeyRejected() {
     String none = null;
     assertThrows(NullPointerException.class, () -> commandObjects.zmovemember(none, DST, "a"));
   }
 
-  /** Scenario ZMOV-B11: the reply builder reads RESP2 and RESP3 replies alike, and keeps null. */
+  /** The reply builder reads RESP2 and RESP3 replies alike, and keeps null. */
   @Test
   public void replyBuilder() {
     CommandObjects resp3 = new CommandObjects(RedisProtocol.RESP3);
@@ -194,7 +194,7 @@ public class ZMoveCommandObjectsTest {
     }
   }
 
-  /** Scenario ZMOV-B12: the byte[] overloads send the given bytes as keys and members. */
+  /** The byte[] overloads send the given bytes as keys and members. */
   @Test
   public void binaryOverloads() {
     byte[] src = { 0x01, '{', 'z', '}', 0x02 };

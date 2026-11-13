@@ -37,28 +37,28 @@ public class ZMoveMemberParamsTest {
     return all.subList(1, all.size());
   }
 
-  /** Scenario ZMOV-A16: params with no condition add no arguments. */
+  /** Params with no condition add no arguments. */
   @Test
   public void noConditionAddsNothing() {
     assertEquals(Collections.emptyList(), tokens(zMoveMemberParams()));
     assertEquals(Collections.emptyList(), tokens(new ZMoveMemberParams()));
   }
 
-  /** Scenario ZMOV-A17: {@code nx()} adds NX; {@code xx()} adds XX. */
+  /** {@code nx()} adds NX; {@code xx()} adds XX. */
   @Test
   public void nxAndXx() {
     assertEquals(Collections.singletonList("NX"), tokens(zMoveMemberParams().nx()));
     assertEquals(Collections.singletonList("XX"), tokens(zMoveMemberParams().xx()));
   }
 
-  /** Scenario ZMOV-A18: the last condition wins; NX and XX are never both sent. */
+  /** The last condition wins; NX and XX are never both sent. */
   @Test
   public void lastConditionWins() {
     assertEquals(Collections.singletonList("XX"), tokens(zMoveMemberParams().nx().xx()));
     assertEquals(Collections.singletonList("NX"), tokens(zMoveMemberParams().xx().nx()));
   }
 
-  /** Scenario ZMOV-A19: equals and hashCode hold over the condition. */
+  /** Equals and hashCode hold over the condition. */
   @Test
   public void equalsAndHashCode() {
     assertEquals(zMoveMemberParams().nx(), zMoveMemberParams().nx());
@@ -71,7 +71,7 @@ public class ZMoveMemberParamsTest {
     assertNotEquals(zMoveMemberParams().nx(), zMoveMemberParams());
   }
 
-  /** Scenario ZMOV-A20: empty params build the same command as no params. */
+  /** Empty params build the same command as no params. */
   @Test
   public void emptyParamsSameAsNoParams() {
     CommandObjects commandObjects = new CommandObjects(RedisProtocol.RESP2);

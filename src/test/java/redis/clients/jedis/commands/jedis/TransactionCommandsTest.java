@@ -453,7 +453,7 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
   }
 
   /**
-   * Scenario ZMOV-T05: moves inside MULTI/EXEC; exec returns each result in order, an error reply
+   * Moves inside MULTI/EXEC; exec returns each result in order, an error reply
    * in place, and the reply after it is still decoded.
    */
   @Test
@@ -486,7 +486,7 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
   }
 
   /**
-   * Scenario ZMOV-T05: the byte[] twin; moves inside MULTI/EXEC, exec returns each result in
+   * The byte[] twin; moves inside MULTI/EXEC, exec returns each result in
    * order, an error reply in place, and the reply after it is still decoded.
    */
   @Test

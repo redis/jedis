@@ -10,14 +10,8 @@ import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.args.SortedSetOption;
 
 /**
- * Arguments for the {@code ZMOVE} command: which members to take from the source sorted set and,
- * optionally, how many.
- * <p>
- * An instance is created by one of the static factories, each carrying the mandatory selection:
- * {@link #min()}, {@link #max()} or {@link #byScore(String, String)} (with {@code double} and
- * {@code byte[]} overloads). The wire arguments are emitted in the order
- * {@code <MIN | MAX | BYSCORE min max> [COUNT count]}; {@code COUNT} is sent only when
- * {@link #count(long)} was called.
+ * Arguments for {@code ZMOVE}: which members to move, created with {@link #min()}, {@link #max()}
+ * or {@link #byScore(String, String)}, and optionally how many.
  * @since 8.1
  */
 public class ZMoveParams implements IParams {
@@ -34,7 +28,7 @@ public class ZMoveParams implements IParams {
   }
 
   /**
-   * Take the members with the lowest scores.
+   * Move the members with the lowest scores.
    * @return ZMoveParams
    */
   public static ZMoveParams min() {
@@ -42,7 +36,7 @@ public class ZMoveParams implements IParams {
   }
 
   /**
-   * Take the members with the highest scores.
+   * Move the members with the highest scores.
    * @return ZMoveParams
    */
   public static ZMoveParams max() {
@@ -50,8 +44,7 @@ public class ZMoveParams implements IParams {
   }
 
   /**
-   * Take the members whose score is between {@code min} and {@code max}, both inclusive. Infinities
-   * are sent as {@code -inf} and {@code +inf}.
+   * Move the members whose score is between {@code min} and {@code max}, inclusive.
    * @param min the lowest score
    * @param max the highest score
    * @return ZMoveParams
@@ -61,9 +54,8 @@ public class ZMoveParams implements IParams {
   }
 
   /**
-   * Take the members whose score is between {@code min} and {@code max}. The bounds are sent as
-   * given, so they accept the server's syntax: {@code (} for an exclusive bound, {@code -inf} and
-   * {@code +inf}.
+   * Move the members whose score is between {@code min} and {@code max}, in the server's syntax:
+   * {@code (} for an exclusive bound, {@code -inf} and {@code +inf}.
    * @param min the lowest score
    * @param max the highest score
    * @return ZMoveParams
@@ -89,8 +81,7 @@ public class ZMoveParams implements IParams {
   }
 
   /**
-   * Move up to {@code count} members. Without a count, {@code MIN} and {@code MAX} move one member
-   * and a score range moves every member in the range.
+   * Move up to {@code count} members.
    * @param count the largest number of members to move
    * @return ZMoveParams
    */

@@ -1915,7 +1915,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   /**
-   * Scenario ZMOV-T01: moves in a pipeline; a null response does not fail the pipeline.
+   * Moves in a pipeline; a null response does not fail the pipeline.
    */
   @Test
   @EnabledOnCommand("ZMOVE")
@@ -1936,7 +1936,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   /**
-   * Scenario ZMOV-T02: the byte[] twins of the pipelined zmove and zmovemember.
+   * The byte[] twins of the pipelined zmove and zmovemember.
    */
   @Test
   @EnabledOnCommand("ZMOVE")
@@ -1955,7 +1955,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   /**
-   * Scenario ZMOV-T04: an error reply among pipelined moves fails only its own response; the
+   * An error reply among pipelined moves fails only its own response; the
    * replies after it are still decoded.
    */
   @Test
@@ -1979,7 +1979,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
   }
 
   /**
-   * Scenario ZMOV-T04: the byte[] twin; an error reply among pipelined moves fails only its own
+   * The byte[] twin; an error reply among pipelined moves fails only its own
    * response; the replies after it are still decoded.
    */
   @Test

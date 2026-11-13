@@ -13,7 +13,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.args.Rawable;
@@ -154,12 +153,11 @@ public class ZMoveCommandObjectsTest {
     assertThrows(IllegalArgumentException.class, () -> commandObjects.zmovemember(SRC, DST, none));
   }
 
-  /** Scenario ZMOV-B10: a null key is rejected before any command is sent. */
+  /** Scenario ZMOV-B10: a null key is rejected by the key path before any command is sent. */
   @Test
-  @Disabled("Defect 1-D1: a null key throws NullPointerException, not IllegalArgumentException")
   public void zmovememberNullKeyRejected() {
     String none = null;
-    assertThrows(IllegalArgumentException.class, () -> commandObjects.zmovemember(none, DST, "a"));
+    assertThrows(NullPointerException.class, () -> commandObjects.zmovemember(none, DST, "a"));
   }
 
   /** Scenario ZMOV-B11: the reply builder reads RESP2 and RESP3 replies alike, and keeps null. */

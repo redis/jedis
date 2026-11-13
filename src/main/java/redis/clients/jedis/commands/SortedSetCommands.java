@@ -907,16 +907,19 @@ public interface SortedSetCommands {
   /**
    * <b>BZMOVE Command</b>
    * The blocking variant of {@link #zmove(String, String, ZMoveParams)} for the lowest or highest
-   * members. When the source is empty, the connection blocks until a member is added to it or the
-   * timeout in {@code params} passes; it then moves up to the count without waiting for more.
-   * A timeout of zero blocks indefinitely. Both keys must hash to the same slot in a cluster.
+   * members. When the source is empty, the command waits until a member is added to it or the
+   * timeout in {@code params} passes, except inside a transaction, where it replies at once; once
+   * the source has members, it moves up to the count without waiting for more. A timeout of zero
+   * waits without limit. When the source and destination are the same key, it replies at once.
+   * Both keys must hash to the same slot in a cluster.
    * <p>
    * Time complexity: O(M*log(N)) where M is the number of members moved
    * @param srcKey the source sorted set
    * @param dstKey the destination sorted set
    * @param params the end to take from, the timeout and the count
    * @return the moved members with their scores, in the order they were taken (ascending for
-   *         MIN, descending for MAX), or {@code null} if the timeout passed
+   *         MIN, descending for MAX), or {@code null} if nothing moved: the timeout passed, the
+   *         source and destination are the same key, or the source was empty inside a transaction
    * @since 8.1
    */
   List<Tuple> bzmove(String srcKey, String dstKey, BZMoveParams params);

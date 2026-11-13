@@ -1939,8 +1939,6 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
   public void testZmoveBinary() {
     byte[] src = SafeEncoder.encode("{z}s");
     byte[] dst = SafeEncoder.encode("{z}d");
-    byte[] member = SafeEncoder.encode("a");
-    byte[] member2 = SafeEncoder.encode("b");
     ZMoveParams params = ZMoveParams.min().count(2);
     when(commandObjects.zmove(src, dst, params)).thenReturn(listTupleCommandObject);
 
@@ -1967,8 +1965,6 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
   public void testBzmoveBinary() {
     byte[] src = SafeEncoder.encode("{z}s");
     byte[] dst = SafeEncoder.encode("{z}d");
-    byte[] member = SafeEncoder.encode("a");
-    byte[] member2 = SafeEncoder.encode("b");
     BZMoveParams params = BZMoveParams.max(1).count(2);
     when(commandObjects.bzmove(src, dst, params)).thenReturn(listTupleCommandObject);
 
@@ -1995,7 +1991,6 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
     byte[] src = SafeEncoder.encode("{z}s");
     byte[] dst = SafeEncoder.encode("{z}d");
     byte[] member = SafeEncoder.encode("a");
-    byte[] member2 = SafeEncoder.encode("b");
     when(commandObjects.zmovemember(src, dst, member)).thenReturn(listTupleCommandObject);
 
     Response<List<Tuple>> response = pipeliningBase.zmovemember(src, dst, member);
@@ -2048,7 +2043,6 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
     byte[] src = SafeEncoder.encode("{z}s");
     byte[] dst = SafeEncoder.encode("{z}d");
     byte[] member = SafeEncoder.encode("a");
-    byte[] member2 = SafeEncoder.encode("b");
     ZMoveMemberParams params = ZMoveMemberParams.zMoveMemberParams().nx();
     when(commandObjects.zmovemember(src, dst, params, member)).thenReturn(listTupleCommandObject);
 

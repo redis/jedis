@@ -2909,8 +2909,6 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
   public void testZmoveBinary() {
     byte[] src = SafeEncoder.encode("{z}s");
     byte[] dst = SafeEncoder.encode("{z}d");
-    byte[] member = SafeEncoder.encode("a");
-    byte[] member2 = SafeEncoder.encode("b");
     ZMoveParams params = ZMoveParams.min().count(2);
     List<Tuple> expected = Collections.singletonList(new Tuple("a", 1.0));
 
@@ -2947,8 +2945,6 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
   public void testBzmoveBinary() {
     byte[] src = SafeEncoder.encode("{z}s");
     byte[] dst = SafeEncoder.encode("{z}d");
-    byte[] member = SafeEncoder.encode("a");
-    byte[] member2 = SafeEncoder.encode("b");
     BZMoveParams params = BZMoveParams.max(1).count(2);
     List<Tuple> expected = Collections.singletonList(new Tuple("a", 1.0));
 
@@ -2985,7 +2981,6 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
     byte[] src = SafeEncoder.encode("{z}s");
     byte[] dst = SafeEncoder.encode("{z}d");
     byte[] member = SafeEncoder.encode("a");
-    byte[] member2 = SafeEncoder.encode("b");
     List<Tuple> expected = Collections.singletonList(new Tuple("a", 1.0));
 
     when(commandObjects.zmovemember(src, dst, member)).thenReturn(listTupleCommandObject);
@@ -3058,7 +3053,6 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
     byte[] src = SafeEncoder.encode("{z}s");
     byte[] dst = SafeEncoder.encode("{z}d");
     byte[] member = SafeEncoder.encode("a");
-    byte[] member2 = SafeEncoder.encode("b");
     ZMoveMemberParams params = ZMoveMemberParams.zMoveMemberParams().nx();
     List<Tuple> expected = Collections.singletonList(new Tuple("a", 1.0));
 

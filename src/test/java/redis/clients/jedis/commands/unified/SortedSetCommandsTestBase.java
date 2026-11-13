@@ -2102,7 +2102,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   @Test
   @EnabledOnCommand("BZMOVE")
   public void bzmoveFractionalTimeout() {
-    assertNull(jedis.bzmove(ZSRC, ZDST, BZMoveParams.min(0.1)));
+    assertNull(atOnce(() -> jedis.bzmove(ZSRC, ZDST, BZMoveParams.min(0.1))));
   }
 
   /** Scenario ZMOV-SA31: BZMOVE count 0, a negative and an infinite timeout get errors at once. */

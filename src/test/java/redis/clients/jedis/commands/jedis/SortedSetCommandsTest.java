@@ -6,10 +6,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
+import java.time.Duration;
 import java.util.*;
 
 import io.redis.test.annotations.EnabledOnCommand;
@@ -1751,7 +1753,8 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
   @Test
   @EnabledOnCommand("BZMOVE")
   public void bzmoveAndZmovememberLegacy() {
-    assertNull(jedis.bzmove("{z}m1", "{z}m2", BZMoveParams.min(0.1)));
+    assertNull(assertTimeoutPreemptively(Duration.ofMillis(900),
+      () -> jedis.bzmove("{z}m1", "{z}m2", BZMoveParams.min(0.1))));
     jedis.zadd("{z}s", 5, "a");
     assertNull(jedis.zmovemember("{z}s", "{z}d", ZMoveMemberParams.zMoveMemberParams().xx(), "a"));
   }
@@ -1773,7 +1776,8 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
         jedis.zmove(src, dst, ZMoveParams.min().count(2)));
     assertNull(jedis.zmove(m1, m2, ZMoveParams.min()));
 
-    assertNull(jedis.bzmove(m1, m2, BZMoveParams.min(0.1)));
+    assertNull(assertTimeoutPreemptively(Duration.ofMillis(900),
+      () -> jedis.bzmove(m1, m2, BZMoveParams.min(0.1))));
     byte[] xsrc = SafeEncoder.encode("{z}xs");
     byte[] xdst = SafeEncoder.encode("{z}xd");
     jedis.zadd(xsrc, 5, SafeEncoder.encode("a"));

@@ -174,4 +174,40 @@ public interface SortedSetPipelineCommands {
   Response<KeyValue<String, List<Tuple>>> bzmpop(double timeout, SortedSetOption option, String... keys);
 
   Response<KeyValue<String, List<Tuple>>> bzmpop(double timeout, SortedSetOption option, int count, String... keys);
+
+  /**
+   * Pipeline variant of {@link SortedSetCommands#zmove(String, String, ZMoveParams)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmove(String srcKey, String dstKey, ZMoveParams params);
+
+  /**
+   * Pipeline variant of {@link SortedSetCommands#bzmove(String, String, BZMoveParams)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> bzmove(String srcKey, String dstKey, BZMoveParams params);
+
+  /**
+   * Pipeline variant of {@link SortedSetCommands#zmovemember(String, String, String)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmovemember(String srcKey, String dstKey, String member);
+
+  /**
+   * Pipeline variant of {@link SortedSetCommands#zmovemember(String, String, String...)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmovemember(String srcKey, String dstKey, String... members);
+
+  /**
+   * Pipeline variant of {@link SortedSetCommands#zmovemember(String, String, ZMoveMemberParams, String)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String member);
+
+  /**
+   * Pipeline variant of {@link SortedSetCommands#zmovemember(String, String, ZMoveMemberParams, String...)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String... members);
 }

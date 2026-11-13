@@ -304,4 +304,46 @@ public interface SortedSetBinaryCommands {
   KeyValue<byte[], List<Tuple>> bzmpop(double timeout, SortedSetOption option, byte[]... keys);
 
   KeyValue<byte[], List<Tuple>> bzmpop(double timeout, SortedSetOption option, int count, byte[]... keys);
+
+  /**
+   * Binary variant of {@link SortedSetCommands#zmove(String, String, ZMoveParams)}.
+   * @see SortedSetCommands#zmove(String, String, ZMoveParams)
+   * @since 8.1
+   */
+  List<Tuple> zmove(byte[] srcKey, byte[] dstKey, ZMoveParams params);
+
+  /**
+   * Binary variant of {@link SortedSetCommands#bzmove(String, String, BZMoveParams)}.
+   * @see SortedSetCommands#bzmove(String, String, BZMoveParams)
+   * @since 8.1
+   */
+  List<Tuple> bzmove(byte[] srcKey, byte[] dstKey, BZMoveParams params);
+
+  /**
+   * Binary variant of {@link SortedSetCommands#zmovemember(String, String, String)}.
+   * @see SortedSetCommands#zmovemember(String, String, String)
+   * @since 8.1
+   */
+  List<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, byte[] member);
+
+  /**
+   * Binary variant of {@link SortedSetCommands#zmovemember(String, String, String...)}.
+   * @see SortedSetCommands#zmovemember(String, String, String...)
+   * @since 8.1
+   */
+  List<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, byte[]... members);
+
+  /**
+   * Binary variant of {@link SortedSetCommands#zmovemember(String, String, ZMoveMemberParams, String)}.
+   * @see SortedSetCommands#zmovemember(String, String, ZMoveMemberParams, String)
+   * @since 8.1
+   */
+  List<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[] member);
+
+  /**
+   * Binary variant of {@link SortedSetCommands#zmovemember(String, String, ZMoveMemberParams, String...)}.
+   * @see SortedSetCommands#zmovemember(String, String, ZMoveMemberParams, String...)
+   * @since 8.1
+   */
+  List<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[]... members);
 }

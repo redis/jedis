@@ -883,4 +883,111 @@ public interface SortedSetCommands {
   KeyValue<String, List<Tuple>> bzmpop(double timeout, SortedSetOption option, String... keys);
 
   KeyValue<String, List<Tuple>> bzmpop(double timeout, SortedSetOption option, int count, String... keys);
+
+  /**
+   * <b>ZMOVE Command</b>
+   * Atomically move members from the sorted set at {@code srcKey} to the sorted set at
+   * {@code dstKey}, keeping their scores. {@code params} selects the members: the lowest
+   * ({@link ZMoveParams#min()}), the highest ({@link ZMoveParams#max()}), or those in a score
+   * range ({@link ZMoveParams#byScore(String, String)}), optionally up to a count. Without a
+   * count, MIN and MAX move one member and a score range moves every member in the range.
+   * A member the destination already has takes the source score. The source is deleted when it
+   * becomes empty. Both keys must hash to the same slot in a cluster.
+   * <p>
+   * Time complexity: O(M*log(N)) where M is the number of members moved
+   * @param srcKey the source sorted set
+   * @param dstKey the destination sorted set
+   * @param params the selection and the count
+   * @return the moved members with their scores, in the order they were taken (ascending for
+   *         MIN and a score range, descending for MAX), or {@code null} if nothing moved
+   * @since 8.1
+   */
+  List<Tuple> zmove(String srcKey, String dstKey, ZMoveParams params);
+
+  /**
+   * <b>BZMOVE Command</b>
+   * The blocking variant of {@link #zmove(String, String, ZMoveParams)} for the lowest or highest
+   * members. When the source is empty, the connection blocks until a member is added to it or the
+   * timeout in {@code params} passes; it then moves up to the count without waiting for more.
+   * A timeout of zero blocks indefinitely. Both keys must hash to the same slot in a cluster.
+   * <p>
+   * Time complexity: O(M*log(N)) where M is the number of members moved
+   * @param srcKey the source sorted set
+   * @param dstKey the destination sorted set
+   * @param params the end to take from, the timeout and the count
+   * @return the moved members with their scores, in the order they were taken (ascending for
+   *         MIN, descending for MAX), or {@code null} if the timeout passed
+   * @since 8.1
+   */
+  List<Tuple> bzmove(String srcKey, String dstKey, BZMoveParams params);
+
+  /**
+   * <b>ZMOVEMEMBER Command</b>
+   * Atomically move the given member from {@code srcKey} to {@code dstKey}, keeping its score.
+   * A member the destination already has takes the source score. The source is deleted when it
+   * becomes empty. Both keys must hash to the same slot in a cluster.
+   * <p>
+   * Time complexity: O(log(N))
+   * @param srcKey the source sorted set
+   * @param dstKey the destination sorted set
+   * @param member the member to move
+   * @return the moved member with its score, or {@code null} if nothing moved
+   * @since 8.1
+   */
+  List<Tuple> zmovemember(String srcKey, String dstKey, String member);
+
+  /**
+   * <b>ZMOVEMEMBER Command</b>
+   * Atomically move the given members from {@code srcKey} to {@code dstKey}, keeping their scores.
+   * Members are taken in argument order; a member the source lacks is skipped and a repeated
+   * member moves once. A member the destination already has takes the source score. The source is
+   * deleted when it becomes empty. Both keys must hash to the same slot in a cluster.
+   * <p>
+   * Time complexity: O(M*log(N)) where M is the number of members given
+   * @param srcKey the source sorted set
+   * @param dstKey the destination sorted set
+   * @param members the members to move
+   * @return the moved members with their scores, in argument order, or {@code null} if nothing
+   *         moved
+   * @since 8.1
+   */
+  List<Tuple> zmovemember(String srcKey, String dstKey, String... members);
+
+  /**
+   * <b>ZMOVEMEMBER Command</b>
+   * Atomically move the given member from {@code srcKey} to {@code dstKey}, keeping its score,
+   * under the destination condition in {@code params}: {@link ZMoveMemberParams#nx()} moves the
+   * member only if the destination lacks it, {@link ZMoveMemberParams#xx()} only if it has it. A
+   * member the condition leaves out stays in the source and is not in the reply. Both keys must
+   * hash to the same slot in a cluster.
+   * <p>
+   * Time complexity: O(log(N))
+   * @param srcKey the source sorted set
+   * @param dstKey the destination sorted set
+   * @param params the destination condition
+   * @param member the member to move
+   * @return the moved member with its score, or {@code null} if nothing moved
+   * @since 8.1
+   */
+  List<Tuple> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String member);
+
+  /**
+   * <b>ZMOVEMEMBER Command</b>
+   * Atomically move the given members from {@code srcKey} to {@code dstKey}, keeping their scores,
+   * under the destination condition in {@code params}: {@link ZMoveMemberParams#nx()} moves a
+   * member only if the destination lacks it, {@link ZMoveMemberParams#xx()} only if it has it. A
+   * member the condition leaves out stays in the source and is not in the reply. Members are taken
+   * in argument order; a member the source lacks is skipped and a repeated member moves once. Both
+   * keys must hash to the same slot in a cluster.
+   * <p>
+   * Time complexity: O(M*log(N)) where M is the number of members given
+   * @param srcKey the source sorted set
+   * @param dstKey the destination sorted set
+   * @param params the destination condition
+   * @param members the members to move
+   * @return the moved members with their scores, in argument order, or {@code null} if nothing
+   *         moved
+   * @since 8.1
+   */
+  List<Tuple> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String... members);
 }

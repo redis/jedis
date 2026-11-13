@@ -10,7 +10,9 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 
@@ -31,6 +33,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.SortedSetOption;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.BZMoveParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.ZAddParams;
@@ -1949,5 +1952,56 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
 
     assertEquals(Arrays.asList(new Tuple("a", 1d), new Tuple("b", 2d)), minCount.get());
     assertEquals(Collections.singletonList(new Tuple("c", 3d)), member.get());
+  }
+
+  /**
+   * Scenario ZMOV-T04: an error reply among pipelined moves fails only its own response; the
+   * replies after it are still decoded.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveCommandsInPipelineWithError() {
+    pipe.zadd("{z}s", 1, "a");
+    pipe.zadd("{z}s", 2, "b");
+    pipe.zadd("{z}s", 3, "c");
+    pipe.set("{z}w", "x");
+    Response<List<Tuple>> min = pipe.zmove("{z}s", "{z}d", ZMoveParams.min());
+    Response<List<Tuple>> missing = pipe.zmove("{z}none", "{z}d", ZMoveParams.min());
+    Response<List<Tuple>> wrongType = pipe.zmovemember("{z}w", "{z}d", "a");
+    Response<List<Tuple>> max = pipe.zmove("{z}s", "{z}d", ZMoveParams.max());
+    pipe.sync();
+
+    assertEquals(Collections.singletonList(new Tuple("a", 1d)), min.get());
+    assertThat(missing.get(), nullValue());
+    JedisDataException error = assertThrows(JedisDataException.class, wrongType::get);
+    assertThat(error.getMessage(), startsWith("WRONGTYPE"));
+    assertEquals(Collections.singletonList(new Tuple("c", 3d)), max.get());
+  }
+
+  /**
+   * Scenario ZMOV-T04: the byte[] twin; an error reply among pipelined moves fails only its own
+   * response; the replies after it are still decoded.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveCommandsInPipelineWithErrorBinary() {
+    byte[] src = SafeEncoder.encode("{z}s");
+    byte[] dst = SafeEncoder.encode("{z}d");
+    byte[] wrong = SafeEncoder.encode("{z}w");
+    pipe.zadd(src, 1, SafeEncoder.encode("a"));
+    pipe.zadd(src, 2, SafeEncoder.encode("b"));
+    pipe.zadd(src, 3, SafeEncoder.encode("c"));
+    pipe.set(wrong, SafeEncoder.encode("x"));
+    Response<List<Tuple>> min = pipe.zmove(src, dst, ZMoveParams.min());
+    Response<List<Tuple>> missing = pipe.zmove(SafeEncoder.encode("{z}none"), dst, ZMoveParams.min());
+    Response<List<Tuple>> wrongType = pipe.zmovemember(wrong, dst, SafeEncoder.encode("a"));
+    Response<List<Tuple>> max = pipe.zmove(src, dst, ZMoveParams.max());
+    pipe.sync();
+
+    assertEquals(Collections.singletonList(new Tuple(SafeEncoder.encode("a"), 1d)), min.get());
+    assertThat(missing.get(), nullValue());
+    JedisDataException error = assertThrows(JedisDataException.class, wrongType::get);
+    assertThat(error.getMessage(), startsWith("WRONGTYPE"));
+    assertEquals(Collections.singletonList(new Tuple(SafeEncoder.encode("c"), 3d)), max.get());
   }
 }

@@ -4,6 +4,7 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsInAnyOrder;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
@@ -12,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -24,7 +26,9 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.SortedSetCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
+import redis.clients.jedis.params.BZMoveParams;
 import redis.clients.jedis.params.ZAddParams;
+import redis.clients.jedis.params.ZMoveParams;
 import redis.clients.jedis.params.ZParams;
 import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.Tuple;
@@ -319,6 +323,47 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
 
     assertEquals(2, jedis.zintercard(bfoo, bfoo_same_hashslot));
     assertEquals(1, jedis.zintercard(1, bfoo, bfoo_same_hashslot));
+  }
+
+  /**
+   * Keys in two slots are rejected before a round trip; nothing moves.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveCommandsCrossSlotKeys() {
+    // "bar" (slot 5061) and "foo" (slot 12182)
+    jedis.zadd("bar", 1, "a");
+    byte[] bar = SafeEncoder.encode("bar");
+    byte[] foo = SafeEncoder.encode("foo");
+    byte[] a = SafeEncoder.encode("a");
+
+    assertCrossSlotRejected(() -> jedis.zmove("bar", "foo", ZMoveParams.min()));
+    assertCrossSlotRejected(() -> jedis.bzmove("bar", "foo", BZMoveParams.min(0)));
+    assertCrossSlotRejected(() -> jedis.zmovemember("bar", "foo", "a"));
+    assertCrossSlotRejected(() -> jedis.zmove(bar, foo, ZMoveParams.min()));
+    assertCrossSlotRejected(() -> jedis.bzmove(bar, foo, BZMoveParams.min(0)));
+    assertCrossSlotRejected(() -> jedis.zmovemember(bar, foo, a));
+
+    assertEquals(1, jedis.zcard("bar"));
+    assertFalse(jedis.exists("foo"));
+  }
+
+  /**
+   * Hash-tagged keys of one slot move on the cluster.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVEMEMBER")
+  public void zmoveCommandsHashTaggedKeys() {
+    jedis.zadd("{z}s", 1, "a");
+    jedis.zadd("{z}s", 2, "b");
+    jedis.zadd("{z}s", 3, "c");
+    assertEquals(Collections.singletonList(new Tuple("a", 1d)),
+        jedis.zmove("{z}s", "{z}d", ZMoveParams.min()));
+    assertEquals(Collections.singletonList(new Tuple("c", 3d)),
+        jedis.bzmove("{z}s", "{z}d", BZMoveParams.max(1)));
+    assertEquals(Collections.singletonList(new Tuple("b", 2d)),
+        jedis.zmovemember("{z}s", "{z}d", "b"));
+    assertEquals(3, jedis.zcard("{z}d"));
   }
 
 }

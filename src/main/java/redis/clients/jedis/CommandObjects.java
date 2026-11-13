@@ -2772,6 +2772,68 @@ public class CommandObjects {
         .keys((Object[]) keys).add(option).add(COUNT).add(count), BuilderFactory.BINARY_KEYED_TUPLE_LIST);
   }
 
+  // Sorted set move commands
+  // The reply is nested [member, score] pairs in both protocols, so the RESP3 tuple builder fits both.
+  public final CommandObject<List<Tuple>> zmove(String srcKey, String dstKey, ZMoveParams params) {
+    return new CommandObject<>(commandArguments(ZMOVE).key(srcKey).key(dstKey)
+        .addParams(params), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> zmove(byte[] srcKey, byte[] dstKey, ZMoveParams params) {
+    return new CommandObject<>(commandArguments(ZMOVE).key(srcKey).key(dstKey)
+        .addParams(params), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> bzmove(String srcKey, String dstKey, BZMoveParams params) {
+    return new CommandObject<>(commandArguments(BZMOVE).blocking().key(srcKey).key(dstKey)
+        .addParams(params), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> bzmove(byte[] srcKey, byte[] dstKey, BZMoveParams params) {
+    return new CommandObject<>(commandArguments(BZMOVE).blocking().key(srcKey).key(dstKey)
+        .addParams(params), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> zmovemember(String srcKey, String dstKey, String member) {
+    return new CommandObject<>(commandArguments(ZMOVEMEMBER).key(srcKey).key(dstKey)
+        .add(MEMBERS).add(1).add((Object) member), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> zmovemember(byte[] srcKey, byte[] dstKey, byte[] member) {
+    return new CommandObject<>(commandArguments(ZMOVEMEMBER).key(srcKey).key(dstKey)
+        .add(MEMBERS).add(1).add((Object) member), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> zmovemember(String srcKey, String dstKey, String... members) {
+    return new CommandObject<>(commandArguments(ZMOVEMEMBER).key(srcKey).key(dstKey)
+        .add(MEMBERS).add(members.length).addObjects((Object[]) members), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> zmovemember(byte[] srcKey, byte[] dstKey, byte[]... members) {
+    return new CommandObject<>(commandArguments(ZMOVEMEMBER).key(srcKey).key(dstKey)
+        .add(MEMBERS).add(members.length).addObjects((Object[]) members), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String member) {
+    return new CommandObject<>(commandArguments(ZMOVEMEMBER).key(srcKey).key(dstKey).addParams(params)
+        .add(MEMBERS).add(1).add((Object) member), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[] member) {
+    return new CommandObject<>(commandArguments(ZMOVEMEMBER).key(srcKey).key(dstKey).addParams(params)
+        .add(MEMBERS).add(1).add((Object) member), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String... members) {
+    return new CommandObject<>(commandArguments(ZMOVEMEMBER).key(srcKey).key(dstKey).addParams(params)
+        .add(MEMBERS).add(members.length).addObjects((Object[]) members), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[]... members) {
+    return new CommandObject<>(commandArguments(ZMOVEMEMBER).key(srcKey).key(dstKey).addParams(params)
+        .add(MEMBERS).add(members.length).addObjects((Object[]) members), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
   private Builder<List<Tuple>> getTupleListBuilder() {
     return protocol == RedisProtocol.RESP3 ? BuilderFactory.TUPLE_LIST_RESP3 : BuilderFactory.TUPLE_LIST;
   }

@@ -173,4 +173,40 @@ public interface SortedSetPipelineBinaryCommands {
   Response<KeyValue<byte[], List<Tuple>>> bzmpop(double timeout, SortedSetOption option, byte[]... keys);
 
   Response<KeyValue<byte[], List<Tuple>>> bzmpop(double timeout, SortedSetOption option, int count, byte[]... keys);
+
+  /**
+   * Pipeline variant of {@link SortedSetBinaryCommands#zmove(byte[], byte[], ZMoveParams)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmove(byte[] srcKey, byte[] dstKey, ZMoveParams params);
+
+  /**
+   * Pipeline variant of {@link SortedSetBinaryCommands#bzmove(byte[], byte[], BZMoveParams)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> bzmove(byte[] srcKey, byte[] dstKey, BZMoveParams params);
+
+  /**
+   * Pipeline variant of {@link SortedSetBinaryCommands#zmovemember(byte[], byte[], byte[])}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmovemember(byte[] srcKey, byte[] dstKey, byte[] member);
+
+  /**
+   * Pipeline variant of {@link SortedSetBinaryCommands#zmovemember(byte[], byte[], byte[]...)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmovemember(byte[] srcKey, byte[] dstKey, byte[]... members);
+
+  /**
+   * Pipeline variant of {@link SortedSetBinaryCommands#zmovemember(byte[], byte[], ZMoveMemberParams, byte[])}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[] member);
+
+  /**
+   * Pipeline variant of {@link SortedSetBinaryCommands#zmovemember(byte[], byte[], ZMoveMemberParams, byte[]...)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[]... members);
 }

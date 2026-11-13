@@ -6,17 +6,23 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
+import java.time.Duration;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 import io.redis.test.annotations.ConditionalOnEnv;
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.api.function.ThrowingSupplier;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.SortedSetOption;
 import redis.clients.jedis.params.*;
@@ -1763,4 +1769,235 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(2, range.getValue().size());
     assertNull(jedis.bzmpop(0.1, SortedSetOption.MAX, "foo"));
   }
+
+  // ZMOVE, BZMOVE, ZMOVEMEMBER: every key shares the {z} hash tag, so these run on the cluster
+  // runner unchanged.
+  private static final String ZSRC = "{z}s";
+  private static final String ZDST = "{z}d";
+  private static final byte[] ZBSRC = SafeEncoder.encode("{z}bs");
+  private static final byte[] ZBDST = SafeEncoder.encode("{z}bd");
+
+  private static List<Tuple> tuples(Object... memberScores) {
+    List<Tuple> out = new ArrayList<>();
+    for (int i = 0; i < memberScores.length; i += 2) {
+      out.add(new Tuple((String) memberScores[i], ((Number) memberScores[i + 1]).doubleValue()));
+    }
+    return out;
+  }
+
+  private void zfixture(String key, Object... memberScores) {
+    for (int i = 0; i < memberScores.length; i += 2) {
+      jedis.zadd(key, ((Number) memberScores[i + 1]).doubleValue(), (String) memberScores[i]);
+    }
+  }
+
+  private void zfixture(byte[] key, Object... memberScores) {
+    for (int i = 0; i < memberScores.length; i += 2) {
+      jedis.zadd(key, ((Number) memberScores[i + 1]).doubleValue(),
+          SafeEncoder.encode((String) memberScores[i]));
+    }
+  }
+
+  /** Runs a command that must reply without blocking, bounded so a wrong wait fails the test. */
+  private static <T> T atOnce(ThrowingSupplier<T> command) {
+    long start = System.nanoTime();
+    T result = assertTimeoutPreemptively(Duration.ofSeconds(5), command);
+    long elapsedMs = TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start);
+    assertTrue(elapsedMs < 900, "replied after " + elapsedMs + " ms");
+    return result;
+  }
+
+  /** MIN without a count moves one member, replied as a list of one pair. */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveMinWithoutCountMovesOne() {
+    zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
+    assertEquals(tuples("a", 1), jedis.zmove(ZSRC, ZDST, ZMoveParams.min()));
+    assertEquals(Double.valueOf(1), jedis.zscore(ZDST, "a"));
+  }
+
+  /** MIN with count 2 moves the two lowest, in ascending order. */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveMinCount() {
+    zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
+    assertEquals(tuples("a", 1, "b", 2), jedis.zmove(ZSRC, ZDST, ZMoveParams.min().count(2)));
+    assertEquals(tuples("a", 1, "b", 2), jedis.zrangeWithScores(ZDST, 0, -1));
+    assertEquals(1, jedis.zcard(ZSRC));
+  }
+
+  /** MAX with count 2 moves the two highest, in descending order. */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveMaxCount() {
+    zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
+    assertEquals(tuples("c", 3, "b", 2), jedis.zmove(ZSRC, ZDST, ZMoveParams.max().count(2)));
+  }
+
+  /** A score range without a count moves the whole range. */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveByScoreExclusiveWholeRange() {
+    zfixture(ZSRC, "a", 1, "b", 2, "c", 3, "e", 4);
+    assertEquals(tuples("b", 2, "c", 3), jedis.zmove(ZSRC, ZDST, ZMoveParams.byScore("(1", "3")));
+    assertEquals(tuples("a", 1, "e", 4), jedis.zrangeWithScores(ZSRC, 0, -1));
+  }
+
+  /** A text range from -inf to +inf with count 2; exclusive infinities too. */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveByScoreInfiniteTextBounds() {
+    zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
+    ZMoveParams params = ZMoveParams.byScore("-inf", "+inf").count(2);
+    assertEquals(tuples("a", 1, "b", 2), jedis.zmove(ZSRC, ZDST, params));
+
+    jedis.del(ZSRC, ZDST);
+    zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
+    ZMoveParams exclusive = ZMoveParams.byScore("(-inf", "(+inf").count(2);
+    assertEquals(tuples("a", 1, "b", 2), jedis.zmove(ZSRC, ZDST, exclusive));
+  }
+
+  /** An infinite score reads as positive infinity. */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveInfiniteScore() {
+    jedis.zadd(ZSRC, Double.POSITIVE_INFINITY, "a");
+    List<Tuple> moved = jedis.zmove(ZSRC, ZDST, ZMoveParams.min());
+    assertEquals(tuples("a", Double.POSITIVE_INFINITY), moved);
+    assertEquals(Double.POSITIVE_INFINITY, moved.get(0).getScore(), 0d);
+  }
+
+  /** An empty score range replies null, and no destination is created. */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveEmptyRangeIsNull() {
+    jedis.zadd(ZSRC, 1, "a");
+    assertNull(jedis.zmove(ZSRC, ZDST, ZMoveParams.byScore(5, 6)));
+    assertFalse(jedis.exists(ZDST));
+  }
+
+  /** A missing source replies null. */
+  @Test
+  @EnabledOnCommand("ZMOVEMEMBER")
+  public void missingSourceIsNull() {
+    assertNull(jedis.zmove(ZSRC, ZDST, ZMoveParams.min()));
+    assertNull(jedis.zmovemember(ZSRC, ZDST, "a"));
+  }
+
+  /** NX moves only members the destination lacks. */
+  @Test
+  @EnabledOnCommand("ZMOVEMEMBER")
+  public void zmovememberNx() {
+    zfixture(ZSRC, "a", 5, "b", 6);
+    jedis.zadd(ZDST, 1, "a");
+    ZMoveMemberParams nx = ZMoveMemberParams.zMoveMemberParams().nx();
+    assertEquals(tuples("b", 6), jedis.zmovemember(ZSRC, ZDST, nx, "a", "b"));
+    assertEquals(Double.valueOf(5), jedis.zscore(ZSRC, "a"));
+    assertEquals(Double.valueOf(1), jedis.zscore(ZDST, "a"));
+  }
+
+  /** XX moves only members the destination has. */
+  @Test
+  @EnabledOnCommand("ZMOVEMEMBER")
+  public void zmovememberXx() {
+    zfixture(ZSRC, "a", 5, "b", 6);
+    jedis.zadd(ZDST, 1, "a");
+    ZMoveMemberParams xx = ZMoveMemberParams.zMoveMemberParams().xx();
+    assertEquals(tuples("a", 5), jedis.zmovemember(ZSRC, ZDST, xx, "a", "b"));
+    assertEquals(Double.valueOf(6), jedis.zscore(ZSRC, "b"));
+  }
+
+  /** BZMOVE on a non-empty source moves at once, in descending order. */
+  @Test
+  @EnabledOnCommand("BZMOVE")
+  public void bzmoveNonEmptySourceAtOnce() {
+    zfixture(ZSRC, "a", 1, "b", 2);
+    BZMoveParams params = BZMoveParams.max(1).count(5);
+    assertEquals(tuples("b", 2, "a", 1), atOnce(() -> jedis.bzmove(ZSRC, ZDST, params)));
+  }
+
+  /** A 100 ms timeout on a missing source replies null. */
+  @Test
+  @EnabledOnCommand("BZMOVE")
+  public void bzmoveFractionalTimeout() {
+    assertNull(atOnce(() -> jedis.bzmove(ZSRC, ZDST, BZMoveParams.min(0.1))));
+  }
+
+  /** A sub-millisecond and a long fractional timeout reply null. */
+  @Test
+  @EnabledOnCommand("BZMOVE")
+  public void bzmoveSubMillisecondAndLongFraction() {
+    assertNull(atOnce(() -> jedis.bzmove(ZSRC, ZDST, BZMoveParams.min(0.0005))));
+    long start = System.nanoTime();
+    assertNull(assertTimeoutPreemptively(Duration.ofSeconds(5),
+        () -> jedis.bzmove(ZSRC, ZDST, BZMoveParams.min(1.000000001))));
+    assertTrue(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) >= 900);
+  }
+
+  /** An exponent-spelled bound matches; the score compares as a double. */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveExponentBound() {
+    zfixture(ZSRC, "t", 1.0E-5, "b", 2);
+    List<Tuple> moved = jedis.zmove(ZSRC, ZDST, ZMoveParams.byScore(1.0E-5, 1.0E-5));
+    assertEquals(1, moved.size());
+    assertEquals("t", moved.get(0).getElement());
+    assertEquals(1.0E-5, moved.get(0).getScore(), 0d);
+  }
+
+  /** Decimal double bounds with count 2. */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveDecimalBounds() {
+    zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
+    ZMoveParams params = ZMoveParams.byScore(1.0, 3.0).count(2);
+    assertEquals(tuples("a", 1, "b", 2), jedis.zmove(ZSRC, ZDST, params));
+  }
+
+  /** Infinite double bounds move all members in ascending order. */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveInfiniteDoubleBounds() {
+    zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
+    ZMoveParams params = ZMoveParams.byScore(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
+    assertEquals(tuples("a", 1, "b", 2, "c", 3), jedis.zmove(ZSRC, ZDST, params));
+    assertFalse(jedis.exists(ZSRC));
+  }
+
+  /** The single-member overload overwrites the score; then NX moves b. */
+  @Test
+  @EnabledOnCommand("ZMOVEMEMBER")
+  public void zmovememberSingleAndNx() {
+    zfixture(ZSRC, "a", 5, "b", 6);
+    jedis.zadd(ZDST, 1, "a");
+    assertEquals(tuples("a", 5), jedis.zmovemember(ZSRC, ZDST, "a"));
+    assertEquals(Double.valueOf(5), jedis.zscore(ZDST, "a"));
+    ZMoveMemberParams nx = ZMoveMemberParams.zMoveMemberParams().nx();
+    assertEquals(tuples("b", 6), jedis.zmovemember(ZSRC, ZDST, nx, "b"));
+  }
+
+  /** The byte[] twins move the same pairs; members come back as bytes. */
+  @Test
+  @EnabledOnCommand("ZMOVEMEMBER")
+  public void binaryTwins() {
+    zfixture(ZBSRC, "a", 1, "b", 2, "c", 3);
+    List<Tuple> moved = jedis.zmove(ZBSRC, ZBDST, ZMoveParams.min().count(2));
+    assertEquals(tuples("a", 1, "b", 2), moved);
+    assertArrayEquals(SafeEncoder.encode("a"), moved.get(0).getBinaryElement());
+
+    assertEquals(tuples("c", 3), atOnce(() -> jedis.bzmove(ZBSRC, ZBDST, BZMoveParams.max(1))));
+
+    jedis.del(ZBSRC, ZBDST);
+    zfixture(ZBSRC, "a", 1, "b", 2, "c", 3);
+    assertEquals(tuples("a", 1), jedis.zmovemember(ZBSRC, ZBDST, SafeEncoder.encode("a")));
+
+    jedis.del(ZBSRC, ZBDST);
+    zfixture(ZBSRC, "a", 1, "b", 2, "c", 3);
+    byte[][] members = { SafeEncoder.encode("c"), SafeEncoder.encode("a"),
+        SafeEncoder.encode("missing"), SafeEncoder.encode("a") };
+    List<Tuple> many = jedis.zmovemember(ZBSRC, ZBDST, members);
+    assertEquals(tuples("c", 3, "a", 1), many);
+    assertArrayEquals(SafeEncoder.encode("c"), many.get(0).getBinaryElement());
+  }
+
 }

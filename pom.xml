@@ -538,13 +538,7 @@
 						<include>src/test/java/redis/clients/jedis/params/LMoveMParamsTest.java</include>
 						<include>src/main/java/redis/clients/jedis/params/BitRangeIntArrayParams.java</include>
 						<include>src/test/java/redis/clients/jedis/params/BitRangeIntArrayParamsTest.java</include>
-						<include>src/main/java/redis/clients/jedis/params/ZMoveParams.java</include>
-						<include>src/main/java/redis/clients/jedis/params/BZMoveParams.java</include>
-						<include>src/main/java/redis/clients/jedis/params/ZMoveMemberParams.java</include>
-						<include>src/test/java/redis/clients/jedis/params/ZMoveParamsTest.java</include>
-						<include>src/test/java/redis/clients/jedis/params/BZMoveParamsTest.java</include>
-						<include>src/test/java/redis/clients/jedis/params/ZMoveMemberParamsTest.java</include>
-						<include>src/test/java/redis/clients/jedis/ZMoveCommandObjectsTest.java</include>
+						<include>**/*ZMove*.java</include>
 						<include>src/test/java/redis/clients/jedis/csc/DefaultCacheableTest.java</include>
 						<include>src/main/java/redis/clients/jedis/timeseries/TSNRangeParams.java</include>
 						<include>src/main/java/redis/clients/jedis/params/SUnionCardParams.java</include>

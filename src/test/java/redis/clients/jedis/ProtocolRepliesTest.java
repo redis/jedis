@@ -329,8 +329,8 @@ public class ProtocolRepliesTest {
     }
 
     @Test
-    void errorValueIsThrownNotReturned() {
-      assertThrows(JedisDataException.class, () -> read("%1", "+k", "-ERR boom"));
+    void errorValueIsCopied() {
+      assertCopyIsDeep(read("%1", "+k", "-ERR boom"));
     }
   }
 

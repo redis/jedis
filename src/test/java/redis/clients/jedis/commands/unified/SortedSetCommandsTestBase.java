@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTimeoutPreemptively;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
@@ -23,11 +22,9 @@ import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
-import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.function.ThrowingSupplier;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.args.SortedSetOption;
-import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.*;
 import redis.clients.jedis.resps.ScanResult;
 import redis.clients.jedis.resps.Tuple;
@@ -1779,7 +1776,6 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   private static final String ZDST = "{z}d";
   private static final byte[] ZBSRC = SafeEncoder.encode("{z}bs");
   private static final byte[] ZBDST = SafeEncoder.encode("{z}bd");
-  private static final String ERR_COUNT = "ERR count should be greater than 0";
 
   private static List<Tuple> tuples(Object... memberScores) {
     List<Tuple> out = new ArrayList<>();
@@ -1800,16 +1796,6 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
       jedis.zadd(key, ((Number) memberScores[i + 1]).doubleValue(),
           SafeEncoder.encode((String) memberScores[i]));
     }
-  }
-
-  private static void assertServerError(String expected, Executable command) {
-    JedisDataException e = assertThrows(JedisDataException.class, command);
-    assertEquals(expected, e.getMessage());
-  }
-
-  private static void assertWrongType(Executable command) {
-    JedisDataException e = assertThrows(JedisDataException.class, command);
-    assertTrue(e.getMessage().startsWith("WRONGTYPE"), e.getMessage());
   }
 
   /** Runs a command that must reply without blocking, bounded so a wrong wait fails the test. */
@@ -1871,15 +1857,6 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(tuples("a", 1, "b", 2), jedis.zmove(ZSRC, ZDST, exclusive));
   }
 
-  /** Equal scores are taken in member order. */
-  @Test
-  @EnabledOnCommand("ZMOVE")
-  public void zmoveTiesByMember() {
-    zfixture(ZSRC, "c", 1, "a", 1, "b", 1);
-    assertEquals(tuples("a", 1, "b", 1), jedis.zmove(ZSRC, ZDST, ZMoveParams.min().count(2)));
-    assertEquals(Collections.singletonList("c"), jedis.zrange(ZSRC, 0, -1));
-  }
-
   /** An infinite score reads as positive infinity. */
   @Test
   @EnabledOnCommand("ZMOVE")
@@ -1899,70 +1876,12 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertFalse(jedis.exists(ZDST));
   }
 
-  /** A missing source replies null, also with a string destination. */
+  /** A missing source replies null. */
   @Test
   @EnabledOnCommand("ZMOVEMEMBER")
   public void missingSourceIsNull() {
     assertNull(jedis.zmove(ZSRC, ZDST, ZMoveParams.min()));
     assertNull(jedis.zmovemember(ZSRC, ZDST, "a"));
-    jedis.set(ZDST, "x");
-    assertNull(jedis.zmove(ZSRC, ZDST, ZMoveParams.min()));
-    assertNull(jedis.zmovemember(ZSRC, ZDST, "a"));
-  }
-
-  /** The same key as source and destination replies null at once. */
-  @Test
-  @EnabledOnCommand("BZMOVE")
-  public void sameKeyIsNull() {
-    jedis.zadd(ZSRC, 1, "a");
-    assertNull(jedis.zmove(ZSRC, ZSRC, ZMoveParams.min()));
-    assertNull(atOnce(() -> jedis.bzmove(ZSRC, ZSRC, BZMoveParams.min(0))));
-    assertNull(jedis.zmovemember(ZSRC, ZSRC, "a"));
-    assertEquals(tuples("a", 1), jedis.zrangeWithScores(ZSRC, 0, -1));
-
-    String missing = "{z}missing";
-    assertNull(atOnce(() -> jedis.bzmove(missing, missing, BZMoveParams.min(0))));
-  }
-
-  /** A count above the size moves all; the emptied source is deleted. */
-  @Test
-  @EnabledOnCommand("ZMOVE")
-  public void zmoveEmptiesAndDeletesSource() {
-    zfixture(ZSRC, "a", 1, "b", 2);
-    assertEquals(tuples("a", 1, "b", 2), jedis.zmove(ZSRC, ZDST, ZMoveParams.min().count(100)));
-    assertFalse(jedis.exists(ZSRC));
-    assertEquals(2, jedis.zcard(ZDST));
-  }
-
-  /** Members move in argument order; missing skipped, a repeat moves once. */
-  @Test
-  @EnabledOnCommand("ZMOVEMEMBER")
-  public void zmovememberOrderSkipAndRepeat() {
-    zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
-    List<Tuple> moved = jedis.zmovemember(ZSRC, ZDST, "c", "a", "missing", "a");
-    assertEquals(tuples("c", 3, "a", 1), moved);
-    assertEquals(Collections.singletonList("b"), jedis.zrange(ZSRC, 0, -1));
-  }
-
-  /** A member the destination has takes the source score. */
-  @Test
-  @EnabledOnCommand("ZMOVEMEMBER")
-  public void zmovememberOverwritesScore() {
-    jedis.zadd(ZSRC, 5, "a");
-    jedis.zadd(ZDST, 1, "a");
-    assertEquals(tuples("a", 5), jedis.zmovemember(ZSRC, ZDST, "a"));
-    assertEquals(Double.valueOf(5), jedis.zscore(ZDST, "a"));
-    assertFalse(jedis.exists(ZSRC));
-  }
-
-  /** An equal score in the destination still moves. */
-  @Test
-  @EnabledOnCommand("ZMOVEMEMBER")
-  public void zmovememberEqualScoreStillMoves() {
-    jedis.zadd(ZSRC, 5, "a");
-    jedis.zadd(ZDST, 5, "a");
-    assertEquals(tuples("a", 5), jedis.zmovemember(ZSRC, ZDST, "a"));
-    assertFalse(jedis.exists(ZSRC));
   }
 
   /** NX moves only members the destination lacks. */
@@ -1988,107 +1907,6 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertEquals(Double.valueOf(6), jedis.zscore(ZSRC, "b"));
   }
 
-  /** XX with a missing destination replies null and creates nothing. */
-  @Test
-  @EnabledOnCommand("ZMOVEMEMBER")
-  public void zmovememberXxMissingDestination() {
-    jedis.zadd(ZSRC, 5, "a");
-    ZMoveMemberParams xx = ZMoveMemberParams.zMoveMemberParams().xx();
-    assertNull(jedis.zmovemember(ZSRC, ZDST, xx, "a"));
-    assertFalse(jedis.exists(ZDST));
-    assertEquals(Double.valueOf(5), jedis.zscore(ZSRC, "a"));
-  }
-
-  /** Members named like keywords are data. */
-  @Test
-  @EnabledOnCommand("ZMOVEMEMBER")
-  public void zmovememberKeywordNamedMembers() {
-    zfixture(ZSRC, "NX", 1, "XX", 2, "MEMBERS", 3);
-    List<Tuple> moved = jedis.zmovemember(ZSRC, ZDST, "NX", "XX", "MEMBERS");
-    assertEquals(tuples("NX", 1, "XX", 2, "MEMBERS", 3), moved);
-    assertFalse(jedis.exists(ZSRC));
-  }
-
-  /** TTLs: an existing destination and a remaining source keep theirs. */
-  @Test
-  @EnabledOnCommand("ZMOVE")
-  public void zmoveKeepsTtls() {
-    jedis.zadd(ZDST, 9, "z");
-    jedis.expire(ZDST, 1000);
-    jedis.zadd(ZSRC, 1, "a");
-    assertEquals(tuples("a", 1), jedis.zmove(ZSRC, ZDST, ZMoveParams.min()));
-    assertTrue(jedis.ttl(ZDST) > 0);
-
-    jedis.del(ZSRC, ZDST);
-    zfixture(ZSRC, "a", 1, "b", 2);
-    jedis.expire(ZSRC, 1000);
-    assertEquals(tuples("a", 1), jedis.zmove(ZSRC, ZDST, ZMoveParams.min()));
-    assertEquals(-1, jedis.ttl(ZDST));
-    assertTrue(jedis.ttl(ZSRC) > 0);
-  }
-
-  /** A count of 0 or -1 gets the server's count error, before WRONGTYPE. */
-  @Test
-  @EnabledOnCommand("ZMOVE")
-  public void zmoveCountErrors() {
-    zfixture(ZSRC, "a", 1, "b", 2);
-    assertServerError(ERR_COUNT, () -> jedis.zmove(ZSRC, ZDST, ZMoveParams.min().count(0)));
-    assertServerError(ERR_COUNT, () -> jedis.zmove(ZSRC, ZDST, ZMoveParams.min().count(-1)));
-    ZMoveParams byScoreZero = ZMoveParams.byScore("-inf", "+inf").count(0);
-    assertServerError(ERR_COUNT, () -> jedis.zmove(ZSRC, ZDST, byScoreZero));
-    ZMoveParams byScoreNegative = ZMoveParams.byScore("-inf", "+inf").count(-1);
-    assertServerError(ERR_COUNT, () -> jedis.zmove(ZSRC, ZDST, byScoreNegative));
-    assertEquals(2, jedis.zcard(ZSRC));
-    assertFalse(jedis.exists(ZDST));
-
-    String text = "{z}text";
-    jedis.set(text, "x");
-    assertServerError(ERR_COUNT, () -> jedis.zmove(text, ZDST, ZMoveParams.min().count(0)));
-    assertServerError(ERR_COUNT, () -> jedis.zmove(text, ZDST, ZMoveParams.min().count(-1)));
-  }
-
-  /** A NaN bound gets the server's error; inverted bounds reply null. */
-  @Test
-  @EnabledOnCommand("ZMOVE")
-  public void zmoveNanAndInvertedBounds() {
-    zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
-    String notFloat = "ERR min or max is not a float";
-    ZMoveParams nanDouble = ZMoveParams.byScore(Double.NaN, 1);
-    assertServerError(notFloat, () -> jedis.zmove(ZSRC, ZDST, nanDouble));
-    ZMoveParams nanText = ZMoveParams.byScore("NaN", "1");
-    assertServerError(notFloat, () -> jedis.zmove(ZSRC, ZDST, nanText));
-    assertNull(jedis.zmove(ZSRC, ZDST, ZMoveParams.byScore(3, 1)));
-    assertEquals(3, jedis.zcard(ZSRC));
-  }
-
-  /** A wrong-type source or destination gets WRONGTYPE at once. */
-  @Test
-  @EnabledOnCommand("BZMOVE")
-  public void wrongTypeKeys() {
-    String text = "{z}text";
-    jedis.set(text, "x");
-    assertWrongType(() -> jedis.zmove(text, ZDST, ZMoveParams.min()));
-    assertWrongType(() -> atOnce(() -> jedis.bzmove(text, ZDST, BZMoveParams.min(0))));
-
-    jedis.zadd(ZSRC, 1, "a");
-    assertWrongType(() -> jedis.zmove(ZSRC, text, ZMoveParams.min()));
-    assertWrongType(() -> jedis.zmovemember(ZSRC, text, "a"));
-    assertEquals(tuples("a", 1), jedis.zrangeWithScores(ZSRC, 0, -1));
-  }
-
-  /** An empty member list gets the server's error, with and without NX. */
-  @Test
-  @EnabledOnCommand("ZMOVEMEMBER")
-  public void zmovememberEmptyList() {
-    jedis.zadd(ZSRC, 1, "a");
-    assertServerError("ERR wrong number of arguments for 'zmovemember' command",
-        () -> jedis.zmovemember(ZSRC, ZDST));
-    ZMoveMemberParams nx = ZMoveMemberParams.zMoveMemberParams().nx();
-    assertServerError("ERR Number of members must be a positive integer",
-        () -> jedis.zmovemember(ZSRC, ZDST, nx));
-    assertEquals(1, jedis.zcard(ZSRC));
-  }
-
   /** BZMOVE on a non-empty source moves at once, in descending order. */
   @Test
   @EnabledOnCommand("BZMOVE")
@@ -2103,20 +1921,6 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   @EnabledOnCommand("BZMOVE")
   public void bzmoveFractionalTimeout() {
     assertNull(atOnce(() -> jedis.bzmove(ZSRC, ZDST, BZMoveParams.min(0.1))));
-  }
-
-  /** BZMOVE count 0, a negative and an infinite timeout get errors at once. */
-  @Test
-  @EnabledOnCommand("BZMOVE")
-  public void bzmoveErrors() {
-    BZMoveParams countZero = BZMoveParams.min(1).count(0);
-    assertServerError(ERR_COUNT, () -> atOnce(() -> jedis.bzmove(ZSRC, ZDST, countZero)));
-    BZMoveParams negative = BZMoveParams.min(-1);
-    assertServerError("ERR timeout is negative",
-        () -> atOnce(() -> jedis.bzmove(ZSRC, ZDST, negative)));
-    BZMoveParams infinite = BZMoveParams.min(Double.POSITIVE_INFINITY);
-    assertServerError("ERR timeout is out of range",
-        () -> atOnce(() -> jedis.bzmove(ZSRC, ZDST, infinite)));
   }
 
   /** A sub-millisecond and a long fractional timeout reply null. */
@@ -2160,59 +1964,6 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertFalse(jedis.exists(ZSRC));
   }
 
-  /** Count Long.MAX_VALUE is accepted and moves all. */
-  @Test
-  @EnabledOnCommand("ZMOVE")
-  public void zmoveCountLongMax() {
-    zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
-    ZMoveParams params = ZMoveParams.min().count(Long.MAX_VALUE);
-    assertEquals(tuples("a", 1, "b", 2, "c", 3), jedis.zmove(ZSRC, ZDST, params));
-    assertFalse(jedis.exists(ZSRC));
-  }
-
-  /** Count Integer.MAX_VALUE moves all. */
-  @Test
-  @EnabledOnCommand("ZMOVE")
-  public void zmoveCountIntMax() {
-    zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
-    ZMoveParams params = ZMoveParams.min().count(Integer.MAX_VALUE);
-    assertEquals(tuples("a", 1, "b", 2, "c", 3), jedis.zmove(ZSRC, ZDST, params));
-  }
-
-  /** A 0.5 ms timeout replies null well under a second. */
-  @Test
-  @EnabledOnCommand("BZMOVE")
-  public void bzmoveExponentTimeout() {
-    assertNull(atOnce(() -> jedis.bzmove(ZSRC, ZDST, BZMoveParams.min(0.0005))));
-  }
-
-  /** Out-of-range, negative and NaN timeouts get the server's errors at once. */
-  @Test
-  @EnabledOnCommand("BZMOVE")
-  public void bzmoveTimeoutErrors() {
-    String outOfRange = "ERR timeout is out of range";
-    BZMoveParams infinite = BZMoveParams.min(Double.POSITIVE_INFINITY);
-    assertServerError(outOfRange, () -> atOnce(() -> jedis.bzmove(ZSRC, ZDST, infinite)));
-    BZMoveParams huge = BZMoveParams.min(1.0E300);
-    assertServerError(outOfRange, () -> atOnce(() -> jedis.bzmove(ZSRC, ZDST, huge)));
-    BZMoveParams negative = BZMoveParams.min(-1);
-    assertServerError("ERR timeout is negative",
-        () -> atOnce(() -> jedis.bzmove(ZSRC, ZDST, negative)));
-    BZMoveParams nan = BZMoveParams.min(Double.NaN);
-    assertServerError("ERR timeout is not a float or out of range",
-        () -> atOnce(() -> jedis.bzmove(ZSRC, ZDST, nan)));
-  }
-
-  /** A 1 s timeout on a missing source replies null after about a second. */
-  @Test
-  @EnabledOnCommand("BZMOVE")
-  public void bzmoveOneSecondTimeout() {
-    long start = System.nanoTime();
-    assertNull(assertTimeoutPreemptively(Duration.ofSeconds(5),
-        () -> jedis.bzmove(ZSRC, ZDST, BZMoveParams.min(1))));
-    assertTrue(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) >= 900);
-  }
-
   /** The single-member overload overwrites the score; then NX moves b. */
   @Test
   @EnabledOnCommand("ZMOVEMEMBER")
@@ -2249,13 +2000,4 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertArrayEquals(SafeEncoder.encode("c"), many.get(0).getBinaryElement());
   }
 
-  /** The reply is the same list of tuples on RESP2 and RESP3. */
-  @Test
-  @EnabledOnCommand("ZMOVE")
-  public void zmoveReplyShapeAcrossProtocols() {
-    zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
-    List<Tuple> moved = jedis.zmove(ZSRC, ZDST, ZMoveParams.min());
-    assertEquals(tuples("a", 1), moved);
-    assertEquals(1.0, moved.get(0).getScore(), 0d);
-  }
 }

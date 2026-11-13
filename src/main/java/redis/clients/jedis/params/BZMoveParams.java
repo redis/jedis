@@ -29,7 +29,9 @@ public class BZMoveParams implements IParams {
 
   /**
    * Take the members with the lowest scores.
-   * @param timeout the longest time to block, in seconds; zero blocks indefinitely
+   * @param timeout the longest time to wait, in seconds, a fraction allowed; {@code 0} waits
+   *          without limit. The server rejects an infinite, NaN or negative timeout, so
+   *          {@link Double#POSITIVE_INFINITY} is not a way to wait without limit.
    * @return BZMoveParams
    */
   public static BZMoveParams min(double timeout) {
@@ -38,7 +40,9 @@ public class BZMoveParams implements IParams {
 
   /**
    * Take the members with the highest scores.
-   * @param timeout the longest time to block, in seconds; zero blocks indefinitely
+   * @param timeout the longest time to wait, in seconds, a fraction allowed; {@code 0} waits
+   *          without limit. The server rejects an infinite, NaN or negative timeout, so
+   *          {@link Double#POSITIVE_INFINITY} is not a way to wait without limit.
    * @return BZMoveParams
    */
   public static BZMoveParams max(double timeout) {

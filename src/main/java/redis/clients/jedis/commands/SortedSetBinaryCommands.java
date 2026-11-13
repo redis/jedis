@@ -328,6 +328,7 @@ public interface SortedSetBinaryCommands {
 
   /**
    * Binary variant of {@link SortedSetCommands#zmovemember(String, String, String...)}.
+   * An empty array is sent as is and the server rejects it.
    * @see SortedSetCommands#zmovemember(String, String, String...)
    * @since 8.1
    */
@@ -342,6 +343,7 @@ public interface SortedSetBinaryCommands {
 
   /**
    * Binary variant of {@link SortedSetCommands#zmovemember(String, String, ZMoveMemberParams, String...)}.
+   * An empty array is sent as is and the server rejects it.
    * @see SortedSetCommands#zmovemember(String, String, ZMoveMemberParams, String...)
    * @since 8.1
    */

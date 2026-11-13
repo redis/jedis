@@ -909,8 +909,10 @@ public interface SortedSetCommands {
    * The blocking variant of {@link #zmove(String, String, ZMoveParams)} for the lowest or highest
    * members. When the source is empty, the command waits until a member is added to it or the
    * timeout in {@code params} passes, except inside a transaction, where it replies at once; once
-   * the source has members, it moves up to the count without waiting for more. A timeout of zero
-   * waits without limit. When the source and destination are the same key, it replies at once.
+   * the source has members, it moves up to the count without waiting for more. The timeout is in
+   * seconds and may have a fraction; {@code 0} waits without limit, and the server rejects an
+   * infinite, NaN or negative timeout. When the source and destination are the same key, it
+   * replies at once.
    * Both keys must hash to the same slot in a cluster.
    * <p>
    * Time complexity: O(M*log(N)) where M is the number of members moved
@@ -949,7 +951,7 @@ public interface SortedSetCommands {
    * Time complexity: O(M*log(N)) where M is the number of members given
    * @param srcKey the source sorted set
    * @param dstKey the destination sorted set
-   * @param members the members to move
+   * @param members the members to move; an empty array is sent as is and the server rejects it
    * @return the moved members with their scores, in argument order, or {@code null} if nothing
    *         moved
    * @since 8.1
@@ -987,7 +989,7 @@ public interface SortedSetCommands {
    * @param srcKey the source sorted set
    * @param dstKey the destination sorted set
    * @param params the destination condition
-   * @param members the members to move
+   * @param members the members to move; an empty array is sent as is and the server rejects it
    * @return the moved members with their scores, in argument order, or {@code null} if nothing
    *         moved
    * @since 8.1

@@ -17,9 +17,16 @@ public class ZMoveMemberParams implements IParams {
 
   private Keyword existence;
 
+  /**
+   * Creates params with no destination condition.
+   */
   public ZMoveMemberParams() {
   }
 
+  /**
+   * Creates params with no destination condition; add one with {@link #nx()} or {@link #xx()}.
+   * @return ZMoveMemberParams
+   */
   public static ZMoveMemberParams zMoveMemberParams() {
     return new ZMoveMemberParams();
   }

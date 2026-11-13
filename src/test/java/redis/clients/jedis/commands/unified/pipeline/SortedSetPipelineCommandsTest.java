@@ -15,12 +15,14 @@ import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.redis.test.annotations.ConditionalOnEnv;
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
@@ -29,9 +31,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.SortedSetOption;
+import redis.clients.jedis.params.BZMoveParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.ZMoveParams;
 import redis.clients.jedis.params.ZParams;
 import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.ScanResult;
@@ -1905,5 +1909,45 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
     ));
 
     assertThat(nullRange.get(), nullValue());
+  }
+
+  /**
+   * Scenario ZMOV-T01: moves in a pipeline; a null response does not fail the pipeline.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveCommandsInPipeline() {
+    pipe.zadd("{z}s", 1, "a");
+    pipe.zadd("{z}s", 2, "b");
+    pipe.zadd("{z}s", 3, "c");
+    Response<List<Tuple>> minCount = pipe.zmove("{z}s", "{z}d", ZMoveParams.min().count(2));
+    Response<List<Tuple>> missing = pipe.zmove("{z}m1", "{z}m2", ZMoveParams.min());
+    Response<List<Tuple>> member = pipe.zmovemember("{z}s", "{z}d", "c");
+    Response<List<Tuple>> blocking = pipe.bzmove("{z}e", "{z}d", BZMoveParams.max(1));
+    pipe.sync();
+
+    assertEquals(Arrays.asList(new Tuple("a", 1d), new Tuple("b", 2d)), minCount.get());
+    assertThat(missing.get(), nullValue());
+    assertEquals(Collections.singletonList(new Tuple("c", 3d)), member.get());
+    assertThat(blocking.get(), nullValue());
+  }
+
+  /**
+   * Scenario ZMOV-T02: the byte[] twins of the pipelined zmove and zmovemember.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveCommandsInPipelineBinary() {
+    byte[] src = SafeEncoder.encode("{z}bs");
+    byte[] dst = SafeEncoder.encode("{z}bd");
+    pipe.zadd(src, 1, SafeEncoder.encode("a"));
+    pipe.zadd(src, 2, SafeEncoder.encode("b"));
+    pipe.zadd(src, 3, SafeEncoder.encode("c"));
+    Response<List<Tuple>> minCount = pipe.zmove(src, dst, ZMoveParams.min().count(2));
+    Response<List<Tuple>> member = pipe.zmovemember(src, dst, SafeEncoder.encode("c"));
+    pipe.sync();
+
+    assertEquals(Arrays.asList(new Tuple("a", 1d), new Tuple("b", 2d)), minCount.get());
+    assertEquals(Collections.singletonList(new Tuple("c", 3d)), member.get());
   }
 }

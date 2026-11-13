@@ -12,6 +12,7 @@ import static redis.clients.jedis.util.AssertUtil.assertByteArrayListEquals;
 
 import java.util.*;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Test;
@@ -1728,5 +1729,55 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     assertEquals(new Tuple("b", 10d), single.getValue().get(0));
     assertEquals(2, range.getValue().size());
     assertNull(jedis.bzmpop(0.1, SortedSetOption.MAX, "foo"));
+  }
+
+  /**
+   * Scenario ZMOV-L01: legacy Jedis zmove moves MIN with count 2; a missing source is null.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveLegacy() {
+    jedis.zadd("{z}s", 1, "a");
+    jedis.zadd("{z}s", 2, "b");
+    jedis.zadd("{z}s", 3, "c");
+    assertEquals(Arrays.asList(new Tuple("a", 1d), new Tuple("b", 2d)),
+        jedis.zmove("{z}s", "{z}d", ZMoveParams.min().count(2)));
+    assertNull(jedis.zmove("{z}m1", "{z}m2", ZMoveParams.min()));
+  }
+
+  /**
+   * Scenario ZMOV-L02: legacy Jedis bzmove times out to null; XX with a missing destination is null.
+   */
+  @Test
+  @EnabledOnCommand("BZMOVE")
+  public void bzmoveAndZmovememberLegacy() {
+    assertNull(jedis.bzmove("{z}m1", "{z}m2", BZMoveParams.min(0.1)));
+    jedis.zadd("{z}s", 5, "a");
+    assertNull(jedis.zmovemember("{z}s", "{z}d", ZMoveMemberParams.zMoveMemberParams().xx(), "a"));
+  }
+
+  /**
+   * Scenario ZMOV-L03: the byte[] twins of the legacy zmove, bzmove and zmovemember.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVEMEMBER")
+  public void zmoveCommandsLegacyBinary() {
+    byte[] src = SafeEncoder.encode("{z}bs");
+    byte[] dst = SafeEncoder.encode("{z}bd");
+    byte[] m1 = SafeEncoder.encode("{z}m1");
+    byte[] m2 = SafeEncoder.encode("{z}m2");
+    jedis.zadd(src, 1, SafeEncoder.encode("a"));
+    jedis.zadd(src, 2, SafeEncoder.encode("b"));
+    jedis.zadd(src, 3, SafeEncoder.encode("c"));
+    assertEquals(Arrays.asList(new Tuple("a", 1d), new Tuple("b", 2d)),
+        jedis.zmove(src, dst, ZMoveParams.min().count(2)));
+    assertNull(jedis.zmove(m1, m2, ZMoveParams.min()));
+
+    assertNull(jedis.bzmove(m1, m2, BZMoveParams.min(0.1)));
+    byte[] xsrc = SafeEncoder.encode("{z}xs");
+    byte[] xdst = SafeEncoder.encode("{z}xd");
+    jedis.zadd(xsrc, 5, SafeEncoder.encode("a"));
+    ZMoveMemberParams xx = ZMoveMemberParams.zMoveMemberParams().xx();
+    assertNull(jedis.zmovemember(xsrc, xdst, xx, SafeEncoder.encode("a")));
   }
 }

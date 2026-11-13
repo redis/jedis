@@ -173,11 +173,8 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
 
     // Create cache from config if provided
     if (this.cacheConfig != null) {
-      if (cacheFactory != null) {
-        this.cache = cacheFactory.getNewCache(this.cacheConfig);
-      } else {
-        this.cache = CacheFactory.getCache(this.cacheConfig);
-      }
+      this.cache = (cacheFactory != null ? cacheFactory : new CacheFactory())
+          .createCache(this.cacheConfig);
     }
 
     if (this.clientConfig == null) {

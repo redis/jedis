@@ -19,7 +19,7 @@ public class CacheFactory {
      * @return a new cache instance
      * @since 8.1
      */
-    public Cache getNewCache(CacheConfig config) {
+    public Cache createCache(CacheConfig config) {
         if (config.getCacheClass() == null) {
             if (config.getCacheable() == null) {
                 throw new JedisCacheException("Cacheable is required to create the default cache!");
@@ -29,10 +29,16 @@ public class CacheFactory {
         return instantiateCustomCache(config);
     }
 
+    @Deprecated 
     public static Cache getCache(CacheConfig config) {
-        return new CacheFactory().getNewCache(config);
+        return new CacheFactory().createCache(config);
     }
 
+    /**
+     * All this custom type and instantiation logic is deprecated 
+     * CacheFactory will be used with client builders when customization of cache instances is needed.
+     */
+    @Deprecated 
     private static Cache instantiateCustomCache(CacheConfig config) {
         try {
             if (config.getCacheable() != null) {

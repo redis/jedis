@@ -209,6 +209,13 @@ public class ClusterCommandExecutor implements CommandExecutor {
     }
   }
 
+  /**
+   * Executes a command on a replica of the shard owning the command's key.
+   * @param commandObject the command to execute; must carry a key, since a keyless command has no
+   *     shard whose replica it could run on
+   * @return the command result
+   * @throws JedisClusterOperationException if the command has no keys
+   */
   public final <T> T executeCommandToReplica(CommandObject<T> commandObject) {
     return doExecuteCommand(commandObject, replicaOnlyConnectionResolver, true);
   }

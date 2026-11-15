@@ -146,6 +146,10 @@ public class ClusterConnectionProvider implements ConnectionProvider {
       throw new JedisClusterOperationException("Cannot get connection for command with multiple hash slots");
     }
 
+    if (slots.isEmpty()) {
+      throw new JedisClusterOperationException("Cannot get connection for command without keys");
+    }
+
     int slot = slots.iterator().next();
     return slot >= 0 ? getConnectionFromSlot(slot) : getConnection();
   }
@@ -155,6 +159,10 @@ public class ClusterConnectionProvider implements ConnectionProvider {
 
     if (slots.size() > 1) {
       throw new JedisClusterOperationException("Cannot get connection for command with multiple hash slots");
+    }
+
+    if (slots.isEmpty()) {
+      throw new JedisClusterOperationException("Cannot get replica connection for command without keys");
     }
 
     int slot = slots.iterator().next();

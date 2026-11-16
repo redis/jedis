@@ -15,8 +15,6 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-import redis.clients.jedis.MetadataReader;
-
 public class MetadataReaderTest {
 
   /** The repository CommandMetadata.json parses into the normalized metadata shape. */

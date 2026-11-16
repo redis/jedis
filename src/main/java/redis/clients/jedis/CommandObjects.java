@@ -66,15 +66,19 @@ public class CommandObjects {
    * Creates the arguments of a container command with its subcommand declared, for example
    * {@code XINFO STREAM}. The subcommand is sent right after the command, and command metadata
    * consumers such as client-side caching judge the command by its {@code PARENT|CHILD} metadata.
+   * The arguments come from {@link #commandArguments(ProtocolCommand)}, so a subclass overriding
+   * that method customizes container commands as well. That method must return arguments holding
+   * only the command, because the subcommand has to follow it directly.
    * @param command the container command
    * @param subcommand the subcommand
    * @return the command arguments, starting with the command and the subcommand
+   * @throws IllegalStateException if {@link #commandArguments(ProtocolCommand)} returned arguments
+   *           that already hold more than the command
    * @since 8.1
    */
   protected CommandArguments commandArguments(ProtocolCommand command, Keyword subcommand) {
-    CommandArguments comArgs = new CommandArguments(command, subcommand);
-    if (keyPreProcessor != null) comArgs.setKeyArgumentPreProcessor(keyPreProcessor);
-    return comArgs;
+    CommandArguments comArgs = commandArguments(command);
+    return subcommand == null ? comArgs : comArgs.declareSubcommand(subcommand);
   }
 
   protected CommandArguments commandArguments(ProtocolCommand command) {

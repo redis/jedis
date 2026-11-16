@@ -2,6 +2,7 @@ package redis.clients.jedis.csc;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -9,6 +10,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 
 import org.junit.jupiter.api.Test;
 
@@ -17,9 +20,10 @@ import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.CommandMetadata;
 import redis.clients.jedis.CommandMetadataResolver;
 import redis.clients.jedis.CommandMetadataResolverFactory;
-import redis.clients.jedis.CommandMetadataResolverFactoryTest;
 import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.CommandObjects;
 import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -262,6 +266,46 @@ public class CacheabilityResolverTest {
     assertFalse(cacheable.isCacheable(Command.GET, Collections.emptyList()));
     // other commands keep their metadata verdict
     assertTrue(cacheable.isCacheable(Command.MGET, Collections.emptyList()));
+  }
+
+  /**
+   * Guards the container subcommands the bundled metadata makes cacheable. A subcommand is judged
+   * by its own metadata only when its command builder declares it, with
+   * {@code commandArguments(PARENT, CHILD)}; built as {@code commandArguments(PARENT).add(CHILD)}
+   * it keeps the parent verdict and is silently never cached.
+   * <p>
+   * When regenerated metadata makes another subcommand eligible, this test fails: build that
+   * command with the two-argument factory in {@code CommandObjects}, then add it to the map below.
+   */
+  @Test
+  public void everyCacheableSubcommandIsDeclaredByItsCommandBuilder() {
+    CommandObjects objects = new CommandObjects(RedisProtocol.RESP3);
+    Map<String, CommandObject<?>> declaredBuilders = new TreeMap<>();
+    declaredBuilders.put("MEMORY|USAGE", objects.memoryUsage("k"));
+    declaredBuilders.put("XINFO|GROUPS", objects.xinfoGroups("k"));
+    declaredBuilders.put("XINFO|STREAM", objects.xinfoStream("k"));
+
+    CommandMetadataResolver metadataResolver = CommandMetadataResolverFactory.defaultResolver();
+    Set<String> cacheableSubcommands = new TreeSet<>();
+    for (CommandMetadata metadata : metadataResolver.allCommandMetadata()) {
+      if (metadata.getName().indexOf('|') > 0
+          && CacheabilityResolver.isClientSideCacheable(metadata)) {
+        cacheableSubcommands.add(metadata.getName());
+      }
+    }
+    assertEquals(declaredBuilders.keySet(), cacheableSubcommands,
+      "the cacheable subcommands in the metadata changed; declare each new one with"
+          + " commandArguments(PARENT, CHILD) in CommandObjects and list its builder here");
+
+    // each listed builder really declares its subcommand, so the command is cached as listed
+    CacheabilityResolver resolver = new CacheabilityResolver(metadataResolver);
+    for (Map.Entry<String, CommandObject<?>> entry : declaredBuilders.entrySet()) {
+      CommandArguments arguments = entry.getValue().getArguments();
+      assertNotNull(arguments.getSubcommand(), entry.getKey() + " does not declare a subcommand");
+      assertEquals(entry.getKey(), SafeEncoder.encode(arguments.getCommand().getRaw()) + "|"
+          + SafeEncoder.encode(arguments.getSubcommand().getRaw()));
+      assertTrue(resolver.isCacheable(entry.getValue()), entry.getKey() + " is not cacheable");
+    }
   }
 
   /**

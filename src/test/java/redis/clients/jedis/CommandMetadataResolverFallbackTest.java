@@ -1,6 +1,7 @@
 package redis.clients.jedis;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -76,15 +77,14 @@ public class CommandMetadataResolverFallbackTest {
     Collection<CommandMetadata> all = chained.allCommandMetadata();
     assertEquals(new HashSet<>(Arrays.asList("GET", "HGET")), names(all));
     assertEquals(2, all.size());
-    assertSame(primaryGet,
-      all.stream().filter(m -> m.getName().equals("GET")).findFirst().get());
+    assertSame(primaryGet, all.stream().filter(m -> m.getName().equals("GET")).findFirst().get());
   }
 
   @Test
   public void containerKnownToThePrimaryOwnsItsSubcommands() {
-    CommandMetadataResolver chained = resolver(metadata("XINFO", "readonly")).withFallback(
-      resolver(metadata("XINFO", "readonly"), metadata("XINFO|STREAM", "readonly"),
-        metadata("MEMORY", "readonly"), metadata("MEMORY|USAGE", "readonly")));
+    CommandMetadataResolver chained = resolver(metadata("XINFO", "readonly"))
+        .withFallback(resolver(metadata("XINFO", "readonly"), metadata("XINFO|STREAM", "readonly"),
+          metadata("MEMORY", "readonly"), metadata("MEMORY|USAGE", "readonly")));
 
     assertNull(chained.resolve("XINFO|STREAM"));
     assertEquals("MEMORY|USAGE", chained.resolve("MEMORY|USAGE").getName());
@@ -107,5 +107,20 @@ public class CommandMetadataResolverFallbackTest {
   public void nullFallbackIsRejected() {
     assertThrows(IllegalArgumentException.class,
       () -> resolver(metadata("GET", "readonly")).withFallback(null));
+  }
+
+  @Test
+  public void namesAreMatchedIgnoringCaseBeforeTheFallbackIsAsked() {
+    CommandMetadata primaryGet = CommandMetadata.builder("GET").flags("write").build();
+    CommandMetadata fallbackGet = CommandMetadata.builder("GET").flags("readonly").build();
+    CommandMetadataResolver resolver = CommandMetadataResolverFactory.of(primaryGet)
+        .withFallback(CommandMetadataResolverFactory.of(fallbackGet));
+
+    // a differently cased name is found in the first resolver, not handed to the fallback
+    assertSame(primaryGet, resolver.resolve("get"));
+    assertSame(primaryGet, resolver.resolve("Get"));
+    assertNotNull(CommandMetadataResolverFactory.defaultResolver().resolve("get"));
+    assertNotNull(CommandMetadataResolverFactory.defaultResolver().resolve("memory|usage"));
+    assertNull(resolver.resolve("nosuchcommand"));
   }
 }

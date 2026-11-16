@@ -23,6 +23,7 @@ import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.exceptions.JedisCacheException;
+import redis.clients.jedis.util.SafeEncoder;
 
 public class CacheFactoryMetadataResolverTest {
 
@@ -71,8 +72,8 @@ public class CacheFactoryMetadataResolverTest {
 
   @Test
   public void excludedCommandsStillNarrowTheResolverVerdicts() throws IOException {
-    CacheConfig config = CacheConfig.builder()
-        .excludeCommands(Collections.singleton(Command.MGET)).build();
+    CacheConfig config = CacheConfig.builder().excludeCommands(Collections.singleton(Command.MGET))
+        .build();
     Cache cache = new CacheFactory().createCache(config, customResolver());
 
     assertFalse(cache.isCacheable(cacheKey(Command.MGET))); // cacheable by metadata, excluded
@@ -109,7 +110,8 @@ public class CacheFactoryMetadataResolverTest {
         .keyPositions(1, 1, 1).build();
     CommandMetadata readWithKey = CommandMetadata.builder("GET").flags("readonly")
         .keyPositions(1, 1, 1).build();
-    Cache cache = new CacheFactory().createCache(CacheConfig.builder().build(), CommandMetadataResolverFactory.of(writeWithKey, readWithKey));
+    Cache cache = new CacheFactory().createCache(CacheConfig.builder().build(),
+      CommandMetadataResolverFactory.of(writeWithKey, readWithKey));
 
     assertFalse(cache.isCacheable(cacheKey(Command.SET)));
     assertTrue(cache.isCacheable(cacheKey(Command.GET)));
@@ -158,13 +160,15 @@ public class CacheFactoryMetadataResolverTest {
   @Test
   public void nullResolverIsRejected() {
     CacheConfig config = CacheConfig.builder().build();
-    assertThrows(IllegalArgumentException.class, () -> new CacheFactory().createCache(config, null));
+    assertThrows(IllegalArgumentException.class,
+      () -> new CacheFactory().createCache(config, null));
   }
 
   @Test
   public void rawConfigWithoutBuilderIsRejected() throws IOException {
     CommandMetadataResolver resolver = customResolver();
-    assertThrows(JedisCacheException.class, () -> new CacheFactory().createCache(new CacheConfig(), resolver));
+    assertThrows(JedisCacheException.class,
+      () -> new CacheFactory().createCache(new CacheConfig(), resolver));
   }
 
   private static CacheKey<String> cacheKey(ProtocolCommand command, String key) {
@@ -200,8 +204,7 @@ public class CacheFactoryMetadataResolverTest {
   @Test
   public void narrowingCacheableIsKeptForAClientLevelResolverAndCombinesWithExcludedCommands()
       throws IOException {
-    CacheConfig config = CacheConfig.builder()
-        .excludeCommands(Collections.singleton(Command.HGET))
+    CacheConfig config = CacheConfig.builder().excludeCommands(Collections.singleton(Command.HGET))
         .excludeCommands((command, keys) -> !keys.contains("session:1")).build();
     Cache cache = new CacheFactory().createCache(config,
       customResolver().withFallback(CommandMetadataResolverFactory.defaultResolver()));
@@ -215,5 +218,44 @@ public class CacheFactoryMetadataResolverTest {
   public void narrowingCacheableCannotBeCombinedWithACustomCacheable() {
     assertThrows(IllegalArgumentException.class, () -> CacheConfig.builder()
         .cacheable((command, keys) -> true).excludeCommands((command, keys) -> true).build());
+  }
+
+  private static ProtocolCommand userCommand(String name) {
+    byte[] raw = SafeEncoder.encode(name);
+    return () -> raw;
+  }
+
+  /** A command Jedis has no enum for is judged by the metadata supplied for it. */
+  @Test
+  public void overrideRecordMakesACommandWithoutAJedisEnumCacheable() {
+    CommandMetadata read = CommandMetadata.builder("MYMODULE.READ").flags("readonly")
+        .keyPositions(1, 1, 1).build();
+    CommandMetadata write = CommandMetadata.builder("MYMODULE.WRITE").flags("write")
+        .keyPositions(1, 1, 1).build();
+    CommandMetadataResolver defaults = CommandMetadataResolverFactory.defaultResolver();
+    Cache cache = new CacheFactory().createCache(CacheConfig.builder().build(),
+      CommandMetadataResolverFactory.of(read, write).withFallback(defaults));
+
+    assertTrue(cache.isCacheable(cacheKey(userCommand("MYMODULE.READ"))));
+    assertTrue(cache.isCacheable(cacheKey(userCommand("mymodule.read")))); // by normalized name
+    assertFalse(cache.isCacheable(cacheKey(userCommand("MYMODULE.WRITE")))); // rules still apply
+    assertFalse(cache.isCacheable(cacheKey(userCommand("MYMODULE.OTHER")))); // no metadata
+    // the same command supplied through the fallback
+    Cache viaFallback = new CacheFactory().createCache(CacheConfig.builder().build(),
+      defaults.withFallback(CommandMetadataResolverFactory.of(read)));
+    assertTrue(viaFallback.isCacheable(cacheKey(userCommand("MYMODULE.READ"))));
+  }
+
+  /** A user-defined command object is judged by its name, exclusions included. */
+  @Test
+  public void userDefinedCommandObjectIsJudgedByItsName() {
+    CommandMetadataResolver defaults = CommandMetadataResolverFactory.defaultResolver();
+    Cache cache = new CacheFactory().createCache(CacheConfig.builder().build(), defaults);
+    assertTrue(cache.isCacheable(cacheKey(userCommand("GET"))));
+    assertFalse(cache.isCacheable(cacheKey(userCommand("SET"))));
+
+    Cache excluding = new CacheFactory().createCache(
+      CacheConfig.builder().excludeCommands(Collections.singleton(Command.GET)).build(), defaults);
+    assertFalse(excluding.isCacheable(cacheKey(userCommand("GET"))));
   }
 }

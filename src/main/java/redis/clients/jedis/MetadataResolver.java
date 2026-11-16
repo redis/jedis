@@ -6,6 +6,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -132,7 +133,20 @@ final class MetadataResolver implements CommandMetadataResolver {
    */
   @Override
   public CommandMetadata resolve(String commandName) {
-    return commandTable().get(commandName);
+    return lookupIgnoreCase(commandTable(), commandName);
+  }
+
+  // Names are stored upper-case. The name is tried as given first, so the common case costs one
+  // lookup; only a miss pays for the upper-case conversion.
+  static CommandMetadata lookupIgnoreCase(Map<String, CommandMetadata> table, String commandName) {
+    CommandMetadata metadata = table.get(commandName);
+    if (metadata == null && commandName != null) {
+      String upperCased = commandName.toUpperCase(Locale.ENGLISH);
+      if (!upperCased.equals(commandName)) {
+        metadata = table.get(upperCased);
+      }
+    }
+    return metadata;
   }
 
   @Override

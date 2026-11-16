@@ -670,10 +670,11 @@
 						<include>**/CacheabilityResolverTest.java</include>
 						<include>**/CustomCacheablePolicyTest.java</include>
 						<include>**/DefaultCacheableTest.java</include>
-						<include>**/CommandMetadataTestFactory.java</include>
-						<include>**/CommandMetadataUtil.java</include>
 						<include>**/MetadataReaderTest.java</include>
 						<include>**/MetadataResolverTest.java</include>						
+						<include>**/*CommandMetadata*.java</include>
+						<include>**/ProtocolCommands.java</include>
+						<include>**/CacheFactory*.java</include>
 						<include>**/Rebind*.java</include>
 						<include>**/TimeoutOptions.java</include>
 						<include>**/*Handler.java</include>

@@ -32,9 +32,10 @@ import redis.clients.jedis.util.SafeEncoder;
  * Verdicts come from the metadata supplied by the {@link CommandMetadataResolver} (which itself
  * applies the known server metadata fixes). Caller-supplied excludedCommands can only narrow the
  * eligible set: overridden commands are recorded as not cacheable regardless of their metadata
- * verdict. A command without metadata has no verdict: it fails closed and is logged once per
- * command name. Metadata for more commands is supplied through the resolver itself, see
- * {@link CommandMetadataResolver#withFallback(CommandMetadataResolver)}.
+ * verdict. A command outside Jedis' own command enums is resolved by its name on first use, so
+ * metadata supplied for it applies as well. A command without metadata has no verdict: it fails
+ * closed and is logged once per command name. Metadata for more commands is supplied through the
+ * resolver itself, see {@link CommandMetadataResolver#withFallback(CommandMetadataResolver)}.
  */
 class CacheabilityResolver implements Cacheable {
 
@@ -66,6 +67,11 @@ class CacheabilityResolver implements Cacheable {
   private final CommandMetadataResolver metadataResolver;
   private final Set<ProtocolCommand> excludedCommands;
   private final Map<ProtocolCommand, Boolean> cacheabilityMap;
+  // Verdicts of commands outside the precomputed table (no Jedis command enum, or a foreign
+  // ProtocolCommand implementation), resolved by name on first use. Only names the metadata
+  // knows are kept, so application-chosen command names cannot grow it without bound.
+  private final Map<String, Boolean> verdictsByName = new ConcurrentHashMap<>();
+  private final Set<String> excludedNames;
   // user intent: consulted only for commands the rules allow, so it can narrow but never widen
   private final Cacheable narrowing;
 
@@ -91,7 +97,19 @@ class CacheabilityResolver implements Cacheable {
     this.metadataResolver = Objects.requireNonNull(metadataResolver, "metadataResolver");
     this.excludedCommands = excludedCommands == null || excludedCommands.isEmpty() ? null
         : new HashSet<>(excludedCommands);
+    this.excludedNames = excludedNames(this.excludedCommands);
     this.cacheabilityMap = Collections.unmodifiableMap(resolve());
+  }
+
+  private static Set<String> excludedNames(Set<ProtocolCommand> excludedCommands) {
+    if (excludedCommands == null) {
+      return Collections.emptySet();
+    }
+    Set<String> names = new HashSet<>();
+    for (ProtocolCommand command : excludedCommands) {
+      names.add(normalizedName(command));
+    }
+    return names;
   }
 
   CacheabilityResolver withExclusions(Set<ProtocolCommand> excludedCommands, Cacheable narrowing) {
@@ -112,7 +130,7 @@ class CacheabilityResolver implements Cacheable {
    */
   @Override
   public boolean isCacheable(ProtocolCommand command, List<Object> keys) {
-    Boolean verdict = cacheabilityMap.get(command);
+    Boolean verdict = verdict(command);
     if (verdict == null) {
       logUnknownCommandName(command);
       return false;
@@ -123,7 +141,7 @@ class CacheabilityResolver implements Cacheable {
   @Override
   public boolean isCacheable(CommandObject<?> commandObject) {
     ProtocolCommand command = effectiveCommand(commandObject);
-    Boolean verdict = cacheabilityMap.get(command);
+    Boolean verdict = verdict(command);
     if (verdict == null) {
       logUnknownCommandName(command);
       return false;
@@ -132,7 +150,31 @@ class CacheabilityResolver implements Cacheable {
   }
 
   boolean isEligible(ProtocolCommand command) {
-    return Boolean.TRUE.equals(cacheabilityMap.get(command));
+    return Boolean.TRUE.equals(verdict(command));
+  }
+
+  // null when the command has no metadata
+  private Boolean verdict(ProtocolCommand command) {
+    Boolean verdict = cacheabilityMap.get(command);
+    return verdict != null ? verdict : resolveByName(command);
+  }
+
+  private Boolean resolveByName(ProtocolCommand command) {
+    String name = normalizedName(command);
+    Boolean verdict = verdictsByName.get(name);
+    if (verdict == null) {
+      CommandMetadata metadata = metadataResolver.resolve(name);
+      if (metadata == null) {
+        return null;
+      }
+      verdict = isClientSideCacheable(metadata) && !excludedNames.contains(name);
+      verdictsByName.put(name, verdict);
+    }
+    return verdict;
+  }
+
+  private static String normalizedName(ProtocolCommand command) {
+    return SafeEncoder.encode(SafeEncoder.toUpperCase(command.getRaw()));
   }
 
   ProtocolCommand effectiveCommand(CommandObject<?> commandObject) {

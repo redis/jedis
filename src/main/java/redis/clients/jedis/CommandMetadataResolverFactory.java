@@ -91,7 +91,7 @@ public final class CommandMetadataResolverFactory {
 
     @Override
     public CommandMetadata resolve(String commandName) {
-      return table.get(commandName);
+      return MetadataResolver.lookupIgnoreCase(table, commandName);
     }
 
     @Override

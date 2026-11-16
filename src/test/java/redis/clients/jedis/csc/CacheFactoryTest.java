@@ -120,6 +120,7 @@ public class CacheFactoryTest {
     CacheConfig supplied = CacheConfig.builder().evictionPolicy(shared)
         .evictionPolicySupplier(() -> new LRUEviction(10)).build();
     assertTrue(supplied.getEvictionPolicySupplier().get() != shared);
-    assertTrue(supplied.getEvictionPolicySupplier().get() != supplied.getEvictionPolicySupplier().get());
+    assertTrue(
+      supplied.getEvictionPolicySupplier().get() != supplied.getEvictionPolicySupplier().get());
   }
 }

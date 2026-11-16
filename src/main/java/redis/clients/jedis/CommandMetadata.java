@@ -163,8 +163,9 @@ public final class CommandMetadata {
 
     public Builder subcommand(CommandMetadata subcommand) {
       JedisAsserts.notNull(subcommand, "subcommand must not be null");
-      JedisAsserts.isTrue(subcommand.getName().startsWith(name + "|"), "subcommand '"
-          + subcommand.getName() + "' of '" + name + "' must be named by its full PARENT|CHILD name");
+      JedisAsserts.isTrue(subcommand.getName().startsWith(name + "|"),
+        "subcommand '" + subcommand.getName() + "' of '" + name
+            + "' must be named by its full PARENT|CHILD name");
       subcommands.put(subcommand.getName(), subcommand);
       return this;
     }

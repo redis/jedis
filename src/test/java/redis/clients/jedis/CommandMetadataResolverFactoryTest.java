@@ -18,7 +18,6 @@ import java.util.stream.Collectors;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
-
 public class CommandMetadataResolverFactoryTest {
 
   private static final String CUSTOM_METADATA_JSON = "{\n" //
@@ -106,8 +105,7 @@ public class CommandMetadataResolverFactoryTest {
 
   @Test
   public void fromFileDoesNotAffectTheDefaultResolver() throws IOException {
-    CommandMetadataResolver custom = CommandMetadataResolverFactory
-        .fromFile(customMetadataFile());
+    CommandMetadataResolver custom = CommandMetadataResolverFactory.fromFile(customMetadataFile());
     CommandMetadataResolver shared = CommandMetadataResolverFactory.defaultResolver();
 
     assertTrue(custom.resolve("GET").hasFlag("write"));
@@ -154,7 +152,8 @@ public class CommandMetadataResolverFactoryTest {
 
   @Test
   public void fromFileRejectsNullPath() {
-    assertThrows(IllegalArgumentException.class, () -> CommandMetadataResolverFactory.fromFile(null));
+    assertThrows(IllegalArgumentException.class,
+      () -> CommandMetadataResolverFactory.fromFile(null));
   }
 
   @Test

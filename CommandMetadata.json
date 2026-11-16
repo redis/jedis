@@ -9,7 +9,7 @@
     "ReJSON"
   ],
   "generatedAt": "2026-11-12 13:40:50 TRT",
-  "source": "COMMAND INFO (localhost:6379)",
+  "source": "COMMAND INFO",
   "counts": {
     "commands": 458,
     "subcommands": 232,

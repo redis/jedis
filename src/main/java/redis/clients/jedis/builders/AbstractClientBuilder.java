@@ -46,6 +46,11 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    * @since 8.1
    */
   protected CacheFactory cacheFactory = new CacheFactory();
+  /**
+   * Source of the command metadata this client uses; see
+   * {@link #commandMetadataResolver(CommandMetadataResolver)}.
+   * @since 8.1
+   */
   protected CommandMetadataResolver commandMetadataResolver = CommandMetadataResolverFactory
       .defaultResolver();
 
@@ -257,6 +262,17 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
     return self();
   }
 
+  /**
+   * Sets the source of command metadata for the client being built. The cache created from
+   * {@link #cacheConfig(CacheConfig)} derives the cacheability of commands from it, and cluster
+   * clients build their command flags and request/response policies from it. Other clients are not
+   * affected. When not set, the shared metadata of
+   * {@link CommandMetadataResolverFactory#defaultResolver()} is used.
+   * @param commandMetadataResolver the metadata resolver; must not be null
+   * @return this builder
+   * @throws IllegalArgumentException if the resolver is null
+   * @since 8.1
+   */
   @Experimental
   public T commandMetadataResolver(CommandMetadataResolver commandMetadataResolver) {
     JedisAsserts.notNull(commandMetadataResolver, "commandMetadataResolver cannot be null");

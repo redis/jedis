@@ -101,7 +101,7 @@ public class CommandMetadataUtil {
           + " (" + server.mode + "; modules: " + String.join(", ", server.modules) + ")");
 
       System.out.println("Step 2: Writing " + COMMAND_INFO_JSON + "...");
-      writeCommandMetadataJson(metas, server, arguments.target, generatedAt);
+      writeCommandMetadataJson(metas, server, generatedAt);
       source = "COMMAND INFO from Redis " + server.version + " (" + server.mode + "; modules: "
           + String.join(", ", server.modules) + ")";
     } catch (JedisConnectionException jce) {
@@ -140,7 +140,9 @@ public class CommandMetadataUtil {
 
     Arguments arguments = new Arguments();
     for (String arg : args) {
-      System.out.println("Parsing argument: " + arg);
+      // credentials must not reach the console or CI logs: only their option name is printed
+      boolean secret = arg.startsWith("-auth:") || arg.startsWith("-user:");
+      System.out.println("Parsing argument: " + (secret ? optionName(arg) : arg));
       if (arg.startsWith("-remote:")) {
         String rest = arg.substring("-remote:".length());
         int sep = rest.lastIndexOf(':');
@@ -164,8 +166,14 @@ public class CommandMetadataUtil {
     return arguments;
   }
 
+  private static String optionName(String arg) {
+    int sep = arg.indexOf(':');
+    return sep < 0 ? arg : arg.substring(0, sep);
+  }
+
   private static void usage(String offending) {
-    System.err.println("Unrecognized argument: " + offending);
+    // option name only: a mistyped -auth:/-user: option would otherwise print its value
+    System.err.println("Unrecognized argument: " + optionName(offending));
     System.err.println(
       "Usage: CommandMetadataUtil [-remote:host:port] [-auth:password] [-user:username]");
     System.exit(2);
@@ -398,7 +406,7 @@ public class CommandMetadataUtil {
   // ---------------------------------------------------------- CommandMetadata.json
 
   private static void writeCommandMetadataJson(TreeMap<String, CommandMeta> metas,
-      ServerIdentity server, HostAndPort target, String generatedAt) throws IOException {
+      ServerIdentity server, String generatedAt) throws IOException {
     int topLevel = 0;
     TreeMap<String, Object> commands = new TreeMap<>();
     for (CommandMeta m : metas.values()) {
@@ -418,7 +426,8 @@ public class CommandMetadataUtil {
     doc.put("redisMode", server.mode);
     doc.put("modules", server.modules);
     doc.put("generatedAt", generatedAt);
-    doc.put("source", "COMMAND INFO (" + target.getHost() + ":" + target.getPort() + ")");
+    // no host or port: this file is checked in and must not publish where it was generated
+    doc.put("source", "COMMAND INFO");
     doc.put("counts", counts);
     doc.put("commands", commands);
 

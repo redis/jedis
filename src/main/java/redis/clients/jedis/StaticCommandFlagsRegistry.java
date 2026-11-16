@@ -65,6 +65,16 @@ public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
     return create(new MetadataResolver());
   }
 
+  /**
+   * Creates a command flags registry from the metadata of the given resolver: the command flags and
+   * the cluster request and response policies of every command the resolver knows. Each call builds
+   * a new registry; {@link #registry()} returns the shared one over the default metadata.
+   * @param metadataResolver the source of the command metadata
+   * @return a new registry over the resolver's metadata
+   * @throws IllegalArgumentException if the resolver is null
+   * @throws IllegalStateException if the resolver's metadata failed to load
+   * @since 8.1
+   */
   @Experimental
   public static StaticCommandFlagsRegistry create(CommandMetadataResolver metadataResolver) {
     JedisAsserts.notNull(metadataResolver, "metadataResolver must not be null");

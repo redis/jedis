@@ -163,8 +163,8 @@ public class CacheabilityResolverTest {
 
   /**
    * Container subcommand names contain a pipe ({@code PARENT|CHILD}): the metadata resolves by full
-   * name and the eligibility rules judge it, while a {@link ProtocolCommand} carrying a pipe name
-   * has no verdict in the map and fails closed.
+   * name and the eligibility rules judge it. A user-defined {@link ProtocolCommand} carrying a pipe
+   * name misses the precomputed map and is judged by that name.
    */
   @Test
   public void pipeSeparatedSubcommandNames() {
@@ -182,9 +182,11 @@ public class CacheabilityResolverTest {
     assertTrue(resolver.isCacheable(new CommandObject<>(
         new CommandArguments(Command.XINFO, redis.clients.jedis.Protocol.Keyword.STREAM).key("k"),
         BuilderFactory.STRING)));
-    // a foreign ProtocolCommand with a pipe name is not value-equal to the map keys: fail closed
+    // a user-defined ProtocolCommand is not value-equal to the map keys: resolved by its name
     ProtocolCommand pipeCommand = () -> SafeEncoder.encode("XINFO|STREAM");
-    assertFalse(resolver.isCacheable(pipeCommand, Collections.emptyList()));
+    assertTrue(resolver.isCacheable(pipeCommand, Collections.emptyList()));
+    ProtocolCommand deniedSibling = () -> SafeEncoder.encode("XINFO|CONSUMERS");
+    assertFalse(resolver.isCacheable(deniedSibling, Collections.emptyList()));
   }
 
   private static CacheKey<?> cacheKey(redis.clients.jedis.CommandArguments args) {

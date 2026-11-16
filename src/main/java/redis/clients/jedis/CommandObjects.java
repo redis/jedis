@@ -62,6 +62,15 @@ public class CommandObjects {
     this.keyPreProcessor = keyPreProcessor;
   }
 
+  /**
+   * Creates the arguments of a container command with its subcommand declared, for example
+   * {@code XINFO STREAM}. The subcommand is sent right after the command, and command metadata
+   * consumers such as client-side caching judge the command by its {@code PARENT|CHILD} metadata.
+   * @param command the container command
+   * @param subcommand the subcommand
+   * @return the command arguments, starting with the command and the subcommand
+   * @since 8.1
+   */
   protected CommandArguments commandArguments(ProtocolCommand command, Keyword subcommand) {
     CommandArguments comArgs = new CommandArguments(command, subcommand);
     if (keyPreProcessor != null) comArgs.setKeyArgumentPreProcessor(keyPreProcessor);

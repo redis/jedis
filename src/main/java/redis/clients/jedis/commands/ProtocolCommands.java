@@ -11,6 +11,10 @@ import redis.clients.jedis.json.JsonProtocol;
 import redis.clients.jedis.search.SearchProtocol;
 import redis.clients.jedis.timeseries.TimeSeriesProtocol;
 
+/**
+ * The {@link ProtocolCommand} enums Jedis defines, core and module commands together.
+ * @since 8.1
+ */
 @Internal
 public final class ProtocolCommands {
 
@@ -25,6 +29,12 @@ public final class ProtocolCommands {
   private ProtocolCommands() {
   }
 
+  /**
+   * Returns the constants of every command enum Jedis defines: the core commands and the JSON,
+   * Search, TimeSeries and probabilistic module commands.
+   * @return an unmodifiable list with one array of constants per command enum
+   * @since 8.1
+   */
   public static List<ProtocolCommand[]> allCommands() {
     return PROTOCOL_ENUMS;
   }

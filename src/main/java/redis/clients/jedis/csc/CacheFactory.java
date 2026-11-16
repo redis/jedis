@@ -16,6 +16,18 @@ import redis.clients.jedis.util.JedisAsserts;
  */
 public class CacheFactory {
 
+  /**
+   * Creates the cache for a client from its cache configuration and command metadata. With the
+   * default policy the cacheability of commands is derived from the given metadata resolver,
+   * keeping the exclusions of the configuration. Client builders call this method during build;
+   * override it to supply a custom {@link Cache} implementation.
+   * @param config the cache configuration
+   * @param metadataResolver the command metadata of the client the cache is created for
+   * @return the cache
+   * @throws IllegalArgumentException if the metadata resolver is null
+   * @throws JedisCacheException if the cache cannot be created from the configuration
+   * @since 8.1
+   */
   public Cache createCache(CacheConfig config, CommandMetadataResolver metadataResolver) {
     Cacheable cacheable = resolveCacheable(config, metadataResolver);
     if (config.getCacheClass() == null) {

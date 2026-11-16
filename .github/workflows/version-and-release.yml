@@ -38,7 +38,7 @@ jobs:
             --batch-mode \
             --settings .github/maven-settings.xml \
             -Dgpg.passphrase='${{ secrets.OSSH_GPG_SECRET_KEY_PASSWORD }}' \
-            -DskipTests deploy -P release
+            -DskipITs deploy -P release
         env:
           MAVEN_USERNAME: ${{secrets.OSSH_USERNAME}}
           MAVEN_PASSWORD: ${{secrets.OSSH_TOKEN}}

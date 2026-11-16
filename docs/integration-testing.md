@@ -215,17 +215,19 @@ Custom image instead of a version: `make start CLIENT_LIBS_TEST_IMAGE_TAG=<tag>`
 
 ### Test selection (JUnit 5 tags + Maven, see `pom.xml`)
 
-| Group       | Tag / naming                                                              | Runner   | Default                                |
-|-------------|---------------------------------------------------------------------------|----------|----------------------------------------|
-| Unit        | `@Tag("unit")`, no network                                                | Surefire | run (`skipUnitTests=false`)            |
-| Integration | `*IT` (new) — legacy `*IntegrationTest` / `@Tag("integration")` still run | Failsafe | run (`skipIntegrationTests=false`)     |
-| Scenario    | `@Tag("scenario")`                                                        | Failsafe | **skipped** (`skipScenarioTests=true`) |
+| Group       | Tag / naming                                                              | Runner   | Default                                   |
+|-------------|---------------------------------------------------------------------------|----------|-------------------------------------------|
+| Unit        | `@Tag("unit")`, no network                                                | Surefire | run; `-DskipTests` skips                  |
+| Integration | `*IT` (new) — legacy `*IntegrationTest` / `@Tag("integration")` still run | Failsafe | run; `-DskipITs` skips                    |
+| Scenario    | `@Tag("scenario")`                                                        | Failsafe | **skipped**; `-Pscenario-tests` runs them |
 
 A new integration test goes into the existing class for the same area, whatever its
 name or tag. New integration test **classes** must be named `*IT`. Do not use
 `*IntegrationTest` or `@Tag("integration")` on them. See §5.
 
-Useful flags: `-DskipUnitTests=true` (CI Docker job runs integration only),
+Useful flags: `-DskipTests` skips unit tests only, `-DskipITs` skips integration
+and scenario tests; pass both to skip every test.
+`-DskipUnitTests=true` is an alias of `-DskipTests` (the CI Docker job uses it).
 `-Dtest=<Class#method>` to narrow.
 
 ---

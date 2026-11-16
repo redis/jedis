@@ -18,6 +18,7 @@ public class DefaultCacheable implements Cacheable {
       add(Command.BITCOUNT);
       add(Command.BITFIELD_RO);
       add(Command.BITPOS);
+      add(Command.BITRANGEINTARRAY);
       add(Command.EXISTS);
       add(Command.GEODIST);
       add(Command.GEOHASH);

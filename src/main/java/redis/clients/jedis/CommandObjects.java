@@ -836,6 +836,22 @@ public class CommandObjects {
     return new CommandObject<>(commandArguments(BITPOS).key(key).add(value ? 1 : 0).addParams(params), BuilderFactory.LONG);
   }
 
+  public final CommandObject<List<Long>> bitrangeintarray(String key, long start, long end) {
+    return new CommandObject<>(commandArguments(BITRANGEINTARRAY).key(key).add(start).add(end), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> bitrangeintarray(String key, long start, long end, BitRangeIntArrayParams params) {
+    return new CommandObject<>(commandArguments(BITRANGEINTARRAY).key(key).add(start).add(end).addParams(params), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> bitrangeintarray(byte[] key, long start, long end) {
+    return new CommandObject<>(commandArguments(BITRANGEINTARRAY).key(key).add(start).add(end), BuilderFactory.LONG_LIST);
+  }
+
+  public final CommandObject<List<Long>> bitrangeintarray(byte[] key, long start, long end, BitRangeIntArrayParams params) {
+    return new CommandObject<>(commandArguments(BITRANGEINTARRAY).key(key).add(start).add(end).addParams(params), BuilderFactory.LONG_LIST);
+  }
+
   public final CommandObject<List<Long>> bitfield(String key, String... arguments) {
     return new CommandObject<>(commandArguments(BITFIELD).key(key).addObjects((Object[]) arguments), BuilderFactory.LONG_LIST);
   }

@@ -16,7 +16,6 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 
-import redis.clients.jedis.MetadataResolver.CommandMetadata;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.bloom.RedisBloomProtocol.BloomFilterCommand;
 import redis.clients.jedis.bloom.RedisBloomProtocol.CountMinSketchCommand;
@@ -141,15 +140,14 @@ public class MetadataResolverTest {
    */
   @Test
   public void generatedAndFileBackedMetadataAreEquivalent() {
-    Map<String, MetadataResolver.CommandMetadata> generated = MetadataResolver
-        .generatedCommandTable();
-    Map<String, MetadataResolver.CommandMetadata> parsed = MetadataReader
+    Map<String, CommandMetadata> generated = MetadataResolver.generatedCommandTable();
+    Map<String, CommandMetadata> parsed = MetadataReader
         .read(java.nio.file.Paths.get("CommandMetadata.json"));
 
     assertEquals(generated.keySet(), parsed.keySet());
     for (String name : generated.keySet()) {
-      MetadataResolver.CommandMetadata g = generated.get(name);
-      MetadataResolver.CommandMetadata f = parsed.get(name);
+      CommandMetadata g = generated.get(name);
+      CommandMetadata f = parsed.get(name);
       assertEquals(g.getFlags(), f.getFlags(), "flags differ for " + name);
       assertEquals(g.getTips(), f.getTips(), "tips differ for " + name);
       assertEquals(g.getFirstKey(), f.getFirstKey(), "firstKey differs for " + name);

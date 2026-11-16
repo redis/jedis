@@ -19,15 +19,24 @@ The policy is configured through `CacheConfig.Builder`:
   command that is not cacheable by the default policy cannot be made cacheable. Exclusions apply
   to the exact command; a container subcommand is excluded individually by its `PARENT|CHILD`
   name (excluding a parent does not exclude its subcommands).
-- `withFallback(...)` supplies a `Cacheable` that decides commands with no metadata verdict (for
-  example custom `ProtocolCommand` implementations). Without a fallback, such commands are not
-  cacheable and logged once per command name.
-- `cacheable(...)` replaces the policy with a user-provided `Cacheable`; it cannot be combined
-  with exclusions or a fallback. For now the custom policy alone decides, preserving pre-8.1
-  behavior; a later major release will let the default policy's denials take precedence. Note
-  that `CacheConfig.getCacheable()` returns an internal wrapper in this case — do not rely on
-  identity with the instance you supplied. With the default policy it returns the internal
-  metadata-derived `Cacheable`, not `DefaultCacheable.INSTANCE`.
+- `excludeCommands(Cacheable)` narrows per invocation: the given `Cacheable` is asked only about
+  commands the default policy allows, and an invocation it reports as not cacheable is excluded,
+  for example `excludeCommands((command, keys) -> !keys.contains("session:1"))`. It cannot make
+  a denied command cacheable, and it combines with `excludeCommands(Set)` and with a per-client
+  metadata resolver.
+- Commands with no metadata have no verdict: they are not cacheable and are logged once per
+  command name. Metadata for more commands is supplied at the metadata level, not as a caching
+  decision — see [Per-client command metadata](#per-client-command-metadata) and
+  `CommandMetadataResolver.withFallback(...)`. The eligibility rules always run on the resolved
+  metadata.
+- `cacheable(...)` (deprecated) replaces the policy with a user-provided `Cacheable`; it cannot
+  be combined with exclusions. The custom policy alone decides, preserving pre-8.1 behavior, and
+  a command it allows against the default policy is logged once as a warning. A client-level
+  metadata resolver does not constrain it. It is deprecated in favor of
+  `excludeCommands(...)`, which can narrow the cached set but never widen it, and is planned
+  for removal in a future major release. Note that `CacheConfig.getCacheable()` returns the
+  effective policy, which is an internal implementation — do not rely on identity with the
+  instance you supplied or with `DefaultCacheable.INSTANCE`.
 
 `DefaultCacheable` is deprecated; its verdicts now match the default policy.
 
@@ -90,9 +99,8 @@ read-only, keyed, and deterministic — including `SINTERCARD`, `ZDIFF`, `ZINTER
 `FT.SUGGET`/`FT.SUGLEN`, the vector-set read commands (`VSIM`, `VCARD`, …), and the container
 subcommands `XINFO STREAM`, `XINFO GROUPS`, and `MEMORY USAGE`.
 
-If you relied on the old behavior, configure explicit policies via
-`CacheConfig.builder().excludeCommands(...)` (narrow the default set) or `cacheable(...)`
-(replace it).
+If you relied on the old behavior, narrow the default set with
+`CacheConfig.builder().excludeCommands(...)`.
 
 The following APIs are deprecated in favor of the metadata-derived policy:
 
@@ -101,7 +109,8 @@ The following APIs are deprecated in favor of the metadata-derived policy:
 | `DefaultCacheable` (class, `INSTANCE`, `isDefaultCacheableCommand`) | the built-in metadata-derived policy used automatically by `CacheConfig` |
 | `Cacheable.isCacheable(ProtocolCommand, List)` | `Cacheable.isCacheable(CommandObject)` (default method; sees declared subcommands) |
 | `CacheKey.getRedisCommand()` | `CacheKey.getCommandObject()` |
-| `AllowAndDenyListWithStringKeys` | `CacheConfig.builder().excludeCommands(...)` / a custom `Cacheable` |
+| `AllowAndDenyListWithStringKeys` | `CacheConfig.builder().excludeCommands(...)` |
+| `CacheConfig.Builder.cacheable(...)` | `CacheConfig.builder().excludeCommands(...)` to narrow the default set by command, or `excludeCommands(Cacheable)` to narrow it per invocation (by keys) |
 
 Existing `Cacheable` implementations keep working unchanged: the new `CommandObject` overload
 delegates to the old signature by default, receiving the container command (e.g. `XINFO`) as
@@ -135,9 +144,97 @@ Optional arguments: `-auth:password`, `-user:username`.
 Setting the `JEDIS_COMMAND_METADATA_PATH` environment variable to a JSON file with the
 `CommandMetadata.json` layout makes Jedis load its command metadata from that file instead of the
 built-in table — for example to apply metadata from a newer Redis release without rebuilding
-Jedis. The file is read and parsed once, lazily, on first use. A file that cannot be read is an
-error: it is logged with its cause and the command metadata is held as unavailable — an
-explicitly configured source is never silently replaced by the built-in table. Any use of
-client-side caching or the command-flags registry then fails with an `IllegalStateException`
-carrying the original load failure as its cause, so the application cannot keep running with a
-wrong set of command information. When the variable is not set, the built-in metadata is used.
+Jedis. The file is read and parsed lazily, on first use, and kept once it loaded successfully. A
+file that cannot be read is an error — an explicitly configured source is never silently replaced
+by the built-in table. Any use of client-side caching (building a `CacheConfig`, creating a
+cache, asking a policy for a verdict) or of the command-flags registry then fails with an
+`IllegalStateException` carrying the load failure as its cause, so the application cannot keep
+running with a wrong set of command information. The failure is not remembered: every attempt
+reads the file again and fails the same way until the file is fixed. When the variable is not
+set, the built-in metadata is used.
+
+## Per-client command metadata
+
+The environment variable above replaces the metadata process-wide. To configure metadata per
+client instance instead — for example when two clients in the same application target servers
+with different command sets — provide a `CommandMetadataResolver` through the client builder:
+
+```java
+CommandMetadataResolver resolver =
+    CommandMetadataResolverFactory.fromFile(Paths.get("/path/to/CommandMetadata.json"));
+
+RedisClient client = RedisClient.builder()
+    .hostAndPort(node)
+    .cacheConfig(CacheConfig.builder().build())
+    .commandMetadataResolver(resolver)
+    .build();
+```
+
+The file must have the `CommandMetadata.json` layout and is read eagerly — a missing or
+malformed file fails the factory call. The resolver is instance-scoped: it affects only the
+clients it is given to and is consulted by every metadata consumer of that client — client-side
+caching derives its cacheability verdicts from it, and cluster clients build their command flags
+registry (command flags and request/response policies) from it. Clients without a resolver keep
+using the shared metadata. `CommandMetadataResolverFactory.defaultResolver()` returns the
+resolver over the shared metadata, for delegation or explicit wiring; it is the builders'
+default, and `commandMetadataResolver(null)` is rejected.
+
+Resolvers compose with `withFallback(...)`: a command the first resolver does not know is looked
+up in the fallback, for example a file that only lists the commands it changes, layered over the
+shared metadata:
+
+```java
+CommandMetadataResolver resolver = CommandMetadataResolverFactory
+    .fromFile(Paths.get("/path/to/overrides.json"))
+    .withFallback(CommandMetadataResolverFactory.defaultResolver());
+```
+
+A fallback supplies metadata only. The eligibility rules still run on whatever metadata is
+resolved, so a fallback cannot make a command cacheable that the rules deny. The first resolver
+that knows a command supplies its complete metadata: once it knows a container command, that
+command's subcommands are not looked up in the fallback.
+
+### Customizing the eligibility decision with override records
+
+To change the cacheability of single commands for one client, supply override records: metadata
+records that correct one command, or describe a command the bundled metadata does not know. The
+eligibility rules stay the same and run on the corrected metadata, so one record also corrects
+the command flags and cluster policies derived from it.
+
+```java
+CommandMetadataResolver defaults = CommandMetadataResolverFactory.defaultResolver();
+
+// correct an existing record: never cache GET for this client
+CommandMetadata get = defaults.resolve("GET").toBuilder().tips("dont_cache").build();
+
+// describe a command the bundled metadata does not know
+CommandMetadata custom = CommandMetadata.builder("MYMODULE.READ")
+    .flags("readonly").keyPositions(1, 1, 1).build();
+
+RedisClient client = RedisClient.builder()
+    .hostAndPort(node)
+    .cacheConfig(CacheConfig.builder().build())
+    .commandMetadataResolver(
+        CommandMetadataResolverFactory.of(get, custom).withFallback(defaults))
+    .build();
+```
+
+Override records are used as given; the known server metadata fixes are not applied to them. A
+subcommand is corrected through its container record
+(`defaults.resolve("XINFO").toBuilder().subcommand(...)`), because the first resolver that knows
+a container supplies all of its subcommands. Keep override records narrow and remove them once
+the server metadata is fixed.
+
+The resolver applies to the cache the builder creates from `cacheConfig(...)`: the builder calls
+`CacheFactory.createCache(CacheConfig, CommandMetadataResolver)` with the client's resolver (the
+shared default when none is set), and the default policy, exclusions included, is derived from
+that resolver. A custom `CacheFactory` set with `cacheFactory(...)` overrides that method and
+receives the same two arguments. `CacheConfig.getCacheable()` is always the policy over the
+shared default metadata, so a factory that wants the client's metadata applied should delegate
+to `super.createCache(...)`. A ready-made cache passed to `cache(...)` keeps its own policy.
+
+For metadata loaded from a file, the same preparation is applied as for the built-in metadata:
+the known server metadata fixes are layered on top, and the loaded table is sealed against
+modification. An explicitly set
+`commandFlags(...)` registry on a cluster builder still takes precedence over the
+resolver-derived default.

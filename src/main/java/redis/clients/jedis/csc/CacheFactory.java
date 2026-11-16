@@ -4,34 +4,49 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.Arrays;
 
+import redis.clients.jedis.CommandMetadataResolver;
+import redis.clients.jedis.CommandMetadataResolverFactory;
 import redis.clients.jedis.exceptions.JedisCacheException;
+import redis.clients.jedis.util.JedisAsserts;
 
 /**
  * Factory class for creating cache instances based on the provided configuration.
- * Subclasses can override the {@link #getNewCache(CacheConfig)} method to supply
+ * Subclasses can override the {@link #createCache(CacheConfig, CommandMetadataResolver)} method to supply
  * custom cache implementations to the relevant client builders.
  */
 public class CacheFactory {
 
-    /**
-     * Creates a new {@link Cache} from the given configuration.
-     * @param config cache configuration
-     * @return a new cache instance
-     * @since 8.1
-     */
-    public Cache createCache(CacheConfig config) {
+    public Cache createCache(CacheConfig config, CommandMetadataResolver metadataResolver) {
+        Cacheable cacheable = resolveCacheable(config, metadataResolver);
         if (config.getCacheClass() == null) {
-            if (config.getCacheable() == null) {
+            if (cacheable == null) {
                 throw new JedisCacheException("Cacheable is required to create the default cache!");
             }
-            return new DefaultCache(config.getMaxSize(), config.getCacheable(), (config.getEvictionPolicySupplier().get()));
+            return new DefaultCache(config.getMaxSize(), cacheable, config.getEvictionPolicySupplier().get());
         }
-        return instantiateCustomCache(config);
+        return instantiateCustomCache(config, cacheable);
     }
 
-    @Deprecated 
+    // The policy a cache created for the given metadata resolver must apply: without a user
+    // customization the metadata-derived policy over that resolver (exclusions kept).
+    private Cacheable resolveCacheable(CacheConfig config, CommandMetadataResolver metadataResolver) {
+        JedisAsserts.notNull(metadataResolver, "metadataResolver must not be null");
+        Cacheable cacheable = config.getCacheable();
+        if (cacheable instanceof CacheabilityResolver) {
+            return ((CacheabilityResolver) cacheable).withMetadataResolver(metadataResolver);
+        }
+        // Only reachable through the deprecated CacheConfig.Builder.cacheable(...): a user-provided
+        // Cacheable (or null). Remove both paths below once that method is dropped; the config then
+        // always holds a CacheabilityResolver.
+        if (cacheable instanceof CustomCacheablePolicy) {
+            return ((CustomCacheablePolicy) cacheable).withMetadataResolver(metadataResolver);
+        }
+        return cacheable;
+    }
+
+    @Deprecated
     public static Cache getCache(CacheConfig config) {
-        return new CacheFactory().createCache(config);
+        return new CacheFactory().createCache(config, CommandMetadataResolverFactory.defaultResolver());
     }
 
     /**
@@ -39,13 +54,13 @@ public class CacheFactory {
      * CacheFactory will be used with client builders when customization of cache instances is needed.
      */
     @Deprecated 
-    private static Cache instantiateCustomCache(CacheConfig config) {
+    private static Cache instantiateCustomCache(CacheConfig config, Cacheable cacheable) {
         try {
-            if (config.getCacheable() != null) {
+            if (cacheable != null) {
                 Constructor ctorWithCacheable = findConstructorWithCacheable(config.getCacheClass());
                 if (ctorWithCacheable != null) {
                     return (Cache) ctorWithCacheable.newInstance(config.getMaxSize(),
-                            config.getEvictionPolicySupplier().get(), config.getCacheable());
+                            config.getEvictionPolicySupplier().get(), cacheable);
                 }
             }
             Constructor ctor = getConstructor(config.getCacheClass());

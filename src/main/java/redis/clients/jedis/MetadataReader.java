@@ -15,8 +15,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import redis.clients.jedis.MetadataResolver.CommandMetadata;
-
 /**
  * Reads a command-metadata file with the {@code CommandMetadata.json} layout (produced by
  * {@code CommandMetadataUtil}) into the normalized {@link CommandMetadata} shape. Command names,

@@ -100,11 +100,9 @@ public class CacheFactoryTest {
   }
 
   @Test
-  public void explicitNullCacheableRejectsExclusionsAndFallback() {
+  public void explicitNullCacheableRejectsExclusions() {
     assertThrows(IllegalArgumentException.class, () -> CacheConfig.builder().cacheable(null)
         .excludeCommands(Collections.singleton(Command.GET)).build());
-    assertThrows(IllegalArgumentException.class, () -> CacheConfig.builder().cacheable(null)
-        .withFallback((command, keys) -> true).build());
   }
 
   @Test

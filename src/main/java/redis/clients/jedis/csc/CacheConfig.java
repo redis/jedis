@@ -5,15 +5,15 @@ import java.util.function.Supplier;
 import java.util.Collections;
 import java.util.HashSet;
 
-import redis.clients.jedis.MetadataResolver;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.util.JedisAsserts;
 
 public class CacheConfig {
 
     private int maxSize;
+    // the effective policy over the shared default metadata: a CacheabilityResolver (carrying
+    // the exclusions) unless the user provided a custom Cacheable
     private Cacheable cacheable;
-    private Cacheable resolver;
     private EvictionPolicy evictionPolicy;
     private Class cacheClass;
     private Supplier<EvictionPolicy> evictionPolicySupplier;
@@ -23,7 +23,7 @@ public class CacheConfig {
     }
 
     public Cacheable getCacheable() {
-        return resolver == null ? cacheable : resolver;
+        return cacheable;
     }
 
     /**
@@ -62,8 +62,8 @@ public class CacheConfig {
         private final int DEFAULT_MAX_SIZE = 10000;
         private int maxSize = DEFAULT_MAX_SIZE;
         private Cacheable cacheable = DefaultCacheable.INSTANCE;
-        private Cacheable fallback;
         private Set<ProtocolCommand> excludedCommands = Collections.emptySet();
+        private Cacheable narrowingCacheable;
         private EvictionPolicy evictionPolicy;
         private Class cacheClass;
         private Supplier<EvictionPolicy> evictionPolicySupplier;
@@ -91,22 +91,9 @@ public class CacheConfig {
             return this;
         }
 
+        @Deprecated
         public Builder cacheable(Cacheable cacheable) {
             this.cacheable = cacheable;
-            return this;
-        }
-
-        /**
-         * Sets the fallback {@link Cacheable} deciding commands that have no metadata verdict.
-         * Without a fallback, such commands are not cached. Cannot be combined with
-         * {@link #cacheable(Cacheable)}.
-         * @param fallback fallback {@link Cacheable}; must not be null
-         * @return this builder
-         * @since 8.1
-         */
-        public Builder withFallback(Cacheable fallback) {
-            JedisAsserts.notNull(fallback, "fallback cannot be null");
-            this.fallback = fallback;
             return this;
         }
 
@@ -131,6 +118,23 @@ public class CacheConfig {
         }
 
         /**
+         * Excludes command invocations from client-side caching through a {@link Cacheable}. The
+         * given policy is consulted only for commands the default policy allows; an invocation
+         * it reports as not cacheable is excluded. It can only narrow the cached set: a command
+         * the default policy denies stays not cacheable whatever the given policy returns. Can be
+         * combined with {@link #excludeCommands(Set)}; cannot be combined with
+         * {@link #cacheable(Cacheable)}.
+         * @param cacheable decides which eligible invocations stay cacheable; must not be null
+         * @return this builder
+         * @since 8.1
+         */
+        public Builder excludeCommands(Cacheable cacheable) {
+            JedisAsserts.notNull(cacheable, "cacheable cannot be null");
+            this.narrowingCacheable = cacheable;
+            return this;
+        }
+
+        /**
          * @param cacheClass a {@link Cache} implementation instantiated reflectively through its
          *            {@code (int, EvictionPolicy)} or {@code (int, EvictionPolicy, Cacheable)}
          *            constructor
@@ -147,22 +151,18 @@ public class CacheConfig {
         public CacheConfig build() {
             CacheConfig cacheConfig = new CacheConfig();
             cacheConfig.maxSize = this.maxSize;
-            CacheabilityResolver resolver = new CacheabilityResolver(new MetadataResolver(),
-                    this.excludedCommands, fallback);
-            // check if it is default
-            if (this.cacheable != null && this.cacheable.getClass() ==  DefaultCacheable.class) {
-                cacheConfig.resolver = resolver;
+            if (this.cacheable != null && this.cacheable.getClass() == DefaultCacheable.class) {
+                // no user customization: the metadata-derived policy decides
+                cacheConfig.cacheable = CacheabilityResolver.defaultResolver()
+                        .withExclusions(this.excludedCommands, this.narrowingCacheable);
             } else {
-                JedisAsserts.isTrue(excludedCommands.isEmpty(),
-                    "Cannot provide both a custom Cacheable and excluded commands. Pick either custom Cacheable or command exclusion.");
-                JedisAsserts.isTrue(fallback == null,
-                    "Cannot provide both a custom Cacheable and a fallback. Pick either custom Cacheable or fallback.");
-                // Combining the user-provided Cacheable with the resolver; with a later major
-                // release, we will change the behavior to let the resolver take precedence over
-                // the user-provided Cacheable. For now, the user-provided Cacheable always wins;
-                // this is only to avoid a behavioural breaking change in a minor release.
+                JedisAsserts.isTrue(excludedCommands.isEmpty() && narrowingCacheable == null,
+                    "Cannot provide both a custom Cacheable and exclusions. Pick either custom Cacheable or exclusion.");
+                // for now a user-provided Cacheable decides alone, to avoid a behavioural
+                // breaking change in a minor release; the resolver only reports where they diverge
                 if (this.cacheable != null) {
-                    cacheConfig.cacheable = new CustomCacheablePolicy(this.cacheable, resolver);
+                    cacheConfig.cacheable = new CustomCacheablePolicy(this.cacheable,
+                            CacheabilityResolver.defaultResolver());
                 }
             }
             cacheConfig.evictionPolicy = this.evictionPolicy;

@@ -137,11 +137,19 @@ public abstract class ClusterClientBuilder<C>
   }
 
   /**
-   * Creates a default command flags registry based on the current configuration.
+   * Creates a default command flags registry based on the current configuration. When a command
+   * metadata resolver is set on this builder, the registry is built from that resolver's metadata;
+   * otherwise the shared registry is used. An explicitly set
+   * {@link #commandFlags(CommandFlagsRegistry)} always takes precedence over this default.
    * @return CommandFlagsRegistry
    */
   protected CommandFlagsRegistry createDefaultCommandFlagsRegistry() {
-    return StaticCommandFlagsRegistry.registry();
+    // the shared default metadata is served by the shared registry; only a client-level
+    // resolver needs a registry of its own
+    if (this.commandMetadataResolver == CommandMetadataResolverFactory.defaultResolver()) {
+      return StaticCommandFlagsRegistry.registry();
+    }
+    return StaticCommandFlagsRegistry.create(this.commandMetadataResolver);
   }
 
   @Override

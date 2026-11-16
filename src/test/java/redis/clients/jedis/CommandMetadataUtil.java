@@ -18,9 +18,9 @@ import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
 
-import redis.clients.jedis.MetadataResolver.CommandMetadata;
 import redis.clients.jedis.Protocol.Command;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.commands.ProtocolCommands;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -655,7 +655,7 @@ public class CommandMetadataUtil {
   /** Mismatches between the Jedis command set and the server metadata. */
   private static void reportMismatches(TreeMap<String, CommandMeta> metas) {
     Set<String> jedisWires = new HashSet<>();
-    for (ProtocolCommand[] values : MetadataResolver.protocolCommandEnums()) {
+    for (ProtocolCommand[] values : ProtocolCommands.allCommands()) {
       for (ProtocolCommand value : values) {
         Enum<?> constant = (Enum<?>) value;
         String wire = SafeEncoder.encode(value.getRaw()).toUpperCase(Locale.ENGLISH);

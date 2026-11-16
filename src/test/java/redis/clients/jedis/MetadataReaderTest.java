@@ -16,7 +16,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 
 import redis.clients.jedis.MetadataReader;
-import redis.clients.jedis.MetadataResolver.CommandMetadata;
 
 public class MetadataReaderTest {
 

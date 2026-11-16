@@ -14,11 +14,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.CommandMetadata;
+import redis.clients.jedis.CommandMetadataResolver;
+import redis.clients.jedis.CommandMetadataResolverFactory;
 import redis.clients.jedis.CommandObject;
-import redis.clients.jedis.MetadataResolver;
-import redis.clients.jedis.MetadataResolver.CommandMetadata;
 import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.commands.ProtocolCommands;
 import redis.clients.jedis.util.SafeEncoder;
 
 /**
@@ -27,64 +29,80 @@ import redis.clients.jedis.util.SafeEncoder;
  * {@code dont_cache} tip, the {@code readonly} flag, no {@code blocking} flag, a key-name argument,
  * no {@code nondeterministic_output} tip, and no {@code script_runner} flag.
  * <p>
- * Verdicts come from the metadata supplied by the {@link MetadataResolver} (which itself applies
- * the known server metadata fixes). Caller-supplied excludedCommands can only narrow the eligible
- * set: overridden commands are recorded as not cacheable regardless of their metadata verdict. When
- * a command has no verdict, the fallback {@link Cacheable} decides; without a fallback such
- * commands fail closed and are logged once per command name.
+ * Verdicts come from the metadata supplied by the {@link CommandMetadataResolver} (which itself
+ * applies the known server metadata fixes). Caller-supplied excludedCommands can only narrow the
+ * eligible set: overridden commands are recorded as not cacheable regardless of their metadata
+ * verdict. A command without metadata has no verdict: it fails closed and is logged once per
+ * command name. Metadata for more commands is supplied through the resolver itself, see
+ * {@link CommandMetadataResolver#withFallback(CommandMetadataResolver)}.
  */
 class CacheabilityResolver implements Cacheable {
 
   private static final Logger logger = LoggerFactory.getLogger(CacheabilityResolver.class);
 
-  private static volatile CacheabilityResolver DEFAULT_RESOLVER = init();
-  private static Exception LOAD_FAILURE;
-
-  private static CacheabilityResolver init() {
-    try {
-      return new CacheabilityResolver(new MetadataResolver());
-    } catch (Exception e) {
-      LOAD_FAILURE = e;
-      return null;
-    }
-  }
+  // Shared default policy, built on first use rather than in a static initializer so a
+  // metadata-load failure surfaces to the caller instead of poisoning this class
+  private static volatile CacheabilityResolver DEFAULT_RESOLVER;
 
   /**
-   * The shared default policy, built lazily so a metadata-load failure surfaces as an
-   * {@link IllegalStateException} on every use instead of poisoning this class through a failed
-   * static initializer.
-   * @throws IllegalStateException when the command metadata failed to load
+   * The shared default policy over the shared command metadata, built on first use.
+   * @throws IllegalStateException when the command metadata failed to load, carrying the load
+   *           failure as its cause; thrown on every call, the policy never runs on wrong metadata
    */
   static CacheabilityResolver defaultResolver() {
-    if (DEFAULT_RESOLVER == null) {
-      throw new IllegalStateException("Failed to load command metadata", LOAD_FAILURE);
+    CacheabilityResolver resolver = DEFAULT_RESOLVER;
+    if (resolver == null) {
+      synchronized (CacheabilityResolver.class) {
+        resolver = DEFAULT_RESOLVER;
+        if (resolver == null) {
+          resolver = new CacheabilityResolver(CommandMetadataResolverFactory.defaultResolver());
+          DEFAULT_RESOLVER = resolver;
+        }
+      }
     }
-    return DEFAULT_RESOLVER;
+    return resolver;
   }
 
-  private final MetadataResolver metadataResolver;
+  private final CommandMetadataResolver metadataResolver;
   private final Set<ProtocolCommand> excludedCommands;
   private final Map<ProtocolCommand, Boolean> cacheabilityMap;
-  private final Cacheable fallback;
+  // user intent: consulted only for commands the rules allow, so it can narrow but never widen
+  private final Cacheable narrowing;
 
   /** Unknown command names already warned about, so the hot path logs each name only once. */
   private final Set<String> unknownWarned = ConcurrentHashMap.newKeySet();
 
-  CacheabilityResolver(MetadataResolver metadataResolver) {
-    this(metadataResolver, null, null);
+  CacheabilityResolver(CommandMetadataResolver metadataResolver) {
+    this(metadataResolver, null);
   }
 
   /**
    * @param excludedCommands per-command verdicts that win over any metadata-derived verdict;
    *          copied, later changes to the given map have no effect; may be null or empty for none
    */
-  CacheabilityResolver(MetadataResolver metadataResolver, Set<ProtocolCommand> excludedCommands,
-      Cacheable fallback) {
+  CacheabilityResolver(CommandMetadataResolver metadataResolver,
+      Set<ProtocolCommand> excludedCommands) {
+    this(metadataResolver, excludedCommands, null);
+  }
+
+  private CacheabilityResolver(CommandMetadataResolver metadataResolver,
+      Set<ProtocolCommand> excludedCommands, Cacheable narrowing) {
+    this.narrowing = narrowing;
     this.metadataResolver = Objects.requireNonNull(metadataResolver, "metadataResolver");
     this.excludedCommands = excludedCommands == null || excludedCommands.isEmpty() ? null
         : new HashSet<>(excludedCommands);
     this.cacheabilityMap = Collections.unmodifiableMap(resolve());
-    this.fallback = fallback;
+  }
+
+  CacheabilityResolver withExclusions(Set<ProtocolCommand> excludedCommands, Cacheable narrowing) {
+    return (excludedCommands == null || excludedCommands.isEmpty()) && narrowing == null ? this
+        : new CacheabilityResolver(metadataResolver, excludedCommands, narrowing);
+  }
+
+  // same exclusions over another metadata source; the shared default policy is reused as is
+  CacheabilityResolver withMetadataResolver(CommandMetadataResolver metadataResolver) {
+    return metadataResolver == this.metadataResolver ? this
+        : new CacheabilityResolver(metadataResolver, excludedCommands, narrowing);
   }
 
   /**
@@ -95,28 +113,30 @@ class CacheabilityResolver implements Cacheable {
   @Override
   public boolean isCacheable(ProtocolCommand command, List<Object> keys) {
     Boolean verdict = cacheabilityMap.get(command);
-    if (verdict == null && fallback != null) {
-      verdict = fallback.isCacheable(command, keys);
-    }
     if (verdict == null) {
       logUnknownCommandName(command);
       return false;
     }
-    return verdict;
+    return verdict && (narrowing == null || narrowing.isCacheable(command, keys));
   }
 
   @Override
   public boolean isCacheable(CommandObject<?> commandObject) {
-    ProtocolCommand command = getWithSubcommand(commandObject.getArguments());
+    ProtocolCommand command = effectiveCommand(commandObject);
     Boolean verdict = cacheabilityMap.get(command);
-    if (verdict == null && fallback != null) {
-      verdict = fallback.isCacheable(commandObject);
-    }
     if (verdict == null) {
       logUnknownCommandName(command);
       return false;
     }
-    return verdict;
+    return verdict && (narrowing == null || narrowing.isCacheable(commandObject));
+  }
+
+  boolean isEligible(ProtocolCommand command) {
+    return Boolean.TRUE.equals(cacheabilityMap.get(command));
+  }
+
+  ProtocolCommand effectiveCommand(CommandObject<?> commandObject) {
+    return getWithSubcommand(commandObject.getArguments());
   }
 
   private ProtocolCommand getWithSubcommand(CommandArguments commandArguments) {
@@ -141,14 +161,14 @@ class CacheabilityResolver implements Cacheable {
 
   /**
    * Final verdict for every command known to Jedis, built in layers: first every command is judged
-   * by the metadata from the {@link MetadataResolver} (known server metadata fixes already
+   * by the metadata from the {@link CommandMetadataResolver} (known server metadata fixes already
    * applied), then the caller-supplied exclusions are recorded as not cacheable. Commands without
-   * metadata are absent, so lookups on them fall through to the fallback or fail closed.
+   * metadata are absent, so lookups on them fail closed.
    */
   Map<ProtocolCommand, Boolean> resolve() {
     Map<ProtocolCommand, Boolean> cacheabilityMap = new HashMap<>();
     Map<String, ProtocolCommand> canonicalCommands = new HashMap<>();
-    for (ProtocolCommand[] values : MetadataResolver.protocolCommandEnums()) {
+    for (ProtocolCommand[] values : ProtocolCommands.allCommands()) {
       for (ProtocolCommand command : values) {
         CommandMetadata metadata = metadataResolver.resolve(toString(command));
         if (metadata != null) {

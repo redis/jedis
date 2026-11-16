@@ -11,8 +11,12 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 
-import redis.clients.jedis.MetadataResolver;
+import redis.clients.jedis.BuilderFactory;
+import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.CommandMetadataResolverFactory;
+import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.Protocol.Keyword;
 
 /**
  * For now the custom policy decides alone, matching the pre-resolver behavior; the resolver gate
@@ -25,7 +29,7 @@ public class CustomCacheablePolicyTest {
   private static final Cacheable DENY_ALL = (command, keys) -> false;
 
   private static CacheabilityResolver resolver() {
-    return new CacheabilityResolver(new MetadataResolver());
+    return new CacheabilityResolver(CommandMetadataResolverFactory.defaultResolver());
   }
 
   @Test
@@ -44,6 +48,18 @@ public class CustomCacheablePolicyTest {
     assertTrue(policy.isCacheable(Command.XREAD, Collections.emptyList()));
     assertFalse(new CustomCacheablePolicy(DENY_ALL, resolver()).isCacheable(Command.GET,
       Collections.emptyList()));
+  }
+
+  @Test
+  public void divergenceFromTheDefaultPolicyDoesNotChangeTheVerdict() {
+    CustomCacheablePolicy policy = new CustomCacheablePolicy(ALLOW_ALL, resolver());
+    assertTrue(policy.isCacheable(Command.SET, Collections.emptyList()));
+    // and again, exercising the warn-once path
+    assertTrue(policy.isCacheable(Command.SET, Collections.emptyList()));
+    // through the CommandObject path, with a declared subcommand the default policy denies
+    assertTrue(policy.isCacheable(
+      new CommandObject<>(new CommandArguments(Command.XINFO, Keyword.CONSUMERS).key("k").add("g"),
+          BuilderFactory.STRING)));
   }
 
   @Test

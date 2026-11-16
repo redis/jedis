@@ -1,8 +1,10 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.util.JedisAsserts;
 import redis.clients.jedis.util.JedisByteMap;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -40,8 +42,9 @@ public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
    * DO NOT USE THIS METHOD UNLESS YOU KNOW WHAT YOU ARE DOING.
    * </p>
    * @return StaticCommandFlagsRegistry
-   * @throws RuntimeException when the command metadata failed to load; by design the registry fails
-   *           rather than run with wrong information, and the load is retried on the next call
+   * @throws IllegalStateException when the command metadata failed to load, carrying the load
+   *           failure as its cause; thrown on every call, the registry never runs on wrong
+   *           information
    */
   public static StaticCommandFlagsRegistry registry() {
     StaticCommandFlagsRegistry registry = REGISTRY;
@@ -58,11 +61,15 @@ public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
   }
 
   private static StaticCommandFlagsRegistry createRegistry() {
-    Builder builder = new Builder();
-
     // populated from the shared command metadata (MetadataResolver)
-    CommandFlagsInitializer.initialize(builder);
+    return create(new MetadataResolver());
+  }
 
+  @Experimental
+  public static StaticCommandFlagsRegistry create(CommandMetadataResolver metadataResolver) {
+    JedisAsserts.notNull(metadataResolver, "metadataResolver must not be null");
+    Builder builder = new Builder();
+    CommandFlagsInitializer.initialize(builder, metadataResolver);
     return builder.build();
   }
 

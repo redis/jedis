@@ -2,8 +2,6 @@ package redis.clients.jedis;
 
 import java.util.Set;
 
-import redis.clients.jedis.MetadataResolver.CommandMetadata;
-
 /**
  * Test-only bridge for constructing {@link CommandMetadata} outside this package; production
  * construction stays package-private (generated table, reader, and fixes only).

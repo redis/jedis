@@ -2,6 +2,7 @@ package redis.clients.jedis.builders;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.*;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.csc.CacheFactory;
@@ -45,6 +46,8 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    * @since 8.1
    */
   protected CacheFactory cacheFactory = new CacheFactory();
+  protected CommandMetadataResolver commandMetadataResolver = CommandMetadataResolverFactory
+      .defaultResolver();
 
   /**
    * @deprecated This field is deprecated and should be set on JedisClientConfig instead.
@@ -171,10 +174,11 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
     // Validate configuration
     validateSpecificConfiguration();
 
-    // Create cache from config if provided
+    // Create cache from config if provided; a client-level metadata resolver overrides the
+    // metadata source of the cacheability verdicts
     if (this.cacheConfig != null) {
-      this.cache = (cacheFactory != null ? cacheFactory : new CacheFactory())
-          .createCache(this.cacheConfig);
+      CacheFactory factory = cacheFactory != null ? cacheFactory : new CacheFactory();
+      this.cache = factory.createCache(this.cacheConfig, this.commandMetadataResolver);
     }
 
     if (this.clientConfig == null) {
@@ -241,8 +245,8 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
 
   /**
    * Sets the factory that creates the {@link Cache} from the {@link #cacheConfig(CacheConfig)}
-   * during build. Override {@link CacheFactory#getNewCache(CacheConfig)} to plug in a custom cache
-   * implementation without the reflective {@code cacheClass} mechanism.
+   * during build. Override {@link CacheFactory#createCache(CacheConfig, CommandMetadataResolver)}
+   * to plug in a custom cache implementation without the reflective {@code cacheClass} mechanism.
    * @param cacheFactory the cache factory; must not be null
    * @return this builder
    * @since 8.1
@@ -250,6 +254,13 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
   public T cacheFactory(CacheFactory cacheFactory) {
     JedisAsserts.notNull(cacheFactory, "cacheFactory cannot be null");
     this.cacheFactory = cacheFactory;
+    return self();
+  }
+
+  @Experimental
+  public T commandMetadataResolver(CommandMetadataResolver commandMetadataResolver) {
+    JedisAsserts.notNull(commandMetadataResolver, "commandMetadataResolver cannot be null");
+    this.commandMetadataResolver = commandMetadataResolver;
     return self();
   }
 

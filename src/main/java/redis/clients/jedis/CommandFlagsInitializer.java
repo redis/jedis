@@ -9,12 +9,12 @@ import java.util.Map;
 import redis.clients.jedis.CommandFlagsRegistry.CommandFlag;
 import redis.clients.jedis.CommandFlagsRegistry.RequestPolicy;
 import redis.clients.jedis.CommandFlagsRegistry.ResponsePolicy;
-import redis.clients.jedis.MetadataResolver.CommandMetadata;
 
 /**
- * Populates the {@link StaticCommandFlagsRegistry} from the shared command metadata of
- * {@link MetadataResolver}, replacing the previously generated initializer so command flags and
- * request/response policies come from the same single metadata source as cacheability.
+ * Populates a {@link StaticCommandFlagsRegistry} from the command metadata of a
+ * {@link CommandMetadataResolver} (the shared {@link MetadataResolver} by default), replacing the
+ * previously generated initializer so command flags and request/response policies come from the
+ * same single metadata source as cacheability.
  * <p>
  * Two adjustments are applied on top of the raw metadata, each defined declaratively below:
  * {@link #MANUAL_OVERRIDES} (narrow per-command replacements of specific attributes) and
@@ -72,9 +72,9 @@ final class CommandFlagsInitializer {
   private CommandFlagsInitializer() {
   }
 
-  /** Registers every command and container subcommand known to the shared metadata. */
-  public static void initialize(StaticCommandFlagsRegistry.Builder builder) {
-    for (CommandMetadata metadata : MetadataResolver.commandTable().values()) {
+  public static void initialize(StaticCommandFlagsRegistry.Builder builder,
+      CommandMetadataResolver metadataResolver) {
+    for (CommandMetadata metadata : metadataResolver.allCommandMetadata()) {
       String name = metadata.getName();
       if (name.indexOf('|') >= 0) {
         continue; // registered through its parent below, keeping the hierarchy

@@ -264,6 +264,28 @@ public class CacheabilityResolverTest {
     assertTrue(cacheable.isCacheable(Command.MGET, Collections.emptyList()));
   }
 
+  /**
+   * An exclusion given as a custom ProtocolCommand matches by name whatever its case, so it also
+   * excludes the command issued through the Jedis enum.
+   */
+  @Test
+  public void exclusionsMatchCustomProtocolCommandNamesIgnoringCase() {
+    ProtocolCommand lowerCaseGet = () -> SafeEncoder.encode("get");
+    ProtocolCommand mixedCaseXinfoStream = () -> SafeEncoder.encode("Xinfo|Stream");
+    CacheabilityResolver resolver = new CacheabilityResolver(
+        CommandMetadataResolverFactory.defaultResolver(),
+        new java.util.HashSet<>(java.util.Arrays.asList(lowerCaseGet, mixedCaseXinfoStream)));
+
+    assertFalse(resolver.isCacheable(Command.GET, Collections.emptyList()));
+    assertFalse(isCacheable(resolver, cacheKey(new CommandArguments(Command.GET).key("k"))));
+    assertFalse(isCacheable(resolver, cacheKey(
+      new CommandArguments(Command.XINFO, redis.clients.jedis.Protocol.Keyword.STREAM).key("k"))));
+    // commands not excluded keep their metadata verdict
+    assertTrue(resolver.isCacheable(Command.MGET, Collections.emptyList()));
+    assertTrue(isCacheable(resolver, cacheKey(
+      new CommandArguments(Command.XINFO, redis.clients.jedis.Protocol.Keyword.GROUPS).key("k"))));
+  }
+
   /** SORT_RO replies depend on BY/GET pattern keys that invalidation cannot track. */
   @Test
   public void sortRoDeniedByMetadataFix() {

@@ -237,8 +237,9 @@ class CacheabilityResolver implements Cacheable {
       if (cacheabilityMap.containsKey(protocolCommand)) {
         cacheabilityMap.put(protocolCommand, false);
       } else {
-        String command = toString(protocolCommand);
-        ProtocolCommand canonical = canonicalCommands.get(command);
+        // by upper-cased name, the form the canonical names are keyed by: a custom
+        // ProtocolCommand may carry its name in any case
+        ProtocolCommand canonical = canonicalCommands.get(normalizedName(protocolCommand));
         if (canonical != null) {
           cacheabilityMap.put(canonical, false);
         }

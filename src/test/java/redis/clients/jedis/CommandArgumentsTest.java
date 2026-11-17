@@ -2,6 +2,8 @@ package redis.clients.jedis;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -94,6 +96,107 @@ public class CommandArgumentsTest {
     // the capacity-aware collection path must still go through the overridable factory
     assertTrue(created.contains(Protocol.Command.HSET));
     assertTrue(created.contains(Protocol.Command.HMSET));
+  }
+
+  /** Container commands with a declared subcommand go through the overridable factory too. */
+  @Test
+  public void containerCommandsHonorCommandArgumentsOverride() {
+    class TenantArguments extends CommandArguments {
+      TenantArguments(ProtocolCommand command) {
+        super(command);
+      }
+
+      @Override
+      public CommandArguments key(Object key) {
+        return super.key("tenant:" + key);
+      }
+    }
+    CommandObjects objects = new CommandObjects(RedisProtocol.RESP3) {
+      @Override
+      protected CommandArguments commandArguments(ProtocolCommand command) {
+        return new TenantArguments(command);
+      }
+    };
+
+    CommandArguments memoryUsage = objects.memoryUsage("k").getArguments();
+    assertTrue(memoryUsage instanceof TenantArguments);
+    assertEquals(3, memoryUsage.size());
+    assertSame(Protocol.Command.MEMORY, memoryUsage.getCommand());
+    assertSame(Protocol.Keyword.USAGE, memoryUsage.get(1));
+    // the subcommand is still declared, and the subclass still shapes the key
+    assertSame(Protocol.Keyword.USAGE, memoryUsage.getSubcommand());
+    assertEquals("tenant:k", memoryUsage.getKeys().get(0));
+
+    CommandArguments xinfoStream = objects.xinfoStream("k").getArguments();
+    assertTrue(xinfoStream instanceof TenantArguments);
+    assertSame(Protocol.Keyword.STREAM, xinfoStream.getSubcommand());
+    assertEquals("tenant:k", xinfoStream.getKeys().get(0));
+  }
+
+  /**
+   * Without a factory override, the key pre-processor set on CommandObjects still reaches
+   * container commands, whose arguments are created through the one-argument factory.
+   */
+  @Test
+  public void containerCommandsApplyTheKeyArgumentPreProcessor() {
+    CommandObjects objects = new CommandObjects(RedisProtocol.RESP3);
+    objects.setKeyArgumentPreProcessor(key -> "tenant:" + key);
+
+    CommandArguments memoryUsage = objects.memoryUsage("k").getArguments();
+    assertSame(Protocol.Keyword.USAGE, memoryUsage.getSubcommand());
+    assertEquals("tenant:k", memoryUsage.getKeys().get(0));
+
+    CommandArguments xinfoGroups = objects.xinfoGroups("k").getArguments();
+    assertSame(Protocol.Keyword.GROUPS, xinfoGroups.getSubcommand());
+    assertEquals("tenant:k", xinfoGroups.getKeys().get(0));
+
+    // a command without a subcommand keeps going through the same pre-processor
+    assertEquals("tenant:k", objects.get("k").getArguments().getKeys().get(0));
+  }
+
+  /** A null subcommand is rejected and leaves the arguments as they were. */
+  @Test
+  public void declaringANullSubcommandIsRejected() {
+    CommandArguments args = new CommandArguments(Protocol.Command.XINFO);
+    assertThrows(IllegalArgumentException.class, () -> args.declareSubcommand(null));
+    assertEquals(1, args.size());
+    assertNull(args.getSubcommand());
+  }
+
+  /** A subcommand can be declared only directly after the command; anything later fails fast. */
+  @Test
+  public void subcommandIsDeclaredOnlyDirectlyAfterTheCommand() {
+    CommandArguments declared = new CommandArguments(Protocol.Command.XINFO)
+        .declareSubcommand(Protocol.Keyword.STREAM);
+    assertSame(Protocol.Keyword.STREAM, declared.getSubcommand());
+    assertEquals(2, declared.size());
+
+    CommandArguments late = new CommandArguments(Protocol.Command.XINFO).add("x");
+    assertThrows(IllegalStateException.class,
+      () -> late.declareSubcommand(Protocol.Keyword.STREAM));
+    assertEquals(2, late.size());
+
+    // already declared at construction: a second one is rejected, not added
+    CommandArguments twice = new CommandArguments(Protocol.Command.XINFO, Protocol.Keyword.STREAM);
+    assertThrows(IllegalStateException.class,
+      () -> twice.declareSubcommand(Protocol.Keyword.GROUPS));
+    assertSame(Protocol.Keyword.STREAM, twice.getSubcommand());
+    assertEquals(2, twice.size());
+  }
+
+  /**
+   * A factory override that pre-adds arguments cannot build container commands. CommandObjects
+   * builds some of them (SCRIPT FLUSH, SCRIPT KILL) in its field initializers, so the failure
+   * already surfaces when such a subclass is instantiated.
+   */
+  @Test
+  public void containerCommandsFailFastWhenTheFactoryPreAddsArguments() {
+    assertThrows(IllegalStateException.class, () -> new CommandObjects(RedisProtocol.RESP3) {
+      @Override
+      protected CommandArguments commandArguments(ProtocolCommand command) {
+        return super.commandArguments(command).add("extra");
+      }
+    });
   }
 
   @Test

@@ -1,8 +1,10 @@
 package redis.clients.jedis;
 
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.args.Rawable;
 import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.util.JedisAsserts;
 import redis.clients.jedis.util.JedisByteMap;
 import redis.clients.jedis.util.SafeEncoder;
 
@@ -24,8 +26,9 @@ public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
   // Default response policy for commands without a specific policy
   public static final ResponsePolicy DEFAULT_RESPONSE_POLICY = ResponsePolicy.DEFAULT;
 
-  // Singleton instance
-  private static final StaticCommandFlagsRegistry REGISTRY = createRegistry();
+  // Singleton instance, built on first use rather than in a static initializer so a
+  // metadata-load failure surfaces to the caller instead of poisoning this class
+  private static volatile StaticCommandFlagsRegistry REGISTRY;
 
   private final Commands commands;
 
@@ -39,18 +42,44 @@ public class StaticCommandFlagsRegistry implements CommandFlagsRegistry {
    * DO NOT USE THIS METHOD UNLESS YOU KNOW WHAT YOU ARE DOING.
    * </p>
    * @return StaticCommandFlagsRegistry
+   * @throws IllegalStateException when the command metadata failed to load, carrying the load
+   *           failure as its cause; thrown on every call, the registry never runs on wrong
+   *           information
    */
   public static StaticCommandFlagsRegistry registry() {
-    return REGISTRY;
+    StaticCommandFlagsRegistry registry = REGISTRY;
+    if (registry == null) {
+      synchronized (StaticCommandFlagsRegistry.class) {
+        registry = REGISTRY;
+        if (registry == null) {
+          registry = createRegistry();
+          REGISTRY = registry;
+        }
+      }
+    }
+    return registry;
   }
 
   private static StaticCommandFlagsRegistry createRegistry() {
+    // populated from the shared command metadata (MetadataResolver)
+    return create(new MetadataResolver());
+  }
 
+  /**
+   * Creates a command flags registry from the metadata of the given resolver: the command flags and
+   * the cluster request and response policies of every command the resolver knows. Each call builds
+   * a new registry; {@link #registry()} returns the shared one over the default metadata.
+   * @param metadataResolver the source of the command metadata
+   * @return a new registry over the resolver's metadata
+   * @throws IllegalArgumentException if the resolver is null
+   * @throws IllegalStateException if the resolver's metadata failed to load
+   * @since 8.1
+   */
+  @Experimental
+  public static StaticCommandFlagsRegistry create(CommandMetadataResolver metadataResolver) {
+    JedisAsserts.notNull(metadataResolver, "metadataResolver must not be null");
     Builder builder = new Builder();
-
-    // Delegate population to generated class
-    StaticCommandFlagsRegistryInitializer.initialize(builder);
-
+    CommandFlagsInitializer.initialize(builder, metadataResolver);
     return builder.build();
   }
 

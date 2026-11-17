@@ -2,6 +2,7 @@ package redis.clients.jedis.builders;
 
 import org.apache.commons.pool2.impl.GenericObjectPoolConfig;
 import redis.clients.jedis.*;
+import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.csc.CacheConfig;
 import redis.clients.jedis.csc.CacheFactory;
@@ -10,6 +11,7 @@ import redis.clients.jedis.executors.DefaultCommandExecutor;
 import redis.clients.jedis.json.JsonObjectMapper;
 import redis.clients.jedis.providers.ConnectionProvider;
 import redis.clients.jedis.search.SearchProtocol;
+import redis.clients.jedis.util.JedisAsserts;
 
 /**
  * Abstract base class for Redis client builders that provides common configuration options.
@@ -38,6 +40,19 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
   protected CacheConfig cacheConfig = null;
   protected CommandExecutor commandExecutor = null;
   protected ConnectionProvider connectionProvider = null;
+  /**
+   * Factory used to create the {@link Cache} from {@link #cacheConfig}; see
+   * {@link #cacheFactory(CacheFactory)}.
+   * @since 8.1
+   */
+  protected CacheFactory cacheFactory = new CacheFactory();
+  /**
+   * Source of the command metadata this client uses; see
+   * {@link #commandMetadataResolver(CommandMetadataResolver)}.
+   * @since 8.1
+   */
+  protected CommandMetadataResolver commandMetadataResolver = CommandMetadataResolverFactory
+      .defaultResolver();
 
   /**
    * @deprecated This field is deprecated and should be set on JedisClientConfig instead.
@@ -164,9 +179,11 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
     // Validate configuration
     validateSpecificConfiguration();
 
-    // Create cache from config if provided
+    // Create cache from config if provided; a client-level metadata resolver overrides the
+    // metadata source of the cacheability verdicts
     if (this.cacheConfig != null) {
-      this.cache = CacheFactory.getCache(this.cacheConfig);
+      CacheFactory factory = cacheFactory != null ? cacheFactory : new CacheFactory();
+      this.cache = factory.createCache(this.cacheConfig, this.commandMetadataResolver);
     }
 
     if (this.clientConfig == null) {
@@ -228,6 +245,38 @@ public abstract class AbstractClientBuilder<T extends AbstractClientBuilder<T, C
    */
   public T cacheConfig(CacheConfig cacheConfig) {
     this.cacheConfig = cacheConfig;
+    return self();
+  }
+
+  /**
+   * Sets the factory that creates the {@link Cache} from the {@link #cacheConfig(CacheConfig)}
+   * during build. Override {@link CacheFactory#createCache(CacheConfig, CommandMetadataResolver)}
+   * to plug in a custom cache implementation without the reflective {@code cacheClass} mechanism.
+   * @param cacheFactory the cache factory; must not be null
+   * @return this builder
+   * @since 8.1
+   */
+  public T cacheFactory(CacheFactory cacheFactory) {
+    JedisAsserts.notNull(cacheFactory, "cacheFactory cannot be null");
+    this.cacheFactory = cacheFactory;
+    return self();
+  }
+
+  /**
+   * Sets the source of command metadata for the client being built. The cache created from
+   * {@link #cacheConfig(CacheConfig)} derives the cacheability of commands from it, and cluster
+   * clients build their command flags and request/response policies from it. Other clients are not
+   * affected. When not set, the shared metadata of
+   * {@link CommandMetadataResolverFactory#defaultResolver()} is used.
+   * @param commandMetadataResolver the metadata resolver; must not be null
+   * @return this builder
+   * @throws IllegalArgumentException if the resolver is null
+   * @since 8.1
+   */
+  @Experimental
+  public T commandMetadataResolver(CommandMetadataResolver commandMetadataResolver) {
+    JedisAsserts.notNull(commandMetadataResolver, "commandMetadataResolver cannot be null");
+    this.commandMetadataResolver = commandMetadataResolver;
     return self();
   }
 

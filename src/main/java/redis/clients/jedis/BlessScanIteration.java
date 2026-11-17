@@ -28,7 +28,7 @@ public class BlessScanIteration extends JedisCommandIterationBase<ScanResult<Str
   }
 
   private CommandArguments args(String cursor) {
-    return new CommandArguments(Protocol.Command.BLESS).add(Keyword.SCAN).add(cursor).add(flag)
+    return new CommandArguments(Protocol.Command.BLESS, Keyword.SCAN).add(cursor).add(flag)
         .add(Keyword.COUNT).add(count);
   }
 

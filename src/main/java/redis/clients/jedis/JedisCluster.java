@@ -308,7 +308,8 @@ public class JedisCluster extends UnifiedJedis {
 
   @Experimental
   public JedisCluster(Set<HostAndPort> hnp, JedisClientConfig jedisClientConfig, CacheConfig cacheConfig) {
-    this(hnp, jedisClientConfig, CacheFactory.getCache(cacheConfig));
+    this(hnp, jedisClientConfig, new CacheFactory().createCache(cacheConfig,
+        CommandMetadataResolverFactory.defaultResolver()));
   }
 
   @Experimental

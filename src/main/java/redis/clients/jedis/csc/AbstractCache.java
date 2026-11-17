@@ -27,7 +27,7 @@ public abstract class AbstractCache implements Cache {
   private volatile CacheStats stats = new CacheStats();
 
   protected AbstractCache(int maximumSize) {
-    this(maximumSize, DefaultCacheable.INSTANCE);
+    this(maximumSize, CacheabilityResolver.defaultResolver());
   }
 
   protected AbstractCache(int maximumSize, Cacheable cacheable) {
@@ -176,7 +176,7 @@ public abstract class AbstractCache implements Cache {
     if (cacheKey.getRedisKeys().isEmpty()) {
       return false;
     }
-    return cacheable.isCacheable(cacheKey.getRedisCommand(), cacheKey.getRedisKeys());
+    return cacheable.isCacheable(cacheKey.getCommandObject());
   }
 
   @Override

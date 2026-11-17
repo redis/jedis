@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.util.*;
 
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.annots.Internal;
 import redis.clients.jedis.args.Rawable;
@@ -9,6 +10,7 @@ import redis.clients.jedis.args.RawableFactory;
 import redis.clients.jedis.commands.ProtocolCommand;
 import redis.clients.jedis.params.IParams;
 import redis.clients.jedis.search.RediSearchUtil;
+import redis.clients.jedis.util.JedisAsserts;
 import redis.clients.jedis.util.JedisClusterCRC16;
 
 public class CommandArguments implements Iterable<Rawable> {
@@ -36,13 +38,33 @@ public class CommandArguments implements Iterable<Rawable> {
 
   private boolean blocking;
 
+  private boolean hasSubcommand;
+
   private CommandArguments() {
     throw new InstantiationError();
   }
 
   public CommandArguments(ProtocolCommand command) {
+    this(command, null);
+  }
+
+  /**
+   * Creates arguments for a container command with its subcommand declared, for example
+   * {@code new CommandArguments(XINFO, STREAM)}. Declaring the subcommand lets consumers such as
+   * the client-side caching policy judge the {@code PARENT|CHILD} pair by its own metadata instead
+   * of the container's. This constructor is the only public way to declare a subcommand: it
+   * cannot be introduced later on arguments that already exist.
+   * @param command the container command
+   * @param subcommand the subcommand; null behaves like {@link #CommandArguments(ProtocolCommand)}
+   * @since 8.1
+   */
+  public CommandArguments(ProtocolCommand command, Keyword subcommand) {
     args = new ArrayList<>();
     args.add(command);
+    hasSubcommand = subcommand != null;
+    if (hasSubcommand) {
+      args.add(subcommand);
+    }
 
     keys = new ArrayList<>(DEFAULT_KEYS_CAPACITY);
     cachedHashSlots = null;
@@ -76,8 +98,37 @@ public class CommandArguments implements Iterable<Rawable> {
     return this;
   }
 
+  /**
+   * Declares the subcommand on arguments that hold only their command so far, like the
+   * two-argument constructor does. {@link #getSubcommand()} reads it from the position after the
+   * command, so it cannot be declared once anything else has been added.
+   * <p>
+   * Package-private on purpose: outside this package a subcommand can only be declared at
+   * construction, never on arguments that already exist.
+   * @throws IllegalArgumentException if the subcommand is null
+   * @throws IllegalStateException if these arguments already hold more than their command
+   */
+  CommandArguments declareSubcommand(Keyword subcommand) {
+    JedisAsserts.notNull(subcommand, "subcommand must not be null");
+    if (args.size() != 1) {
+      throw new IllegalStateException("Cannot declare subcommand " + subcommand + " of "
+          + getCommand() + ": the arguments already hold more than the command.");
+    }
+    args.add(subcommand);
+    hasSubcommand = true;
+    return this;
+  }
+
   public ProtocolCommand getCommand() {
     return (ProtocolCommand) args.get(0);
+  }
+
+  /**
+   * The subcommand declared at construction, or null when this command was built without one.
+   * @since 8.1
+   */
+  public Keyword getSubcommand() {
+    return hasSubcommand ? (Keyword) args.get(1) : null;
   }
 
   @Experimental
@@ -260,8 +311,8 @@ public class CommandArguments implements Iterable<Rawable> {
    * Returns the keys used in this command.
    * <p>
    * <b>Internal API:</b> This method is internal and should not be used by external code.
-   * It is exposed for internal use by caching ({@link redis.clients.jedis.csc.CacheKey#getRedisKeys()})
-   * and cluster operations.
+   * It is exposed for internal use by caching (via
+   * {@link redis.clients.jedis.csc.CacheKey#getCommandObject()}) and cluster operations.
    * <p>
    * <b>Supported types:</b> Keys are stored as either {@link String} or {@code byte[]} depending on
    * how they were added via {@link #key(Object)} or {@link #addHashSlotKey(String)}/{@link #addHashSlotKey(byte[])}.

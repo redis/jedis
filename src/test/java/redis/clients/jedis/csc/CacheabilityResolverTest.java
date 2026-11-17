@@ -1,0 +1,348 @@
+package redis.clients.jedis.csc;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
+
+import org.junit.jupiter.api.Test;
+
+import redis.clients.jedis.BuilderFactory;
+import redis.clients.jedis.CommandArguments;
+import redis.clients.jedis.CommandMetadata;
+import redis.clients.jedis.CommandMetadataResolver;
+import redis.clients.jedis.CommandMetadataResolverFactory;
+import redis.clients.jedis.CommandObject;
+import redis.clients.jedis.CommandObjects;
+import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.commands.ProtocolCommand;
+import redis.clients.jedis.util.SafeEncoder;
+
+/**
+ * Unit tests for the eligibility rules, rule by rule, and for the verdict precedence: overrides,
+ * then known server metadata fixes, then resolved metadata.
+ */
+public class CacheabilityResolverTest {
+
+  private static CommandMetadata metadata(String flags, String tips, long firstKey, long step,
+      boolean hasKeyNameSpec) {
+    return redis.clients.jedis.CommandMetadataTestFactory.create("X", toSet(flags), toSet(tips),
+      firstKey, -1, step, hasKeyNameSpec);
+  }
+
+  private static java.util.Set<String> toSet(String spaceSeparated) {
+    return spaceSeparated.isEmpty() ? Collections.emptySet()
+        : new java.util.HashSet<>(java.util.Arrays.asList(spaceSeparated.split(" ")));
+  }
+
+  @Test
+  public void eligibleCommandIsCacheable() {
+    assertTrue(
+      CacheabilityResolver.isClientSideCacheable(metadata("fast readonly", "", 1, 1, true)));
+  }
+
+  @Test
+  public void dontCacheTipWinsOverEverything() {
+    assertFalse(CacheabilityResolver
+        .isClientSideCacheable(metadata("fast readonly", "dont_cache", 1, 1, true)));
+  }
+
+  @Test
+  public void nonReadonlyIsNotCacheable() {
+    assertFalse(
+      CacheabilityResolver.isClientSideCacheable(metadata("write denyoom", "", 1, 1, true)));
+  }
+
+  @Test
+  public void blockingIsNotCacheable() {
+    assertFalse(
+      CacheabilityResolver.isClientSideCacheable(metadata("readonly blocking", "", 1, 1, true)));
+  }
+
+  @Test
+  public void keylessIsNotCacheable() {
+    assertFalse(CacheabilityResolver.isClientSideCacheable(metadata("readonly", "", 0, 0, false)));
+  }
+
+  @Test
+  public void legacyKeyMetadataProvesKeyArgument() {
+    assertTrue(CacheabilityResolver.isClientSideCacheable(metadata("readonly", "", 1, 1, false)));
+  }
+
+  @Test
+  public void keyNameSpecProvesKeyArgumentWithoutLegacyMetadata() {
+    // movablekeys commands report firstKey == 0 but still name keys via key specs
+    assertTrue(
+      CacheabilityResolver.isClientSideCacheable(metadata("readonly movablekeys", "", 0, 0, true)));
+  }
+
+  @Test
+  public void nondeterministicOutputIsNotCacheable() {
+    assertFalse(CacheabilityResolver
+        .isClientSideCacheable(metadata("readonly", "nondeterministic_output", 1, 1, true)));
+  }
+
+  @Test
+  public void scriptRunnerIsNotCacheable() {
+    assertFalse(CacheabilityResolver
+        .isClientSideCacheable(metadata("readonly script_runner", "", 0, 0, true)));
+  }
+
+  /** Well-known alignment cases, resolved over the real generated metadata table. */
+  @Test
+  public void alignmentCasesOverGeneratedMetadata() {
+    Map<ProtocolCommand, Boolean> cacheabilityMap = new CacheabilityResolver(
+        CommandMetadataResolverFactory.defaultResolver()).resolve();
+    assertEquals(true, cacheabilityMap.get(Command.GET));
+    assertEquals(false, cacheabilityMap.get(Command.KEYS)); // no key-name argument
+    assertEquals(false, cacheabilityMap.get(Command.XPENDING)); // nondeterministic_output
+    assertEquals(false, cacheabilityMap.get(Command.EVAL_RO)); // script_runner
+    assertEquals(false, cacheabilityMap.get(Command.EVALSHA_RO)); // script_runner
+    assertEquals(false, cacheabilityMap.get(Command.FCALL_RO)); // script_runner
+    assertEquals(false, cacheabilityMap.get(Command.XREADGROUP)); // not readonly
+    assertEquals(false, cacheabilityMap.get(Command.XREAD)); // blocking
+  }
+
+  /** Server metadata says TOUCH and VRANDMEMBER are cacheable; the built-in fixes deny them. */
+  @Test
+  public void knownServerMetadataFixesWinOverMetadata() {
+    Map<ProtocolCommand, Boolean> cacheabilityMap = new CacheabilityResolver(
+        CommandMetadataResolverFactory.defaultResolver()).resolve();
+    assertEquals(false, cacheabilityMap.get(Command.TOUCH));
+    assertEquals(false, cacheabilityMap.get(Command.VRANDMEMBER));
+  }
+
+  @Test
+  public void overridesWinOverFixesAndMetadata() {
+    Set<ProtocolCommand> overrides = new HashSet<>();
+    overrides.add(Command.TOUCH); // already denied by the metadata fix; stays denied
+    overrides.add(Command.GET); // excluded despite a cacheable metadata verdict
+    Cacheable cacheable = new CacheabilityResolver(CommandMetadataResolverFactory.defaultResolver(),
+        overrides);
+
+    assertFalse(cacheable.isCacheable(Command.TOUCH, Collections.emptyList()));
+    assertFalse(cacheable.isCacheable(Command.GET, Collections.emptyList()));
+    // commands not overridden keep their metadata verdict
+    assertTrue(cacheable.isCacheable(Command.MGET, Collections.emptyList()));
+  }
+
+  /** Commands without metadata get no verdict, so lookups on them fail closed. */
+  @Test
+  public void commandsWithoutMetadataGetNoVerdict() {
+    Map<ProtocolCommand, Boolean> cacheabilityMap = new CacheabilityResolver(
+        CommandMetadataResolverFactory.defaultResolver()).resolve();
+    assertFalse(cacheabilityMap.containsKey(Command.SENTINEL));
+  }
+
+  /** Commands with no verdict fail closed at lookup time. */
+  @Test
+  public void unknownCommandFailsClosed() {
+    Cacheable cacheable = new CacheabilityResolver(
+        CommandMetadataResolverFactory.defaultResolver());
+    ProtocolCommand unknown = () -> SafeEncoder.encode("NO.SUCH.COMMAND");
+    assertFalse(cacheable.isCacheable(unknown, Collections.emptyList()));
+    // and again, exercising the warn-once path
+    assertFalse(cacheable.isCacheable(unknown, Collections.emptyList()));
+  }
+
+  /** A cacheable command whose name contains the pipe character is evaluated as eligible. */
+  @Test
+  public void pipeNamedCacheableCommandIsEligible() {
+    CommandMetadataResolver metadataResolver = CommandMetadataResolverFactory.defaultResolver();
+    // eligible by the metadata rules, resolved by their full PARENT|CHILD name
+    assertTrue(
+      CacheabilityResolver.isClientSideCacheable(metadataResolver.resolve("MEMORY|USAGE")));
+    assertTrue(
+      CacheabilityResolver.isClientSideCacheable(metadataResolver.resolve("XINFO|GROUPS")));
+  }
+
+  /**
+   * Container subcommand names contain a pipe ({@code PARENT|CHILD}): the metadata resolves by full
+   * name and the eligibility rules judge it. A user-defined {@link ProtocolCommand} carrying a pipe
+   * name misses the precomputed map and is judged by that name.
+   */
+  @Test
+  public void pipeSeparatedSubcommandNames() {
+    CommandMetadataResolver metadataResolver = CommandMetadataResolverFactory.defaultResolver();
+    assertTrue(
+      CacheabilityResolver.isClientSideCacheable(metadataResolver.resolve("XINFO|STREAM")));
+    assertTrue(
+      CacheabilityResolver.isClientSideCacheable(metadataResolver.resolve("MEMORY|USAGE")));
+    // nondeterministic_output sibling stays ineligible
+    assertFalse(
+      CacheabilityResolver.isClientSideCacheable(metadataResolver.resolve("XINFO|CONSUMERS")));
+
+    Cacheable resolver = new CacheabilityResolver(metadataResolver);
+    // the merged command from the subcommand constructor hits its precomputed verdict
+    assertTrue(resolver.isCacheable(new CommandObject<>(
+        new CommandArguments(Command.XINFO, redis.clients.jedis.Protocol.Keyword.STREAM).key("k"),
+        BuilderFactory.STRING)));
+    // a user-defined ProtocolCommand is not value-equal to the map keys: resolved by its name
+    ProtocolCommand pipeCommand = () -> SafeEncoder.encode("XINFO|STREAM");
+    assertTrue(resolver.isCacheable(pipeCommand, Collections.emptyList()));
+    ProtocolCommand deniedSibling = () -> SafeEncoder.encode("XINFO|CONSUMERS");
+    assertFalse(resolver.isCacheable(deniedSibling, Collections.emptyList()));
+  }
+
+  private static CacheKey<?> cacheKey(redis.clients.jedis.CommandArguments args) {
+    return new CacheKey<>(new CommandObject<>(args, redis.clients.jedis.BuilderFactory.STRING));
+  }
+
+  private static boolean isCacheable(Cacheable cacheable, CacheKey<?> cacheKey) {
+    // what AbstractCache does: the CacheKey exposes the pipe-merged full command
+    return cacheable.isCacheable(cacheKey.getCommandObject());
+  }
+
+  /** Container subcommands declared at construction are judged by their own metadata. */
+  @Test
+  public void containerSubcommandsResolveViaFullCommand() {
+    CacheabilityResolver resolver = new CacheabilityResolver(
+        CommandMetadataResolverFactory.defaultResolver());
+    redis.clients.jedis.Protocol.Keyword stream = redis.clients.jedis.Protocol.Keyword.STREAM;
+    redis.clients.jedis.Protocol.Keyword groups = redis.clients.jedis.Protocol.Keyword.GROUPS;
+    redis.clients.jedis.Protocol.Keyword consumers = redis.clients.jedis.Protocol.Keyword.CONSUMERS;
+    redis.clients.jedis.Protocol.Keyword usage = redis.clients.jedis.Protocol.Keyword.USAGE;
+
+    assertTrue(
+      isCacheable(resolver, cacheKey(new CommandArguments(Command.XINFO, stream).key("k"))));
+    assertTrue(
+      isCacheable(resolver, cacheKey(new CommandArguments(Command.XINFO, groups).key("k"))));
+    assertTrue(
+      isCacheable(resolver, cacheKey(new CommandArguments(Command.MEMORY, usage).key("k"))));
+    // nondeterministic sibling stays denied
+    assertFalse(isCacheable(resolver,
+      cacheKey(new CommandArguments(Command.XINFO, consumers).key("k").add("g"))));
+    // and the cached-verdict path returns the same answer
+    assertTrue(
+      isCacheable(resolver, cacheKey(new CommandArguments(Command.XINFO, stream).key("k"))));
+  }
+
+  /**
+   * Exclusions apply to the exact command: excluding a container parent does not exclude its
+   * subcommands; a subcommand is excluded individually by its PARENT|CHILD name.
+   */
+  @Test
+  public void exclusionsApplyToExactCommandOnly() {
+    CacheabilityResolver parentExcluded = new CacheabilityResolver(
+        CommandMetadataResolverFactory.defaultResolver(), Collections.singleton(Command.XINFO));
+    assertTrue(isCacheable(parentExcluded, cacheKey(
+      new CommandArguments(Command.XINFO, redis.clients.jedis.Protocol.Keyword.STREAM).key("k"))));
+
+    ProtocolCommand xinfoStream = () -> SafeEncoder.encode("XINFO|STREAM");
+    CacheabilityResolver subcommandExcluded = new CacheabilityResolver(
+        CommandMetadataResolverFactory.defaultResolver(), Collections.singleton(xinfoStream));
+    assertFalse(isCacheable(subcommandExcluded, cacheKey(
+      new CommandArguments(Command.XINFO, redis.clients.jedis.Protocol.Keyword.STREAM).key("k"))));
+    // the sibling subcommand keeps its verdict
+    assertTrue(isCacheable(subcommandExcluded, cacheKey(
+      new CommandArguments(Command.XINFO, redis.clients.jedis.Protocol.Keyword.GROUPS).key("k"))));
+  }
+
+  /** Commands without a declared subcommand keep the fast per-command verdict. */
+  @Test
+  public void nonContainerCommandsKeepVerdictThroughCacheKeyPath() {
+    CacheabilityResolver resolver = new CacheabilityResolver(
+        CommandMetadataResolverFactory.defaultResolver());
+    assertTrue(isCacheable(resolver, cacheKey(new CommandArguments(Command.GET).key("k"))));
+    assertFalse(
+      isCacheable(resolver, cacheKey(new CommandArguments(Command.SET).key("k").add("v"))));
+  }
+
+  /** Exclusions normalize to the canonical map key, so custom ProtocolCommand instances work. */
+  @Test
+  public void exclusionsWorkForCustomProtocolCommandInstances() {
+    ProtocolCommand rawGet = () -> SafeEncoder.encode("GET");
+    Cacheable cacheable = new CacheabilityResolver(CommandMetadataResolverFactory.defaultResolver(),
+        Collections.singleton(rawGet));
+    assertFalse(cacheable.isCacheable(Command.GET, Collections.emptyList()));
+    // other commands keep their metadata verdict
+    assertTrue(cacheable.isCacheable(Command.MGET, Collections.emptyList()));
+  }
+
+  /**
+   * Guards the container subcommands the bundled metadata makes cacheable. A subcommand is judged
+   * by its own metadata only when its command builder declares it, with
+   * {@code commandArguments(PARENT, CHILD)}; built as {@code commandArguments(PARENT).add(CHILD)}
+   * it keeps the parent verdict and is silently never cached.
+   * <p>
+   * When regenerated metadata makes another subcommand eligible, this test fails: build that
+   * command with the two-argument factory in {@code CommandObjects}, then add it to the map below.
+   */
+  @Test
+  public void everyCacheableSubcommandIsDeclaredByItsCommandBuilder() {
+    CommandObjects objects = new CommandObjects(RedisProtocol.RESP3);
+    Map<String, CommandObject<?>> declaredBuilders = new TreeMap<>();
+    declaredBuilders.put("MEMORY|USAGE", objects.memoryUsage("k"));
+    declaredBuilders.put("XINFO|GROUPS", objects.xinfoGroups("k"));
+    declaredBuilders.put("XINFO|STREAM", objects.xinfoStream("k"));
+
+    CommandMetadataResolver metadataResolver = CommandMetadataResolverFactory.defaultResolver();
+    Set<String> cacheableSubcommands = new TreeSet<>();
+    for (CommandMetadata metadata : metadataResolver.allCommandMetadata()) {
+      if (metadata.getName().indexOf('|') > 0
+          && CacheabilityResolver.isClientSideCacheable(metadata)) {
+        cacheableSubcommands.add(metadata.getName());
+      }
+    }
+    assertEquals(declaredBuilders.keySet(), cacheableSubcommands,
+      "the cacheable subcommands in the metadata changed; declare each new one with"
+          + " commandArguments(PARENT, CHILD) in CommandObjects and list its builder here");
+
+    // each listed builder really declares its subcommand, so the command is cached as listed
+    CacheabilityResolver resolver = new CacheabilityResolver(metadataResolver);
+    for (Map.Entry<String, CommandObject<?>> entry : declaredBuilders.entrySet()) {
+      CommandArguments arguments = entry.getValue().getArguments();
+      assertNotNull(arguments.getSubcommand(), entry.getKey() + " does not declare a subcommand");
+      assertEquals(entry.getKey(), SafeEncoder.encode(arguments.getCommand().getRaw()) + "|"
+          + SafeEncoder.encode(arguments.getSubcommand().getRaw()));
+      assertTrue(resolver.isCacheable(entry.getValue()), entry.getKey() + " is not cacheable");
+    }
+  }
+
+  /**
+   * An exclusion given as a custom ProtocolCommand matches by name whatever its case, so it also
+   * excludes the command issued through the Jedis enum.
+   */
+  @Test
+  public void exclusionsMatchCustomProtocolCommandNamesIgnoringCase() {
+    ProtocolCommand lowerCaseGet = () -> SafeEncoder.encode("get");
+    ProtocolCommand mixedCaseXinfoStream = () -> SafeEncoder.encode("Xinfo|Stream");
+    CacheabilityResolver resolver = new CacheabilityResolver(
+        CommandMetadataResolverFactory.defaultResolver(),
+        new java.util.HashSet<>(java.util.Arrays.asList(lowerCaseGet, mixedCaseXinfoStream)));
+
+    assertFalse(resolver.isCacheable(Command.GET, Collections.emptyList()));
+    assertFalse(isCacheable(resolver, cacheKey(new CommandArguments(Command.GET).key("k"))));
+    assertFalse(isCacheable(resolver, cacheKey(
+      new CommandArguments(Command.XINFO, redis.clients.jedis.Protocol.Keyword.STREAM).key("k"))));
+    // commands not excluded keep their metadata verdict
+    assertTrue(resolver.isCacheable(Command.MGET, Collections.emptyList()));
+    assertTrue(isCacheable(resolver, cacheKey(
+      new CommandArguments(Command.XINFO, redis.clients.jedis.Protocol.Keyword.GROUPS).key("k"))));
+  }
+
+  /** SORT_RO replies depend on BY/GET pattern keys that invalidation cannot track. */
+  @Test
+  public void sortRoDeniedByMetadataFix() {
+    Cacheable resolver = new CacheabilityResolver(CommandMetadataResolverFactory.defaultResolver());
+    assertFalse(resolver.isCacheable(Command.SORT_RO, Collections.emptyList()));
+  }
+
+  @Test
+  public void nullMetadataResolverRejected() {
+    assertThrows(NullPointerException.class, () -> new CacheabilityResolver(null));
+    // null overrides means "no overrides" and behaves like the default policy
+    Cacheable cacheable = new CacheabilityResolver(CommandMetadataResolverFactory.defaultResolver(),
+        null);
+    assertTrue(cacheable.isCacheable(Command.GET, Collections.emptyList()));
+  }
+}

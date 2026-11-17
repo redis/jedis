@@ -1,101 +1,45 @@
 package redis.clients.jedis.csc;
 
-import java.util.HashSet;
+import java.util.Collections;
 import java.util.List;
-import java.util.Set;
 
-import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.commands.ProtocolCommand;
-import redis.clients.jedis.json.JsonProtocol.JsonCommand;
-import redis.clients.jedis.timeseries.TimeSeriesProtocol.TimeSeriesCommand;
 
+/**
+ * A default {@link Cacheable} implementation that uses the {@link CacheabilityResolver} to determine the cacheability of
+ * commands. This class is deprecated and will be removed in future versions. Use CacheConfig builder to configure cacheability instead, like excluding commands.
+ * See csc-command-cacheability.md for more details and other options.
+ */
+@Deprecated
 public class DefaultCacheable implements Cacheable {
 
+  @Deprecated
   public static final DefaultCacheable INSTANCE = new DefaultCacheable();
 
-  private static final Set<ProtocolCommand> DEFAULT_CACHEABLE_COMMANDS = new HashSet<ProtocolCommand>() {
-    {
-      add(Command.BITCOUNT);
-      add(Command.BITFIELD_RO);
-      add(Command.BITPOS);
-      add(Command.BITRANGEINTARRAY);
-      add(Command.EXISTS);
-      add(Command.GEODIST);
-      add(Command.GEOHASH);
-      add(Command.GEOPOS);
-      add(Command.GEORADIUSBYMEMBER_RO);
-      add(Command.GEORADIUS_RO);
-      add(Command.GEOSEARCH);
-      add(Command.GET);
-      add(Command.GETBIT);
-      add(Command.GETRANGE);
-      add(Command.HEXISTS);
-      add(Command.HGET);
-      add(Command.HGETALL);
-      add(Command.HKEYS);
-      add(Command.HLEN);
-      add(Command.HMGET);
-      add(Command.HSTRLEN);
-      add(Command.HVALS);
-      add(JsonCommand.ARRINDEX);
-      add(JsonCommand.ARRLEN);
-      add(JsonCommand.GET);
-      add(JsonCommand.MGET);
-      add(JsonCommand.OBJKEYS);
-      add(JsonCommand.OBJLEN);
-      add(JsonCommand.STRLEN);
-      add(JsonCommand.TYPE);
-      add(Command.LCS);
-      add(Command.LINDEX);
-      add(Command.LLEN);
-      add(Command.LPOS);
-      add(Command.LRANGE);
-      add(Command.MGET);
-      add(Command.SCARD);
-      add(Command.SDIFF);
-      add(Command.SINTER);
-      add(Command.SISMEMBER);
-      add(Command.SMEMBERS);
-      add(Command.SMISMEMBER);
-      add(Command.STRLEN);
-      add(Command.SUBSTR);
-      add(Command.SUNION);
-      add(TimeSeriesCommand.GET);
-      add(TimeSeriesCommand.INFO);
-      add(TimeSeriesCommand.RANGE);
-      add(TimeSeriesCommand.REVRANGE);
-      add(TimeSeriesCommand.NRANGE);
-      add(TimeSeriesCommand.NREVRANGE);
-      add(Command.TYPE);
-      add(Command.XLEN);
-      add(Command.XPENDING);
-      add(Command.XRANGE);
-      add(Command.XREVRANGE);
-      add(Command.ZCARD);
-      add(Command.ZCOUNT);
-      add(Command.ZLEXCOUNT);
-      add(Command.ZMSCORE);
-      add(Command.ZRANGE);
-      add(Command.ZRANGEBYLEX);
-      add(Command.ZRANGEBYSCORE);
-      add(Command.ZRANK);
-      add(Command.ZREVRANGE);
-      add(Command.ZREVRANGEBYLEX);
-      add(Command.ZREVRANGEBYSCORE);
-      add(Command.ZREVRANK);
-      add(Command.ZSCORE);
-    }
-  };
-
+  @Deprecated
   public DefaultCacheable() {
   }
 
+  @Deprecated
   public static boolean isDefaultCacheableCommand(ProtocolCommand command) {
-    return DEFAULT_CACHEABLE_COMMANDS.contains(command);
+    return INSTANCE.isCacheable(command, Collections.emptyList());
   }
 
   @Override
+  @Deprecated
   public boolean isCacheable(ProtocolCommand command, List<Object> keys) {
-    return isDefaultCacheableCommand(command);
+    // resolved per call, not at construction: a metadata-load failure must reach the caller as
+    // an IllegalStateException instead of failing this class's static initializer
+    return CacheabilityResolver.defaultResolver().isCacheable(command, keys);
+  }
+
+  @Override
+  public boolean isCacheable(CommandObject<?> commandObject) {
+    // a subclass may override only the two-argument method; keep routing through it
+    if (getClass() != DefaultCacheable.class) {
+      return Cacheable.super.isCacheable(commandObject);
+    }
+    return CacheabilityResolver.defaultResolver().isCacheable(commandObject);
   }
 }

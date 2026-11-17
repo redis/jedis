@@ -5,17 +5,18 @@ import redis.clients.jedis.Connection;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 
 /**
- * Connection resolver that always routes to replica nodes.
+ * Connection resolver that prefers replica nodes.
  * <p>
- * This resolver is used to enforce command execution on replicas, regardless of the command type or
- * global ReadFrom configuration.
+ * A keyed command goes to a replica of the key's slot, a keyless command to any replica. Falls back
+ * to a primary when no replica is known, which is always the case unless
+ * {@link redis.clients.jedis.JedisClientConfig#isReadOnlyForRedisClusterReplicas()} is enabled.
  * @see redis.clients.jedis.executors.ClusterCommandExecutor#executeCommandToReplica(CommandObject)
  */
-final class ReplicaOnlyConnectionResolver implements ConnectionResolver {
+final class ReplicaPreferredConnectionResolver implements ConnectionResolver {
 
   private final ClusterConnectionProvider provider;
 
-  ReplicaOnlyConnectionResolver(ClusterConnectionProvider provider) {
+  ReplicaPreferredConnectionResolver(ClusterConnectionProvider provider) {
     this.provider = provider;
   }
 

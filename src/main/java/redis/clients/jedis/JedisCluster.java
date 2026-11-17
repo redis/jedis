@@ -496,6 +496,17 @@ public class JedisCluster extends UnifiedJedis {
     throw new UnsupportedOperationException();
   }
 
+  /**
+   * Executes a command on a replica when one is known, otherwise on a primary.
+   * <p>
+   * Replicas are tracked only when {@link JedisClientConfig#isReadOnlyForRedisClusterReplicas()}
+   * is enabled; without it the command runs on a primary. A keyed command goes to a replica of the
+   * key's slot, a keyless command to any replica.
+   * <p>
+   * The command is sent to a single node: request and response policies are not applied.
+   * @param commandObject the command to execute
+   * @return the reply from the command
+   */
   public final <T> T executeCommandToReplica(CommandObject<T> commandObject) {
     if (!(executor instanceof ClusterCommandExecutor)) {
       throw new UnsupportedOperationException("Support only execute to replica in ClusterCommandExecutor");

@@ -47,6 +47,7 @@ public class JedisClusterInfoCache {
   private final ConnectionPool[] nodeBySlot = new ConnectionPool[Protocol.CLUSTER_HASHSLOTS];
   private final HostAndPort[] addressBySlot = new HostAndPort[Protocol.CLUSTER_HASHSLOTS];
   private final List<ConnectionPool>[] replicaNodesBySlot;
+  private final Map<String, ConnectionPool> replicaNodesCache = new HashMap<>();
 
   private final ReentrantReadWriteLock rwl = new ReentrantReadWriteLock();
   private final Lock r = rwl.readLock();
@@ -552,6 +553,7 @@ public class JedisClusterInfoCache {
     w.lock();
     try {
       ConnectionPool targetPool = setupNodeIfNotExist(targetNode);
+      replicaNodesCache.put(getNodeKey(targetNode), targetPool);
       for (Integer slot : targetSlots) {
         if (replicaNodesBySlot[slot] == null) {
           replicaNodesBySlot[slot] = new ArrayList<>();
@@ -594,10 +596,35 @@ public class JedisClusterInfoCache {
     }
   }
 
+  /**
+   * Returns the pools of the replicas that serve the given slot, or {@code null} when this client
+   * does not record replicas at all. Replicas are only recorded for a client configured with
+   * {@link JedisClientConfig#isReadOnlyForRedisClusterReplicas()}. With that option a slot whose
+   * replicas are not known yet returns an empty list, which a slot cache renewal can still fill;
+   * without it the result is always {@code null}, and no renewal can change that.
+   */
   public List<ConnectionPool> getSlotReplicaPools(int slot) {
     r.lock();
     try {
-      return replicaNodesBySlot[slot];
+      if (replicaNodesBySlot == null) {
+        return null;
+      }
+      List<ConnectionPool> replicaPools = replicaNodesBySlot[slot];
+      return replicaPools == null ? Collections.emptyList() : replicaPools;
+    } finally {
+      r.unlock();
+    }
+  }
+
+  /**
+   * Returns the pool of every node that the current topology records as a replica. Empty for a
+   * client that does not track replicas, see {@link #getSlotReplicaPools(int)}.
+   * @since 8.1
+   */
+  public Map<String, ConnectionPool> getReplicaNodes() {
+    r.lock();
+    try {
+      return new HashMap<>(replicaNodesCache);
     } finally {
       r.unlock();
     }
@@ -663,6 +690,7 @@ public class JedisClusterInfoCache {
   }
 
   private void resetReplicaSlots() {
+    replicaNodesCache.clear();
     if (replicaNodesBySlot == null) {
       return;
     }

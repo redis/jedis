@@ -8,7 +8,7 @@ import redis.clients.jedis.Connection;
  * Connection resolver interface for determining which connection to use for command execution.
  * <p>
  * This interface is used internally by the cluster command executor to resolve connections based on
- * the command type (keyed vs keyless) and read preference configuration.
+ * the command type (keyed vs keyless) and whether a replica is preferred.
  */
 interface ConnectionResolver {
 

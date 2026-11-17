@@ -193,6 +193,33 @@ public class ZMoveCommandObjectsTest {
     }
   }
 
+  /**
+   * The single-member zmovemember reads a one-pair nested reply as one Tuple on RESP2 and RESP3,
+   * String and byte[], with and without params, and keeps null.
+   */
+  @Test
+  public void zmovememberSingleReplyBuilder() {
+    ZMoveMemberParams nx = zMoveMemberParams().nx();
+    Tuple expected = new Tuple("a", 1.0);
+    List<Object> resp2Reply = Collections.singletonList(pair(b("a"), b("1")));
+    List<Object> resp3Reply = Collections.singletonList(pair(b("a"), 1.0));
+    for (RedisProtocol protocol : RedisProtocol.values()) {
+      CommandObjects objects = new CommandObjects(protocol);
+      List<Object> reply = protocol == RedisProtocol.RESP3 ? resp3Reply : resp2Reply;
+      List<CommandObject<Tuple>> commands = new ArrayList<>();
+      commands.add(objects.zmovemember(SRC, DST, "a"));
+      commands.add(objects.zmovemember(b(SRC), b(DST), b("a")));
+      commands.add(objects.zmovemember(SRC, DST, nx, "a"));
+      commands.add(objects.zmovemember(b(SRC), b(DST), nx, b("a")));
+      for (CommandObject<Tuple> command : commands) {
+        Tuple tuple = command.getBuilder().build(reply);
+        assertEquals(expected, tuple, protocol + " " + command.getBuilder());
+        assertEquals(1.0, tuple.getScore(), 0d);
+        assertNull(command.getBuilder().build(null));
+      }
+    }
+  }
+
   /** The byte[] overloads send the given bytes as keys and members. */
   @Test
   public void binaryOverloads() {

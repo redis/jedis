@@ -1784,4 +1784,17 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     ZMoveMemberParams xx = ZMoveMemberParams.zMoveMemberParams().xx();
     assertNull(jedis.zmovemember(xsrc, xdst, xx, SafeEncoder.encode("a")));
   }
+
+  /**
+   * Legacy Jedis zmoveByScore with inclusive double bounds moves the members in the range.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveByScoreDoubleBoundsLegacy() {
+    jedis.zadd("{z}s", 1, "a");
+    jedis.zadd("{z}s", 2, "b");
+    jedis.zadd("{z}s", 3, "c");
+    assertEquals(Arrays.asList(new Tuple("a", 1d), new Tuple("b", 2d)),
+        jedis.zmoveByScore("{z}s", "{z}d", 1, 2));
+  }
 }

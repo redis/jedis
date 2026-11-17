@@ -2026,4 +2026,16 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertArrayEquals(SafeEncoder.encode("c"), many.get(0).getBinaryElement());
   }
 
+  /** A byte[] score range without a count moves the whole range; members come back as bytes. */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveByScoreBinary() {
+    zfixture(ZBSRC, "a", 1, "b", 2, "c", 3, "e", 4);
+    List<Tuple> moved = jedis.zmoveByScore(ZBSRC, ZBDST, SafeEncoder.encode("(1"),
+      SafeEncoder.encode("3"));
+    assertEquals(tuples("b", 2, "c", 3), moved);
+    assertArrayEquals(SafeEncoder.encode("b"), moved.get(0).getBinaryElement());
+    assertEquals(tuples("a", 1, "e", 4), jedis.zrangeWithScores(ZBSRC, 0, -1));
+  }
+
 }

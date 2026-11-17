@@ -37,6 +37,7 @@ import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.ZMoveMemberParams;
 import redis.clients.jedis.params.ZParams;
 import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.ScanResult;
@@ -2001,5 +2002,48 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
     JedisDataException error = assertThrows(JedisDataException.class, wrongType::get);
     assertThat(error.getMessage(), startsWith("WRONGTYPE"));
     assertEquals(Collections.singletonList(new Tuple(SafeEncoder.encode("c"), 3d)), max.get());
+  }
+
+  /**
+   * The pipelined single-member zmovemember gives the moved member as one Tuple, then null once
+   * the member has left the source; the NX form moves a member the destination lacks.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVEMEMBER")
+  public void zmovememberSingleInPipeline() {
+    pipe.zadd("{z}s", 1, "a");
+    pipe.zadd("{z}s", 2, "b");
+    Response<Tuple> moved = pipe.zmovemember("{z}s", "{z}d", "a");
+    Response<Tuple> again = pipe.zmovemember("{z}s", "{z}d", "a");
+    Response<Tuple> nx = pipe.zmovemember("{z}s", "{z}d",
+        ZMoveMemberParams.zMoveMemberParams().nx(), "b");
+    pipe.sync();
+
+    assertEquals(new Tuple("a", 1d), moved.get());
+    assertThat(again.get(), nullValue());
+    assertEquals(new Tuple("b", 2d), nx.get());
+  }
+
+  /**
+   * The byte[] pipelined single-member zmovemember gives the moved member as one Tuple, then null
+   * once the member has left the source; the NX form moves a member the destination lacks.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVEMEMBER")
+  public void zmovememberSingleInPipelineBinary() {
+    byte[] src = SafeEncoder.encode("{z}s");
+    byte[] dst = SafeEncoder.encode("{z}d");
+    byte[] a = SafeEncoder.encode("a");
+    byte[] b = SafeEncoder.encode("b");
+    pipe.zadd(src, 1, a);
+    pipe.zadd(src, 2, b);
+    Response<Tuple> moved = pipe.zmovemember(src, dst, a);
+    Response<Tuple> again = pipe.zmovemember(src, dst, a);
+    Response<Tuple> nx = pipe.zmovemember(src, dst, ZMoveMemberParams.zMoveMemberParams().nx(), b);
+    pipe.sync();
+
+    assertEquals(new Tuple(a, 1d), moved.get());
+    assertThat(again.get(), nullValue());
+    assertEquals(new Tuple(b, 2d), nx.get());
   }
 }

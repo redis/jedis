@@ -40,6 +40,7 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.params.ZMoveMemberParams;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.SafeEncoder;
@@ -521,5 +522,59 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     JedisDataException error = assertThrows(JedisDataException.class, wrongType::get);
     assertTrue(error.getMessage().startsWith("WRONGTYPE"));
     assertEquals(expectedMax, max.get());
+  }
+
+  /**
+   * The single-member zmovemember inside MULTI/EXEC gives the moved member as one Tuple, then
+   * null once the member has left the source; the NX form moves a member the destination lacks.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVEMEMBER")
+  public void zmovememberSingleInTransaction() {
+    jedis.zadd("{z}s", 1, "a");
+    jedis.zadd("{z}s", 2, "b");
+
+    Transaction t = jedis.multi();
+    Response<Tuple> moved = t.zmovemember("{z}s", "{z}d", "a");
+    Response<Tuple> again = t.zmovemember("{z}s", "{z}d", "a");
+    Response<Tuple> nx = t.zmovemember("{z}s", "{z}d", ZMoveMemberParams.zMoveMemberParams().nx(),
+      "b");
+    List<Object> results = t.exec();
+
+    assertEquals(new Tuple("a", 1d), results.get(0));
+    assertNull(results.get(1));
+    assertEquals(new Tuple("b", 2d), results.get(2));
+    assertEquals(new Tuple("a", 1d), moved.get());
+    assertNull(again.get());
+    assertEquals(new Tuple("b", 2d), nx.get());
+  }
+
+  /**
+   * The byte[] single-member zmovemember inside MULTI/EXEC gives the moved member as one Tuple,
+   * then null once the member has left the source; the NX form moves a member the destination
+   * lacks.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVEMEMBER")
+  public void zmovememberSingleInTransactionBinary() {
+    byte[] src = SafeEncoder.encode("{z}s");
+    byte[] dst = SafeEncoder.encode("{z}d");
+    byte[] a = SafeEncoder.encode("a");
+    byte[] b = SafeEncoder.encode("b");
+    jedis.zadd(src, 1, a);
+    jedis.zadd(src, 2, b);
+
+    Transaction t = jedis.multi();
+    Response<Tuple> moved = t.zmovemember(src, dst, a);
+    Response<Tuple> again = t.zmovemember(src, dst, a);
+    Response<Tuple> nx = t.zmovemember(src, dst, ZMoveMemberParams.zMoveMemberParams().nx(), b);
+    List<Object> results = t.exec();
+
+    assertEquals(new Tuple(a, 1d), results.get(0));
+    assertNull(results.get(1));
+    assertEquals(new Tuple(b, 2d), results.get(2));
+    assertEquals(new Tuple(a, 1d), moved.get());
+    assertNull(again.get());
+    assertEquals(new Tuple(b, 2d), nx.get());
   }
 }

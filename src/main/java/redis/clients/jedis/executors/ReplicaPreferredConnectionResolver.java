@@ -12,11 +12,11 @@ import redis.clients.jedis.providers.ClusterConnectionProvider;
  * {@link redis.clients.jedis.JedisClientConfig#isReadOnlyForRedisClusterReplicas()} is enabled.
  * @see redis.clients.jedis.executors.ClusterCommandExecutor#executeCommandToReplica(CommandObject)
  */
-final class ReplicaOnlyConnectionResolver implements ConnectionResolver {
+final class ReplicaPreferredConnectionResolver implements ConnectionResolver {
 
   private final ClusterConnectionProvider provider;
 
-  ReplicaOnlyConnectionResolver(ClusterConnectionProvider provider) {
+  ReplicaPreferredConnectionResolver(ClusterConnectionProvider provider) {
     this.provider = provider;
   }
 

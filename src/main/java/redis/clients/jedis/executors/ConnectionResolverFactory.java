@@ -37,9 +37,10 @@ final class ConnectionResolverFactory {
   /**
    * Creates a connection resolver that prefers replicas and falls back to a primary.
    * @param provider the cluster connection provider
-   * @return a new ReplicaOnlyConnectionResolver
+   * @return a new ReplicaPreferredConnectionResolver
    */
-  public static ConnectionResolver createReplicaOnlyResolver(ClusterConnectionProvider provider) {
-    return new ReplicaOnlyConnectionResolver(provider);
+  public static ConnectionResolver createReplicaPreferredResolver(
+      ClusterConnectionProvider provider) {
+    return new ReplicaPreferredConnectionResolver(provider);
   }
 }

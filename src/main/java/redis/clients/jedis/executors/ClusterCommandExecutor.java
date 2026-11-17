@@ -45,7 +45,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
    *
    * @see #executeCommandToReplica(CommandObject)
    */
-  private final ConnectionResolver replicaOnlyConnectionResolver;
+  private final ConnectionResolver replicaPreferredConnectionResolver;
 
   public final ClusterConnectionProvider provider;
   protected final int maxAttempts;
@@ -78,8 +78,8 @@ public class ClusterCommandExecutor implements CommandExecutor {
         provider);
     this.roundRobinConnectionResolver = ConnectionResolverFactory.createRoundRobinResolver(
         provider, flags);
-    this.replicaOnlyConnectionResolver = ConnectionResolverFactory.createReplicaOnlyResolver(
-        provider);
+    this.replicaPreferredConnectionResolver = ConnectionResolverFactory
+        .createReplicaPreferredResolver(provider);
   }
 
   @Override
@@ -218,7 +218,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
    * @return the reply from the command
    */
   public final <T> T executeCommandToReplica(CommandObject<T> commandObject) {
-    return doExecuteCommand(commandObject, replicaOnlyConnectionResolver, true);
+    return doExecuteCommand(commandObject, replicaPreferredConnectionResolver, true);
   }
 
   private <T> T executeKeylessCommand(CommandObject<T> commandObject) {

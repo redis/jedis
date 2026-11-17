@@ -1971,11 +1971,11 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
   /** PipeliningBase zmovemember with one member appends its command object. */
   @Test
   public void testZmovememberSingle() {
-    when(commandObjects.zmovemember("{z}s", "{z}d", "a")).thenReturn(listTupleCommandObject);
+    when(commandObjects.zmovemember("{z}s", "{z}d", "a")).thenReturn(tupleCommandObject);
 
-    Response<List<Tuple>> response = pipeliningBase.zmovemember("{z}s", "{z}d", "a");
+    Response<Tuple> response = pipeliningBase.zmovemember("{z}s", "{z}d", "a");
 
-    assertThat(commands, contains(listTupleCommandObject));
+    assertThat(commands, contains(tupleCommandObject));
     assertThat(response, is(predefinedResponse));
   }
 
@@ -1985,11 +1985,11 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
     byte[] src = SafeEncoder.encode("{z}s");
     byte[] dst = SafeEncoder.encode("{z}d");
     byte[] member = SafeEncoder.encode("a");
-    when(commandObjects.zmovemember(src, dst, member)).thenReturn(listTupleCommandObject);
+    when(commandObjects.zmovemember(src, dst, member)).thenReturn(tupleCommandObject);
 
-    Response<List<Tuple>> response = pipeliningBase.zmovemember(src, dst, member);
+    Response<Tuple> response = pipeliningBase.zmovemember(src, dst, member);
 
-    assertThat(commands, contains(listTupleCommandObject));
+    assertThat(commands, contains(tupleCommandObject));
     assertThat(response, is(predefinedResponse));
   }
 
@@ -2023,11 +2023,11 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
   @Test
   public void testZmovememberParamsSingle() {
     ZMoveMemberParams params = ZMoveMemberParams.zMoveMemberParams().nx();
-    when(commandObjects.zmovemember("{z}s", "{z}d", params, "a")).thenReturn(listTupleCommandObject);
+    when(commandObjects.zmovemember("{z}s", "{z}d", params, "a")).thenReturn(tupleCommandObject);
 
-    Response<List<Tuple>> response = pipeliningBase.zmovemember("{z}s", "{z}d", params, "a");
+    Response<Tuple> response = pipeliningBase.zmovemember("{z}s", "{z}d", params, "a");
 
-    assertThat(commands, contains(listTupleCommandObject));
+    assertThat(commands, contains(tupleCommandObject));
     assertThat(response, is(predefinedResponse));
   }
 
@@ -2038,11 +2038,11 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
     byte[] dst = SafeEncoder.encode("{z}d");
     byte[] member = SafeEncoder.encode("a");
     ZMoveMemberParams params = ZMoveMemberParams.zMoveMemberParams().nx();
-    when(commandObjects.zmovemember(src, dst, params, member)).thenReturn(listTupleCommandObject);
+    when(commandObjects.zmovemember(src, dst, params, member)).thenReturn(tupleCommandObject);
 
-    Response<List<Tuple>> response = pipeliningBase.zmovemember(src, dst, params, member);
+    Response<Tuple> response = pipeliningBase.zmovemember(src, dst, params, member);
 
-    assertThat(commands, contains(listTupleCommandObject));
+    assertThat(commands, contains(tupleCommandObject));
     assertThat(response, is(predefinedResponse));
   }
 

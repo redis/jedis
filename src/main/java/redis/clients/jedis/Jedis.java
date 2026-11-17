@@ -3774,7 +3774,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, byte[] member) {
+  public Tuple zmovemember(byte[] srcKey, byte[] dstKey, byte[] member) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmovemember(srcKey, dstKey, member));
   }
@@ -3786,7 +3786,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[] member) {
+  public Tuple zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[] member) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmovemember(srcKey, dstKey, params, member));
   }
@@ -9061,7 +9061,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<Tuple> zmovemember(String srcKey, String dstKey, String member) {
+  public Tuple zmovemember(String srcKey, String dstKey, String member) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmovemember(srcKey, dstKey, member));
   }
@@ -9073,7 +9073,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<Tuple> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String member) {
+  public Tuple zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String member) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.zmovemember(srcKey, dstKey, params, member));
   }

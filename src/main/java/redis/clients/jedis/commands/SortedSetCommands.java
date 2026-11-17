@@ -1007,7 +1007,7 @@ public interface SortedSetCommands {
    * @return the moved member with its score, or {@code null} if nothing moved
    * @since 8.1
    */
-  List<Tuple> zmovemember(String srcKey, String dstKey, String member);
+  Tuple zmovemember(String srcKey, String dstKey, String member);
 
   /**
    * <b><a href="https://redis.io/commands/zmovemember">ZMOVEMEMBER Command</a></b>
@@ -1033,7 +1033,7 @@ public interface SortedSetCommands {
    * @return the moved member with its score, or {@code null} if nothing moved
    * @since 8.1
    */
-  List<Tuple> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String member);
+  Tuple zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String member);
 
   /**
    * <b><a href="https://redis.io/commands/zmovemember">ZMOVEMEMBER Command</a></b>

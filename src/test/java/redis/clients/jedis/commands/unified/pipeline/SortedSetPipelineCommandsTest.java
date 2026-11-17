@@ -1923,13 +1923,13 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.zadd("{z}s", 3, "c");
     Response<List<Tuple>> minCount = pipe.zmove("{z}s", "{z}d", SortedSetOption.MIN, 2);
     Response<List<Tuple>> missing = pipe.zmove("{z}m1", "{z}m2", SortedSetOption.MIN);
-    Response<List<Tuple>> member = pipe.zmovemember("{z}s", "{z}d", "c");
+    Response<Tuple> member = pipe.zmovemember("{z}s", "{z}d", "c");
     Response<List<Tuple>> blocking = pipe.bzmove("{z}e", "{z}d", SortedSetOption.MAX, 1);
     pipe.sync();
 
     assertEquals(Arrays.asList(new Tuple("a", 1d), new Tuple("b", 2d)), minCount.get());
     assertThat(missing.get(), nullValue());
-    assertEquals(Collections.singletonList(new Tuple("c", 3d)), member.get());
+    assertEquals(new Tuple("c", 3d), member.get());
     assertThat(blocking.get(), nullValue());
   }
 
@@ -1945,11 +1945,11 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.zadd(src, 2, SafeEncoder.encode("b"));
     pipe.zadd(src, 3, SafeEncoder.encode("c"));
     Response<List<Tuple>> minCount = pipe.zmove(src, dst, SortedSetOption.MIN, 2);
-    Response<List<Tuple>> member = pipe.zmovemember(src, dst, SafeEncoder.encode("c"));
+    Response<Tuple> member = pipe.zmovemember(src, dst, SafeEncoder.encode("c"));
     pipe.sync();
 
     assertEquals(Arrays.asList(new Tuple("a", 1d), new Tuple("b", 2d)), minCount.get());
-    assertEquals(Collections.singletonList(new Tuple("c", 3d)), member.get());
+    assertEquals(new Tuple("c", 3d), member.get());
   }
 
   /**
@@ -1965,7 +1965,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.set("{z}w", "x");
     Response<List<Tuple>> min = pipe.zmove("{z}s", "{z}d", SortedSetOption.MIN);
     Response<List<Tuple>> missing = pipe.zmove("{z}none", "{z}d", SortedSetOption.MIN);
-    Response<List<Tuple>> wrongType = pipe.zmovemember("{z}w", "{z}d", "a");
+    Response<Tuple> wrongType = pipe.zmovemember("{z}w", "{z}d", "a");
     Response<List<Tuple>> max = pipe.zmove("{z}s", "{z}d", SortedSetOption.MAX);
     pipe.sync();
 
@@ -1992,7 +1992,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.set(wrong, SafeEncoder.encode("x"));
     Response<List<Tuple>> min = pipe.zmove(src, dst, SortedSetOption.MIN);
     Response<List<Tuple>> missing = pipe.zmove(SafeEncoder.encode("{z}none"), dst, SortedSetOption.MIN);
-    Response<List<Tuple>> wrongType = pipe.zmovemember(wrong, dst, SafeEncoder.encode("a"));
+    Response<Tuple> wrongType = pipe.zmovemember(wrong, dst, SafeEncoder.encode("a"));
     Response<List<Tuple>> max = pipe.zmove(src, dst, SortedSetOption.MAX);
     pipe.sync();
 

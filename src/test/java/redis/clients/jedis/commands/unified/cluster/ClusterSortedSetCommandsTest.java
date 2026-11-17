@@ -360,8 +360,7 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
         jedis.zmove("{z}s", "{z}d", SortedSetOption.MIN));
     assertEquals(Collections.singletonList(new Tuple("c", 3d)),
         jedis.bzmove("{z}s", "{z}d", SortedSetOption.MAX, 1));
-    assertEquals(Collections.singletonList(new Tuple("b", 2d)),
-        jedis.zmovemember("{z}s", "{z}d", "b"));
+    assertEquals(new Tuple("b", 2d), jedis.zmovemember("{z}s", "{z}d", "b"));
     assertEquals(3, jedis.zcard("{z}d"));
   }
 

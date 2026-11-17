@@ -108,7 +108,7 @@ public class ZMoveCommandObjectsTest {
   /** One member is sent as MEMBERS 1 a. */
   @Test
   public void zmovememberSingle() {
-    CommandObject<List<Tuple>> command = commandObjects.zmovemember(SRC, DST, "a");
+    CommandObject<Tuple> command = commandObjects.zmovemember(SRC, DST, "a");
     List<String> expected = Arrays.asList("ZMOVEMEMBER", SRC, DST, "MEMBERS", "1", "a");
     assertEquals(expected, argStrings(command));
     assertEquals(Arrays.asList(SRC, DST), keyStrings(command));
@@ -172,7 +172,7 @@ public class ZMoveCommandObjectsTest {
     List<CommandObject<List<Tuple>>> resp2Commands = new ArrayList<>();
     resp2Commands.add(commandObjects.zmove(SRC, DST, SortedSetOption.MIN));
     resp2Commands.add(commandObjects.bzmove(SRC, DST, SortedSetOption.MIN, 1));
-    resp2Commands.add(commandObjects.zmovemember(SRC, DST, "a"));
+    resp2Commands.add(commandObjects.zmovemember(SRC, DST, "a", "b"));
     List<Tuple> oneTuple = Collections.singletonList(new Tuple("a", 1.0));
     for (CommandObject<List<Tuple>> command : resp2Commands) {
       assertEquals(expected, command.getBuilder().build(resp2Reply));
@@ -186,7 +186,7 @@ public class ZMoveCommandObjectsTest {
     List<CommandObject<List<Tuple>>> resp3Commands = new ArrayList<>();
     resp3Commands.add(resp3.zmove(SRC, DST, SortedSetOption.MIN));
     resp3Commands.add(resp3.bzmove(SRC, DST, SortedSetOption.MIN, 1));
-    resp3Commands.add(resp3.zmovemember(SRC, DST, "a"));
+    resp3Commands.add(resp3.zmovemember(SRC, DST, "a", "b"));
     for (CommandObject<List<Tuple>> command : resp3Commands) {
       assertEquals(expected, command.getBuilder().build(resp3Reply));
       assertNull(command.getBuilder().build(null));
@@ -212,7 +212,7 @@ public class ZMoveCommandObjectsTest {
     assertBinary(bzmove, "BZMOVE", src, dst, b("MAX"), b("30.0"), b("COUNT"), b("10"));
     assertTrue(bzmove.getArguments().isBlocking());
 
-    CommandObject<List<Tuple>> single = commandObjects.zmovemember(src, dst, ma);
+    CommandObject<Tuple> single = commandObjects.zmovemember(src, dst, ma);
     assertBinary(single, "ZMOVEMEMBER", src, dst, b("MEMBERS"), b("1"), ma);
 
     CommandObject<List<Tuple>> many = commandObjects.zmovemember(src, dst, mb, ma, mb);

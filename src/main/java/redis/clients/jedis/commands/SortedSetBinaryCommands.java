@@ -366,7 +366,7 @@ public interface SortedSetBinaryCommands {
    * @see SortedSetCommands#zmovemember(String, String, String)
    * @since 8.1
    */
-  List<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, byte[] member);
+  Tuple zmovemember(byte[] srcKey, byte[] dstKey, byte[] member);
 
   /**
    * Binary variant of {@link SortedSetCommands#zmovemember(String, String, String...)}.
@@ -380,7 +380,7 @@ public interface SortedSetBinaryCommands {
    * @see SortedSetCommands#zmovemember(String, String, ZMoveMemberParams, String)
    * @since 8.1
    */
-  List<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[] member);
+  Tuple zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[] member);
 
   /**
    * Binary variant of {@link SortedSetCommands#zmovemember(String, String, ZMoveMemberParams, String...)}.

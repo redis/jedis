@@ -1592,7 +1592,7 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<List<Tuple>> zmovemember(String srcKey, String dstKey, String member) {
+  public Response<Tuple> zmovemember(String srcKey, String dstKey, String member) {
     return appendCommand(commandObjects.zmovemember(srcKey, dstKey, member));
   }
 
@@ -1602,7 +1602,7 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<List<Tuple>> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String member) {
+  public Response<Tuple> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String member) {
     return appendCommand(commandObjects.zmovemember(srcKey, dstKey, params, member));
   }
 
@@ -4156,7 +4156,7 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<List<Tuple>> zmovemember(byte[] srcKey, byte[] dstKey, byte[] member) {
+  public Response<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, byte[] member) {
     return appendCommand(commandObjects.zmovemember(srcKey, dstKey, member));
   }
 
@@ -4166,7 +4166,7 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<List<Tuple>> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[] member) {
+  public Response<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[] member) {
     return appendCommand(commandObjects.zmovemember(srcKey, dstKey, params, member));
   }
 

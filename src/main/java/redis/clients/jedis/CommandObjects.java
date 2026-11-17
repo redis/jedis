@@ -2850,14 +2850,14 @@ public class CommandObjects {
         .add(timeout).add(COUNT).add(count), BuilderFactory.TUPLE_LIST_RESP3);
   }
 
-  public final CommandObject<List<Tuple>> zmovemember(String srcKey, String dstKey, String member) {
+  public final CommandObject<Tuple> zmovemember(String srcKey, String dstKey, String member) {
     return new CommandObject<>(commandArguments(ZMOVEMEMBER).key(srcKey).key(dstKey)
-        .add(MEMBERS).add(1).add((Object) member), BuilderFactory.TUPLE_LIST_RESP3);
+        .add(MEMBERS).add(1).add((Object) member), BuilderFactory.TUPLE_FROM_LIST);
   }
 
-  public final CommandObject<List<Tuple>> zmovemember(byte[] srcKey, byte[] dstKey, byte[] member) {
+  public final CommandObject<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, byte[] member) {
     return new CommandObject<>(commandArguments(ZMOVEMEMBER).key(srcKey).key(dstKey)
-        .add(MEMBERS).add(1).add((Object) member), BuilderFactory.TUPLE_LIST_RESP3);
+        .add(MEMBERS).add(1).add((Object) member), BuilderFactory.TUPLE_FROM_LIST);
   }
 
   public final CommandObject<List<Tuple>> zmovemember(String srcKey, String dstKey, String... members) {
@@ -2870,14 +2870,14 @@ public class CommandObjects {
         .add(MEMBERS).add(members.length).addObjects((Object[]) members), BuilderFactory.TUPLE_LIST_RESP3);
   }
 
-  public final CommandObject<List<Tuple>> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String member) {
+  public final CommandObject<Tuple> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String member) {
     return new CommandObject<>(commandArguments(ZMOVEMEMBER).key(srcKey).key(dstKey).addParams(params)
-        .add(MEMBERS).add(1).add((Object) member), BuilderFactory.TUPLE_LIST_RESP3);
+        .add(MEMBERS).add(1).add((Object) member), BuilderFactory.TUPLE_FROM_LIST);
   }
 
-  public final CommandObject<List<Tuple>> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[] member) {
+  public final CommandObject<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[] member) {
     return new CommandObject<>(commandArguments(ZMOVEMEMBER).key(srcKey).key(dstKey).addParams(params)
-        .add(MEMBERS).add(1).add((Object) member), BuilderFactory.TUPLE_LIST_RESP3);
+        .add(MEMBERS).add(1).add((Object) member), BuilderFactory.TUPLE_FROM_LIST);
   }
 
   public final CommandObject<List<Tuple>> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String... members) {

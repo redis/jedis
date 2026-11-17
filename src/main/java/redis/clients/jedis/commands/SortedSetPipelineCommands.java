@@ -227,7 +227,7 @@ public interface SortedSetPipelineCommands {
    * Pipeline variant of {@link SortedSetCommands#zmovemember(String, String, String)}.
    * @since 8.1
    */
-  Response<List<Tuple>> zmovemember(String srcKey, String dstKey, String member);
+  Response<Tuple> zmovemember(String srcKey, String dstKey, String member);
 
   /**
    * Pipeline variant of {@link SortedSetCommands#zmovemember(String, String, String...)}.
@@ -239,7 +239,7 @@ public interface SortedSetPipelineCommands {
    * Pipeline variant of {@link SortedSetCommands#zmovemember(String, String, ZMoveMemberParams, String)}.
    * @since 8.1
    */
-  Response<List<Tuple>> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String member);
+  Response<Tuple> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String member);
 
   /**
    * Pipeline variant of {@link SortedSetCommands#zmovemember(String, String, ZMoveMemberParams, String...)}.

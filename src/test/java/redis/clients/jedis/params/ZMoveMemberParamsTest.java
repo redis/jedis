@@ -76,8 +76,8 @@ public class ZMoveMemberParamsTest {
   public void emptyParamsSameAsNoParams() {
     CommandObjects commandObjects = new CommandObjects(RedisProtocol.RESP2);
     ZMoveMemberParams empty = zMoveMemberParams();
-    CommandObject<List<Tuple>> withParams = commandObjects.zmovemember("{z}s", "{z}d", empty, "a");
-    CommandObject<List<Tuple>> without = commandObjects.zmovemember("{z}s", "{z}d", "a");
+    CommandObject<Tuple> withParams = commandObjects.zmovemember("{z}s", "{z}d", empty, "a");
+    CommandObject<Tuple> without = commandObjects.zmovemember("{z}s", "{z}d", "a");
     assertEquals(toStrings(without.getArguments()), toStrings(withParams.getArguments()));
   }
 }

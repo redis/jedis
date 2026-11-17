@@ -226,7 +226,7 @@ public interface SortedSetPipelineBinaryCommands {
    * Pipeline variant of {@link SortedSetBinaryCommands#zmovemember(byte[], byte[], byte[])}.
    * @since 8.1
    */
-  Response<List<Tuple>> zmovemember(byte[] srcKey, byte[] dstKey, byte[] member);
+  Response<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, byte[] member);
 
   /**
    * Pipeline variant of {@link SortedSetBinaryCommands#zmovemember(byte[], byte[], byte[]...)}.
@@ -238,7 +238,7 @@ public interface SortedSetPipelineBinaryCommands {
    * Pipeline variant of {@link SortedSetBinaryCommands#zmovemember(byte[], byte[], ZMoveMemberParams, byte[])}.
    * @since 8.1
    */
-  Response<List<Tuple>> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[] member);
+  Response<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[] member);
 
   /**
    * Pipeline variant of {@link SortedSetBinaryCommands#zmovemember(byte[], byte[], ZMoveMemberParams, byte[]...)}.

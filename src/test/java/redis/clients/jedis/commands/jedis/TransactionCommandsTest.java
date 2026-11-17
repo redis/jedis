@@ -467,7 +467,7 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     Transaction t = jedis.multi();
     Response<List<Tuple>> min = t.zmove("{z}s", "{z}d", SortedSetOption.MIN);
     Response<List<Tuple>> missing = t.zmove("{z}none", "{z}d", SortedSetOption.MIN);
-    Response<List<Tuple>> wrongType = t.zmovemember("{z}w", "{z}d", "a");
+    Response<Tuple> wrongType = t.zmovemember("{z}w", "{z}d", "a");
     Response<List<Tuple>> max = t.zmove("{z}s", "{z}d", SortedSetOption.MAX);
     List<Object> results = t.exec();
 
@@ -503,7 +503,7 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     Transaction t = jedis.multi();
     Response<List<Tuple>> min = t.zmove(src, dst, SortedSetOption.MIN);
     Response<List<Tuple>> missing = t.zmove(SafeEncoder.encode("{z}none"), dst, SortedSetOption.MIN);
-    Response<List<Tuple>> wrongType = t.zmovemember(wrong, dst, SafeEncoder.encode("a"));
+    Response<Tuple> wrongType = t.zmovemember(wrong, dst, SafeEncoder.encode("a"));
     Response<List<Tuple>> max = t.zmove(src, dst, SortedSetOption.MAX);
     List<Object> results = t.exec();
 

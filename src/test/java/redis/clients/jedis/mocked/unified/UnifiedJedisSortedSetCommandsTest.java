@@ -2956,16 +2956,16 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
   /** UnifiedJedis zmovemember with one member delegates to CommandObjects. */
   @Test
   public void testZmovememberSingle() {
-    List<Tuple> expected = Collections.singletonList(new Tuple("a", 1.0));
+    Tuple expected = new Tuple("a", 1.0);
 
-    when(commandObjects.zmovemember("{z}s", "{z}d", "a")).thenReturn(listTupleCommandObject);
-    when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expected);
+    when(commandObjects.zmovemember("{z}s", "{z}d", "a")).thenReturn(tupleCommandObject);
+    when(commandExecutor.executeCommand(tupleCommandObject)).thenReturn(expected);
 
-    List<Tuple> result = jedis.zmovemember("{z}s", "{z}d", "a");
+    Tuple result = jedis.zmovemember("{z}s", "{z}d", "a");
 
     assertThat(result, equalTo(expected));
 
-    verify(commandExecutor).executeCommand(listTupleCommandObject);
+    verify(commandExecutor).executeCommand(tupleCommandObject);
     verify(commandObjects).zmovemember("{z}s", "{z}d", "a");
   }
 
@@ -2975,16 +2975,16 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
     byte[] src = SafeEncoder.encode("{z}s");
     byte[] dst = SafeEncoder.encode("{z}d");
     byte[] member = SafeEncoder.encode("a");
-    List<Tuple> expected = Collections.singletonList(new Tuple("a", 1.0));
+    Tuple expected = new Tuple("a", 1.0);
 
-    when(commandObjects.zmovemember(src, dst, member)).thenReturn(listTupleCommandObject);
-    when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expected);
+    when(commandObjects.zmovemember(src, dst, member)).thenReturn(tupleCommandObject);
+    when(commandExecutor.executeCommand(tupleCommandObject)).thenReturn(expected);
 
-    List<Tuple> result = jedis.zmovemember(src, dst, member);
+    Tuple result = jedis.zmovemember(src, dst, member);
 
     assertThat(result, equalTo(expected));
 
-    verify(commandExecutor).executeCommand(listTupleCommandObject);
+    verify(commandExecutor).executeCommand(tupleCommandObject);
     verify(commandObjects).zmovemember(src, dst, member);
   }
 
@@ -3028,16 +3028,16 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
   @Test
   public void testZmovememberParamsSingle() {
     ZMoveMemberParams params = ZMoveMemberParams.zMoveMemberParams().nx();
-    List<Tuple> expected = Collections.singletonList(new Tuple("a", 1.0));
+    Tuple expected = new Tuple("a", 1.0);
 
-    when(commandObjects.zmovemember("{z}s", "{z}d", params, "a")).thenReturn(listTupleCommandObject);
-    when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expected);
+    when(commandObjects.zmovemember("{z}s", "{z}d", params, "a")).thenReturn(tupleCommandObject);
+    when(commandExecutor.executeCommand(tupleCommandObject)).thenReturn(expected);
 
-    List<Tuple> result = jedis.zmovemember("{z}s", "{z}d", params, "a");
+    Tuple result = jedis.zmovemember("{z}s", "{z}d", params, "a");
 
     assertThat(result, equalTo(expected));
 
-    verify(commandExecutor).executeCommand(listTupleCommandObject);
+    verify(commandExecutor).executeCommand(tupleCommandObject);
     verify(commandObjects).zmovemember("{z}s", "{z}d", params, "a");
   }
 
@@ -3048,16 +3048,16 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
     byte[] dst = SafeEncoder.encode("{z}d");
     byte[] member = SafeEncoder.encode("a");
     ZMoveMemberParams params = ZMoveMemberParams.zMoveMemberParams().nx();
-    List<Tuple> expected = Collections.singletonList(new Tuple("a", 1.0));
+    Tuple expected = new Tuple("a", 1.0);
 
-    when(commandObjects.zmovemember(src, dst, params, member)).thenReturn(listTupleCommandObject);
-    when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expected);
+    when(commandObjects.zmovemember(src, dst, params, member)).thenReturn(tupleCommandObject);
+    when(commandExecutor.executeCommand(tupleCommandObject)).thenReturn(expected);
 
-    List<Tuple> result = jedis.zmovemember(src, dst, params, member);
+    Tuple result = jedis.zmovemember(src, dst, params, member);
 
     assertThat(result, equalTo(expected));
 
-    verify(commandExecutor).executeCommand(listTupleCommandObject);
+    verify(commandExecutor).executeCommand(tupleCommandObject);
     verify(commandObjects).zmovemember(src, dst, params, member);
   }
 

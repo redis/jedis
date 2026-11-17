@@ -1965,10 +1965,10 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   public void zmovememberSingleAndNx() {
     zfixture(ZSRC, "a", 5, "b", 6);
     jedis.zadd(ZDST, 1, "a");
-    assertEquals(tuples("a", 5), jedis.zmovemember(ZSRC, ZDST, "a"));
+    assertEquals(tuples("a", 5).get(0), jedis.zmovemember(ZSRC, ZDST, "a"));
     assertEquals(Double.valueOf(5), jedis.zscore(ZDST, "a"));
     ZMoveMemberParams nx = ZMoveMemberParams.zMoveMemberParams().nx();
-    assertEquals(tuples("b", 6), jedis.zmovemember(ZSRC, ZDST, nx, "b"));
+    assertEquals(tuples("b", 6).get(0), jedis.zmovemember(ZSRC, ZDST, nx, "b"));
   }
 
   /** The byte[] twins move the same pairs; members come back as bytes. */
@@ -1984,7 +1984,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
 
     jedis.del(ZBSRC, ZBDST);
     zfixture(ZBSRC, "a", 1, "b", 2, "c", 3);
-    assertEquals(tuples("a", 1), jedis.zmovemember(ZBSRC, ZBDST, SafeEncoder.encode("a")));
+    assertEquals(tuples("a", 1).get(0), jedis.zmovemember(ZBSRC, ZBDST, SafeEncoder.encode("a")));
 
     jedis.del(ZBSRC, ZBDST);
     zfixture(ZBSRC, "a", 1, "b", 2, "c", 3);

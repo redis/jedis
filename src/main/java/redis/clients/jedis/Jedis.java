@@ -104,6 +104,8 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   private Transaction transaction = null;
   private boolean isInMulti = false;
   private boolean isInWatch = false;
+  // RESET drops the configured user, database and protocol; such a connection must not be pooled
+  private boolean resetSent = false;
   private Pipeline pipeline = null;
   protected static final byte[][] DUMMY_ARRAY = new byte[0][];
 
@@ -392,7 +394,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     if (dataSource != null) {
       Pool<Jedis> pool = this.dataSource;
       this.dataSource = null;
-      if (isBroken()) {
+      if (isBroken() || resetSent) {
         pool.returnBrokenResource(this);
       } else {
         pool.returnResource(this);
@@ -10886,6 +10888,7 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
       return connection.getStatusCodeReply();
     } finally {
       connection.himportState().reset();
+      resetSent = true;
     }
   }
 

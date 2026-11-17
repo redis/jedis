@@ -199,6 +199,40 @@ public class JedisClusterInfoCacheTest {
   }
 
   @Test
+  public void emptySlotsEndpointResolvesToTheQueriedNode() {
+    HostAndPort seed = new HostAndPort("redis.example.com", 7000);
+    JedisClusterInfoCache cache = new JedisClusterInfoCache(DefaultJedisClientConfig.builder().build(),
+        new HashSet<>(Collections.singletonList(seed)));
+    when(mockConnection.getHostAndPort()).thenReturn(seed);
+    // a node that has not learned its own IP yet (e.g. single-node cluster) reports ""
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(Collections.singletonList(Arrays.asList(0L, 16383L,
+          Arrays.asList(new byte[0], 7000L, "id".getBytes()))));
+
+    cache.discoverClusterNodesAndSlots(mockConnection);
+
+    assertEquals(seed, cache.getSlotNode(0));
+    assertThat(cache.getNodes(), aMapWithSize(1));
+    assertThat(cache.getNodes(), hasKey(getNodeKey(seed)));
+  }
+
+  @Test
+  public void nullSlotsEndpointResolvesToTheQueriedNode() {
+    HostAndPort seed = new HostAndPort("redis.example.com", 7000);
+    JedisClusterInfoCache cache = new JedisClusterInfoCache(DefaultJedisClientConfig.builder().build(),
+        new HashSet<>(Collections.singletonList(seed)));
+    when(mockConnection.getHostAndPort()).thenReturn(seed);
+    // cluster-preferred-endpoint-type unknown-endpoint reports NULL
+    when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
+        .thenReturn(Collections.singletonList(Arrays.asList(0L, 16383L,
+          Arrays.asList(null, 7001L, "id".getBytes()))));
+
+    cache.renewClusterSlots(mockConnection);
+
+    assertEquals(new HostAndPort(seed.getHost(), 7001), cache.getSlotNode(0));
+  }
+
+  @Test
   public void applySlotMigrationDestroysOnlyTheDeltaSourcesLeftWithoutSlots() {
     HostAndPort masterA = MASTER_HOST;
     HostAndPort masterB = REPLICA_1_HOST;

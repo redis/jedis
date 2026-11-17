@@ -223,6 +223,19 @@ public class ClusterCommandExecutor implements CommandExecutor {
   }
 
   /**
+   * An empty redirect endpoint ({@code MOVED 3999 :6381}, sent under
+   * {@code cluster-preferred-endpoint-type unknown-endpoint}) means the node that sent it; resolving
+   * "" as-is would connect to the client's own loopback.
+   */
+  private static HostAndPort redirectTarget(JedisRedirectionException jre, Connection connection) {
+    HostAndPort target = jre.getTargetNode();
+    if ("".equals(target.getHost())) {
+      return new HostAndPort(connection.getHostAndPort().getHost(), target.getPort());
+    }
+    return target;
+  }
+
+  /**
    * Executes a command with retry logic using the provided connection resolver.
    *
    * @param commandObject the command to execute
@@ -237,6 +250,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
     Instant deadline = Instant.now().plus(maxTotalRetriesDuration);
 
     JedisRedirectionException redirect = null;
+    HostAndPort redirectTarget = null;
     int consecutiveConnectionFailures = 0;
     Exception lastException = null;
     HostAndPort lastNode = null;  // Track the last node we attempted to use
@@ -246,7 +260,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
         CommandObject<T> attempt = commandObject;
         if (followRedirections && redirect != null) {
           // Following redirection, we need to use connection to the target node
-          connection = provider.getConnection(redirect.getTargetNode());
+          connection = provider.getConnection(redirectTarget);
           if (redirect instanceof JedisAskDataException) {
             // ASKING must immediately precede the redirected command: appended as the last
             // pre-process hook, it runs after any command-intrinsic hooks (e.g. HIMPORT's lazy
@@ -282,6 +296,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
         if (followRedirections) {
           log.debug("Redirected by server to {}", jre.getTargetNode());
           redirect = jre;
+          redirectTarget = redirectTarget(jre, connection);
           // if MOVED redirection occurred,
           if (jre instanceof JedisMovedDataException) {
             // it rebuilds cluster's slot cache recommended by Redis cluster specification

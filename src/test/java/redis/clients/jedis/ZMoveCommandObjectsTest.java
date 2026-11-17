@@ -300,6 +300,29 @@ public class ZMoveCommandObjectsTest {
       b("BYSCORE"), min, max, b("COUNT"), b("4"));
   }
 
+  /** Double bounds with binary keys are sent as Protocol.toByteArray spells them, then COUNT. */
+  @Test
+  public void zmoveByScoreBinaryKeysDoubleBounds() {
+    byte[] src = b(SRC);
+    byte[] dst = b(DST);
+    assertBinary(commandObjects.zmoveByScore(src, dst, 1.0, 3.0, 2), "ZMOVE", src, dst,
+      b("BYSCORE"), Protocol.toByteArray(1.0), Protocol.toByteArray(3.0), b("COUNT"), b("2"));
+    assertBinary(commandObjects.zmoveByScore(src, dst, 1.0E-5, 1.0E-5), "ZMOVE", src, dst,
+      b("BYSCORE"), Protocol.toByteArray(1.0E-5), Protocol.toByteArray(1.0E-5));
+    assertBinary(
+      commandObjects.zmoveByScore(src, dst, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY, 2),
+      "ZMOVE", src, dst, b("BYSCORE"), b("-inf"), b("+inf"), b("COUNT"), b("2"));
+  }
+
+  /** Double bounds with binary keys use the same spelling as with String keys. */
+  @Test
+  public void zmoveByScoreBinaryKeysDoubleBoundsSpelling() {
+    assertBinary(commandObjects.zmoveByScore(b(SRC), b(DST), 1.0, 3.0), "ZMOVE", b(SRC), b(DST),
+      b("BYSCORE"), b("1.0"), b("3.0"));
+    assertBinary(commandObjects.zmoveByScore(b(SRC), b(DST), Double.NaN, 1, 3), "ZMOVE", b(SRC),
+      b(DST), b("BYSCORE"), b("NaN"), b("1.0"), b("COUNT"), b("3"));
+  }
+
   /** Any count is sent as given. */
   @Test
   public void zmoveAnyCountIsSent() {

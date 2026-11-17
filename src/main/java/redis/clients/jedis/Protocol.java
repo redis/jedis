@@ -263,9 +263,19 @@ public final class Protocol {
       default:
         final List<KeyValue> ret = new ArrayList<>(num);
         for (int i = 0; i < num; i++) {
-          ret.add(new KeyValue(process(is, null), process(is,null)));
+          ret.add(new KeyValue(processMapElement(is), processMapElement(is)));
         }
         return ret;
+    }
+  }
+
+  // Like processMultiBulkReply, keep a nested error as the element so the rest of the map is
+  // still read; otherwise its remaining entries are left on the connection.
+  private static Object processMapElement(final RedisInputStream is) {
+    try {
+      return process(is, null);
+    } catch (JedisDataException e) {
+      return e;
     }
   }
 

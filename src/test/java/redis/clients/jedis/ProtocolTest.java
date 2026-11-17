@@ -23,6 +23,8 @@ import java.util.List;
 
 
 import redis.clients.jedis.exceptions.JedisBusyException;
+import redis.clients.jedis.exceptions.JedisDataException;
+import redis.clients.jedis.util.KeyValue;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.RedisOutputStream;
 import redis.clients.jedis.util.SafeEncoder;
@@ -234,6 +236,24 @@ public class ProtocolTest {
     expected.add(SafeEncoder.encode("foo"));
     expected.add(SafeEncoder.encode("bar baz")); // "txt:" should be stripped
     assertByteArrayListEquals(expected, response);
+  }
+
+  @SuppressWarnings("unchecked")
+  @Test
+  public void mapReplyWithNestedErrorIsReadToTheEnd() {
+    // EVAL returning {map=...} with a redis.pcall error as one value, then the next reply
+    InputStream is = new ByteArrayInputStream(SafeEncoder.encode("%3\r\n$1\r\na\r\n:1\r\n"
+        + "$1\r\nb\r\n-ERR value is not an integer or out of range\r\n$1\r\nc\r\n:1\r\n+OK\r\n"));
+    RedisInputStream ris = new RedisInputStream(is);
+
+    List<KeyValue> map = (List<KeyValue>) Protocol.read(ris);
+    assertEquals(3, map.size());
+    JedisDataException error = assertInstanceOf(JedisDataException.class, map.get(1).getValue());
+    assertEquals("ERR value is not an integer or out of range", error.getMessage());
+    assertArrayEquals(SafeEncoder.encode("c"), (byte[]) map.get(2).getKey());
+    assertEquals(1L, map.get(2).getValue());
+
+    assertArrayEquals(SafeEncoder.encode("OK"), (byte[]) Protocol.read(ris));
   }
 
   // ==================== Push Message Consumer (RESP3) ====================

@@ -148,6 +148,26 @@ public class ScriptingCommandsTest extends JedisCommandsTestBase {
     MatcherAssert.assertThat((List<Long>) results.get(1), Matchers.hasItem(2L));
   }
 
+  @SuppressWarnings("unchecked")
+  @Test
+  public void evalMapWithPcallErrorKeepsConnectionInSync() {
+    jedis.set("{counter}:b", "not-a-number");
+    String script = "local out = {} for _, k in ipairs(KEYS) do "
+        + "out[k] = redis.pcall('INCR', k) end return {map=out}";
+
+    Object reply = jedis.eval(script, Arrays.asList("{counter}:a", "{counter}:b", "{counter}:c"),
+      Collections.emptyList());
+
+    // RESP3 delivers a map, RESP2 the same entries as a flat list
+    List<Object> values = reply instanceof Map
+        ? new ArrayList<>(((Map<String, Object>) reply).values())
+        : (List<Object>) reply;
+    assertTrue(values.stream().anyMatch(v -> v instanceof JedisDataException));
+
+    jedis.set("foo", "bar");
+    assertEquals("bar", jedis.get("foo"));
+  }
+
   @Test
   public void evalNoArgs() {
     String script = "return KEYS[1]";

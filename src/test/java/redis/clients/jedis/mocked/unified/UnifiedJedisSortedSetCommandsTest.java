@@ -14,12 +14,10 @@ import java.util.Map;
 
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.args.SortedSetOption;
-import redis.clients.jedis.params.BZMoveParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.ZMoveMemberParams;
-import redis.clients.jedis.params.ZMoveParams;
 import redis.clients.jedis.params.ZParams;
 import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.ScanResult;
@@ -2890,18 +2888,17 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
   /** UnifiedJedis zmove delegates to CommandObjects. */
   @Test
   public void testZmove() {
-    ZMoveParams params = ZMoveParams.min().count(2);
     List<Tuple> expected = Collections.singletonList(new Tuple("a", 1.0));
 
-    when(commandObjects.zmove("{z}s", "{z}d", params)).thenReturn(listTupleCommandObject);
+    when(commandObjects.zmove("{z}s", "{z}d", SortedSetOption.MIN, 2)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expected);
 
-    List<Tuple> result = jedis.zmove("{z}s", "{z}d", params);
+    List<Tuple> result = jedis.zmove("{z}s", "{z}d", SortedSetOption.MIN, 2);
 
     assertThat(result, equalTo(expected));
 
     verify(commandExecutor).executeCommand(listTupleCommandObject);
-    verify(commandObjects).zmove("{z}s", "{z}d", params);
+    verify(commandObjects).zmove("{z}s", "{z}d", SortedSetOption.MIN, 2);
   }
 
   /** UnifiedJedis zmove (byte[]) delegates to CommandObjects. */
@@ -2909,35 +2906,33 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
   public void testZmoveBinary() {
     byte[] src = SafeEncoder.encode("{z}s");
     byte[] dst = SafeEncoder.encode("{z}d");
-    ZMoveParams params = ZMoveParams.min().count(2);
     List<Tuple> expected = Collections.singletonList(new Tuple("a", 1.0));
 
-    when(commandObjects.zmove(src, dst, params)).thenReturn(listTupleCommandObject);
+    when(commandObjects.zmove(src, dst, SortedSetOption.MIN, 2)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expected);
 
-    List<Tuple> result = jedis.zmove(src, dst, params);
+    List<Tuple> result = jedis.zmove(src, dst, SortedSetOption.MIN, 2);
 
     assertThat(result, equalTo(expected));
 
     verify(commandExecutor).executeCommand(listTupleCommandObject);
-    verify(commandObjects).zmove(src, dst, params);
+    verify(commandObjects).zmove(src, dst, SortedSetOption.MIN, 2);
   }
 
   /** UnifiedJedis bzmove delegates to CommandObjects. */
   @Test
   public void testBzmove() {
-    BZMoveParams params = BZMoveParams.max(1).count(2);
     List<Tuple> expected = Collections.singletonList(new Tuple("a", 1.0));
 
-    when(commandObjects.bzmove("{z}s", "{z}d", params)).thenReturn(listTupleCommandObject);
+    when(commandObjects.bzmove("{z}s", "{z}d", SortedSetOption.MAX, 1, 2)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expected);
 
-    List<Tuple> result = jedis.bzmove("{z}s", "{z}d", params);
+    List<Tuple> result = jedis.bzmove("{z}s", "{z}d", SortedSetOption.MAX, 1, 2);
 
     assertThat(result, equalTo(expected));
 
     verify(commandExecutor).executeCommand(listTupleCommandObject);
-    verify(commandObjects).bzmove("{z}s", "{z}d", params);
+    verify(commandObjects).bzmove("{z}s", "{z}d", SortedSetOption.MAX, 1, 2);
   }
 
   /** UnifiedJedis bzmove (byte[]) delegates to CommandObjects. */
@@ -2945,18 +2940,17 @@ public class UnifiedJedisSortedSetCommandsTest extends UnifiedJedisMockedTestBas
   public void testBzmoveBinary() {
     byte[] src = SafeEncoder.encode("{z}s");
     byte[] dst = SafeEncoder.encode("{z}d");
-    BZMoveParams params = BZMoveParams.max(1).count(2);
     List<Tuple> expected = Collections.singletonList(new Tuple("a", 1.0));
 
-    when(commandObjects.bzmove(src, dst, params)).thenReturn(listTupleCommandObject);
+    when(commandObjects.bzmove(src, dst, SortedSetOption.MAX, 1, 2)).thenReturn(listTupleCommandObject);
     when(commandExecutor.executeCommand(listTupleCommandObject)).thenReturn(expected);
 
-    List<Tuple> result = jedis.bzmove(src, dst, params);
+    List<Tuple> result = jedis.bzmove(src, dst, SortedSetOption.MAX, 1, 2);
 
     assertThat(result, equalTo(expected));
 
     verify(commandExecutor).executeCommand(listTupleCommandObject);
-    verify(commandObjects).bzmove(src, dst, params);
+    verify(commandObjects).bzmove(src, dst, SortedSetOption.MAX, 1, 2);
   }
 
   /** UnifiedJedis zmovemember with one member delegates to CommandObjects. */

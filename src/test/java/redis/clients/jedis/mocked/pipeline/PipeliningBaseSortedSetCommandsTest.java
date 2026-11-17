@@ -12,12 +12,10 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.SortedSetOption;
-import redis.clients.jedis.params.BZMoveParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
 import redis.clients.jedis.params.ZMoveMemberParams;
-import redis.clients.jedis.params.ZMoveParams;
 import redis.clients.jedis.params.ZParams;
 import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.ScanResult;
@@ -1925,10 +1923,9 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
   /** PipeliningBase zmove appends its command object. */
   @Test
   public void testZmove() {
-    ZMoveParams params = ZMoveParams.min().count(2);
-    when(commandObjects.zmove("{z}s", "{z}d", params)).thenReturn(listTupleCommandObject);
+    when(commandObjects.zmove("{z}s", "{z}d", SortedSetOption.MIN, 2)).thenReturn(listTupleCommandObject);
 
-    Response<List<Tuple>> response = pipeliningBase.zmove("{z}s", "{z}d", params);
+    Response<List<Tuple>> response = pipeliningBase.zmove("{z}s", "{z}d", SortedSetOption.MIN, 2);
 
     assertThat(commands, contains(listTupleCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -1939,10 +1936,9 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
   public void testZmoveBinary() {
     byte[] src = SafeEncoder.encode("{z}s");
     byte[] dst = SafeEncoder.encode("{z}d");
-    ZMoveParams params = ZMoveParams.min().count(2);
-    when(commandObjects.zmove(src, dst, params)).thenReturn(listTupleCommandObject);
+    when(commandObjects.zmove(src, dst, SortedSetOption.MIN, 2)).thenReturn(listTupleCommandObject);
 
-    Response<List<Tuple>> response = pipeliningBase.zmove(src, dst, params);
+    Response<List<Tuple>> response = pipeliningBase.zmove(src, dst, SortedSetOption.MIN, 2);
 
     assertThat(commands, contains(listTupleCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -1951,10 +1947,9 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
   /** PipeliningBase bzmove appends its command object. */
   @Test
   public void testBzmove() {
-    BZMoveParams params = BZMoveParams.max(1).count(2);
-    when(commandObjects.bzmove("{z}s", "{z}d", params)).thenReturn(listTupleCommandObject);
+    when(commandObjects.bzmove("{z}s", "{z}d", SortedSetOption.MAX, 1, 2)).thenReturn(listTupleCommandObject);
 
-    Response<List<Tuple>> response = pipeliningBase.bzmove("{z}s", "{z}d", params);
+    Response<List<Tuple>> response = pipeliningBase.bzmove("{z}s", "{z}d", SortedSetOption.MAX, 1, 2);
 
     assertThat(commands, contains(listTupleCommandObject));
     assertThat(response, is(predefinedResponse));
@@ -1965,10 +1960,9 @@ public class PipeliningBaseSortedSetCommandsTest extends PipeliningBaseMockedTes
   public void testBzmoveBinary() {
     byte[] src = SafeEncoder.encode("{z}s");
     byte[] dst = SafeEncoder.encode("{z}d");
-    BZMoveParams params = BZMoveParams.max(1).count(2);
-    when(commandObjects.bzmove(src, dst, params)).thenReturn(listTupleCommandObject);
+    when(commandObjects.bzmove(src, dst, SortedSetOption.MAX, 1, 2)).thenReturn(listTupleCommandObject);
 
-    Response<List<Tuple>> response = pipeliningBase.bzmove(src, dst, params);
+    Response<List<Tuple>> response = pipeliningBase.bzmove(src, dst, SortedSetOption.MAX, 1, 2);
 
     assertThat(commands, contains(listTupleCommandObject));
     assertThat(response, is(predefinedResponse));

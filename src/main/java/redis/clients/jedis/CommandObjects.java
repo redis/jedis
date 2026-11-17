@@ -2774,24 +2774,80 @@ public class CommandObjects {
 
   // Sorted set move commands
   // The reply is nested [member, score] pairs in both protocols, so the RESP3 tuple builder fits both.
-  public final CommandObject<List<Tuple>> zmove(String srcKey, String dstKey, ZMoveParams params) {
-    return new CommandObject<>(commandArguments(ZMOVE).key(srcKey).key(dstKey)
-        .addParams(params), BuilderFactory.TUPLE_LIST_RESP3);
+  public final CommandObject<List<Tuple>> zmove(String srcKey, String dstKey, SortedSetOption end) {
+    return new CommandObject<>(commandArguments(ZMOVE).key(srcKey).key(dstKey).add((Object) end), BuilderFactory.TUPLE_LIST_RESP3);
   }
 
-  public final CommandObject<List<Tuple>> zmove(byte[] srcKey, byte[] dstKey, ZMoveParams params) {
-    return new CommandObject<>(commandArguments(ZMOVE).key(srcKey).key(dstKey)
-        .addParams(params), BuilderFactory.TUPLE_LIST_RESP3);
+  public final CommandObject<List<Tuple>> zmove(byte[] srcKey, byte[] dstKey, SortedSetOption end) {
+    return new CommandObject<>(commandArguments(ZMOVE).key(srcKey).key(dstKey).add((Object) end), BuilderFactory.TUPLE_LIST_RESP3);
   }
 
-  public final CommandObject<List<Tuple>> bzmove(String srcKey, String dstKey, BZMoveParams params) {
-    return new CommandObject<>(commandArguments(BZMOVE).blocking().key(srcKey).key(dstKey)
-        .addParams(params), BuilderFactory.TUPLE_LIST_RESP3);
+  public final CommandObject<List<Tuple>> zmove(String srcKey, String dstKey, SortedSetOption end, long count) {
+    return new CommandObject<>(commandArguments(ZMOVE).key(srcKey).key(dstKey).add((Object) end)
+        .add(COUNT).add(count), BuilderFactory.TUPLE_LIST_RESP3);
   }
 
-  public final CommandObject<List<Tuple>> bzmove(byte[] srcKey, byte[] dstKey, BZMoveParams params) {
-    return new CommandObject<>(commandArguments(BZMOVE).blocking().key(srcKey).key(dstKey)
-        .addParams(params), BuilderFactory.TUPLE_LIST_RESP3);
+  public final CommandObject<List<Tuple>> zmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, long count) {
+    return new CommandObject<>(commandArguments(ZMOVE).key(srcKey).key(dstKey).add((Object) end)
+        .add(COUNT).add(count), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> zmoveByScore(String srcKey, String dstKey, double min, double max) {
+    return new CommandObject<>(commandArguments(ZMOVE).key(srcKey).key(dstKey).add(BYSCORE).add(min).add(max), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> zmoveByScore(byte[] srcKey, byte[] dstKey, double min, double max) {
+    return new CommandObject<>(commandArguments(ZMOVE).key(srcKey).key(dstKey).add(BYSCORE).add(min).add(max), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> zmoveByScore(String srcKey, String dstKey, double min, double max, long count) {
+    return new CommandObject<>(commandArguments(ZMOVE).key(srcKey).key(dstKey).add(BYSCORE).add(min).add(max)
+        .add(COUNT).add(count), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> zmoveByScore(byte[] srcKey, byte[] dstKey, double min, double max, long count) {
+    return new CommandObject<>(commandArguments(ZMOVE).key(srcKey).key(dstKey).add(BYSCORE).add(min).add(max)
+        .add(COUNT).add(count), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> zmoveByScore(String srcKey, String dstKey, String min, String max) {
+    return new CommandObject<>(commandArguments(ZMOVE).key(srcKey).key(dstKey).add(BYSCORE).add((Object) min)
+        .add((Object) max), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> zmoveByScore(byte[] srcKey, byte[] dstKey, byte[] min, byte[] max) {
+    return new CommandObject<>(commandArguments(ZMOVE).key(srcKey).key(dstKey).add(BYSCORE).add((Object) min)
+        .add((Object) max), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> zmoveByScore(String srcKey, String dstKey, String min, String max, long count) {
+    return new CommandObject<>(commandArguments(ZMOVE).key(srcKey).key(dstKey).add(BYSCORE).add((Object) min)
+        .add((Object) max).add(COUNT).add(count), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> zmoveByScore(byte[] srcKey, byte[] dstKey, byte[] min, byte[] max, long count) {
+    return new CommandObject<>(commandArguments(ZMOVE).key(srcKey).key(dstKey).add(BYSCORE).add((Object) min)
+        .add((Object) max).add(COUNT).add(count), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> bzmove(String srcKey, String dstKey, SortedSetOption end, double timeout) {
+    return new CommandObject<>(commandArguments(BZMOVE).blocking().key(srcKey).key(dstKey).add((Object) end)
+        .add(timeout), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> bzmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, double timeout) {
+    return new CommandObject<>(commandArguments(BZMOVE).blocking().key(srcKey).key(dstKey).add((Object) end)
+        .add(timeout), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> bzmove(String srcKey, String dstKey, SortedSetOption end, double timeout, long count) {
+    return new CommandObject<>(commandArguments(BZMOVE).blocking().key(srcKey).key(dstKey).add((Object) end)
+        .add(timeout).add(COUNT).add(count), BuilderFactory.TUPLE_LIST_RESP3);
+  }
+
+  public final CommandObject<List<Tuple>> bzmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, double timeout, long count) {
+    return new CommandObject<>(commandArguments(BZMOVE).blocking().key(srcKey).key(dstKey).add((Object) end)
+        .add(timeout).add(COUNT).add(count), BuilderFactory.TUPLE_LIST_RESP3);
   }
 
   public final CommandObject<List<Tuple>> zmovemember(String srcKey, String dstKey, String member) {

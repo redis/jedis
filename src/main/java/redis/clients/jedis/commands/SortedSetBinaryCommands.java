@@ -306,18 +306,60 @@ public interface SortedSetBinaryCommands {
   KeyValue<byte[], List<Tuple>> bzmpop(double timeout, SortedSetOption option, int count, byte[]... keys);
 
   /**
-   * Binary variant of {@link SortedSetCommands#zmove(String, String, ZMoveParams)}.
-   * @see SortedSetCommands#zmove(String, String, ZMoveParams)
+   * Binary variant of {@link SortedSetCommands#zmove(String, String, SortedSetOption)}.
+   * @see SortedSetCommands#zmove(String, String, SortedSetOption)
    * @since 8.1
    */
-  List<Tuple> zmove(byte[] srcKey, byte[] dstKey, ZMoveParams params);
+  List<Tuple> zmove(byte[] srcKey, byte[] dstKey, SortedSetOption end);
 
   /**
-   * Binary variant of {@link SortedSetCommands#bzmove(String, String, BZMoveParams)}.
-   * @see SortedSetCommands#bzmove(String, String, BZMoveParams)
+   * Binary variant of {@link SortedSetCommands#zmove(String, String, SortedSetOption, long)}.
+   * @see SortedSetCommands#zmove(String, String, SortedSetOption, long)
    * @since 8.1
    */
-  List<Tuple> bzmove(byte[] srcKey, byte[] dstKey, BZMoveParams params);
+  List<Tuple> zmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, long count);
+
+  /**
+   * Binary variant of {@link SortedSetCommands#zmoveByScore(String, String, double, double)}.
+   * @see SortedSetCommands#zmoveByScore(String, String, double, double)
+   * @since 8.1
+   */
+  List<Tuple> zmoveByScore(byte[] srcKey, byte[] dstKey, double min, double max);
+
+  /**
+   * Binary variant of {@link SortedSetCommands#zmoveByScore(String, String, double, double, long)}.
+   * @see SortedSetCommands#zmoveByScore(String, String, double, double, long)
+   * @since 8.1
+   */
+  List<Tuple> zmoveByScore(byte[] srcKey, byte[] dstKey, double min, double max, long count);
+
+  /**
+   * Binary variant of {@link SortedSetCommands#zmoveByScore(String, String, String, String)}.
+   * @see SortedSetCommands#zmoveByScore(String, String, String, String)
+   * @since 8.1
+   */
+  List<Tuple> zmoveByScore(byte[] srcKey, byte[] dstKey, byte[] min, byte[] max);
+
+  /**
+   * Binary variant of {@link SortedSetCommands#zmoveByScore(String, String, String, String, long)}.
+   * @see SortedSetCommands#zmoveByScore(String, String, String, String, long)
+   * @since 8.1
+   */
+  List<Tuple> zmoveByScore(byte[] srcKey, byte[] dstKey, byte[] min, byte[] max, long count);
+
+  /**
+   * Binary variant of {@link SortedSetCommands#bzmove(String, String, SortedSetOption, double)}.
+   * @see SortedSetCommands#bzmove(String, String, SortedSetOption, double)
+   * @since 8.1
+   */
+  List<Tuple> bzmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, double timeout);
+
+  /**
+   * Binary variant of {@link SortedSetCommands#bzmove(String, String, SortedSetOption, double, long)}.
+   * @see SortedSetCommands#bzmove(String, String, SortedSetOption, double, long)
+   * @since 8.1
+   */
+  List<Tuple> bzmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, double timeout, long count);
 
   /**
    * Binary variant of {@link SortedSetCommands#zmovemember(String, String, String)}.

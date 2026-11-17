@@ -1812,7 +1812,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   @EnabledOnCommand("ZMOVE")
   public void zmoveMinWithoutCountMovesOne() {
     zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
-    assertEquals(tuples("a", 1), jedis.zmove(ZSRC, ZDST, ZMoveParams.min()));
+    assertEquals(tuples("a", 1), jedis.zmove(ZSRC, ZDST, SortedSetOption.MIN));
     assertEquals(Double.valueOf(1), jedis.zscore(ZDST, "a"));
   }
 
@@ -1821,7 +1821,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   @EnabledOnCommand("ZMOVE")
   public void zmoveMinCount() {
     zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
-    assertEquals(tuples("a", 1, "b", 2), jedis.zmove(ZSRC, ZDST, ZMoveParams.min().count(2)));
+    assertEquals(tuples("a", 1, "b", 2), jedis.zmove(ZSRC, ZDST, SortedSetOption.MIN, 2));
     assertEquals(tuples("a", 1, "b", 2), jedis.zrangeWithScores(ZDST, 0, -1));
     assertEquals(1, jedis.zcard(ZSRC));
   }
@@ -1831,7 +1831,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   @EnabledOnCommand("ZMOVE")
   public void zmoveMaxCount() {
     zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
-    assertEquals(tuples("c", 3, "b", 2), jedis.zmove(ZSRC, ZDST, ZMoveParams.max().count(2)));
+    assertEquals(tuples("c", 3, "b", 2), jedis.zmove(ZSRC, ZDST, SortedSetOption.MAX, 2));
   }
 
   /** A score range without a count moves the whole range. */
@@ -1839,7 +1839,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   @EnabledOnCommand("ZMOVE")
   public void zmoveByScoreExclusiveWholeRange() {
     zfixture(ZSRC, "a", 1, "b", 2, "c", 3, "e", 4);
-    assertEquals(tuples("b", 2, "c", 3), jedis.zmove(ZSRC, ZDST, ZMoveParams.byScore("(1", "3")));
+    assertEquals(tuples("b", 2, "c", 3), jedis.zmoveByScore(ZSRC, ZDST, "(1", "3"));
     assertEquals(tuples("a", 1, "e", 4), jedis.zrangeWithScores(ZSRC, 0, -1));
   }
 
@@ -1848,13 +1848,11 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   @EnabledOnCommand("ZMOVE")
   public void zmoveByScoreInfiniteTextBounds() {
     zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
-    ZMoveParams params = ZMoveParams.byScore("-inf", "+inf").count(2);
-    assertEquals(tuples("a", 1, "b", 2), jedis.zmove(ZSRC, ZDST, params));
+    assertEquals(tuples("a", 1, "b", 2), jedis.zmoveByScore(ZSRC, ZDST, "-inf", "+inf", 2));
 
     jedis.del(ZSRC, ZDST);
     zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
-    ZMoveParams exclusive = ZMoveParams.byScore("(-inf", "(+inf").count(2);
-    assertEquals(tuples("a", 1, "b", 2), jedis.zmove(ZSRC, ZDST, exclusive));
+    assertEquals(tuples("a", 1, "b", 2), jedis.zmoveByScore(ZSRC, ZDST, "(-inf", "(+inf", 2));
   }
 
   /** An infinite score reads as positive infinity. */
@@ -1862,7 +1860,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   @EnabledOnCommand("ZMOVE")
   public void zmoveInfiniteScore() {
     jedis.zadd(ZSRC, Double.POSITIVE_INFINITY, "a");
-    List<Tuple> moved = jedis.zmove(ZSRC, ZDST, ZMoveParams.min());
+    List<Tuple> moved = jedis.zmove(ZSRC, ZDST, SortedSetOption.MIN);
     assertEquals(tuples("a", Double.POSITIVE_INFINITY), moved);
     assertEquals(Double.POSITIVE_INFINITY, moved.get(0).getScore(), 0d);
   }
@@ -1872,7 +1870,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   @EnabledOnCommand("ZMOVE")
   public void zmoveEmptyRangeIsNull() {
     jedis.zadd(ZSRC, 1, "a");
-    assertNull(jedis.zmove(ZSRC, ZDST, ZMoveParams.byScore(5, 6)));
+    assertNull(jedis.zmoveByScore(ZSRC, ZDST, 5, 6));
     assertFalse(jedis.exists(ZDST));
   }
 
@@ -1880,7 +1878,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   @Test
   @EnabledOnCommand("ZMOVEMEMBER")
   public void missingSourceIsNull() {
-    assertNull(jedis.zmove(ZSRC, ZDST, ZMoveParams.min()));
+    assertNull(jedis.zmove(ZSRC, ZDST, SortedSetOption.MIN));
     assertNull(jedis.zmovemember(ZSRC, ZDST, "a"));
   }
 
@@ -1912,25 +1910,24 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   @EnabledOnCommand("BZMOVE")
   public void bzmoveNonEmptySourceAtOnce() {
     zfixture(ZSRC, "a", 1, "b", 2);
-    BZMoveParams params = BZMoveParams.max(1).count(5);
-    assertEquals(tuples("b", 2, "a", 1), atOnce(() -> jedis.bzmove(ZSRC, ZDST, params)));
+    assertEquals(tuples("b", 2, "a", 1), atOnce(() -> jedis.bzmove(ZSRC, ZDST, SortedSetOption.MAX, 1, 5)));
   }
 
   /** A 100 ms timeout on a missing source replies null. */
   @Test
   @EnabledOnCommand("BZMOVE")
   public void bzmoveFractionalTimeout() {
-    assertNull(atOnce(() -> jedis.bzmove(ZSRC, ZDST, BZMoveParams.min(0.1))));
+    assertNull(atOnce(() -> jedis.bzmove(ZSRC, ZDST, SortedSetOption.MIN, 0.1)));
   }
 
   /** A sub-millisecond and a long fractional timeout reply null. */
   @Test
   @EnabledOnCommand("BZMOVE")
   public void bzmoveSubMillisecondAndLongFraction() {
-    assertNull(atOnce(() -> jedis.bzmove(ZSRC, ZDST, BZMoveParams.min(0.0005))));
+    assertNull(atOnce(() -> jedis.bzmove(ZSRC, ZDST, SortedSetOption.MIN, 0.0005)));
     long start = System.nanoTime();
     assertNull(assertTimeoutPreemptively(Duration.ofSeconds(5),
-        () -> jedis.bzmove(ZSRC, ZDST, BZMoveParams.min(1.000000001))));
+        () -> jedis.bzmove(ZSRC, ZDST, SortedSetOption.MIN, 1.000000001)));
     assertTrue(TimeUnit.NANOSECONDS.toMillis(System.nanoTime() - start) >= 900);
   }
 
@@ -1939,7 +1936,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   @EnabledOnCommand("ZMOVE")
   public void zmoveExponentBound() {
     zfixture(ZSRC, "t", 1.0E-5, "b", 2);
-    List<Tuple> moved = jedis.zmove(ZSRC, ZDST, ZMoveParams.byScore(1.0E-5, 1.0E-5));
+    List<Tuple> moved = jedis.zmoveByScore(ZSRC, ZDST, 1.0E-5, 1.0E-5);
     assertEquals(1, moved.size());
     assertEquals("t", moved.get(0).getElement());
     assertEquals(1.0E-5, moved.get(0).getScore(), 0d);
@@ -1950,8 +1947,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   @EnabledOnCommand("ZMOVE")
   public void zmoveDecimalBounds() {
     zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
-    ZMoveParams params = ZMoveParams.byScore(1.0, 3.0).count(2);
-    assertEquals(tuples("a", 1, "b", 2), jedis.zmove(ZSRC, ZDST, params));
+    assertEquals(tuples("a", 1, "b", 2), jedis.zmoveByScore(ZSRC, ZDST, 1.0, 3.0, 2));
   }
 
   /** Infinite double bounds move all members in ascending order. */
@@ -1959,8 +1955,7 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   @EnabledOnCommand("ZMOVE")
   public void zmoveInfiniteDoubleBounds() {
     zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
-    ZMoveParams params = ZMoveParams.byScore(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
-    assertEquals(tuples("a", 1, "b", 2, "c", 3), jedis.zmove(ZSRC, ZDST, params));
+    assertEquals(tuples("a", 1, "b", 2, "c", 3), jedis.zmoveByScore(ZSRC, ZDST, Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY));
     assertFalse(jedis.exists(ZSRC));
   }
 
@@ -1981,11 +1976,11 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
   @EnabledOnCommand("ZMOVEMEMBER")
   public void binaryTwins() {
     zfixture(ZBSRC, "a", 1, "b", 2, "c", 3);
-    List<Tuple> moved = jedis.zmove(ZBSRC, ZBDST, ZMoveParams.min().count(2));
+    List<Tuple> moved = jedis.zmove(ZBSRC, ZBDST, SortedSetOption.MIN, 2);
     assertEquals(tuples("a", 1, "b", 2), moved);
     assertArrayEquals(SafeEncoder.encode("a"), moved.get(0).getBinaryElement());
 
-    assertEquals(tuples("c", 3), atOnce(() -> jedis.bzmove(ZBSRC, ZBDST, BZMoveParams.max(1))));
+    assertEquals(tuples("c", 3), atOnce(() -> jedis.bzmove(ZBSRC, ZBDST, SortedSetOption.MAX, 1)));
 
     jedis.del(ZBSRC, ZBDST);
     zfixture(ZBSRC, "a", 1, "b", 2, "c", 3);

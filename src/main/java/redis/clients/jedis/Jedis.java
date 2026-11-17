@@ -3726,15 +3726,51 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<Tuple> zmove(byte[] srcKey, byte[] dstKey, ZMoveParams params) {
+  public List<Tuple> zmove(byte[] srcKey, byte[] dstKey, SortedSetOption end) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zmove(srcKey, dstKey, params));
+    return connection.executeCommand(commandObjects.zmove(srcKey, dstKey, end));
   }
 
   @Override
-  public List<Tuple> bzmove(byte[] srcKey, byte[] dstKey, BZMoveParams params) {
+  public List<Tuple> zmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, long count) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.bzmove(srcKey, dstKey, params));
+    return connection.executeCommand(commandObjects.zmove(srcKey, dstKey, end, count));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(byte[] srcKey, byte[] dstKey, double min, double max) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(byte[] srcKey, byte[] dstKey, double min, double max, long count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(byte[] srcKey, byte[] dstKey, byte[] min, byte[] max) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(byte[] srcKey, byte[] dstKey, byte[] min, byte[] max, long count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public List<Tuple> bzmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, double timeout) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout));
+  }
+
+  @Override
+  public List<Tuple> bzmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, double timeout, long count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout, count));
   }
 
   @Override
@@ -8977,15 +9013,51 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   }
 
   @Override
-  public List<Tuple> zmove(String srcKey, String dstKey, ZMoveParams params) {
+  public List<Tuple> zmove(String srcKey, String dstKey, SortedSetOption end) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.zmove(srcKey, dstKey, params));
+    return connection.executeCommand(commandObjects.zmove(srcKey, dstKey, end));
   }
 
   @Override
-  public List<Tuple> bzmove(String srcKey, String dstKey, BZMoveParams params) {
+  public List<Tuple> zmove(String srcKey, String dstKey, SortedSetOption end, long count) {
     checkIsInMultiOrPipeline();
-    return connection.executeCommand(commandObjects.bzmove(srcKey, dstKey, params));
+    return connection.executeCommand(commandObjects.zmove(srcKey, dstKey, end, count));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(String srcKey, String dstKey, double min, double max) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(String srcKey, String dstKey, double min, double max, long count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(String srcKey, String dstKey, String min, String max) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(String srcKey, String dstKey, String min, String max, long count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public List<Tuple> bzmove(String srcKey, String dstKey, SortedSetOption end, double timeout) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout));
+  }
+
+  @Override
+  public List<Tuple> bzmove(String srcKey, String dstKey, SortedSetOption end, double timeout, long count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout, count));
   }
 
   @Override

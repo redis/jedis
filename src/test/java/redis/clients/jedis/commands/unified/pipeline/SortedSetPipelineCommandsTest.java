@@ -34,11 +34,9 @@ import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.SortedSetOption;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.params.BZMoveParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
-import redis.clients.jedis.params.ZMoveParams;
 import redis.clients.jedis.params.ZParams;
 import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.ScanResult;
@@ -1923,10 +1921,10 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.zadd("{z}s", 1, "a");
     pipe.zadd("{z}s", 2, "b");
     pipe.zadd("{z}s", 3, "c");
-    Response<List<Tuple>> minCount = pipe.zmove("{z}s", "{z}d", ZMoveParams.min().count(2));
-    Response<List<Tuple>> missing = pipe.zmove("{z}m1", "{z}m2", ZMoveParams.min());
+    Response<List<Tuple>> minCount = pipe.zmove("{z}s", "{z}d", SortedSetOption.MIN, 2);
+    Response<List<Tuple>> missing = pipe.zmove("{z}m1", "{z}m2", SortedSetOption.MIN);
     Response<List<Tuple>> member = pipe.zmovemember("{z}s", "{z}d", "c");
-    Response<List<Tuple>> blocking = pipe.bzmove("{z}e", "{z}d", BZMoveParams.max(1));
+    Response<List<Tuple>> blocking = pipe.bzmove("{z}e", "{z}d", SortedSetOption.MAX, 1);
     pipe.sync();
 
     assertEquals(Arrays.asList(new Tuple("a", 1d), new Tuple("b", 2d)), minCount.get());
@@ -1946,7 +1944,7 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.zadd(src, 1, SafeEncoder.encode("a"));
     pipe.zadd(src, 2, SafeEncoder.encode("b"));
     pipe.zadd(src, 3, SafeEncoder.encode("c"));
-    Response<List<Tuple>> minCount = pipe.zmove(src, dst, ZMoveParams.min().count(2));
+    Response<List<Tuple>> minCount = pipe.zmove(src, dst, SortedSetOption.MIN, 2);
     Response<List<Tuple>> member = pipe.zmovemember(src, dst, SafeEncoder.encode("c"));
     pipe.sync();
 
@@ -1965,10 +1963,10 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.zadd("{z}s", 2, "b");
     pipe.zadd("{z}s", 3, "c");
     pipe.set("{z}w", "x");
-    Response<List<Tuple>> min = pipe.zmove("{z}s", "{z}d", ZMoveParams.min());
-    Response<List<Tuple>> missing = pipe.zmove("{z}none", "{z}d", ZMoveParams.min());
+    Response<List<Tuple>> min = pipe.zmove("{z}s", "{z}d", SortedSetOption.MIN);
+    Response<List<Tuple>> missing = pipe.zmove("{z}none", "{z}d", SortedSetOption.MIN);
     Response<List<Tuple>> wrongType = pipe.zmovemember("{z}w", "{z}d", "a");
-    Response<List<Tuple>> max = pipe.zmove("{z}s", "{z}d", ZMoveParams.max());
+    Response<List<Tuple>> max = pipe.zmove("{z}s", "{z}d", SortedSetOption.MAX);
     pipe.sync();
 
     assertEquals(Collections.singletonList(new Tuple("a", 1d)), min.get());
@@ -1992,10 +1990,10 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
     pipe.zadd(src, 2, SafeEncoder.encode("b"));
     pipe.zadd(src, 3, SafeEncoder.encode("c"));
     pipe.set(wrong, SafeEncoder.encode("x"));
-    Response<List<Tuple>> min = pipe.zmove(src, dst, ZMoveParams.min());
-    Response<List<Tuple>> missing = pipe.zmove(SafeEncoder.encode("{z}none"), dst, ZMoveParams.min());
+    Response<List<Tuple>> min = pipe.zmove(src, dst, SortedSetOption.MIN);
+    Response<List<Tuple>> missing = pipe.zmove(SafeEncoder.encode("{z}none"), dst, SortedSetOption.MIN);
     Response<List<Tuple>> wrongType = pipe.zmovemember(wrong, dst, SafeEncoder.encode("a"));
-    Response<List<Tuple>> max = pipe.zmove(src, dst, ZMoveParams.max());
+    Response<List<Tuple>> max = pipe.zmove(src, dst, SortedSetOption.MAX);
     pipe.sync();
 
     assertEquals(Collections.singletonList(new Tuple(SafeEncoder.encode("a"), 1d)), min.get());

@@ -1552,13 +1552,43 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<List<Tuple>> zmove(String srcKey, String dstKey, ZMoveParams params) {
-    return appendCommand(commandObjects.zmove(srcKey, dstKey, params));
+  public Response<List<Tuple>> zmove(String srcKey, String dstKey, SortedSetOption end) {
+    return appendCommand(commandObjects.zmove(srcKey, dstKey, end));
   }
 
   @Override
-  public Response<List<Tuple>> bzmove(String srcKey, String dstKey, BZMoveParams params) {
-    return appendCommand(commandObjects.bzmove(srcKey, dstKey, params));
+  public Response<List<Tuple>> zmove(String srcKey, String dstKey, SortedSetOption end, long count) {
+    return appendCommand(commandObjects.zmove(srcKey, dstKey, end, count));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmoveByScore(String srcKey, String dstKey, double min, double max) {
+    return appendCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmoveByScore(String srcKey, String dstKey, double min, double max, long count) {
+    return appendCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmoveByScore(String srcKey, String dstKey, String min, String max) {
+    return appendCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmoveByScore(String srcKey, String dstKey, String min, String max, long count) {
+    return appendCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public Response<List<Tuple>> bzmove(String srcKey, String dstKey, SortedSetOption end, double timeout) {
+    return appendCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout));
+  }
+
+  @Override
+  public Response<List<Tuple>> bzmove(String srcKey, String dstKey, SortedSetOption end, double timeout, long count) {
+    return appendCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout, count));
   }
 
   @Override
@@ -4086,13 +4116,43 @@ public abstract class PipeliningBase
   }
 
   @Override
-  public Response<List<Tuple>> zmove(byte[] srcKey, byte[] dstKey, ZMoveParams params) {
-    return appendCommand(commandObjects.zmove(srcKey, dstKey, params));
+  public Response<List<Tuple>> zmove(byte[] srcKey, byte[] dstKey, SortedSetOption end) {
+    return appendCommand(commandObjects.zmove(srcKey, dstKey, end));
   }
 
   @Override
-  public Response<List<Tuple>> bzmove(byte[] srcKey, byte[] dstKey, BZMoveParams params) {
-    return appendCommand(commandObjects.bzmove(srcKey, dstKey, params));
+  public Response<List<Tuple>> zmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, long count) {
+    return appendCommand(commandObjects.zmove(srcKey, dstKey, end, count));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmoveByScore(byte[] srcKey, byte[] dstKey, double min, double max) {
+    return appendCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmoveByScore(byte[] srcKey, byte[] dstKey, double min, double max, long count) {
+    return appendCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmoveByScore(byte[] srcKey, byte[] dstKey, byte[] min, byte[] max) {
+    return appendCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmoveByScore(byte[] srcKey, byte[] dstKey, byte[] min, byte[] max, long count) {
+    return appendCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public Response<List<Tuple>> bzmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, double timeout) {
+    return appendCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout));
+  }
+
+  @Override
+  public Response<List<Tuple>> bzmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, double timeout, long count) {
+    return appendCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout, count));
   }
 
   @Override

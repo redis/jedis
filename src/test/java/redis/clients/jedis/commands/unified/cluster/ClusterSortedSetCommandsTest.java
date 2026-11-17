@@ -22,13 +22,12 @@ import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
+import redis.clients.jedis.args.SortedSetOption;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.UnifiedJedis;
 import redis.clients.jedis.commands.unified.SortedSetCommandsTestBase;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
-import redis.clients.jedis.params.BZMoveParams;
 import redis.clients.jedis.params.ZAddParams;
-import redis.clients.jedis.params.ZMoveParams;
 import redis.clients.jedis.params.ZParams;
 import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.Tuple;
@@ -337,11 +336,11 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
     byte[] foo = SafeEncoder.encode("foo");
     byte[] a = SafeEncoder.encode("a");
 
-    assertCrossSlotRejected(() -> jedis.zmove("bar", "foo", ZMoveParams.min()));
-    assertCrossSlotRejected(() -> jedis.bzmove("bar", "foo", BZMoveParams.min(0)));
+    assertCrossSlotRejected(() -> jedis.zmove("bar", "foo", SortedSetOption.MIN));
+    assertCrossSlotRejected(() -> jedis.bzmove("bar", "foo", SortedSetOption.MIN, 0));
     assertCrossSlotRejected(() -> jedis.zmovemember("bar", "foo", "a"));
-    assertCrossSlotRejected(() -> jedis.zmove(bar, foo, ZMoveParams.min()));
-    assertCrossSlotRejected(() -> jedis.bzmove(bar, foo, BZMoveParams.min(0)));
+    assertCrossSlotRejected(() -> jedis.zmove(bar, foo, SortedSetOption.MIN));
+    assertCrossSlotRejected(() -> jedis.bzmove(bar, foo, SortedSetOption.MIN, 0));
     assertCrossSlotRejected(() -> jedis.zmovemember(bar, foo, a));
 
     assertEquals(1, jedis.zcard("bar"));
@@ -358,9 +357,9 @@ public class ClusterSortedSetCommandsTest extends SortedSetCommandsTestBase {
     jedis.zadd("{z}s", 2, "b");
     jedis.zadd("{z}s", 3, "c");
     assertEquals(Collections.singletonList(new Tuple("a", 1d)),
-        jedis.zmove("{z}s", "{z}d", ZMoveParams.min()));
+        jedis.zmove("{z}s", "{z}d", SortedSetOption.MIN));
     assertEquals(Collections.singletonList(new Tuple("c", 3d)),
-        jedis.bzmove("{z}s", "{z}d", BZMoveParams.max(1)));
+        jedis.bzmove("{z}s", "{z}d", SortedSetOption.MAX, 1));
     assertEquals(Collections.singletonList(new Tuple("b", 2d)),
         jedis.zmovemember("{z}s", "{z}d", "b"));
     assertEquals(3, jedis.zcard("{z}d"));

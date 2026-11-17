@@ -1743,8 +1743,8 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd("{z}s", 2, "b");
     jedis.zadd("{z}s", 3, "c");
     assertEquals(Arrays.asList(new Tuple("a", 1d), new Tuple("b", 2d)),
-        jedis.zmove("{z}s", "{z}d", ZMoveParams.min().count(2)));
-    assertNull(jedis.zmove("{z}m1", "{z}m2", ZMoveParams.min()));
+        jedis.zmove("{z}s", "{z}d", SortedSetOption.MIN, 2));
+    assertNull(jedis.zmove("{z}m1", "{z}m2", SortedSetOption.MIN));
   }
 
   /**
@@ -1754,7 +1754,7 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
   @EnabledOnCommand("BZMOVE")
   public void bzmoveAndZmovememberLegacy() {
     assertNull(assertTimeoutPreemptively(Duration.ofMillis(900),
-      () -> jedis.bzmove("{z}m1", "{z}m2", BZMoveParams.min(0.1))));
+      () -> jedis.bzmove("{z}m1", "{z}m2", SortedSetOption.MIN, 0.1)));
     jedis.zadd("{z}s", 5, "a");
     assertNull(jedis.zmovemember("{z}s", "{z}d", ZMoveMemberParams.zMoveMemberParams().xx(), "a"));
   }
@@ -1773,11 +1773,11 @@ public class SortedSetCommandsTest extends JedisCommandsTestBase {
     jedis.zadd(src, 2, SafeEncoder.encode("b"));
     jedis.zadd(src, 3, SafeEncoder.encode("c"));
     assertEquals(Arrays.asList(new Tuple("a", 1d), new Tuple("b", 2d)),
-        jedis.zmove(src, dst, ZMoveParams.min().count(2)));
-    assertNull(jedis.zmove(m1, m2, ZMoveParams.min()));
+        jedis.zmove(src, dst, SortedSetOption.MIN, 2));
+    assertNull(jedis.zmove(m1, m2, SortedSetOption.MIN));
 
     assertNull(assertTimeoutPreemptively(Duration.ofMillis(900),
-      () -> jedis.bzmove(m1, m2, BZMoveParams.min(0.1))));
+      () -> jedis.bzmove(m1, m2, SortedSetOption.MIN, 0.1)));
     byte[] xsrc = SafeEncoder.encode("{z}xs");
     byte[] xdst = SafeEncoder.encode("{z}xd");
     jedis.zadd(xsrc, 5, SafeEncoder.encode("a"));

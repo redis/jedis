@@ -31,6 +31,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
+import redis.clients.jedis.args.SortedSetOption;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.PushConsumerChain;
@@ -39,7 +40,6 @@ import redis.clients.jedis.Response;
 import redis.clients.jedis.Transaction;
 import redis.clients.jedis.exceptions.JedisConnectionException;
 import redis.clients.jedis.exceptions.JedisDataException;
-import redis.clients.jedis.params.ZMoveParams;
 import redis.clients.jedis.resps.Tuple;
 import redis.clients.jedis.util.RedisInputStream;
 import redis.clients.jedis.util.SafeEncoder;
@@ -465,10 +465,10 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     jedis.set("{z}w", "x");
 
     Transaction t = jedis.multi();
-    Response<List<Tuple>> min = t.zmove("{z}s", "{z}d", ZMoveParams.min());
-    Response<List<Tuple>> missing = t.zmove("{z}none", "{z}d", ZMoveParams.min());
+    Response<List<Tuple>> min = t.zmove("{z}s", "{z}d", SortedSetOption.MIN);
+    Response<List<Tuple>> missing = t.zmove("{z}none", "{z}d", SortedSetOption.MIN);
     Response<List<Tuple>> wrongType = t.zmovemember("{z}w", "{z}d", "a");
-    Response<List<Tuple>> max = t.zmove("{z}s", "{z}d", ZMoveParams.max());
+    Response<List<Tuple>> max = t.zmove("{z}s", "{z}d", SortedSetOption.MAX);
     List<Object> results = t.exec();
 
     assertEquals(4, results.size());
@@ -501,10 +501,10 @@ public class TransactionCommandsTest extends JedisCommandsTestBase {
     jedis.set(wrong, SafeEncoder.encode("x"));
 
     Transaction t = jedis.multi();
-    Response<List<Tuple>> min = t.zmove(src, dst, ZMoveParams.min());
-    Response<List<Tuple>> missing = t.zmove(SafeEncoder.encode("{z}none"), dst, ZMoveParams.min());
+    Response<List<Tuple>> min = t.zmove(src, dst, SortedSetOption.MIN);
+    Response<List<Tuple>> missing = t.zmove(SafeEncoder.encode("{z}none"), dst, SortedSetOption.MIN);
     Response<List<Tuple>> wrongType = t.zmovemember(wrong, dst, SafeEncoder.encode("a"));
-    Response<List<Tuple>> max = t.zmove(src, dst, ZMoveParams.max());
+    Response<List<Tuple>> max = t.zmove(src, dst, SortedSetOption.MAX);
     List<Object> results = t.exec();
 
     List<Tuple> expectedMin = Collections.singletonList(new Tuple(SafeEncoder.encode("a"), 1d));

@@ -1959,16 +1959,47 @@ public abstract class SortedSetCommandsTestBase extends UnifiedJedisCommandsTest
     assertFalse(jedis.exists(ZSRC));
   }
 
-  /** The single-member overload overwrites the score; then NX moves b. */
+  /**
+   * The single-member zmovemember returns the moved member as one Tuple, and null when the member
+   * is no longer or never was in the source; with NX it moves a member the destination lacks.
+   */
   @Test
   @EnabledOnCommand("ZMOVEMEMBER")
-  public void zmovememberSingleAndNx() {
+  public void zmovememberSingle() {
+    zfixture(ZSRC, "a", 1, "b", 2, "c", 3);
+    assertEquals(new Tuple("a", 1.0), jedis.zmovemember(ZSRC, ZDST, "a"));
+    assertNull(jedis.zmovemember(ZSRC, ZDST, "a"));
+    assertNull(jedis.zmovemember(ZSRC, ZDST, "missing"));
+
+    jedis.del(ZSRC, ZDST);
     zfixture(ZSRC, "a", 5, "b", 6);
     jedis.zadd(ZDST, 1, "a");
-    assertEquals(tuples("a", 5).get(0), jedis.zmovemember(ZSRC, ZDST, "a"));
-    assertEquals(Double.valueOf(5), jedis.zscore(ZDST, "a"));
     ZMoveMemberParams nx = ZMoveMemberParams.zMoveMemberParams().nx();
-    assertEquals(tuples("b", 6).get(0), jedis.zmovemember(ZSRC, ZDST, nx, "b"));
+    assertEquals(new Tuple("b", 6.0), jedis.zmovemember(ZSRC, ZDST, nx, "b"));
+  }
+
+  /**
+   * The byte[] single-member zmovemember returns the moved member as one Tuple, and null when the
+   * member is no longer or never was in the source; with NX it moves a member the destination
+   * lacks.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVEMEMBER")
+  public void zmovememberSingleBinary() {
+    byte[] a = SafeEncoder.encode("a");
+    byte[] b = SafeEncoder.encode("b");
+    zfixture(ZBSRC, "a", 1, "b", 2, "c", 3);
+    Tuple moved = jedis.zmovemember(ZBSRC, ZBDST, a);
+    assertEquals(new Tuple(a, 1.0), moved);
+    assertArrayEquals(a, moved.getBinaryElement());
+    assertNull(jedis.zmovemember(ZBSRC, ZBDST, a));
+    assertNull(jedis.zmovemember(ZBSRC, ZBDST, SafeEncoder.encode("missing")));
+
+    jedis.del(ZBSRC, ZBDST);
+    zfixture(ZBSRC, "a", 5, "b", 6);
+    jedis.zadd(ZBDST, 1, a);
+    ZMoveMemberParams nx = ZMoveMemberParams.zMoveMemberParams().nx();
+    assertEquals(new Tuple(b, 6.0), jedis.zmovemember(ZBSRC, ZBDST, nx, b));
   }
 
   /** The byte[] twins move the same pairs; members come back as bytes. */

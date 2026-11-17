@@ -5,3 +5,7 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
+    ignore:
+      # resilience4j 2.x requires Java 17; Jedis targets Java 8
+      - dependency-name: "io.github.resilience4j:*"
+        update-types: ["version-update:semver-major"]

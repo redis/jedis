@@ -106,7 +106,7 @@ public class HotkeysParamsTest {
     public void countTooLowThrowsException() {
       HotkeysParams params = getDefaultValue();
       IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, () -> {
-        params.count(9);
+        params.count(0);
       });
       assertEquals("count must be between 1 and 64", exception.getMessage());
     }
@@ -123,7 +123,7 @@ public class HotkeysParamsTest {
     @Test
     public void countBoundaryMinValid() {
       HotkeysParams params = getDefaultValue();
-      assertDoesNotThrow(() -> params.count(10));
+      assertDoesNotThrow(() -> params.count(1));
     }
 
     @Test
@@ -366,6 +366,20 @@ public class HotkeysParamsTest {
       assertEquals(Protocol.Keyword.METRICS, args.get(1));
       assertEquals(HotkeysMetric.NET, args.get(3));
       assertEquals(Protocol.Keyword.DURATION, args.get(4));
+    }
+
+    @Test
+    public void addParamsWithZeroDurationOmitsDuration() {
+      HotkeysParams params = getDefaultValue();
+      params.metrics(HotkeysMetric.NET).duration(0);
+
+      CommandArguments args = new CommandArguments(Protocol.Command.HOTKEYS);
+      params.addParams(args);
+
+      // Expected: HOTKEYS METRICS 1 NET (no DURATION, the server rejects DURATION 0)
+      assertEquals(4, args.size());
+      assertEquals(Protocol.Keyword.METRICS, args.get(1));
+      assertEquals(HotkeysMetric.NET, args.get(3));
     }
 
     @Test

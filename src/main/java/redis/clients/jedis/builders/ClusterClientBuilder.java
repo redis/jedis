@@ -7,6 +7,7 @@ import redis.clients.jedis.executors.ClusterCommandExecutor;
 import redis.clients.jedis.executors.CommandExecutor;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.providers.ConnectionProvider;
+import redis.clients.jedis.util.JedisAsserts;
 
 /**
  * Builder for creating JedisCluster instances (Redis Cluster connections).
@@ -18,12 +19,37 @@ import redis.clients.jedis.providers.ConnectionProvider;
 public abstract class ClusterClientBuilder<C>
     extends AbstractClientBuilder<ClusterClientBuilder<C>, C> {
 
+  /**
+   * Maintenance notifications used when none is explicitly configured (AUTO). A dedicated instance,
+   * so an explicitly set value is distinguishable.
+   */
+  private static final MaintenanceNotificationsConfig UNSET_MAINTENANCE_NOTIFICATIONS = MaintenanceNotificationsConfig
+      .builder().mode(MaintenanceNotificationsConfig.Mode.AUTO).build();
+
   // Cluster-specific configuration fields
   private Set<HostAndPort> nodes = null;
   private int maxAttempts = RedisClusterClient.DEFAULT_MAX_ATTEMPTS;
   private Duration maxTotalRetriesDuration;
   private Duration topologyRefreshPeriod = null;
   private CommandFlagsRegistry commandFlags = null;
+  private MaintenanceNotificationsConfig maintNotificationsConfig = UNSET_MAINTENANCE_NOTIFICATIONS;
+
+  /**
+   * Configures cluster maintenance notifications (SMIGRATING/SMIGRATED): timeout relaxation during
+   * slot migrations and slot-map updates applied directly from the push.
+   * <p>
+   * Defaults to AUTO mode (enabled when the server supports it). To turn the feature off, pass
+   * {@link MaintenanceNotificationsConfig#DISABLED}.
+   * @param config maintenance notifications configuration; must not be {@code null}
+   * @return this builder
+   * @throws IllegalArgumentException if {@code config} is {@code null}
+   * @since 8.1
+   */
+  public ClusterClientBuilder<C> maintenanceNotifications(MaintenanceNotificationsConfig config) {
+    JedisAsserts.notNull(config, "MaintenanceNotificationsConfig must not be null");
+    this.maintNotificationsConfig = config;
+    return this;
+  }
 
   /**
    * Sets the cluster nodes to connect to.
@@ -107,7 +133,7 @@ public abstract class ClusterClientBuilder<C>
   @Override
   protected ConnectionProvider createDefaultConnectionProvider() {
     return new ClusterConnectionProvider(this.nodes, this.clientConfig, this.cache, this.poolConfig,
-        this.topologyRefreshPeriod);
+        this.topologyRefreshPeriod, this.maintNotificationsConfig);
   }
 
   /**

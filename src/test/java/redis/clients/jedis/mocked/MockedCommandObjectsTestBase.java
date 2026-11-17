@@ -2,7 +2,6 @@ package redis.clients.jedis.mocked;
 
 import java.util.List;
 import java.util.Map;
-import java.util.OptionalLong;
 import java.util.Set;
 
 import org.json.JSONArray;
@@ -11,6 +10,7 @@ import org.mockito.Mock;
 import redis.clients.jedis.CommandObject;
 import redis.clients.jedis.GeoCoordinate;
 import redis.clients.jedis.StreamEntryID;
+import redis.clients.jedis.args.BlessFlag;
 import redis.clients.jedis.resps.*;
 import redis.clients.jedis.search.ProfilingInfo;
 import redis.clients.jedis.search.SearchResult;
@@ -78,6 +78,7 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<List<Map.Entry<String, String>>> listEntryStringStringCommandObject;
   @Mock protected CommandObject<List<Map.Entry<byte[], byte[]>>> listEntryBytesBytesCommandObject;
   @Mock protected CommandObject<List<MyBean>> listMyBeanCommandObject;
+  @Mock protected CommandObject<List<Number>> listNumberCommandObject;
   @Mock protected CommandObject<List<Object>> listObjectCommandObject;
   @Mock protected CommandObject<List<StreamConsumerInfo>> listStreamConsumerInfoCommandObject;
   @Mock protected CommandObject<List<StreamConsumersInfo>> listStreamConsumersInfoCommandObject;
@@ -85,6 +86,7 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<List<StreamEntryID>> listStreamEntryIdCommandObject;
   @Mock protected CommandObject<List<StreamGroupInfo>> listStreamGroupInfoCommandObject;
   @Mock protected CommandObject<List<StreamPendingEntry>> listStreamPendingEntryCommandObject;
+  @Mock protected CommandObject<List<BlessFlag>> listBlessFlagCommandObject;
   @Mock protected CommandObject<List<String>> listStringCommandObject;
   @Mock protected CommandObject<List<TSElement>> listTsElementCommandObject;
   @Mock protected CommandObject<List<Tuple>> listTupleCommandObject;
@@ -103,7 +105,9 @@ public abstract class MockedCommandObjectsTestBase {
   @Mock protected CommandObject<Map<String, String>> mapStringStringCommandObject;
   @Mock protected CommandObject<Map<String, TSMGetElement>> mapStringTsmGetElementCommandObject;
   @Mock protected CommandObject<Map<String, TSMRangeElements>> mapStringTsmRangeElementsCommandObject;
+  @Mock protected CommandObject<Map<String, VSimScoreAttribs>> mapStringVSimScoreAttribsCommandObject;
   @Mock protected CommandObject<Map<byte[], byte[]>> mapBytesBytesCommandObject;
+  @Mock protected CommandObject<Map<byte[], VSimScoreAttribs>> mapBytesVSimScoreAttribsCommandObject;
   @Mock protected CommandObject<MyBean> myBeanCommandObject;
   @Mock protected CommandObject<Object> objectCommandObject;
   @Mock protected CommandObject<ScanResult<Map.Entry<String, String>>> scanResultEntryStringStringCommandObject;

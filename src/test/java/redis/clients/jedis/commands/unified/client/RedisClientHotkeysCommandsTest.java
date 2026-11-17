@@ -54,8 +54,11 @@ public class RedisClientHotkeysCommandsTest extends HotkeysCommandsTestBase {
         .hotkeysStart(HotkeysParams.hotkeysParams().metrics(HotkeysMetric.CPU));
     assertEquals("OK", startResult);
 
-    jedis.set("key1", "value1");
-    jedis.get("key1");
+    // A single command can measure 0 us of CPU time and go unrecorded, so repeat it
+    for (int i = 0; i < 20; i++) {
+      jedis.set("key1", "value1");
+      jedis.get("key1");
+    }
 
     HotkeysInfo reply = jedis.hotkeysGet();
     assertNotNull(reply);
@@ -70,7 +73,9 @@ public class RedisClientHotkeysCommandsTest extends HotkeysCommandsTestBase {
     assertTrue(reply.getByCpuTimeUs().containsKey("key1"));
 
     jedis.hotkeysStart(HotkeysParams.hotkeysParams().metrics(HotkeysMetric.CPU));
-    jedis.set("key2", "val2");
+    for (int i = 0; i < 20; i++) {
+      jedis.set("key2", "val2");
+    }
     reply = jedis.hotkeysGet();
     assertTrue(reply.isTrackingActive());
     assertTrue(reply.getByCpuTimeUs().containsKey("key2"));

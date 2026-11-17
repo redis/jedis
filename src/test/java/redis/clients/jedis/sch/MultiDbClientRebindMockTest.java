@@ -17,8 +17,7 @@ import redis.clients.jedis.MultiDbClient;
 import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.UnifiedJedis;
-import redis.clients.jedis.mcf.MultiDbConnectionProvider;
-import redis.clients.jedis.util.ReflectionTestUtil;
+import redis.clients.jedis.mcf.MultiDbConnectionProviderHelper;
 import redis.clients.jedis.util.server.TcpMockServer;
 
 /**
@@ -38,8 +37,7 @@ public class MultiDbClientRebindMockTest extends AbstractRebindBehaviorTest {
 
   @Override
   protected ConnectionPool poolOf(UnifiedJedis client) {
-    MultiDbConnectionProvider provider = ReflectionTestUtil.getField(client, "provider");
-    return provider.getDatabase().getConnectionPool();
+    return MultiDbConnectionProviderHelper.activeConnectionPool((MultiDbClient) client);
   }
 
   @Test

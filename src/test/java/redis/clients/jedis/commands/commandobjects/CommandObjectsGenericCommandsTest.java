@@ -13,6 +13,7 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.notNullValue;
 import static org.hamcrest.Matchers.nullValue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -25,11 +26,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.args.BlessFlag;
 import redis.clients.jedis.args.ExpiryOption;
 import redis.clients.jedis.params.RestoreParams;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.SortingParams;
 import redis.clients.jedis.resps.ScanResult;
+import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.TestEnvUtil;
 
 /**
@@ -1456,4 +1459,26 @@ public class CommandObjectsGenericCommandsTest extends CommandObjectsStandaloneT
     assertThat(randomBinaryKey, anyOf(equalTo(key1), equalTo(key2)));
   }
 
+  /**
+   * A null flag would otherwise reach {@code Protocol.sendCommand} as a null {@code Rawable}, where
+   * the NPE marks the connection broken.
+   */
+  @Test
+  public void blessCommandsRejectNullFlag() {
+    byte[] bkey = SafeEncoder.encode("key");
+    byte[] bcursor = SafeEncoder.encode(ScanParams.SCAN_POINTER_START);
+    BlessFlag nullFlag = null;
+
+    assertThrows(IllegalArgumentException.class, () -> commandObjects.blessSet("key", nullFlag));
+    assertThrows(IllegalArgumentException.class, () -> commandObjects.blessSet(bkey, nullFlag));
+    assertThrows(IllegalArgumentException.class, () -> commandObjects.blessClear("key", nullFlag));
+    assertThrows(IllegalArgumentException.class, () -> commandObjects.blessClear(bkey, nullFlag));
+    assertThrows(IllegalArgumentException.class,
+      () -> commandObjects.blessScan(ScanParams.SCAN_POINTER_START, nullFlag));
+    assertThrows(IllegalArgumentException.class,
+      () -> commandObjects.blessScan(ScanParams.SCAN_POINTER_START, nullFlag, 10));
+    assertThrows(IllegalArgumentException.class, () -> commandObjects.blessScan(bcursor, nullFlag));
+    assertThrows(IllegalArgumentException.class,
+      () -> commandObjects.blessScan(bcursor, nullFlag, 10));
+  }
 }

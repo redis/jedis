@@ -5,6 +5,7 @@ import java.util.List;
 import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.params.BitPosParams;
+import redis.clients.jedis.params.BitRangeIntArrayParams;
 
 public interface BitBinaryCommands {
 
@@ -21,6 +22,18 @@ public interface BitBinaryCommands {
   long bitpos(byte[] key, boolean value);
 
   long bitpos(byte[] key, boolean value, BitPosParams params);
+
+  /**
+   * @see BitCommands#bitrangeintarray(String, long, long)
+   * @since 8.1
+   */
+  List<Long> bitrangeintarray(byte[] key, long start, long end);
+
+  /**
+   * @see BitCommands#bitrangeintarray(String, long, long, BitRangeIntArrayParams)
+   * @since 8.1
+   */
+  List<Long> bitrangeintarray(byte[] key, long start, long end, BitRangeIntArrayParams params);
 
   List<Long> bitfield(byte[] key, byte[]... arguments);
 

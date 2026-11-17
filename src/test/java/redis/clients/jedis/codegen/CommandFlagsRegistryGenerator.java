@@ -108,7 +108,7 @@ public class CommandFlagsRegistryGenerator {
    * generator will fail with a helpful error message if an unknown parent command is encountered.
    */
   private static final Set<String> KNOWN_PARENT_COMMANDS = new HashSet<>(
-      Arrays.asList("ACL", "BACKUP", "CLIENT", "CLUSTER", "COMMAND", "CONFIG", "FUNCTION",
+      Arrays.asList("ACL", "BACKUP", "BLESS", "CLIENT", "CLUSTER", "COMMAND", "CONFIG", "FUNCTION",
         "HIMPORT", "HOTKEYS", "LATENCY", "MEMORY", "MODULE", "OBJECT", "PUBSUB", "SCRIPT",
         "SLOWLOG", "XGROUP", "XINFO", "FT.CONFIG", "FT.CURSOR"));
 

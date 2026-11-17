@@ -1,7 +1,10 @@
 package redis.clients.jedis.commands.jedis;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import io.redis.test.annotations.ConditionalOnEnv;
 import org.junit.jupiter.api.Assertions;
@@ -11,12 +14,16 @@ import org.junit.jupiter.params.ParameterizedClass;
 import org.junit.jupiter.params.provider.MethodSource;
 
 
+import redis.clients.jedis.Pipeline;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.Response;
+import redis.clients.jedis.Transaction;
 import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.BitPosParams;
+import redis.clients.jedis.params.BitRangeIntArrayParams;
 import redis.clients.jedis.util.SafeEncoder;
 import redis.clients.jedis.util.TestEnvUtil;
 
@@ -606,4 +613,60 @@ public class BitCommandsTest extends JedisCommandsTestBase {
 
     assertThrows(JedisDataException.class, () -> jedis.bitop(BitOP.ANDOR, dest, src1));
   }
+
+  // ---- BITRANGEINTARRAY ----
+
+  private static final List<Long> FA_OFFSETS = Arrays.asList(0L, 7L, 8L, 15L, 16L, 23L, 24L, 31L);
+
+  private void writeFA(String key) {
+    for (long o : FA_OFFSETS) {
+      jedis.setbit(key, o, true);
+    }
+  }
+
+  /** Jedis.bitrangeintarray with String and byte[] keys, without and with params. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarray() {
+    writeFA("fa");
+    BitRangeIntArrayParams params = BitRangeIntArrayParams.bitRangeIntArrayParams()
+        .unit(BitCountOption.BIT).limit(3);
+    List<Long> firstThree = Arrays.asList(0L, 7L, 8L);
+
+    assertEquals(FA_OFFSETS, jedis.bitrangeintarray("fa", 0, -1));
+    assertEquals(firstThree, jedis.bitrangeintarray("fa", 0, -1, params));
+
+    byte[] key = SafeEncoder.encode("fa");
+    assertEquals(FA_OFFSETS, jedis.bitrangeintarray(key, 0, -1));
+    assertEquals(firstThree, jedis.bitrangeintarray(key, 0, -1, params));
+  }
+
+  /** In a pipeline, FA's offsets and an empty list for a missing key. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayPipeline() {
+    writeFA("fa");
+    Pipeline p = jedis.pipelined();
+    Response<List<Long>> fa = p.bitrangeintarray("fa", 0, -1);
+    Response<List<Long>> missing = p.bitrangeintarray("missing", 0, -1);
+    p.sync();
+
+    assertEquals(FA_OFFSETS, fa.get());
+    assertEquals(Collections.emptyList(), missing.get());
+  }
+
+  /** In a transaction, the exec result holds FA's offsets. */
+  @Test
+  @EnabledOnCommand("BITRANGEINTARRAY")
+  public void bitrangeintarrayTransaction() {
+    writeFA("fa");
+    Transaction t = jedis.multi();
+    Response<List<Long>> fa = t.bitrangeintarray("fa", 0, -1);
+    List<Object> results = t.exec();
+
+    assertEquals(1, results.size());
+    assertEquals(FA_OFFSETS, results.get(0));
+    assertEquals(FA_OFFSETS, fa.get());
+  }
+
 }

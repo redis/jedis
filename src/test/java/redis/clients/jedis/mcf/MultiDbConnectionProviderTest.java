@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import redis.clients.jedis.util.TestKeyRegistry;
 
@@ -320,16 +321,16 @@ public class MultiDbConnectionProviderTest {
     try (MultiDbClient jedis = MultiDbClient.builder().connectionProvider(testProvider).build()) {
       jedis.get(key);
 
-      // disable most weighted database so that it will fail on initial requests
+      // disable most weighted database: the first command fails on it, finds the other database
+      // operable and fails over to it
       testProvider.getDatabase(endpointStandalone0.getHostAndPort()).setDisabled(true);
 
       Exception e = assertThrows(JedisConnectionException.class, () -> jedis.get(key));
       assertEquals(JedisConnectionException.class, e.getClass());
+      assertEquals(endpointStandalone1.getHostAndPort(), testProvider.getActiveEndpoint());
+      assertDoesNotThrow(() -> jedis.get(key));
 
-      e = assertThrows(JedisConnectionException.class, () -> jedis.get(key));
-      assertEquals(JedisConnectionException.class, e.getClass());
-
-      // then disable the second ones
+      // then disable the second one, now active, too
       testProvider.getDatabase(endpointStandalone1.getHostAndPort()).setDisabled(true);
       assertThrows(JedisTemporarilyNotAvailableException.class, () -> jedis.get(key));
       assertThrows(JedisTemporarilyNotAvailableException.class, () -> jedis.get(key));
@@ -342,6 +343,107 @@ public class MultiDbConnectionProviderTest {
 
       // Fourth get request should continue to throw JedisPermanentlyNotAvailableException
       assertThrows(JedisPermanentlyNotAvailableException.class, () -> jedis.get(key));
+
+      // Active database becomes available again: the permanent state is not sticky, the client
+      // recovers on the next command without any manual interaction
+      assertEquals(endpointStandalone1.getHostAndPort(), testProvider.getActiveEndpoint());
+      testProvider.getDatabase(endpointStandalone1.getHostAndPort()).setDisabled(false);
+      assertDoesNotThrow(() -> jedis.get(key));
+    }
+  }
+
+  /**
+   * Same two recovery claims as above, but driven through real (test-controlled) health checks
+   * instead of the setDisabled() shortcut, so the production path is exercised:
+   * onHealthStatusChange -> grace period arming -> failover attempt.
+   */
+  private MultiDbConnectionProvider healthCheckDrivenProvider(AtomicReference<HealthStatus> health0,
+      AtomicReference<HealthStatus> health1) {
+    HealthCheckStrategy.Config checkConfig = HealthCheckStrategy.Config.builder().interval(50)
+        .timeout(100).numProbes(1).policy(BuiltIn.ANY_SUCCESS).build();
+
+    DatabaseConfig[] databaseConfigs = new DatabaseConfig[2];
+    databaseConfigs[0] = DatabaseConfig
+        .builder(endpointStandalone0.getHostAndPort(),
+          endpointStandalone0.getClientConfigBuilder().build())
+        .weight(0.5f)
+        .healthCheckStrategy(new TestHealthCheckStrategy(checkConfig, e -> health0.get())).build();
+    databaseConfigs[1] = DatabaseConfig
+        .builder(endpointStandalone1.getHostAndPort(),
+          endpointStandalone1.getClientConfigBuilder().build())
+        .weight(0.3f)
+        .healthCheckStrategy(new TestHealthCheckStrategy(checkConfig, e -> health1.get())).build();
+
+    return new MultiDbConnectionProvider(new MultiDbConfig.Builder(databaseConfigs)
+        .delayInBetweenFailoverAttempts(100).maxNumFailoverAttempts(2).gracePeriod(200)
+        .commandRetry(MultiDbConfig.RetryConfig.builder().maxAttempts(1).build()).build());
+  }
+
+  /**
+   * Full outage: takes the non-active database down first, then the active one, and waits until
+   * user commands escalate to JedisPermanentlyNotAvailableException.
+   */
+  private void driveToPermanentState(MultiDbClient jedis, MultiDbConnectionProvider testProvider,
+      AtomicReference<HealthStatus> health0, AtomicReference<HealthStatus> health1, String key) {
+    jedis.get(key);
+    assertEquals(endpointStandalone0.getHostAndPort(), testProvider.getActiveEndpoint());
+
+    health1.set(HealthStatus.UNHEALTHY);
+    await().atMost(Durations.ONE_SECOND)
+        .until(() -> !testProvider.getDatabase(endpointStandalone1.getHostAndPort()).isHealthy());
+    health0.set(HealthStatus.UNHEALTHY);
+    await().atMost(Durations.ONE_SECOND)
+        .until(() -> !testProvider.getDatabase(endpointStandalone0.getHostAndPort()).isHealthy());
+
+    await().atMost(Durations.TWO_SECONDS).pollInterval(Duration.ofMillis(50))
+        .until(() -> (assertThrows(JedisFailoverException.class,
+          () -> jedis.get(key)) instanceof JedisPermanentlyNotAvailableException));
+  }
+
+  /**
+   * Regression test: when the active database went unhealthy with no failover candidate,
+   * onHealthStatusChange used to throw JedisTemporarilyNotAvailableException out of the
+   * health-check scheduler task, cancelling the periodic check. The status stayed frozen at
+   * UNHEALTHY and the client never recovered, even after the database became available again.
+   */
+  @Test
+  public void userCommand_afterPermanent_activeDatabaseHealthyAgain_autoRecovers_healthCheckDriven() {
+    AtomicReference<HealthStatus> health0 = new AtomicReference<>(HealthStatus.HEALTHY);
+    AtomicReference<HealthStatus> health1 = new AtomicReference<>(HealthStatus.HEALTHY);
+    MultiDbConnectionProvider testProvider = healthCheckDrivenProvider(health0, health1);
+
+    String key = keys.key("foo");
+    try (MultiDbClient jedis = MultiDbClient.builder().connectionProvider(testProvider).build()) {
+      driveToPermanentState(jedis, testProvider, health0, health1, key);
+
+      // The active database becomes healthy again: health checks must pick it up and the client
+      // must recover without any manual interaction (grace period is 200ms, checks run every 50ms)
+      health0.set(HealthStatus.HEALTHY);
+      await().atMost(Durations.FIVE_SECONDS).pollInterval(Duration.ofMillis(100)).ignoreExceptions()
+          .until(() -> {
+            jedis.get(key);
+            return true;
+          });
+    }
+  }
+
+  @Test
+  public void userCommand_afterPermanent_onlySecondaryHealthyAgain_failsOverAutomatically_healthCheckDriven() {
+    AtomicReference<HealthStatus> health0 = new AtomicReference<>(HealthStatus.HEALTHY);
+    AtomicReference<HealthStatus> health1 = new AtomicReference<>(HealthStatus.HEALTHY);
+    MultiDbConnectionProvider testProvider = healthCheckDrivenProvider(health0, health1);
+
+    String key = keys.key("foo");
+    try (MultiDbClient jedis = MultiDbClient.builder().connectionProvider(testProvider).build()) {
+      driveToPermanentState(jedis, testProvider, health0, health1, key);
+
+      // Only the lower-weight, non-active database becomes healthy again while the active one is
+      // still unhealthy: the failover that found no candidate is retried and switches to it
+      health1.set(HealthStatus.HEALTHY);
+      await().atMost(Durations.FIVE_SECONDS).until(
+        () -> endpointStandalone1.getHostAndPort().equals(testProvider.getActiveEndpoint()));
+
+      assertDoesNotThrow(() -> jedis.get(key));
     }
   }
 }

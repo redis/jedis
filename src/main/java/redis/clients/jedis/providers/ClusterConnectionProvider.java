@@ -16,6 +16,7 @@ import redis.clients.jedis.JedisClientConfig;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.ConnectionPool;
 import redis.clients.jedis.JedisClusterInfoCache;
+import redis.clients.jedis.MaintenanceNotificationsConfig;
 import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.csc.Cache;
 import redis.clients.jedis.exceptions.JedisClusterOperationException;
@@ -58,9 +59,23 @@ public class ClusterConnectionProvider implements ConnectionProvider {
   }
 
   @Experimental
-  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig, Cache clientSideCache,
-      GenericObjectPoolConfig<Connection> poolConfig, Duration topologyRefreshPeriod) {
-    this.cache = new JedisClusterInfoCache(clientConfig, clientSideCache, poolConfig, clusterNodes, topologyRefreshPeriod);
+  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
+      Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig,
+      Duration topologyRefreshPeriod) {
+    this(clusterNodes, clientConfig, clientSideCache, poolConfig, topologyRefreshPeriod, null);
+  }
+
+  /**
+   * Creates the provider with cluster maintenance notifications configured for every node pool's
+   * connections; a {@code null} or DISABLED config turns the feature off.
+   * @since 8.1
+   */
+  @Experimental
+  public ClusterConnectionProvider(Set<HostAndPort> clusterNodes, JedisClientConfig clientConfig,
+      Cache clientSideCache, GenericObjectPoolConfig<Connection> poolConfig,
+      Duration topologyRefreshPeriod, MaintenanceNotificationsConfig maintNotificationsConfig) {
+    this.cache = new JedisClusterInfoCache(clientConfig, clientSideCache, poolConfig, clusterNodes,
+        topologyRefreshPeriod, maintNotificationsConfig);
     initializeSlotsCache(clusterNodes, clientConfig);
   }
 

@@ -360,6 +360,24 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisMockedTestBase {
   }
 
   @Test
+  public void testJsonArrPopRawWithPath2AndIndex() {
+    String key = "testKey";
+    Path2 path = Path2.of(".path.to.array");
+    int index = 1;
+    List<String> expectedResponse = Collections.singletonList("\"poppedValueAtIndex\"");
+
+    when(commandObjects.jsonArrPopRaw(key, path, index)).thenReturn(listStringCommandObject);
+    when(commandExecutor.executeCommand(listStringCommandObject)).thenReturn(expectedResponse);
+
+    List<String> result = jedis.jsonArrPopRaw(key, path, index);
+
+    assertEquals(expectedResponse, result);
+
+    verify(commandExecutor).executeCommand(listStringCommandObject);
+    verify(commandObjects).jsonArrPopRaw(key, path, index);
+  }
+
+  @Test
   public void testJsonArrPopWithClass() {
     String key = "testKey";
     Class<String> clazz = String.class;
@@ -771,6 +789,24 @@ public class UnifiedJedisJsonCommandsTest extends UnifiedJedisMockedTestBase {
 
     verify(commandExecutor).executeCommand(objectCommandObject);
     verify(commandObjects).jsonNumIncrBy(key, path, value);
+  }
+
+  @Test
+  public void testJsonNumIncrByAsNumbersWithPath2() {
+    String key = "testKey";
+    Path2 path = Path2.of(".path.to.element");
+    Number value = 10;
+    List<Number> expectedResponse = Arrays.asList(20L, 30.5, null);
+
+    when(commandObjects.jsonNumIncrByAsNumbers(key, path, value)).thenReturn(listNumberCommandObject);
+    when(commandExecutor.executeCommand(listNumberCommandObject)).thenReturn(expectedResponse);
+
+    List<Number> result = jedis.jsonNumIncrByAsNumbers(key, path, value);
+
+    assertEquals(expectedResponse, result);
+
+    verify(commandExecutor).executeCommand(listNumberCommandObject);
+    verify(commandObjects).jsonNumIncrByAsNumbers(key, path, value);
   }
 
   @Test

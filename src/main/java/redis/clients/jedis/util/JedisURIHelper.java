@@ -1,6 +1,9 @@
 package redis.clients.jedis.util;
 
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import redis.clients.jedis.HostAndPort;
 import redis.clients.jedis.Protocol;
 import redis.clients.jedis.RedisProtocol;
@@ -50,12 +53,12 @@ public final class JedisURIHelper {
    * For details on the URI format and authentication examples, see {@link JedisURIHelper}.
    * </p>
    * @param uri the URI to extract the user from
-   * @return the user as a String, or null if user is empty or {@link URI#getUserInfo()} info is missing
+   * @return the user as a String, or null if user is empty or the URI has no userinfo component
    */
   public static String getUser(URI uri) {
-    String userInfo = uri.getUserInfo();
+    String userInfo = uri.getRawUserInfo();
     if (userInfo != null) {
-      String user = userInfo.split(":", 2)[0];
+      String user = decode(userInfo.split(":", 2)[0]);
       if (user.isEmpty()) {
         user = null; // return null user is not specified
       }
@@ -70,20 +73,36 @@ public final class JedisURIHelper {
    * For details on the URI format and authentication examples, see {@link JedisURIHelper}.
    * </p>
    * @param uri the URI to extract the password from
-   * @return the password as a String, or null if {@link URI#getUserInfo()} info is missing
-   * @throws IllegalArgumentException if {@link URI#getUserInfo()} is provided but does not contain
-   *           a password
+   * @return the password, or null if the URI has no userinfo component
+   * @throws IllegalArgumentException if the URI has a userinfo component without a password
    */
   public static String getPassword(URI uri) {
-    String userInfo = uri.getUserInfo();
+    String userInfo = uri.getRawUserInfo();
     if (userInfo != null) {
       String[] userAndPassword = userInfo.split(":", 2);
       if (userAndPassword.length < 2) {
         throw new IllegalArgumentException("Password not provided in uri.");
       }
-      return userAndPassword[1];
+      return decode(userAndPassword[1]);
     }
     return null;
+  }
+
+  /**
+   * Percent-decodes a single component of the raw userinfo. {@link URI#getUserInfo()} cannot be
+   * used before the {@code ':'} split, because it decodes first: a percent-encoded {@code ':'}
+   * ({@code %3A}) inside the username becomes a literal {@code ':'} and shifts the split point, so
+   * {@code redis://us%3Aer:pw@host} is read as user {@code us} with password {@code er:pw} instead
+   * of user {@code us:er} with password {@code pw}. Splitting the raw userinfo keeps the boundary
+   * intact and each half is decoded here. {@code '+'} is a literal in userinfo (not a space as in
+   * form data), so it is guarded from {@link URLDecoder}.
+   */
+  private static String decode(String value) {
+    try {
+      return URLDecoder.decode(value.replace("+", "%2B"), StandardCharsets.UTF_8.name());
+    } catch (UnsupportedEncodingException e) {
+      throw new IllegalStateException(e); // UTF-8 is always supported
+    }
   }
 
   /**

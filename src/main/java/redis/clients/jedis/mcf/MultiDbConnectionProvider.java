@@ -89,6 +89,14 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
 
   private final HealthStatusManager healthStatusManager = new HealthStatusManager();
 
+  @VisibleForTesting
+  HealthStatusManager getHealthStatusManager() {
+    return healthStatusManager;
+  }
+
+  // kept so the very same instance can be unregistered; a fresh method reference never matches
+  private final HealthStatusListener healthStatusListener = this::onHealthStatusChange;
+
   // Flag to control when handleHealthStatusChange should process events (only after initialization)
   private volatile boolean initializationComplete = false;
 
@@ -295,7 +303,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       }
 
       // Remove from health status manager first
-      healthStatusManager.unregisterListener(endpoint, this::onHealthStatusChange);
+      healthStatusManager.unregisterListener(endpoint, healthStatusListener);
       healthStatusManager.remove(endpoint);
 
       // Remove from database map
@@ -352,7 +360,7 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
       HealthCheckStrategy hcs = strategySupplier.get(hostPort(config.getEndpoint()),
         config.getJedisClientConfig());
       // Register listeners BEFORE adding databases to avoid missing events
-      healthStatusManager.registerListener(config.getEndpoint(), this::onHealthStatusChange);
+      healthStatusManager.registerListener(config.getEndpoint(), healthStatusListener);
       HealthCheck hc = healthStatusManager.add(config.getEndpoint(), hcs);
       database = new Database(config.getEndpoint(), pool, retry, hc, circuitBreaker,
           config.getWeight(), multiDbConfig);
@@ -389,11 +397,31 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
     if (databaseWithHealthChange == null) return;
 
     if (initializationComplete) {
-      if (!newStatus.isHealthy() && databaseWithHealthChange == activeDatabase) {
-        databaseWithHealthChange.setGracePeriod();
-        switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, databaseWithHealthChange);
+      try {
+        if (!newStatus.isHealthy() && databaseWithHealthChange == activeDatabase) {
+          databaseWithHealthChange.setGracePeriod();
+          switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, databaseWithHealthChange);
+        } else if (newStatus.isHealthy() && databaseWithHealthChange != activeDatabase) {
+          failoverIfActiveInoperable();
+        }
+      } catch (JedisFailoverException e) {
+        // Nothing to switch to right now. Do not propagate: this listener runs inside the
+        // health check scheduler task, and an escaping exception would cancel the periodic
+        // check, freezing this endpoint's status and preventing any future recovery.
+        log.warn("No failover target is available after the health status of {} changed to {}",
+          endpoint, newStatus, e);
       }
     }
+  }
+
+  /**
+   * Switches away from an inoperable active database to the best operable one, whatever its weight.
+   * Without one, the failure counts as a failover attempt.
+   * @throws JedisFailoverException if there is no operable database
+   */
+  private void failoverIfActiveInoperable() {
+    Database current = activeDatabase;
+    if (!current.isHealthy()) switchToHealthyDatabase(SwitchReason.HEALTH_CHECK, current);
   }
 
   /**
@@ -593,9 +621,11 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   }
 
   /**
-   * Asserts that the active database is operable. If not, throws an exception.
+   * Asserts that the active database is operable. If not, switches to another operable database or,
+   * when there is none, throws an exception.
    * <p>
-   * This method is called by the circuit breaker command executor before executing a command.
+   * This method is called by the circuit breaker command executor when a command cannot get a
+   * connection from the active database.
    * @throws JedisPermanentlyNotAvailableException if the there is no operable database and the max
    *           number of failover attempts has been exceeded.
    * @throws JedisTemporarilyNotAvailableException if the there is no operable database and the max
@@ -604,8 +634,17 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   @VisibleForTesting
   public void assertOperability() {
     Database current = activeDatabase;
-    if (!current.isHealthy() && !this.canIterateFrom(current)) {
+    if (current.isHealthy()) return;
+    if (!canIterateFrom(current)) {
       handleNoHealthyDatabase();
+    } else if (activeDatabaseChangeLock.tryLock()) {
+      // Never wait for a switch in progress: this command fails anyway, the next ones use the
+      // new database
+      try {
+        failoverIfActiveInoperable();
+      } finally {
+        activeDatabaseChangeLock.unlock();
+      }
     }
   }
 
@@ -780,6 +819,11 @@ public class MultiDbConnectionProvider implements ConnectionProvider {
   public Map<?, Pool<Connection>> getConnectionMap() {
     ConnectionPool connectionPool = activeDatabase.connectionPool;
     return Collections.singletonMap(connectionPool.getFactory(), connectionPool);
+  }
+
+  @Override
+  public Map<?, Pool<Connection>> getPrimaryNodesConnectionMap() {
+    return getConnectionMap();
   }
 
   public Database getDatabase() {

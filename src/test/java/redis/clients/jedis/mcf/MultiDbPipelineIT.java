@@ -1,5 +1,6 @@
 package redis.clients.jedis.mcf;
 
+import static redis.clients.jedis.mcf.MultiDbConnectionProviderHelper.activeConnectionPool;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -22,7 +23,6 @@ import redis.clients.jedis.MultiDbClient;
 import redis.clients.jedis.MultiDbConfig;
 import redis.clients.jedis.MultiDbConfig.DatabaseConfig;
 import redis.clients.jedis.Response;
-import redis.clients.jedis.util.ClientTestUtil;
 
 /**
  * Integration tests for {@link MultiDbPipeline} against a running Redis standalone instance.
@@ -61,11 +61,6 @@ public class MultiDbPipelineIT {
     }
   }
 
-  private ConnectionPool activePool() {
-    MultiDbConnectionProvider p = ClientTestUtil.getConnectionProvider(client);
-    return p.getDatabase().getConnectionPool();
-  }
-
   @Test
   public void pipeline_executesQueuedCommands_andReturnsExpectedValues() {
     int count = 10;
@@ -95,7 +90,7 @@ public class MultiDbPipelineIT {
 
   @Test
   public void pipeline_returnsConnectionToPool_afterSync() {
-    ConnectionPool pool = activePool();
+    ConnectionPool pool = activeConnectionPool(client);
     int beforeIdle = pool.getNumIdle();
 
     try (MultiDbPipeline p = client.pipelined()) {
@@ -110,7 +105,7 @@ public class MultiDbPipelineIT {
 
   @Test
   public void pipeline_closeOnEmptyPipeline_doesNotBorrowConnection() {
-    ConnectionPool pool = activePool();
+    ConnectionPool pool = activeConnectionPool(client);
     int idleBefore = pool.getNumIdle();
     int activeBefore = pool.getNumActive();
 
@@ -150,6 +145,6 @@ public class MultiDbPipelineIT {
       assertNotNull(client.get("b"));
     }
 
-    assertEquals(0, activePool().getNumActive());
+    assertEquals(0, activeConnectionPool(client).getNumActive());
   }
 }

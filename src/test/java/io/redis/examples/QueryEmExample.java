@@ -42,7 +42,8 @@ public class QueryEmExample {
         jedis.ftCreate("idx:bicycle",
             FTCreateParams.createParams()
                     .on(IndexDataType.JSON)
-                    .addPrefix("bicycle:"),
+                    .addPrefix("bicycle:")
+                    .skipInitialScan(),
             schema
         );
 
@@ -283,7 +284,8 @@ public class QueryEmExample {
         jedis.ftCreate("idx:email", 
             new FTCreateParams()
                     .addPrefix("key:")
-                    .on(IndexDataType.JSON),
+                    .on(IndexDataType.JSON)
+                    .skipInitialScan(),
             emailSchema
         );
 

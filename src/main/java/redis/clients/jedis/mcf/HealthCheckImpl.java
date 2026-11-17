@@ -137,8 +137,21 @@ public class HealthCheckImpl implements HealthCheck {
   }
 
   public void start() {
-    scheduler.scheduleAtFixedRate(this::healthCheck, 0, strategy.getInterval(),
+    scheduler.scheduleAtFixedRate(this::guardedHealthCheck, 0, strategy.getInterval(),
       TimeUnit.MILLISECONDS);
+  }
+
+  /**
+   * An exception escaping a scheduleAtFixedRate task silently cancels all subsequent executions,
+   * leaving the endpoint's health status frozen forever. Status-change listeners run inside this
+   * task and may throw, so guard the check to keep periodic monitoring alive.
+   */
+  private void guardedHealthCheck() {
+    try {
+      healthCheck();
+    } catch (RuntimeException e) {
+      log.error("Health check task for {} failed; current status: {}", endpoint, getStatus(), e);
+    }
   }
 
   public void stop() {

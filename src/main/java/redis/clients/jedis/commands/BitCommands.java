@@ -5,6 +5,7 @@ import java.util.List;
 import redis.clients.jedis.args.BitCountOption;
 import redis.clients.jedis.args.BitOP;
 import redis.clients.jedis.params.BitPosParams;
+import redis.clients.jedis.params.BitRangeIntArrayParams;
 
 public interface BitCommands {
 
@@ -80,6 +81,35 @@ public interface BitCommands {
    * @return The position of the first bit set to 1 or 0 according to the request
    */
   long bitpos(String key, boolean value, BitPosParams params);
+
+  /**
+   * <b><a href="https://redis.io/commands/bitrangeintarray">BITRANGEINTARRAY Command</a></b>
+   * Return the offsets of the bits set to 1 in a byte range of a bitmap, in ascending order. As in
+   * BITCOUNT, start and end are inclusive and negative values count from the end.
+   * @param key the bitmap key
+   * @param start the first byte of the range
+   * @param end the last byte of the range
+   * @return the offsets of the set bits, or an empty list
+   * @since 8.1
+   */
+  List<Long> bitrangeintarray(String key, long start, long end);
+
+  /**
+   * <b><a href="https://redis.io/commands/bitrangeintarray">BITRANGEINTARRAY Command</a></b>
+   * Same as {@link #bitrangeintarray(String, long, long)}, with these options from {@code params}:
+   * <ul>
+   * <li>{@code unit(BIT)}: start and end are bit indexes instead of byte indexes</li>
+   * <li>{@code limit(count)}: return at most {@code count} offsets</li>
+   * <li>{@code zeros()}: return the offsets of the bits set to 0 instead of 1</li>
+   * </ul>
+   * @param key the bitmap key
+   * @param start the first index of the range, in the unit of {@code params}
+   * @param end the last index of the range, in the unit of {@code params}
+   * @param params {@link BitRangeIntArrayParams}
+   * @return the offsets in the range, or an empty list
+   * @since 8.1
+   */
+  List<Long> bitrangeintarray(String key, long start, long end, BitRangeIntArrayParams params);
 
   /**
    * <b><a href="http://redis.io/commands/bitfield">Bitfield Command</a></b>

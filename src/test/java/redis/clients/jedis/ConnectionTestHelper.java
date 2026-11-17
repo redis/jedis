@@ -2,6 +2,7 @@ package redis.clients.jedis;
 
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.SocketException;
 import java.time.Duration;
 import java.util.List;
 import java.util.function.LongSupplier;
@@ -124,7 +125,8 @@ public class ConnectionTestHelper {
    * instead of polling.
    */
   public static void addHandoffHook(ConnectionPool pool, Runnable hook) {
-    MaintenanceEventController controller = pool.getMaintenanceController();
+    MaintenanceEventController controller = (MaintenanceEventController) pool
+        .getMaintenanceController();
     Runnable poolReaction = controller.getHandoffHook();
     controller.setHandoffHook(() -> {
       poolReaction.run(); // evict first: the pass is fully processed before the test observes it
@@ -138,7 +140,8 @@ public class ConnectionTestHelper {
    * configured endpoint, so tests assert other peers' mapping windows through this seam.
    */
   public static SocketAddress getMappedAddress(ConnectionPool pool, SocketAddress resolved) {
-    return pool.getMaintenanceController().getSocketAddress(resolved);
+    return ((MaintenanceEventController) pool.getMaintenanceController())
+        .getSocketAddress(resolved);
   }
 
   public static void setClockNanos(LongSupplier clock) {
@@ -152,6 +155,69 @@ public class ConnectionTestHelper {
 
   public static int getBlockingSoTimeout(Connection connection) {
     return connection.getBlockingSoTimeout();
+  }
+
+  /** The {@code SO_TIMEOUT} currently applied to the connection's socket. */
+  public static int getSocketSoTimeout(Connection connection) throws SocketException {
+    return getSocket(connection).getSoTimeout();
+  }
+
+  // ---- Pool-level maintenance wiring (standalone and cluster families) ----------------------
+
+  /** Whether the pool runs with a maintenance controller at all (any family). */
+  public static boolean hasMaintenanceController(ConnectionPool pool) {
+    return pool.getMaintenanceController() != null;
+  }
+
+  /**
+   * Whether the pool's controller is the cluster family's ({@link ClusterMaintenanceController}).
+   */
+  public static boolean hasClusterMaintenanceController(ConnectionPool pool) {
+    return pool.getMaintenanceController() instanceof ClusterMaintenanceController;
+  }
+
+  /** The mode the pool's maintenance controller was configured with; null without a controller. */
+  public static MaintenanceNotificationsConfig.Mode getConfiguredMaintenanceMode(
+      ConnectionPool pool) {
+    MaintenanceController controller = pool.getMaintenanceController();
+    return controller == null ? null : controller.getConfig().getMode();
+  }
+
+  /**
+   * Whether the connection has the pool's controller registered as a maintenance event listener.
+   */
+  public static boolean hasPoolControllerListener(ConnectionPool pool, Connection connection) {
+    MaintenanceController controller = pool.getMaintenanceController();
+    return controller != null && connection.getMaintenanceEventListeners().contains(controller);
+  }
+
+  /**
+   * Whether the pool controller's relax overlay (the pool-wide / client-wide gate, keyed by the
+   * controller that installed it) is on the connection's timeout chain.
+   */
+  public static boolean hasPoolRelaxOverlay(ConnectionPool pool, Connection connection) {
+    MaintenanceController controller = pool.getMaintenanceController();
+    return controller != null && connection.getTimeoutSource().seekBy(controller) != null;
+  }
+
+  /** Whether the per-connection expiring relax overlay (standalone family only) is installed. */
+  public static boolean hasExpiringRelaxOverlay(Connection connection) {
+    return connection.getTimeoutSource().seekBy(ExpiringTimeoutSource.class) != null;
+  }
+
+  /** Whether a {@link MaintenanceEventConsumer} is on the connection's push consumer chain. */
+  public static boolean hasMaintenanceEventConsumer(Connection connection) {
+    for (PushConsumer consumer : connection.getPushConsumers()) {
+      if (isMaintenanceEventConsumer(consumer)) {
+        return true;
+      }
+    }
+    return false;
+  }
+
+  /** Whether the connection's retirement deadline has passed (see {@code Connection#retireAt}). */
+  public static boolean isRetired(Connection connection) {
+    return connection.isRetired();
   }
 
   private ConnectionTestHelper() {

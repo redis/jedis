@@ -8,6 +8,7 @@ import redis.clients.jedis.annots.Experimental;
 import redis.clients.jedis.params.VAddParams;
 import redis.clients.jedis.params.VSimParams;
 import redis.clients.jedis.resps.RawVector;
+import redis.clients.jedis.resps.VSimScoreAttribs;
 import redis.clients.jedis.resps.VectorInfo;
 
 /**
@@ -75,6 +76,13 @@ public interface VectorSetPipelineCommands {
   Response<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, VAddParams params);
 
   /**
+   * Pipeline variant of {@link VectorSetCommands#vadd(String, float[], String, int)}.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Boolean> vadd(String key, float[] vector, String element, int reduceDim);
+
+  /**
    * <b><a href="https://redis.io/docs/latest/commands/vadd/">VADD Command</a></b> Add a new element
    * into the vector set specified by key with dimension reduction and additional parameters.
    * <p>
@@ -90,6 +98,13 @@ public interface VectorSetPipelineCommands {
   @Experimental
   Response<Boolean> vadd(String key, float[] vector, String element, int reduceDim,
       VAddParams params);
+
+  /**
+   * Pipeline variant of {@link VectorSetCommands#vaddFP32(String, byte[], String, int)}.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Boolean> vaddFP32(String key, byte[] vectorBlob, String element, int reduceDim);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vadd/">VADD Command</a></b> Add a new element
@@ -135,6 +150,13 @@ public interface VectorSetPipelineCommands {
   Response<List<String>> vsim(String key, float[] vector, VSimParams params);
 
   /**
+   * Pipeline variant of {@link VectorSetCommands#vsimWithScores(String, float[])}.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<String, Double>> vsimWithScores(String key, float[] vector);
+
+  /**
    * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements
    * similar to a given vector with their similarity scores.
    * <p>
@@ -147,6 +169,22 @@ public interface VectorSetPipelineCommands {
    */
   @Experimental
   Response<Map<String, Double>> vsimWithScores(String key, float[] vector, VSimParams params);
+
+  /**
+   * Pipeline variant of {@link VectorSetCommands#vsimWithScoresAndAttribs(String, float[])}.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<String, VSimScoreAttribs>> vsimWithScoresAndAttribs(String key, float[] vector);
+
+  /**
+   * Pipeline variant of
+   * {@link VectorSetCommands#vsimWithScoresAndAttribs(String, float[], VSimParams)}.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<String, VSimScoreAttribs>> vsimWithScoresAndAttribs(String key, float[] vector,
+      VSimParams params);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements
@@ -174,6 +212,13 @@ public interface VectorSetPipelineCommands {
   Response<List<String>> vsimByElement(String key, String element, VSimParams params);
 
   /**
+   * Pipeline variant of {@link VectorSetCommands#vsimByElementWithScores(String, String)}.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<String, Double>> vsimByElementWithScores(String key, String element);
+
+  /**
    * <b><a href="https://redis.io/docs/latest/commands/vsim/">VSIM Command</a></b> Return elements
    * similar to a given element in the vector set with their similarity scores.
    * <p>
@@ -187,6 +232,24 @@ public interface VectorSetPipelineCommands {
   @Experimental
   Response<Map<String, Double>> vsimByElementWithScores(String key, String element,
       VSimParams params);
+
+  /**
+   * Pipeline variant of
+   * {@link VectorSetCommands#vsimByElementWithScoresAndAttribs(String, String)}.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<String, VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(String key,
+      String element);
+
+  /**
+   * Pipeline variant of
+   * {@link VectorSetCommands#vsimByElementWithScoresAndAttribs(String, String, VSimParams)}.
+   * @since 8.1
+   */
+  @Experimental
+  Response<Map<String, VSimScoreAttribs>> vsimByElementWithScoresAndAttribs(String key,
+      String element, VSimParams params);
 
   /**
    * <b><a href="https://redis.io/docs/latest/commands/vdim/">VDIM Command</a></b> Return the number

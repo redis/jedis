@@ -46,7 +46,7 @@ jobs:
       - name: Build Jedis (skip tests)
         working-directory: jedis
         run: |
-          mvn -B clean install -DskipTests -DskipUnitTests=true -Dgpg.skip=true
+          mvn -B clean install -DskipTests -DskipITs -Dgpg.skip=true
           JEDIS_VERSION=$(mvn help:evaluate -Dexpression=project.version -q -DforceStdout)
           echo "JEDIS_VERSION=$JEDIS_VERSION" >> $GITHUB_ENV
           echo "Built Jedis version: $JEDIS_VERSION"

@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.atomic.AtomicReference;
@@ -31,7 +32,8 @@ public final class AuthXManager implements Supplier<RedisCredentials> {
             .synchronizedList(new ArrayList<>());
     private Token currentToken;
     private AuthXEventListener listener = AuthXEventListener.NOOP_LISTENER;
-    private final List<Consumer<Token>> postAuthenticateHooks = new ArrayList<>();
+    // hooks are added/removed by pool threads while the renewal thread iterates them
+    private final List<Consumer<Token>> postAuthenticateHooks = new CopyOnWriteArrayList<>();
     private final AtomicReference<CompletableFuture<Void>> uniqueStarterTask = new AtomicReference<>();
 
     protected AuthXManager(TokenManager tokenManager) {

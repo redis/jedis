@@ -65,7 +65,8 @@ public class HomeJsonExample {
         String createResult = jedis.ftCreate("idx:users",
             FTCreateParams.createParams()
                 .on(IndexDataType.JSON)
-                .addPrefix("user:"),
+                .addPrefix("user:")
+                .skipInitialScan(),
                 schema
         );
 
@@ -164,7 +165,8 @@ public class HomeJsonExample {
         String hashCreateResult = jedis.ftCreate("hash-idx:users",
             FTCreateParams.createParams()
                 .on(IndexDataType.HASH)
-                .addPrefix("huser:"),
+                .addPrefix("huser:")
+                .skipInitialScan(),
                 hashSchema
         );
 

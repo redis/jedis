@@ -170,6 +170,12 @@ public abstract class AbstractCache implements Cache {
 
   @Override
   public boolean isCacheable(CacheKey cacheKey) {
+    // Entries are only reachable for invalidation through redisKeysToCacheKeys. A command whose
+    // arguments were added without key() (e.g. via sendCommand/executeCommand) records no Redis
+    // keys, so a server invalidation could never evict it and it would be served stale forever.
+    if (cacheKey.getRedisKeys().isEmpty()) {
+      return false;
+    }
     return cacheable.isCacheable(cacheKey.getRedisCommand(), cacheKey.getRedisKeys());
   }
 

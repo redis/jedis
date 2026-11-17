@@ -1561,34 +1561,45 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
   }
 
   /**
-   * Number of documents indexed by the on-timeout tests. Large enough that scanning, scoring and
-   * sorting them cannot complete within the 1ms per-query timeout, so the query engine's on-timeout
-   * policy is guaranteed to kick in.
+   * Number of documents indexed by the on-timeout tests using the {@code RETURN} policy. Large
+   * enough that scanning, scoring and sorting them cannot complete within the 1ms per-query
+   * timeout, so the timeout warning is reliably reported.
    */
   private static final int ON_TIMEOUT_DOC_COUNT = 10_000;
 
-  private void populateOnTimeoutIndex() {
+  /**
+   * Number of documents indexed by the on-timeout tests using the {@code FAIL} policy. With
+   * {@code search-workers > 0} the {@code FAIL} policy is enforced by a blocked-client timeout
+   * callback racing the worker thread that runs the query: the error is only returned when the
+   * callback wins, so a query that only slightly overruns its timeout may still return full results
+   * (intended server behavior). The query runtime must therefore exceed the 1ms per-query timeout
+   * by a wide margin — outcomes were measured flaky below ~10x, while 100k documents keep the
+   * margin around ~200x.
+   */
+  private static final int ON_TIMEOUT_FAIL_DOC_COUNT = 100_000;
+
+  private void populateOnTimeoutIndex(int docCount) {
     assertOK(jedis.ftCreate(INDEX, FTCreateParams.createParams(), TextField.of("title"),
       NumericField.of("n").sortable()));
 
     AbstractPipeline pipeline = jedis.pipelined();
-    for (int i = 0; i < ON_TIMEOUT_DOC_COUNT; i++) {
+    for (int i = 0; i < docCount; i++) {
       Map<String, String> fields = new HashMap<>();
       fields.put("title", "hello world " + i);
       fields.put("n", Integer.toString(i));
       pipeline.hset("doc:" + i, fields);
     }
     pipeline.sync();
-    assertIndexSize(jedis, INDEX, ON_TIMEOUT_DOC_COUNT);
+    assertIndexSize(jedis, INDEX, docCount);
   }
 
   /**
    * A query heavy enough that it cannot finish within a 1ms timeout: it matches every document and
    * forces a full scan, scoring and sort over the whole index.
    */
-  private FTSearchParams timingOutSearchParams() {
+  private FTSearchParams timingOutSearchParams(int docCount) {
     return FTSearchParams.searchParams().timeout(1).withScores().sortBy("n", SortingOrder.DESC)
-        .limit(0, ON_TIMEOUT_DOC_COUNT);
+        .limit(0, docCount);
   }
 
   /**
@@ -1602,15 +1613,15 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     assumeTrue(RedisConditions.of(jedis).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_810M3),
       "ON_TIMEOUT FAIL policy");
 
-    populateOnTimeoutIndex();
+    populateOnTimeoutIndex(ON_TIMEOUT_FAIL_DOC_COUNT);
 
     // Use the unified CONFIG SET (search-on-timeout) rather than FT.CONFIG SET: in a cluster the
     // former is broadcast to all nodes (RequestPolicy.ALL_NODES), while FT.CONFIG SET is routed to
     // a single node and would not take effect on every shard.
     assertOK(jedis.configSet("search-on-timeout", "fail"));
     try {
-      JedisDataException e = assertThrows(JedisDataException.class,
-        () -> jedis.ftSearch(INDEX, "hello world", timingOutSearchParams()));
+      JedisDataException e = assertThrows(JedisDataException.class, () -> jedis.ftSearch(INDEX,
+        "hello world", timingOutSearchParams(ON_TIMEOUT_FAIL_DOC_COUNT)));
       assertThat(e.getMessage(), containsStringIgnoringCase("timeout"));
     } finally {
       // Restore the default policy so we don't leak the FAIL setting into other tests.
@@ -1631,12 +1642,13 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     assumeTrue(AssertUtil.expectsResp3OnWire(protocol),
       "Search warnings are only returned on RESP3");
 
-    populateOnTimeoutIndex();
+    populateOnTimeoutIndex(ON_TIMEOUT_DOC_COUNT);
 
     // RETURN is the default, but set it explicitly (and cluster-wide) to keep the test independent
     // of any policy left behind by other tests.
     assertOK(jedis.configSet("search-on-timeout", "return"));
-    SearchResult result = jedis.ftSearch(INDEX, "hello world", timingOutSearchParams());
+    SearchResult result = jedis.ftSearch(INDEX, "hello world",
+      timingOutSearchParams(ON_TIMEOUT_DOC_COUNT));
 
     // RETURN must not fail the query, and the timeout must be reported as a warning.
     assertThat(result.getWarnings(), Matchers.notNullValue());
@@ -1664,7 +1676,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     assumeTrue(RedisConditions.of(jedis).moduleVersionIsGreaterThanOrEqual(SEARCH_MOD_VER_810M3),
       "ON_TIMEOUT FAIL policy");
 
-    populateOnTimeoutIndex();
+    populateOnTimeoutIndex(ON_TIMEOUT_FAIL_DOC_COUNT);
 
     assertOK(jedis.configSet("search-on-timeout", "fail"));
     try {
@@ -1689,7 +1701,7 @@ public abstract class SearchWithParamsCommandsTestBase extends UnifiedJedisComma
     assumeTrue(AssertUtil.expectsResp3OnWire(protocol),
       "Aggregate warnings are only returned on RESP3");
 
-    populateOnTimeoutIndex();
+    populateOnTimeoutIndex(ON_TIMEOUT_DOC_COUNT);
 
     assertOK(jedis.configSet("search-on-timeout", "return"));
     AggregationResult result = jedis.ftAggregate(INDEX, timingOutAggregation());

@@ -41,12 +41,12 @@ public class HotkeysParams implements IParams {
 
   /**
    * Maximum number of hot keys to track.
-   * @param count must be between 10 and 64
+   * @param count must be between 1 and 64
    * @return this
-   * @throws IllegalArgumentException if count is not between 10 and 64
+   * @throws IllegalArgumentException if count is not between 1 and 64
    */
   public HotkeysParams count(int count) {
-    JedisAsserts.isTrue(count >= 10 && count <= 64, "count must be between 1 and 64");
+    JedisAsserts.isTrue(count >= 1 && count <= 64, "count must be between 1 and 64");
 
     this.count = count;
     return this;
@@ -110,7 +110,9 @@ public class HotkeysParams implements IParams {
       args.add(count);
     }
 
-    if (duration != null) {
+    // Without DURATION the server tracks until HOTKEYS STOP, while an explicit DURATION 0 is
+    // rejected, so 0 is expressed by leaving the option out.
+    if (duration != null && duration > 0) {
       args.add(Keyword.DURATION);
       args.add(duration);
     }

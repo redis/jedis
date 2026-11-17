@@ -13,9 +13,15 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
 
+import io.redis.test.annotations.SinceRedisVersion;
+
+import redis.clients.jedis.AbstractPipeline;
 import redis.clients.jedis.Endpoints;
 import redis.clients.jedis.RedisProtocol;
+import redis.clients.jedis.Response;
+import redis.clients.jedis.bloom.CmsCellSize;
 import redis.clients.jedis.commands.unified.UnifiedJedisCommandsTestBase;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.exceptions.JedisException;
 
 /**
@@ -70,6 +76,101 @@ public abstract class CMSCommandsTestBase extends UnifiedJedisCommandsTestBase {
     assertEquals(1000L, info.get("width"));
     assertEquals(5L, info.get("depth"));
     assertEquals(5L, info.get("count"));
+  }
+
+  @Test
+  @SinceRedisVersion("8.11.0")
+  public void testInitByDimWithCellSize() {
+    jedis.cmsInitByDim("cms1", 16L, 4L, CmsCellSize.ONE_BYTE);
+    Map<String, Object> info = jedis.cmsInfo("cms1");
+    assertEquals(16L, info.get("width"));
+    assertEquals(4L, info.get("depth"));
+    assertEquals(0L, info.get("count"));
+    assertEquals(1L, info.get("cell_size"));
+  }
+
+  @Test
+  @SinceRedisVersion("8.11.0")
+  public void testInitByProbWithCellSize() {
+    jedis.cmsInitByProb("cms2", 0.01, 0.01, CmsCellSize.EIGHT_BYTES);
+    Map<String, Object> info = jedis.cmsInfo("cms2");
+    assertEquals(200L, info.get("width"));
+    assertEquals(7L, info.get("depth"));
+    assertEquals(8L, info.get("cell_size"));
+  }
+
+  @Test
+  @SinceRedisVersion("8.11.0")
+  public void testCellSizeLimitsCounter() {
+    // a 1-byte cell can hold at most 255; exceeding it is an error rather than silent saturation
+    jedis.cmsInitByDim("cms1", 16L, 4L, CmsCellSize.ONE_BYTE);
+    assertEquals(250L, jedis.cmsIncrBy("cms1", "foo", 250L));
+    JedisDataException thrown = assertThrows(JedisDataException.class,
+      () -> jedis.cmsIncrBy("cms1", "foo", 10L));
+    assertEquals("CMS: INCRBY overflow", thrown.getMessage());
+    assertEquals(250L, jedis.cmsQuery("cms1", "foo").get(0));
+  }
+
+  @Test
+  @SinceRedisVersion("8.11.0")
+  public void testIncrByNegative() {
+    jedis.cmsInitByDim("cms3", 1000L, 5L);
+    assertEquals(5L, jedis.cmsIncrBy("cms3", "foo", 5L));
+    assertEquals(3L, jedis.cmsIncrBy("cms3", "foo", -2L));
+    assertEquals(3L, jedis.cmsQuery("cms3", "foo").get(0));
+    assertEquals(3L, jedis.cmsInfo("cms3").get("count"));
+
+    // decrementing below zero would corrupt the sketch, so the server rejects it
+    JedisDataException thrown = assertThrows(JedisDataException.class,
+      () -> jedis.cmsIncrBy("cms3", "foo", -10L));
+    assertEquals("CMS: INCRBY underflow", thrown.getMessage());
+    assertEquals(3L, jedis.cmsQuery("cms3", "foo").get(0));
+  }
+
+  @Test
+  @SinceRedisVersion("8.11.0")
+  public void testIncrByMultipleArgsThrowsPerItemError() {
+    jedis.cmsInitByDim("cms6", 16L, 4L, CmsCellSize.ONE_BYTE);
+    jedis.cmsIncrBy("cms6", "foo", 250L);
+
+    // the server reports the overflow for "foo" inside the array reply; it must surface as an
+    // exception rather than an exception object hidden in the List<Long>
+    Map<String, Long> itemIncrements = new LinkedHashMap<>();
+    itemIncrements.put("bar", 1L);
+    itemIncrements.put("foo", 10L);
+    JedisDataException thrown = assertThrows(JedisDataException.class,
+      () -> jedis.cmsIncrBy("cms6", itemIncrements));
+    assertEquals("CMS: INCRBY overflow", thrown.getMessage());
+
+    // items before the failing one were still applied
+    assertEquals(Arrays.asList(1L, 250L), jedis.cmsQuery("cms6", "bar", "foo"));
+  }
+
+  @Test
+  @SinceRedisVersion("8.11.0")
+  public void testIncrByPipelinedThrowsOnGet() {
+    jedis.cmsInitByDim("cms7", 16L, 4L, CmsCellSize.ONE_BYTE);
+    jedis.cmsIncrBy("cms7", "foo", 250L);
+
+    Map<String, Long> itemIncrements = new LinkedHashMap<>();
+    itemIncrements.put("foo", 10L);
+    try (AbstractPipeline pipeline = jedis.pipelined()) {
+      Response<List<Long>> response = pipeline.cmsIncrBy("cms7", itemIncrements);
+      pipeline.sync();
+
+      JedisDataException thrown = assertThrows(JedisDataException.class, response::get);
+      assertEquals("CMS: INCRBY overflow", thrown.getMessage());
+    }
+  }
+
+  @Test
+  @SinceRedisVersion("8.11.0")
+  public void testMergeRequiresSameCellSize() {
+    jedis.cmsInitByDim("{key}A", 1000L, 5L, CmsCellSize.TWO_BYTES);
+    jedis.cmsInitByDim("{key}B", 1000L, 5L, CmsCellSize.FOUR_BYTES);
+    JedisDataException thrown = assertThrows(JedisDataException.class,
+      () -> jedis.cmsMerge("{key}A", "{key}B"));
+    assertEquals("CMS: cell size is not equal", thrown.getMessage());
   }
 
   @Test

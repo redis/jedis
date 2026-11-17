@@ -10,6 +10,7 @@ import java.util.concurrent.ExecutorService;
 import redis.clients.jedis.builders.ClusterClientBuilder;
 import redis.clients.jedis.executors.ClusterCommandExecutor;
 import redis.clients.jedis.executors.CommandExecutor;
+import redis.clients.jedis.exceptions.JedisClusterOperationException;
 import redis.clients.jedis.params.MSetExParams;
 import redis.clients.jedis.providers.ClusterConnectionProvider;
 import redis.clients.jedis.csc.Cache;
@@ -475,25 +476,27 @@ public class RedisClusterClient extends UnifiedJedis {
   /**
    * {@inheritDoc}
    * <p>
-   * This override automatically splits the key-value pairs by hash slot and executes MSETEX
-   * on each shard with the provided parameters.
+   * All keys must belong to the same hash slot. The command is never split, preserving atomicity
+   * and evaluating NX/XX across all keys.
    * </p>
+   * @throws JedisClusterOperationException if keys span multiple slots; no writes are performed
    */
   @Override
   public boolean msetex(MSetExParams params, String... keysvalues) {
-    return executeMultiShardCommand(getClusterCommandObjects().msetexMultiShard(params, keysvalues));
+    return super.msetex(params, keysvalues);
   }
 
   /**
    * {@inheritDoc}
    * <p>
-   * This override automatically splits the key-value pairs by hash slot and executes MSETEX
-   * on each shard with the provided parameters.
+   * All keys must belong to the same hash slot. The command is never split, preserving atomicity
+   * and evaluating NX/XX across all keys.
    * </p>
+   * @throws JedisClusterOperationException if keys span multiple slots; no writes are performed
    */
   @Override
   public boolean msetex(MSetExParams params, byte[]... keysvalues) {
-    return executeMultiShardCommand(getClusterCommandObjects().msetexMultiShard(params, keysvalues));
+    return super.msetex(params, keysvalues);
   }
 
   private ClusterCommandObjects getClusterCommandObjects() {

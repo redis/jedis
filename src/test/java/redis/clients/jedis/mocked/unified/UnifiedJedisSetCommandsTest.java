@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.junit.jupiter.api.Test;
+import redis.clients.jedis.args.ExpiryOption;
+import redis.clients.jedis.params.SAddExParams;
 import redis.clients.jedis.params.SDiffCardParams;
 import redis.clients.jedis.params.SUnionCardParams;
 import redis.clients.jedis.params.ScanParams;
@@ -917,6 +919,962 @@ public class UnifiedJedisSetCommandsTest extends UnifiedJedisMockedTestBase {
 
     verify(commandExecutor).executeCommand(longCommandObject);
     verify(commandObjects).sunioncard(keys, params);
+  }
+
+  @Test
+  public void testSexpire() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+    List<Long> expected = Arrays.asList(1L, -2L);
+
+    when(commandObjects.sexpire(key, 20, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.sexpire(key, 20, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).sexpire(key, 20, members);
+  }
+
+  @Test
+  public void testSexpireWithCondition() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+    List<Long> expected = Arrays.asList(1L, 0L);
+
+    when(commandObjects.sexpire(key, 20, ExpiryOption.NX, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.sexpire(key, 20, ExpiryOption.NX, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).sexpire(key, 20, ExpiryOption.NX, members);
+  }
+
+  @Test
+  public void testSpexpire() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+    List<Long> expected = Arrays.asList(1L, -2L);
+
+    when(commandObjects.spexpire(key, 20000, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.spexpire(key, 20000, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).spexpire(key, 20000, members);
+  }
+
+  @Test
+  public void testSpexpireWithCondition() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+    List<Long> expected = Arrays.asList(1L, 0L);
+
+    when(commandObjects.spexpire(key, 20000, ExpiryOption.NX, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.spexpire(key, 20000, ExpiryOption.NX, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).spexpire(key, 20000, ExpiryOption.NX, members);
+  }
+
+  @Test
+  public void testSexpireAt() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+    List<Long> expected = Arrays.asList(1L, -2L);
+
+    when(commandObjects.sexpireAt(key, 1700000000, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.sexpireAt(key, 1700000000, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).sexpireAt(key, 1700000000, members);
+  }
+
+  @Test
+  public void testSexpireAtWithCondition() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+    List<Long> expected = Arrays.asList(1L, 0L);
+
+    when(commandObjects.sexpireAt(key, 1700000000, ExpiryOption.NX, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.sexpireAt(key, 1700000000, ExpiryOption.NX, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).sexpireAt(key, 1700000000, ExpiryOption.NX, members);
+  }
+
+  @Test
+  public void testSpexpireAt() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+    List<Long> expected = Arrays.asList(1L, -2L);
+
+    when(commandObjects.spexpireAt(key, 1700000000000L, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.spexpireAt(key, 1700000000000L, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).spexpireAt(key, 1700000000000L, members);
+  }
+
+  @Test
+  public void testSpexpireAtWithCondition() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+    List<Long> expected = Arrays.asList(1L, 0L);
+
+    when(commandObjects.spexpireAt(key, 1700000000000L, ExpiryOption.NX, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.spexpireAt(key, 1700000000000L, ExpiryOption.NX, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).spexpireAt(key, 1700000000000L, ExpiryOption.NX, members);
+  }
+
+  @Test
+  public void testSttl() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+    List<Long> expected = Arrays.asList(-1L, -2L);
+
+    when(commandObjects.sttl(key, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.sttl(key, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).sttl(key, members);
+  }
+
+  @Test
+  public void testSpttl() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+    List<Long> expected = Arrays.asList(-1L, -2L);
+
+    when(commandObjects.spttl(key, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.spttl(key, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).spttl(key, members);
+  }
+
+  @Test
+  public void testSexpireTime() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+    List<Long> expected = Arrays.asList(-1L, -2L);
+
+    when(commandObjects.sexpireTime(key, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.sexpireTime(key, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).sexpireTime(key, members);
+  }
+
+  @Test
+  public void testSpexpireTime() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+    List<Long> expected = Arrays.asList(-1L, -2L);
+
+    when(commandObjects.spexpireTime(key, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.spexpireTime(key, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).spexpireTime(key, members);
+  }
+
+  @Test
+  public void testSpersist() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+    List<Long> expected = Arrays.asList(-1L, -2L);
+
+    when(commandObjects.spersist(key, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.spersist(key, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).spersist(key, members);
+  }
+
+  @Test
+  public void testSaddex() {
+    String key = "setKey";
+    String[] members = { "member1", "member2" };
+    SAddExParams params = SAddExParams.sAddExParams().mnx().ex(100);
+    long expected = 1L;
+
+    when(commandObjects.saddex(key, params, members)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.saddex(key, params, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).saddex(key, params, members);
+  }
+
+  @Test
+  public void testSexpireBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+    List<Long> expected = Arrays.asList(1L, -2L);
+
+    when(commandObjects.sexpire(key, 20, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.sexpire(key, 20, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).sexpire(key, 20, members);
+  }
+
+  @Test
+  public void testSexpireWithConditionBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+    List<Long> expected = Arrays.asList(1L, 0L);
+
+    when(commandObjects.sexpire(key, 20, ExpiryOption.NX, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.sexpire(key, 20, ExpiryOption.NX, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).sexpire(key, 20, ExpiryOption.NX, members);
+  }
+
+  @Test
+  public void testSpexpireBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+    List<Long> expected = Arrays.asList(1L, -2L);
+
+    when(commandObjects.spexpire(key, 20000, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.spexpire(key, 20000, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).spexpire(key, 20000, members);
+  }
+
+  @Test
+  public void testSpexpireWithConditionBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+    List<Long> expected = Arrays.asList(1L, 0L);
+
+    when(commandObjects.spexpire(key, 20000, ExpiryOption.NX, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.spexpire(key, 20000, ExpiryOption.NX, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).spexpire(key, 20000, ExpiryOption.NX, members);
+  }
+
+  @Test
+  public void testSexpireAtBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+    List<Long> expected = Arrays.asList(1L, -2L);
+
+    when(commandObjects.sexpireAt(key, 1700000000, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.sexpireAt(key, 1700000000, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).sexpireAt(key, 1700000000, members);
+  }
+
+  @Test
+  public void testSexpireAtWithConditionBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+    List<Long> expected = Arrays.asList(1L, 0L);
+
+    when(commandObjects.sexpireAt(key, 1700000000, ExpiryOption.NX, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.sexpireAt(key, 1700000000, ExpiryOption.NX, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).sexpireAt(key, 1700000000, ExpiryOption.NX, members);
+  }
+
+  @Test
+  public void testSpexpireAtBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+    List<Long> expected = Arrays.asList(1L, -2L);
+
+    when(commandObjects.spexpireAt(key, 1700000000000L, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.spexpireAt(key, 1700000000000L, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).spexpireAt(key, 1700000000000L, members);
+  }
+
+  @Test
+  public void testSpexpireAtWithConditionBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+    List<Long> expected = Arrays.asList(1L, 0L);
+
+    when(commandObjects.spexpireAt(key, 1700000000000L, ExpiryOption.NX, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.spexpireAt(key, 1700000000000L, ExpiryOption.NX, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).spexpireAt(key, 1700000000000L, ExpiryOption.NX, members);
+  }
+
+  @Test
+  public void testSttlBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+    List<Long> expected = Arrays.asList(-1L, -2L);
+
+    when(commandObjects.sttl(key, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.sttl(key, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).sttl(key, members);
+  }
+
+  @Test
+  public void testSpttlBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+    List<Long> expected = Arrays.asList(-1L, -2L);
+
+    when(commandObjects.spttl(key, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.spttl(key, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).spttl(key, members);
+  }
+
+  @Test
+  public void testSexpireTimeBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+    List<Long> expected = Arrays.asList(-1L, -2L);
+
+    when(commandObjects.sexpireTime(key, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.sexpireTime(key, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).sexpireTime(key, members);
+  }
+
+  @Test
+  public void testSpexpireTimeBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+    List<Long> expected = Arrays.asList(-1L, -2L);
+
+    when(commandObjects.spexpireTime(key, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.spexpireTime(key, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).spexpireTime(key, members);
+  }
+
+  @Test
+  public void testSpersistBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+    List<Long> expected = Arrays.asList(-1L, -2L);
+
+    when(commandObjects.spersist(key, members)).thenReturn(listLongCommandObject);
+    when(commandExecutor.executeCommand(listLongCommandObject)).thenReturn(expected);
+
+    List<Long> result = jedis.spersist(key, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(listLongCommandObject);
+    verify(commandObjects).spersist(key, members);
+  }
+
+  @Test
+  public void testSaddexBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[][] members = { "member1".getBytes(), "member2".getBytes() };
+    SAddExParams params = SAddExParams.sAddExParams().mnx().ex(100);
+    long expected = 1L;
+
+    when(commandObjects.saddex(key, params, members)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.saddex(key, params, members);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).saddex(key, params, members);
+  }
+
+  @Test
+  public void testSexpireSingleMember() {
+    String key = "setKey";
+    String member = "member1";
+    long expected = 1L;
+
+    when(commandObjects.sexpire(key, 20, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.sexpire(key, 20, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sexpire(key, 20, member);
+  }
+
+  @Test
+  public void testSexpireWithConditionSingleMember() {
+    String key = "setKey";
+    String member = "member1";
+    long expected = 1L;
+
+    when(commandObjects.sexpire(key, 20, ExpiryOption.GT, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.sexpire(key, 20, ExpiryOption.GT, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sexpire(key, 20, ExpiryOption.GT, member);
+  }
+
+  @Test
+  public void testSpexpireSingleMember() {
+    String key = "setKey";
+    String member = "member1";
+    long expected = 1L;
+
+    when(commandObjects.spexpire(key, 20000, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.spexpire(key, 20000, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).spexpire(key, 20000, member);
+  }
+
+  @Test
+  public void testSpexpireWithConditionSingleMember() {
+    String key = "setKey";
+    String member = "member1";
+    long expected = 1L;
+
+    when(commandObjects.spexpire(key, 20000, ExpiryOption.GT, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.spexpire(key, 20000, ExpiryOption.GT, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).spexpire(key, 20000, ExpiryOption.GT, member);
+  }
+
+  @Test
+  public void testSexpireAtSingleMember() {
+    String key = "setKey";
+    String member = "member1";
+    long expected = 1L;
+
+    when(commandObjects.sexpireAt(key, 1700000000, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.sexpireAt(key, 1700000000, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sexpireAt(key, 1700000000, member);
+  }
+
+  @Test
+  public void testSexpireAtWithConditionSingleMember() {
+    String key = "setKey";
+    String member = "member1";
+    long expected = 1L;
+
+    when(commandObjects.sexpireAt(key, 1700000000, ExpiryOption.GT, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.sexpireAt(key, 1700000000, ExpiryOption.GT, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sexpireAt(key, 1700000000, ExpiryOption.GT, member);
+  }
+
+  @Test
+  public void testSpexpireAtSingleMember() {
+    String key = "setKey";
+    String member = "member1";
+    long expected = 1L;
+
+    when(commandObjects.spexpireAt(key, 1700000000000L, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.spexpireAt(key, 1700000000000L, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).spexpireAt(key, 1700000000000L, member);
+  }
+
+  @Test
+  public void testSpexpireAtWithConditionSingleMember() {
+    String key = "setKey";
+    String member = "member1";
+    long expected = 1L;
+
+    when(commandObjects.spexpireAt(key, 1700000000000L, ExpiryOption.GT, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.spexpireAt(key, 1700000000000L, ExpiryOption.GT, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).spexpireAt(key, 1700000000000L, ExpiryOption.GT, member);
+  }
+
+  @Test
+  public void testSttlSingleMember() {
+    String key = "setKey";
+    String member = "member1";
+    long expected = 1L;
+
+    when(commandObjects.sttl(key, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.sttl(key, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sttl(key, member);
+  }
+
+  @Test
+  public void testSpttlSingleMember() {
+    String key = "setKey";
+    String member = "member1";
+    long expected = 1L;
+
+    when(commandObjects.spttl(key, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.spttl(key, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).spttl(key, member);
+  }
+
+  @Test
+  public void testSexpireTimeSingleMember() {
+    String key = "setKey";
+    String member = "member1";
+    long expected = 1L;
+
+    when(commandObjects.sexpireTime(key, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.sexpireTime(key, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sexpireTime(key, member);
+  }
+
+  @Test
+  public void testSpexpireTimeSingleMember() {
+    String key = "setKey";
+    String member = "member1";
+    long expected = 1L;
+
+    when(commandObjects.spexpireTime(key, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.spexpireTime(key, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).spexpireTime(key, member);
+  }
+
+  @Test
+  public void testSpersistSingleMember() {
+    String key = "setKey";
+    String member = "member1";
+    long expected = 1L;
+
+    when(commandObjects.spersist(key, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.spersist(key, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).spersist(key, member);
+  }
+
+  @Test
+  public void testSexpireSingleMemberBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[] member = "member1".getBytes();
+    long expected = 1L;
+
+    when(commandObjects.sexpire(key, 20, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.sexpire(key, 20, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sexpire(key, 20, member);
+  }
+
+  @Test
+  public void testSexpireWithConditionSingleMemberBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[] member = "member1".getBytes();
+    long expected = 1L;
+
+    when(commandObjects.sexpire(key, 20, ExpiryOption.GT, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.sexpire(key, 20, ExpiryOption.GT, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sexpire(key, 20, ExpiryOption.GT, member);
+  }
+
+  @Test
+  public void testSpexpireSingleMemberBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[] member = "member1".getBytes();
+    long expected = 1L;
+
+    when(commandObjects.spexpire(key, 20000, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.spexpire(key, 20000, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).spexpire(key, 20000, member);
+  }
+
+  @Test
+  public void testSpexpireWithConditionSingleMemberBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[] member = "member1".getBytes();
+    long expected = 1L;
+
+    when(commandObjects.spexpire(key, 20000, ExpiryOption.GT, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.spexpire(key, 20000, ExpiryOption.GT, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).spexpire(key, 20000, ExpiryOption.GT, member);
+  }
+
+  @Test
+  public void testSexpireAtSingleMemberBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[] member = "member1".getBytes();
+    long expected = 1L;
+
+    when(commandObjects.sexpireAt(key, 1700000000, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.sexpireAt(key, 1700000000, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sexpireAt(key, 1700000000, member);
+  }
+
+  @Test
+  public void testSexpireAtWithConditionSingleMemberBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[] member = "member1".getBytes();
+    long expected = 1L;
+
+    when(commandObjects.sexpireAt(key, 1700000000, ExpiryOption.GT, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.sexpireAt(key, 1700000000, ExpiryOption.GT, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sexpireAt(key, 1700000000, ExpiryOption.GT, member);
+  }
+
+  @Test
+  public void testSpexpireAtSingleMemberBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[] member = "member1".getBytes();
+    long expected = 1L;
+
+    when(commandObjects.spexpireAt(key, 1700000000000L, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.spexpireAt(key, 1700000000000L, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).spexpireAt(key, 1700000000000L, member);
+  }
+
+  @Test
+  public void testSpexpireAtWithConditionSingleMemberBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[] member = "member1".getBytes();
+    long expected = 1L;
+
+    when(commandObjects.spexpireAt(key, 1700000000000L, ExpiryOption.GT, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.spexpireAt(key, 1700000000000L, ExpiryOption.GT, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).spexpireAt(key, 1700000000000L, ExpiryOption.GT, member);
+  }
+
+  @Test
+  public void testSttlSingleMemberBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[] member = "member1".getBytes();
+    long expected = 1L;
+
+    when(commandObjects.sttl(key, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.sttl(key, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sttl(key, member);
+  }
+
+  @Test
+  public void testSpttlSingleMemberBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[] member = "member1".getBytes();
+    long expected = 1L;
+
+    when(commandObjects.spttl(key, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.spttl(key, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).spttl(key, member);
+  }
+
+  @Test
+  public void testSexpireTimeSingleMemberBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[] member = "member1".getBytes();
+    long expected = 1L;
+
+    when(commandObjects.sexpireTime(key, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.sexpireTime(key, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).sexpireTime(key, member);
+  }
+
+  @Test
+  public void testSpexpireTimeSingleMemberBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[] member = "member1".getBytes();
+    long expected = 1L;
+
+    when(commandObjects.spexpireTime(key, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.spexpireTime(key, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).spexpireTime(key, member);
+  }
+
+  @Test
+  public void testSpersistSingleMemberBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[] member = "member1".getBytes();
+    long expected = 1L;
+
+    when(commandObjects.spersist(key, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.spersist(key, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).spersist(key, member);
+  }
+
+  @Test
+  public void testSaddexSingleMember() {
+    String key = "setKey";
+    String member = "member1";
+    SAddExParams params = SAddExParams.sAddExParams().mxx().px(1000);
+    long expected = 1L;
+
+    when(commandObjects.saddex(key, params, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.saddex(key, params, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).saddex(key, params, member);
+  }
+
+  @Test
+  public void testSaddexSingleMemberBinary() {
+    byte[] key = "setKey".getBytes();
+    byte[] member = "member1".getBytes();
+    SAddExParams params = SAddExParams.sAddExParams().mxx().px(1000);
+    long expected = 1L;
+
+    when(commandObjects.saddex(key, params, member)).thenReturn(longCommandObject);
+    when(commandExecutor.executeCommand(longCommandObject)).thenReturn(expected);
+
+    long result = jedis.saddex(key, params, member);
+
+    assertThat(result, equalTo(expected));
+
+    verify(commandExecutor).executeCommand(longCommandObject);
+    verify(commandObjects).saddex(key, params, member);
   }
 
 }

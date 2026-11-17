@@ -111,7 +111,7 @@ Everything lives under **`src/test/resources/env/`**.
 src/test/resources/env/
 ├── docker-compose.yml         # all Redis services (standalone/sentinel/cluster/tls/mtls/stack)
 ├── .env                       # base vars (default REDIS_VERSION, image name, work dir)
-├── .env.v6.2 … .env.v8.10     # per-version overrides (just pin REDIS_VERSION)
+├── .env.v6.2 … .env.v8.12     # per-version overrides (just pin REDIS_VERSION)
 ├── redis1-2-5-8-sentinel/     # one dir per environment
 │   ├── config/node-<port>/redis.conf   # mounted read-only into the container
 │   └── work/                  # runtime state (TLS certs land in work/tls/)
@@ -206,7 +206,7 @@ TlsUtil.setCustomTrustStore(trustStorePath, "changeit");
 
 | Command                  | Effect                                                                                                                                |
 |--------------------------|---------------------------------------------------------------------------------------------------------------------------------------|
-| `make start version=8.6` | `docker compose … up -d --wait` with `.env` + `.env.v8.6`. Supported: 6.2, 7.2, 7.4, 8.0, 8.2, 8.4, 8.6, 8.8, 8.10 (default **8.10**). |
+| `make start version=8.6` | `docker compose … up -d --wait` with `.env` + `.env.v8.6`. Supported: 6.2, 7.2, 7.4, 8.0, 8.2, 8.4, 8.6, 8.8, 8.10, 8.12 (milestone `8.12-rc2`; default **8.10**). |
 | `make stop`              | `docker compose … down`.                                                                                                              |
 | `make test [version=…]`  | `start` → `mvn clean verify` → `stop`.                                                                                                |
 | `mvn clean verify`       | Run tests against an already-started env (use this from the IDE between `make start`/`make stop`).                                    |
@@ -215,16 +215,19 @@ Custom image instead of a version: `make start CLIENT_LIBS_TEST_IMAGE_TAG=<tag>`
 
 ### Test selection (JUnit 5 tags + Maven, see `pom.xml`)
 
-| Group       | Tag / naming                                                              | Runner   | Default                                |
-|-------------|---------------------------------------------------------------------------|----------|----------------------------------------|
-| Unit        | `@Tag("unit")`, no network                                                | Surefire | run (`skipUnitTests=false`)            |
-| Integration | `*IT` (new) — legacy `*IntegrationTest` / `@Tag("integration")` still run | Failsafe | run (`skipIntegrationTests=false`)     |
-| Scenario    | `@Tag("scenario")`                                                        | Failsafe | **skipped** (`skipScenarioTests=true`) |
+| Group       | Tag / naming                                                              | Runner   | Default                                   |
+|-------------|---------------------------------------------------------------------------|----------|-------------------------------------------|
+| Unit        | `@Tag("unit")`, no network                                                | Surefire | run; `-DskipTests` skips                  |
+| Integration | `*IT` (new) — legacy `*IntegrationTest` / `@Tag("integration")` still run | Failsafe | run; `-DskipITs` skips                    |
+| Scenario    | `@Tag("scenario")`                                                        | Failsafe | **skipped**; `-Pscenario-tests` runs them |
 
-New integration tests **must** be named `*IT` — do not use `*IntegrationTest` or
-the `@Tag("integration")` marker. See §5.
+A new integration test goes into the existing class for the same area, whatever its
+name or tag. New integration test **classes** must be named `*IT`. Do not use
+`*IntegrationTest` or `@Tag("integration")` on them. See §5.
 
-Useful flags: `-DskipUnitTests=true` (CI Docker job runs integration only),
+Useful flags: `-DskipTests` skips unit tests only, `-DskipITs` skips integration
+and scenario tests; pass both to skip every test.
+`-DskipUnitTests=true` is an alias of `-DskipTests` (the CI Docker job uses it).
 `-Dtest=<Class#method>` to narrow.
 
 ---
@@ -261,25 +264,26 @@ What decides whether a test is run by Surefire (unit) or Failsafe (integration)
 is **how the test is marked** — its file-name suffix and/or JUnit tag — not which
 folder it sits in (the runners select by suffix and tag — see §4 and `pom.xml`).
 
-**New integration tests MUST be named `*IT`.** This is the single accepted
-convention for new code. Failsafe still recognises the older `*IntegrationTest`
-name and the `@Tag("integration")` marker so the many existing classes keep
-running while they are migrated, but **do not use them for new tests** — name
-your class `FooIT` and nothing else.
+**Add new integration tests to the existing class that covers the same area.**
+Failsafe still recognises the older `*IntegrationTest` name and the
+`@Tag("integration")` marker, so those classes keep running while they are
+migrated; a new test method belongs next to its siblings there. Create a new class
+only when none fits. **A new integration class MUST be named `*IT`**, never
+`*IntegrationTest` and never tagged `@Tag("integration")`.
 
 | Test needs… | Name / mark it as… | Runner |
 |---|---|---|
 | **No server** (pure logic, mocks) | a plain `*Test` / `*Tests` class, **untagged** | Surefire |
-| **A running Redis** | **`*IT`** file name | Failsafe |
+| **A running Redis** | the existing class for that area; a new class gets the **`*IT`** file name | Failsafe |
 | **A long-running scenario** | `@Tag("scenario")`, placed under `scenario/` | Failsafe (off by default) |
 
 Guidance for new tests:
 
-- **Integration test** → name the file `FooIT.java` (the **only** accepted name
-  for new integration tests — not `*IntegrationTest`, and **never**
-  `@Tag("integration")`). Put it in the area package it exercises (`commands/…`,
-  `search/`, `tls/`, etc.). It connects to a server resolved through
-  `Endpoints.getRedisEndpoint(...)`.
+- **Integration test** → add it to the existing class for that area. If there is
+  none, create `FooIT.java` (the **only** accepted name for new integration
+  classes — not `*IntegrationTest`, and **never** `@Tag("integration")`) in the
+  area package it exercises (`commands/…`, `search/`, `tls/`, etc.). It connects
+  to a server resolved through `Endpoints.getRedisEndpoint(...)`.
 - **Unit test** → add it next to related unit tests (or under `mocked/` if it is
   Mockito-based), name it `FooTest`, and leave it untagged. It must pass with no
   Redis running.
@@ -321,7 +325,7 @@ local env runs only a subset. Full coverage requires the Docker env.
 
 | Workflow             | Environment                     | What it does                                                                                                                                                                                                                                                                          |
 |----------------------|---------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| `test-on-docker.yml` | **Docker (full)**               | Matrix over Redis 7.2 → 8.10. Uses the `run-tests` composite action: `make start version=<v>` → `TEST_ENV_PROVIDER=oss-docker`, `TEST_WORK_FOLDER=$REDIS_ENV_WORK_DIR`, `mvn -B -DskipUnitTests=true clean compile verify` → `make stop`. Uploads JaCoCo + Surefire/Failsafe reports. |
+| `test-on-docker.yml` | **Docker (full)**               | Matrix over Redis 7.2 → 8.12. Uses the `run-tests` composite action: `make start version=<v>` → `TEST_ENV_PROVIDER=oss-docker`, `TEST_WORK_FOLDER=$REDIS_ENV_WORK_DIR`, `mvn -B -DskipUnitTests=true clean compile verify` → `make stop`. Uploads JaCoCo + Surefire/Failsafe reports. |
 | `integration.yml`    | **Local-from-source (limited)** | Java 8; `make system-setup` builds Redis from source + the test module; `make test-local` runs the `oss-source` subset.                                                                                                                                                               |
 
 > Both clients pin **Java 8** for the test build. Use it when reproducing CI.

@@ -154,7 +154,7 @@ sleepMillis = millisLeft / (attemptsLeft * (attemptsLeft + 1))
 - Supports broadcast commands (ALL_SHARDS, ALL_NODES)
 - Round-robin distribution for keyless commands
 - Retry logic with cluster topology awareness
-- Replica connection support
+- Replica-preferred execution through `executeCommandToReplica` (single node, request policies not applied)
 - **Use Case:** RedisClusterClient
 
 **Configuration:**
@@ -310,7 +310,7 @@ getConnection(args) → pool.getResource()  // Ignores args for standalone
 - Slot-based routing (16384 slots)
 - Connection pool per cluster node
 - Automatic topology refresh
-- Replica connection support
+- Replica connections, tracked only when `readOnlyForRedisClusterReplicas` is enabled
 - **Use Case:** RedisClusterClient
 
 **Configuration:**
@@ -323,13 +323,15 @@ ClusterConnectionProvider(clusterNodes, clientConfig, poolConfig)
 getConnection(CommandArguments args)
   ├─ Extract hash slots from keys
   ├─ Determine target slot
-  └─ getConnectionFromSlot(slot) → pool for that slot's primary node
+  ├─ getConnectionFromSlot(slot) → pool for that slot's primary node
+  └─ Keyless command → random primary node
 
 getConnection(HostAndPort node)
   └─ Get connection to specific node
 
 getReplicaConnection(CommandArguments args)
-  └─ Get connection to replica for read operations
+  ├─ Replica of the key's slot, or any replica for a keyless command
+  └─ Falls back to a primary when no replica is known
 ```
 
 **Slot Mapping:**

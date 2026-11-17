@@ -41,7 +41,7 @@ public class ClusterCommandExecutor implements CommandExecutor {
   private final ConnectionResolver roundRobinConnectionResolver;
 
   /**
-   * Connection resolver used to enforce command execution on replicas.
+   * Connection resolver that prefers replicas and falls back to a primary.
    *
    * @see #executeCommandToReplica(CommandObject)
    */
@@ -209,6 +209,14 @@ public class ClusterCommandExecutor implements CommandExecutor {
     }
   }
 
+  /**
+   * Executes a command on a replica when one is known, otherwise on a primary.
+   * <p>
+   * A keyed command goes to a replica of the key's slot, a keyless command to any replica. The
+   * command is sent to a single node: request and response policies are not applied.
+   * @param commandObject the command to execute
+   * @return the reply from the command
+   */
   public final <T> T executeCommandToReplica(CommandObject<T> commandObject) {
     return doExecuteCommand(commandObject, replicaOnlyConnectionResolver, true);
   }

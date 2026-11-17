@@ -35,7 +35,7 @@ final class ConnectionResolverFactory {
   }
 
   /**
-   * Creates a replica-only connection resolver.
+   * Creates a connection resolver that prefers replicas and falls back to a primary.
    * @param provider the cluster connection provider
    * @return a new ReplicaOnlyConnectionResolver
    */

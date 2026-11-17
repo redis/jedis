@@ -155,12 +155,16 @@ public class ClusterConnectionProvider implements ConnectionProvider {
     }
 
     if (slots.isEmpty()) {
-      return getConnection(); // a keyless command can run on any node
+      return getConnection(); // keyless: any primary
     }
 
     return getConnectionFromSlot(slots.iterator().next());
   }
 
+  /**
+   * Returns a connection for a replica read: a replica of the command's slot, or any replica for a
+   * keyless command. Falls back to a primary when no replica is known.
+   */
   public Connection getReplicaConnection(CommandArguments args) {
     Set<Integer> slots = args.getKeyHashSlots();
 
@@ -246,6 +250,10 @@ public class ClusterConnectionProvider implements ConnectionProvider {
     }
   }
 
+  /**
+   * Returns a connection to a randomly picked replica of the slot, or to the slot's primary when
+   * the slot has no known replica.
+   */
   public Connection getReplicaConnectionFromSlot(int slot) {
     List<ConnectionPool> connectionPools = getSlotReplicaPools(slot);
     if (connectionPools == null) {

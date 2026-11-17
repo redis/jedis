@@ -447,6 +447,10 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
       return this;
     }
 
+    /**
+     * Enables reads from Redis Cluster replicas.
+     * @see JedisClientConfig#isReadOnlyForRedisClusterReplicas()
+     */
     public Builder readOnlyForRedisClusterReplicas() {
       this.readOnlyForRedisClusterReplicas = true;
       return this;

@@ -23,8 +23,6 @@ import java.util.function.LongConsumer;
 
 import redis.clients.jedis.*;
 import redis.clients.jedis.util.JedisClusterCRC16;
-import org.hamcrest.MatcherAssert;
-import org.hamcrest.Matchers;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -327,7 +325,7 @@ public class ClusterCommandExecutorTest {
       return null;
     }).when(connectionHandler).renewSlotCache();
 
-    final AtomicLong totalSleepMs = new AtomicLong();
+    final LongConsumer sleep = mock(LongConsumer.class);
     ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 5, ONE_SECOND,
         StaticCommandFlagsRegistry.registry()) {
 
@@ -346,19 +344,19 @@ public class ClusterCommandExecutorTest {
 
       @Override
       protected void sleep(long sleepMillis) {
-        // assert sleepMillis > 0;
-        totalSleepMs.addAndGet(sleepMillis);
+        sleep.accept(sleepMillis);
       }
     };
 
     assertEquals("Success!", testMe.executeCommand(STR_COM_OBJECT));
-    InOrder inOrder = inOrder(connectionHandler);
+    // The back-off is random in [0, max], so 0 ms is valid; verify that it backs off, not how long.
+    InOrder inOrder = inOrder(connectionHandler, sleep);
     inOrder.verify(connectionHandler, times(2))
         .getConnection(ArgumentMatchers.any(CommandArguments.class));
+    inOrder.verify(sleep).accept(ArgumentMatchers.anyLong());
     inOrder.verify(connectionHandler).renewSlotCache();
     inOrder.verify(connectionHandler).getConnection(ArgumentMatchers.any(CommandArguments.class));
     inOrder.verifyNoMoreInteractions();
-    MatcherAssert.assertThat(totalSleepMs.get(), Matchers.greaterThan(0L));
   }
 
   @Test

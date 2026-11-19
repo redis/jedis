@@ -42,19 +42,34 @@ public class MultiDbPipeline extends AbstractPipeline implements Closeable {
    * Sends the buffered commands to the active database over one connection and reads all their
    * replies. A reply is decoded when its {@link Response#get()} is called, so keep the
    * {@link Response} returned by each command. Server errors are not thrown here: the corresponding
-   * {@code get()} throws them.
+   * {@code get()} throws them. If sending or reading fails, every buffered response is completed
+   * with that failure, the commands are dropped and the failure is rethrown; a later {@code sync()}
+   * or {@link #close()} does not send them again.
    */
   @Override
   public void sync() {
     if (commands.isEmpty()) return;
 
     try (Connection connection = failoverProvider.getConnection()) {
+      try {
+        commands.forEach((command) -> connection.sendCommand(command.getKey()));
+        // following connection.getMany(int) flushes anyway, so no flush here.
 
-      commands.forEach((command) -> connection.sendCommand(command.getKey()));
-      // following connection.getMany(int) flushes anyway, so no flush here.
+        List<Object> unformatted = connection.getMany(commands.size());
+        unformatted.forEach((rawReply) -> commands.poll().getValue().set(rawReply));
+      } catch (Throwable t) {
+        // The batch may already be applied by the server, so it must not be replayed, possibly on
+        // another database, by a later sync() or close().
+        failBufferedCommands(t);
+        throw t;
+      }
+    }
+  }
 
-      List<Object> unformatted = connection.getMany(commands.size());
-      unformatted.forEach((rawReply) -> commands.poll().getValue().set(rawReply));
+  private void failBufferedCommands(Throwable failure) {
+    KeyValue<CommandArguments, Response<?>> command;
+    while ((command = commands.poll()) != null) {
+      completeExceptionally(command.getValue(), failure);
     }
   }
 

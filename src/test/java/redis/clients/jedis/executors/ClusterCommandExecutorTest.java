@@ -190,6 +190,40 @@ public class ClusterCommandExecutorTest {
   }
 
   @Test
+  public void runMovedToEmptyEndpointFollowsTheRedirectingNode() {
+    ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
+    Connection connection = mock(Connection.class);
+    when(connection.getHostAndPort()).thenReturn(new HostAndPort("redis.example.com", 7000));
+    final HostAndPort expectedTarget = new HostAndPort("redis.example.com", 7001);
+    when(connectionHandler.getConnection(ArgumentMatchers.any(CommandArguments.class)))
+        .thenReturn(connection);
+    when(connectionHandler.getConnection(expectedTarget)).thenReturn(connection);
+
+    ClusterCommandExecutor testMe = new ClusterCommandExecutor(connectionHandler, 10, ONE_SECOND,
+        StaticCommandFlagsRegistry.registry()) {
+      boolean isFirstCall = true;
+
+      @Override
+      public <T> T execute(Connection connection, CommandObject<T> commandObject) {
+        if (isFirstCall) {
+          isFirstCall = false;
+          // cluster-preferred-endpoint-type unknown-endpoint: "MOVED 0 :7001"
+          throw new JedisMovedDataException("MOVED 0 :7001", HostAndPort.from(":7001"), 0);
+        }
+        return (T) "foo";
+      }
+
+      @Override
+      protected void sleep(long ignored) {
+        throw new RuntimeException("This test should never sleep");
+      }
+    };
+
+    assertEquals("foo", testMe.executeCommand(STR_COM_OBJECT));
+    verify(connectionHandler).getConnection(expectedTarget);
+  }
+
+  @Test
   public void runAskSuccess() {
     ClusterConnectionProvider connectionHandler = mock(ClusterConnectionProvider.class);
     Connection connection = mock(Connection.class);

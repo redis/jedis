@@ -3725,6 +3725,78 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
     return connection.executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
   }
 
+  @Override
+  public List<Tuple> zmove(byte[] srcKey, byte[] dstKey, SortedSetOption end) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmove(srcKey, dstKey, end));
+  }
+
+  @Override
+  public List<Tuple> zmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, long count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmove(srcKey, dstKey, end, count));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(byte[] srcKey, byte[] dstKey, double min, double max) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(byte[] srcKey, byte[] dstKey, double min, double max, long count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(byte[] srcKey, byte[] dstKey, byte[] min, byte[] max) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(byte[] srcKey, byte[] dstKey, byte[] min, byte[] max, long count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public List<Tuple> bzmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, double timeout) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout));
+  }
+
+  @Override
+  public List<Tuple> bzmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, double timeout, long count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout, count));
+  }
+
+  @Override
+  public Tuple zmovemember(byte[] srcKey, byte[] dstKey, byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmovemember(srcKey, dstKey, member));
+  }
+
+  @Override
+  public List<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, byte[]... members) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmovemember(srcKey, dstKey, members));
+  }
+
+  @Override
+  public Tuple zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[] member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmovemember(srcKey, dstKey, params, member));
+  }
+
+  @Override
+  public List<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[]... members) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmovemember(srcKey, dstKey, params, members));
+  }
+
   /**
    * Synchronously save the DB on disk.
    * <p>
@@ -8938,6 +9010,78 @@ public class Jedis implements ServerCommands, DatabaseCommands, JedisCommands, J
   public KeyValue<String, List<Tuple>> bzmpop(double timeout, SortedSetOption option, int count, String... keys) {
     checkIsInMultiOrPipeline();
     return connection.executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
+  }
+
+  @Override
+  public List<Tuple> zmove(String srcKey, String dstKey, SortedSetOption end) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmove(srcKey, dstKey, end));
+  }
+
+  @Override
+  public List<Tuple> zmove(String srcKey, String dstKey, SortedSetOption end, long count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmove(srcKey, dstKey, end, count));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(String srcKey, String dstKey, double min, double max) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(String srcKey, String dstKey, double min, double max, long count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(String srcKey, String dstKey, String min, String max) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(String srcKey, String dstKey, String min, String max, long count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public List<Tuple> bzmove(String srcKey, String dstKey, SortedSetOption end, double timeout) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout));
+  }
+
+  @Override
+  public List<Tuple> bzmove(String srcKey, String dstKey, SortedSetOption end, double timeout, long count) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout, count));
+  }
+
+  @Override
+  public Tuple zmovemember(String srcKey, String dstKey, String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmovemember(srcKey, dstKey, member));
+  }
+
+  @Override
+  public List<Tuple> zmovemember(String srcKey, String dstKey, String... members) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmovemember(srcKey, dstKey, members));
+  }
+
+  @Override
+  public Tuple zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String member) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmovemember(srcKey, dstKey, params, member));
+  }
+
+  @Override
+  public List<Tuple> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String... members) {
+    checkIsInMultiOrPipeline();
+    return connection.executeCommand(commandObjects.zmovemember(srcKey, dstKey, params, members));
   }
 
   @Override

@@ -784,6 +784,25 @@ public final class BuilderFactory {
     }
   };
 
+  /**
+   * A nested list of {@code [member, score]} pairs read as its first {@link Tuple}, for replies that
+   * hold at most one pair; {@code null} stays {@code null}.
+   */
+  public static final Builder<Tuple> TUPLE_FROM_LIST = new Builder<Tuple>() {
+    @Override
+    @SuppressWarnings("unchecked")
+    public Tuple build(Object data) {
+      if (null == data) return null;
+      List<Object> list = (List<Object>) data;
+      return list.isEmpty() ? null : TUPLE.build(list.get(0));
+    }
+
+    @Override
+    public String toString() {
+      return "Tuple";
+    }
+  };
+
   @Deprecated
   public static final Builder<Set<Tuple>> TUPLE_ZSET = new Builder<Set<Tuple>>() {
     @Override

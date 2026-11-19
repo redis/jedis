@@ -22,9 +22,13 @@ public class MultiDbConnectionProviderHelper {
     provider.periodicFailbackCheck();
   }
 
+  /** Switches and runs the post-switch operations, as the lock-free production callers do. */
   public static Endpoint switchToHealthyDatabase(MultiDbConnectionProvider provider,
       SwitchReason reason, MultiDbConnectionProvider.Database iterateFrom) {
-    return provider.switchToHealthyDatabase(reason, iterateFrom);
+    MultiDbConnectionProvider.SwitchInfo switchInfo = provider.switchToHealthyDatabase(reason,
+      iterateFrom);
+    provider.postSwitch(switchInfo);
+    return switchInfo == null ? null : switchInfo.newEndpoint;
   }
 
   public static MultiDbConnectionProvider.Database waitForInitializationPolicy(

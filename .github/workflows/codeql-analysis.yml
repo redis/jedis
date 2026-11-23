@@ -21,20 +21,20 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v6
+      uses: actions/checkout@v6.1.0
       with:
         persist-credentials: false
 
     # Initializes the CodeQL tools for scanning.
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v4
+      uses: github/codeql-action/init@v4.39.4
       with:
         languages: java
         dependency-caching: true
         build-mode: manual
 
     - name: Set up JDK 8
-      uses: actions/setup-java@v5
+      uses: actions/setup-java@v5.7.0
       with:
         distribution: temurin
         java-version: '8'
@@ -44,4 +44,4 @@ jobs:
       run: mvn -B package
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v4
+      uses: github/codeql-action/analyze@v4.39.4

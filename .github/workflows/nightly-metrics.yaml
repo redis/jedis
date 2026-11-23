@@ -40,7 +40,7 @@ jobs:
             echo "run=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.1.0
         if: steps.gate.outputs.run == 'true'
         with:
           persist-credentials: false
@@ -63,7 +63,7 @@ jobs:
 
       - name: Set up Java
         if: steps.gate.outputs.run == 'true'
-        uses: actions/setup-java@v5
+        uses: actions/setup-java@v5.7.0
         with:
           java-version: '8'
           distribution: 'temurin'
@@ -77,7 +77,7 @@ jobs:
 
       - name: Cache dependencies
         if: steps.gate.outputs.run == 'true'
-        uses: actions/cache@v5
+        uses: actions/cache@v5.1.0
         with:
           path: |
             ~/.m2/repository
@@ -125,7 +125,7 @@ jobs:
       - name: Report test metrics
         # Report even when tests fail, but not when the run was cancelled.
         if: ${{ !cancelled() && steps.gate.outputs.run == 'true' }}
-        uses: redis-developer/cae-otel-ci-visibility@v4
+        uses: redis-developer/cae-otel-ci-visibility@v4.4.0
         with:
           junit-xml-folder: 'junit-reports'
           otlp-endpoint: 'https://otlp-gateway-prod-us-central-0.grafana.net/otlp/v1/metrics'

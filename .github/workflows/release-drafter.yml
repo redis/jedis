@@ -20,7 +20,7 @@ jobs:
   update_release_draft:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.1.0
         with:
           persist-credentials: false
           fetch-depth: 0
@@ -55,7 +55,7 @@ jobs:
 
       # Config is always read from the default branch; everything branch
       # specific is passed as inputs so the same file works on every branch.
-      - uses: release-drafter/release-drafter@v6
+      - uses: release-drafter/release-drafter@v6.4.0
         with:
           config-name: release-drafter-config.yml
           commitish: ${{ github.ref_name }}

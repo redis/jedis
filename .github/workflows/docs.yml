@@ -24,11 +24,11 @@ jobs:
     concurrency: ci-${{ github.ref }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v6.1.0
         with:
           persist-credentials: false
           ref: master
-      - uses: actions/setup-python@v6
+      - uses: actions/setup-python@v6.3.0
         with:
           python-version: 3.13
       - name: Install dependencies
@@ -39,7 +39,7 @@ jobs:
         run: |
           mkdocs build -d docsbuild
       - name: Pull benchmark dashboard
-        uses: actions/checkout@v6
+        uses: actions/checkout@v6.1.0
         with:
           persist-credentials: false
           ref: benchmark-data
@@ -49,12 +49,12 @@ jobs:
           mkdir -p docsbuild/benchmarks
           cp -r benchmark-data/jedis/* docsbuild/benchmarks/
       - name: Setup Pages
-        uses: actions/configure-pages@v5
+        uses: actions/configure-pages@v5.0.0
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v4.0.0
         with:
           path: 'docsbuild'
       - name: Deploy to GitHub Pages
         if: github.event_name != 'workflow_dispatch' || inputs.deploy
         id: deployment
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v5.0.1

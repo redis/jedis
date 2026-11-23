@@ -3564,6 +3564,66 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   }
 
   @Override
+  public List<Tuple> zmove(String srcKey, String dstKey, SortedSetOption end) {
+    return executeCommand(commandObjects.zmove(srcKey, dstKey, end));
+  }
+
+  @Override
+  public List<Tuple> zmove(String srcKey, String dstKey, SortedSetOption end, long count) {
+    return executeCommand(commandObjects.zmove(srcKey, dstKey, end, count));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(String srcKey, String dstKey, double min, double max) {
+    return executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(String srcKey, String dstKey, double min, double max, long count) {
+    return executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(String srcKey, String dstKey, String min, String max) {
+    return executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(String srcKey, String dstKey, String min, String max, long count) {
+    return executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public List<Tuple> bzmove(String srcKey, String dstKey, SortedSetOption end, double timeout) {
+    return executeCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout));
+  }
+
+  @Override
+  public List<Tuple> bzmove(String srcKey, String dstKey, SortedSetOption end, double timeout, long count) {
+    return executeCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout, count));
+  }
+
+  @Override
+  public Tuple zmovemember(String srcKey, String dstKey, String member) {
+    return executeCommand(commandObjects.zmovemember(srcKey, dstKey, member));
+  }
+
+  @Override
+  public List<Tuple> zmovemember(String srcKey, String dstKey, String... members) {
+    return executeCommand(commandObjects.zmovemember(srcKey, dstKey, members));
+  }
+
+  @Override
+  public Tuple zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String member) {
+    return executeCommand(commandObjects.zmovemember(srcKey, dstKey, params, member));
+  }
+
+  @Override
+  public List<Tuple> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String... members) {
+    return executeCommand(commandObjects.zmovemember(srcKey, dstKey, params, members));
+  }
+
+  @Override
   public KeyValue<byte[], List<Tuple>> zmpop(SortedSetOption option, byte[]... keys) {
     return executeCommand(commandObjects.zmpop(option, keys));
   }
@@ -3581,6 +3641,66 @@ public class UnifiedJedis implements JedisCommands, JedisBinaryCommands,
   @Override
   public KeyValue<byte[], List<Tuple>> bzmpop(double timeout, SortedSetOption option, int count, byte[]... keys) {
     return executeCommand(commandObjects.bzmpop(timeout, option, count, keys));
+  }
+
+  @Override
+  public List<Tuple> zmove(byte[] srcKey, byte[] dstKey, SortedSetOption end) {
+    return executeCommand(commandObjects.zmove(srcKey, dstKey, end));
+  }
+
+  @Override
+  public List<Tuple> zmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, long count) {
+    return executeCommand(commandObjects.zmove(srcKey, dstKey, end, count));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(byte[] srcKey, byte[] dstKey, double min, double max) {
+    return executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(byte[] srcKey, byte[] dstKey, double min, double max, long count) {
+    return executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(byte[] srcKey, byte[] dstKey, byte[] min, byte[] max) {
+    return executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public List<Tuple> zmoveByScore(byte[] srcKey, byte[] dstKey, byte[] min, byte[] max, long count) {
+    return executeCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public List<Tuple> bzmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, double timeout) {
+    return executeCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout));
+  }
+
+  @Override
+  public List<Tuple> bzmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, double timeout, long count) {
+    return executeCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout, count));
+  }
+
+  @Override
+  public Tuple zmovemember(byte[] srcKey, byte[] dstKey, byte[] member) {
+    return executeCommand(commandObjects.zmovemember(srcKey, dstKey, member));
+  }
+
+  @Override
+  public List<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, byte[]... members) {
+    return executeCommand(commandObjects.zmovemember(srcKey, dstKey, members));
+  }
+
+  @Override
+  public Tuple zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[] member) {
+    return executeCommand(commandObjects.zmovemember(srcKey, dstKey, params, member));
+  }
+
+  @Override
+  public List<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[]... members) {
+    return executeCommand(commandObjects.zmovemember(srcKey, dstKey, params, members));
   }
   // Sorted Set commands
 

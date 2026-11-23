@@ -174,4 +174,76 @@ public interface SortedSetPipelineCommands {
   Response<KeyValue<String, List<Tuple>>> bzmpop(double timeout, SortedSetOption option, String... keys);
 
   Response<KeyValue<String, List<Tuple>>> bzmpop(double timeout, SortedSetOption option, int count, String... keys);
+
+  /**
+   * Pipeline variant of {@link SortedSetCommands#zmove(String, String, SortedSetOption)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmove(String srcKey, String dstKey, SortedSetOption end);
+
+  /**
+   * Pipeline variant of {@link SortedSetCommands#zmove(String, String, SortedSetOption, long)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmove(String srcKey, String dstKey, SortedSetOption end, long count);
+
+  /**
+   * Pipeline variant of {@link SortedSetCommands#zmoveByScore(String, String, double, double)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmoveByScore(String srcKey, String dstKey, double min, double max);
+
+  /**
+   * Pipeline variant of {@link SortedSetCommands#zmoveByScore(String, String, double, double, long)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmoveByScore(String srcKey, String dstKey, double min, double max, long count);
+
+  /**
+   * Pipeline variant of {@link SortedSetCommands#zmoveByScore(String, String, String, String)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmoveByScore(String srcKey, String dstKey, String min, String max);
+
+  /**
+   * Pipeline variant of {@link SortedSetCommands#zmoveByScore(String, String, String, String, long)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmoveByScore(String srcKey, String dstKey, String min, String max, long count);
+
+  /**
+   * Pipeline variant of {@link SortedSetCommands#bzmove(String, String, SortedSetOption, double)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> bzmove(String srcKey, String dstKey, SortedSetOption end, double timeout);
+
+  /**
+   * Pipeline variant of {@link SortedSetCommands#bzmove(String, String, SortedSetOption, double, long)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> bzmove(String srcKey, String dstKey, SortedSetOption end, double timeout, long count);
+
+  /**
+   * Pipeline variant of {@link SortedSetCommands#zmovemember(String, String, String)}.
+   * @since 8.1
+   */
+  Response<Tuple> zmovemember(String srcKey, String dstKey, String member);
+
+  /**
+   * Pipeline variant of {@link SortedSetCommands#zmovemember(String, String, String...)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmovemember(String srcKey, String dstKey, String... members);
+
+  /**
+   * Pipeline variant of {@link SortedSetCommands#zmovemember(String, String, ZMoveMemberParams, String)}.
+   * @since 8.1
+   */
+  Response<Tuple> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String member);
+
+  /**
+   * Pipeline variant of {@link SortedSetCommands#zmovemember(String, String, ZMoveMemberParams, String...)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String... members);
 }

@@ -173,4 +173,76 @@ public interface SortedSetPipelineBinaryCommands {
   Response<KeyValue<byte[], List<Tuple>>> bzmpop(double timeout, SortedSetOption option, byte[]... keys);
 
   Response<KeyValue<byte[], List<Tuple>>> bzmpop(double timeout, SortedSetOption option, int count, byte[]... keys);
+
+  /**
+   * Pipeline variant of {@link SortedSetBinaryCommands#zmove(byte[], byte[], SortedSetOption)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmove(byte[] srcKey, byte[] dstKey, SortedSetOption end);
+
+  /**
+   * Pipeline variant of {@link SortedSetBinaryCommands#zmove(byte[], byte[], SortedSetOption, long)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, long count);
+
+  /**
+   * Pipeline variant of {@link SortedSetBinaryCommands#zmoveByScore(byte[], byte[], double, double)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmoveByScore(byte[] srcKey, byte[] dstKey, double min, double max);
+
+  /**
+   * Pipeline variant of {@link SortedSetBinaryCommands#zmoveByScore(byte[], byte[], double, double, long)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmoveByScore(byte[] srcKey, byte[] dstKey, double min, double max, long count);
+
+  /**
+   * Pipeline variant of {@link SortedSetBinaryCommands#zmoveByScore(byte[], byte[], byte[], byte[])}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmoveByScore(byte[] srcKey, byte[] dstKey, byte[] min, byte[] max);
+
+  /**
+   * Pipeline variant of {@link SortedSetBinaryCommands#zmoveByScore(byte[], byte[], byte[], byte[], long)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmoveByScore(byte[] srcKey, byte[] dstKey, byte[] min, byte[] max, long count);
+
+  /**
+   * Pipeline variant of {@link SortedSetBinaryCommands#bzmove(byte[], byte[], SortedSetOption, double)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> bzmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, double timeout);
+
+  /**
+   * Pipeline variant of {@link SortedSetBinaryCommands#bzmove(byte[], byte[], SortedSetOption, double, long)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> bzmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, double timeout, long count);
+
+  /**
+   * Pipeline variant of {@link SortedSetBinaryCommands#zmovemember(byte[], byte[], byte[])}.
+   * @since 8.1
+   */
+  Response<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, byte[] member);
+
+  /**
+   * Pipeline variant of {@link SortedSetBinaryCommands#zmovemember(byte[], byte[], byte[]...)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmovemember(byte[] srcKey, byte[] dstKey, byte[]... members);
+
+  /**
+   * Pipeline variant of {@link SortedSetBinaryCommands#zmovemember(byte[], byte[], ZMoveMemberParams, byte[])}.
+   * @since 8.1
+   */
+  Response<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[] member);
+
+  /**
+   * Pipeline variant of {@link SortedSetBinaryCommands#zmovemember(byte[], byte[], ZMoveMemberParams, byte[]...)}.
+   * @since 8.1
+   */
+  Response<List<Tuple>> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[]... members);
 }

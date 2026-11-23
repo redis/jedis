@@ -1552,6 +1552,66 @@ public abstract class PipeliningBase
   }
 
   @Override
+  public Response<List<Tuple>> zmove(String srcKey, String dstKey, SortedSetOption end) {
+    return appendCommand(commandObjects.zmove(srcKey, dstKey, end));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmove(String srcKey, String dstKey, SortedSetOption end, long count) {
+    return appendCommand(commandObjects.zmove(srcKey, dstKey, end, count));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmoveByScore(String srcKey, String dstKey, double min, double max) {
+    return appendCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmoveByScore(String srcKey, String dstKey, double min, double max, long count) {
+    return appendCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmoveByScore(String srcKey, String dstKey, String min, String max) {
+    return appendCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmoveByScore(String srcKey, String dstKey, String min, String max, long count) {
+    return appendCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public Response<List<Tuple>> bzmove(String srcKey, String dstKey, SortedSetOption end, double timeout) {
+    return appendCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout));
+  }
+
+  @Override
+  public Response<List<Tuple>> bzmove(String srcKey, String dstKey, SortedSetOption end, double timeout, long count) {
+    return appendCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout, count));
+  }
+
+  @Override
+  public Response<Tuple> zmovemember(String srcKey, String dstKey, String member) {
+    return appendCommand(commandObjects.zmovemember(srcKey, dstKey, member));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmovemember(String srcKey, String dstKey, String... members) {
+    return appendCommand(commandObjects.zmovemember(srcKey, dstKey, members));
+  }
+
+  @Override
+  public Response<Tuple> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String member) {
+    return appendCommand(commandObjects.zmovemember(srcKey, dstKey, params, member));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmovemember(String srcKey, String dstKey, ZMoveMemberParams params, String... members) {
+    return appendCommand(commandObjects.zmovemember(srcKey, dstKey, params, members));
+  }
+
+  @Override
   public Response<List<String>> zdiff(String... keys) {
     return appendCommand(commandObjects.zdiff(keys));
   }
@@ -4053,6 +4113,66 @@ public abstract class PipeliningBase
   @Override
   public Response<KeyValue<byte[], List<Tuple>>> bzmpop(double timeout, SortedSetOption option, int count, byte[]... keys) {
     return appendCommand(commandObjects.bzmpop(timeout, option, count, keys));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmove(byte[] srcKey, byte[] dstKey, SortedSetOption end) {
+    return appendCommand(commandObjects.zmove(srcKey, dstKey, end));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, long count) {
+    return appendCommand(commandObjects.zmove(srcKey, dstKey, end, count));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmoveByScore(byte[] srcKey, byte[] dstKey, double min, double max) {
+    return appendCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmoveByScore(byte[] srcKey, byte[] dstKey, double min, double max, long count) {
+    return appendCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmoveByScore(byte[] srcKey, byte[] dstKey, byte[] min, byte[] max) {
+    return appendCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmoveByScore(byte[] srcKey, byte[] dstKey, byte[] min, byte[] max, long count) {
+    return appendCommand(commandObjects.zmoveByScore(srcKey, dstKey, min, max, count));
+  }
+
+  @Override
+  public Response<List<Tuple>> bzmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, double timeout) {
+    return appendCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout));
+  }
+
+  @Override
+  public Response<List<Tuple>> bzmove(byte[] srcKey, byte[] dstKey, SortedSetOption end, double timeout, long count) {
+    return appendCommand(commandObjects.bzmove(srcKey, dstKey, end, timeout, count));
+  }
+
+  @Override
+  public Response<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, byte[] member) {
+    return appendCommand(commandObjects.zmovemember(srcKey, dstKey, member));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmovemember(byte[] srcKey, byte[] dstKey, byte[]... members) {
+    return appendCommand(commandObjects.zmovemember(srcKey, dstKey, members));
+  }
+
+  @Override
+  public Response<Tuple> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[] member) {
+    return appendCommand(commandObjects.zmovemember(srcKey, dstKey, params, member));
+  }
+
+  @Override
+  public Response<List<Tuple>> zmovemember(byte[] srcKey, byte[] dstKey, ZMoveMemberParams params, byte[]... members) {
+    return appendCommand(commandObjects.zmovemember(srcKey, dstKey, params, members));
   }
 
   @Override

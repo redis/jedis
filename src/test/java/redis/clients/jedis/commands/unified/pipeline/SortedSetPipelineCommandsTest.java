@@ -10,17 +10,21 @@ import static org.hamcrest.Matchers.hasSize;
 import static org.hamcrest.Matchers.in;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START;
 import static redis.clients.jedis.params.ScanParams.SCAN_POINTER_START_BINARY;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
 import io.redis.test.annotations.ConditionalOnEnv;
+import io.redis.test.annotations.EnabledOnCommand;
 import io.redis.test.annotations.SinceRedisVersion;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
@@ -29,9 +33,11 @@ import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.Response;
 import redis.clients.jedis.args.SortedSetOption;
+import redis.clients.jedis.exceptions.JedisDataException;
 import redis.clients.jedis.params.ScanParams;
 import redis.clients.jedis.params.ZAddParams;
 import redis.clients.jedis.params.ZIncrByParams;
+import redis.clients.jedis.params.ZMoveMemberParams;
 import redis.clients.jedis.params.ZParams;
 import redis.clients.jedis.params.ZRangeParams;
 import redis.clients.jedis.resps.ScanResult;
@@ -1905,5 +1911,139 @@ public class SortedSetPipelineCommandsTest extends PipelineCommandsTestBase {
     ));
 
     assertThat(nullRange.get(), nullValue());
+  }
+
+  /**
+   * Moves in a pipeline; a null response does not fail the pipeline.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveCommandsInPipeline() {
+    pipe.zadd("{z}s", 1, "a");
+    pipe.zadd("{z}s", 2, "b");
+    pipe.zadd("{z}s", 3, "c");
+    Response<List<Tuple>> minCount = pipe.zmove("{z}s", "{z}d", SortedSetOption.MIN, 2);
+    Response<List<Tuple>> missing = pipe.zmove("{z}m1", "{z}m2", SortedSetOption.MIN);
+    Response<Tuple> member = pipe.zmovemember("{z}s", "{z}d", "c");
+    Response<List<Tuple>> blocking = pipe.bzmove("{z}e", "{z}d", SortedSetOption.MAX, 1);
+    pipe.sync();
+
+    assertEquals(Arrays.asList(new Tuple("a", 1d), new Tuple("b", 2d)), minCount.get());
+    assertThat(missing.get(), nullValue());
+    assertEquals(new Tuple("c", 3d), member.get());
+    assertThat(blocking.get(), nullValue());
+  }
+
+  /**
+   * The byte[] twins of the pipelined zmove and zmovemember.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveCommandsInPipelineBinary() {
+    byte[] src = SafeEncoder.encode("{z}bs");
+    byte[] dst = SafeEncoder.encode("{z}bd");
+    pipe.zadd(src, 1, SafeEncoder.encode("a"));
+    pipe.zadd(src, 2, SafeEncoder.encode("b"));
+    pipe.zadd(src, 3, SafeEncoder.encode("c"));
+    Response<List<Tuple>> minCount = pipe.zmove(src, dst, SortedSetOption.MIN, 2);
+    Response<Tuple> member = pipe.zmovemember(src, dst, SafeEncoder.encode("c"));
+    pipe.sync();
+
+    assertEquals(Arrays.asList(new Tuple("a", 1d), new Tuple("b", 2d)), minCount.get());
+    assertEquals(new Tuple("c", 3d), member.get());
+  }
+
+  /**
+   * An error reply among pipelined moves fails only its own response; the
+   * replies after it are still decoded.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveCommandsInPipelineWithError() {
+    pipe.zadd("{z}s", 1, "a");
+    pipe.zadd("{z}s", 2, "b");
+    pipe.zadd("{z}s", 3, "c");
+    pipe.set("{z}w", "x");
+    Response<List<Tuple>> min = pipe.zmove("{z}s", "{z}d", SortedSetOption.MIN);
+    Response<List<Tuple>> missing = pipe.zmove("{z}none", "{z}d", SortedSetOption.MIN);
+    Response<Tuple> wrongType = pipe.zmovemember("{z}w", "{z}d", "a");
+    Response<List<Tuple>> max = pipe.zmove("{z}s", "{z}d", SortedSetOption.MAX);
+    pipe.sync();
+
+    assertEquals(Collections.singletonList(new Tuple("a", 1d)), min.get());
+    assertThat(missing.get(), nullValue());
+    JedisDataException error = assertThrows(JedisDataException.class, wrongType::get);
+    assertThat(error.getMessage(), startsWith("WRONGTYPE"));
+    assertEquals(Collections.singletonList(new Tuple("c", 3d)), max.get());
+  }
+
+  /**
+   * The byte[] twin; an error reply among pipelined moves fails only its own
+   * response; the replies after it are still decoded.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVE")
+  public void zmoveCommandsInPipelineWithErrorBinary() {
+    byte[] src = SafeEncoder.encode("{z}s");
+    byte[] dst = SafeEncoder.encode("{z}d");
+    byte[] wrong = SafeEncoder.encode("{z}w");
+    pipe.zadd(src, 1, SafeEncoder.encode("a"));
+    pipe.zadd(src, 2, SafeEncoder.encode("b"));
+    pipe.zadd(src, 3, SafeEncoder.encode("c"));
+    pipe.set(wrong, SafeEncoder.encode("x"));
+    Response<List<Tuple>> min = pipe.zmove(src, dst, SortedSetOption.MIN);
+    Response<List<Tuple>> missing = pipe.zmove(SafeEncoder.encode("{z}none"), dst, SortedSetOption.MIN);
+    Response<Tuple> wrongType = pipe.zmovemember(wrong, dst, SafeEncoder.encode("a"));
+    Response<List<Tuple>> max = pipe.zmove(src, dst, SortedSetOption.MAX);
+    pipe.sync();
+
+    assertEquals(Collections.singletonList(new Tuple(SafeEncoder.encode("a"), 1d)), min.get());
+    assertThat(missing.get(), nullValue());
+    JedisDataException error = assertThrows(JedisDataException.class, wrongType::get);
+    assertThat(error.getMessage(), startsWith("WRONGTYPE"));
+    assertEquals(Collections.singletonList(new Tuple(SafeEncoder.encode("c"), 3d)), max.get());
+  }
+
+  /**
+   * The pipelined single-member zmovemember gives the moved member as one Tuple, then null once
+   * the member has left the source; the NX form moves a member the destination lacks.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVEMEMBER")
+  public void zmovememberSingleInPipeline() {
+    pipe.zadd("{z}s", 1, "a");
+    pipe.zadd("{z}s", 2, "b");
+    Response<Tuple> moved = pipe.zmovemember("{z}s", "{z}d", "a");
+    Response<Tuple> again = pipe.zmovemember("{z}s", "{z}d", "a");
+    Response<Tuple> nx = pipe.zmovemember("{z}s", "{z}d",
+        ZMoveMemberParams.zMoveMemberParams().nx(), "b");
+    pipe.sync();
+
+    assertEquals(new Tuple("a", 1d), moved.get());
+    assertThat(again.get(), nullValue());
+    assertEquals(new Tuple("b", 2d), nx.get());
+  }
+
+  /**
+   * The byte[] pipelined single-member zmovemember gives the moved member as one Tuple, then null
+   * once the member has left the source; the NX form moves a member the destination lacks.
+   */
+  @Test
+  @EnabledOnCommand("ZMOVEMEMBER")
+  public void zmovememberSingleInPipelineBinary() {
+    byte[] src = SafeEncoder.encode("{z}s");
+    byte[] dst = SafeEncoder.encode("{z}d");
+    byte[] a = SafeEncoder.encode("a");
+    byte[] b = SafeEncoder.encode("b");
+    pipe.zadd(src, 1, a);
+    pipe.zadd(src, 2, b);
+    Response<Tuple> moved = pipe.zmovemember(src, dst, a);
+    Response<Tuple> again = pipe.zmovemember(src, dst, a);
+    Response<Tuple> nx = pipe.zmovemember(src, dst, ZMoveMemberParams.zMoveMemberParams().nx(), b);
+    pipe.sync();
+
+    assertEquals(new Tuple(a, 1d), moved.get());
+    assertThat(again.get(), nullValue());
+    assertEquals(new Tuple(b, 2d), nx.get());
   }
 }

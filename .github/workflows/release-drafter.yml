@@ -22,6 +22,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       # Next version comes from the nearest GA tag reachable from the branch.

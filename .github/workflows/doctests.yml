@@ -24,6 +24,8 @@ jobs:
 
     steps:
       - uses: actions/checkout@v6
+        with:
+          persist-credentials: false
       - name: Cache dependencies
         uses: actions/cache@v5
         with:

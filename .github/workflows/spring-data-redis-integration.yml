@@ -30,6 +30,7 @@ jobs:
       - name: Checkout Jedis
         uses: actions/checkout@v6
         with:
+          persist-credentials: false
           path: jedis
 
       - name: Set up Java 17
@@ -57,6 +58,7 @@ jobs:
       - name: Checkout Spring Data Redis
         uses: actions/checkout@v6
         with:
+          persist-credentials: false
           repository: spring-projects/spring-data-redis
           ref: ${{ github.event.inputs.spring_data_redis_branch || 'main' }}
           path: spring-data-redis

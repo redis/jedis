@@ -26,6 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
+          persist-credentials: false
           ref: master
       - uses: actions/setup-python@v6
         with:
@@ -40,6 +41,7 @@ jobs:
       - name: Pull benchmark dashboard
         uses: actions/checkout@v6
         with:
+          persist-credentials: false
           ref: benchmark-data
           path: benchmark-data
       - name: Embed benchmark dashboard into site

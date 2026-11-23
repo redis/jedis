@@ -56,6 +56,7 @@ runs:
     - name: Checkout code
       uses: actions/checkout@v6
       with:
+        persist-credentials: false
         repository: ${{ inputs.repository }}
         ref: ${{ inputs.ref }}
 

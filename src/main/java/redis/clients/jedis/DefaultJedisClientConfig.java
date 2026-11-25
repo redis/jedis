@@ -285,47 +285,81 @@ public final class DefaultJedisClientConfig implements JedisClientConfig {
     }
 
     /**
-     * Shortcut to
-     * {@link redis.clients.jedis.DefaultJedisClientConfig.Builder#protocol(RedisProtocol)} with
-     * {@link RedisProtocol#RESP3}.
+     * Selects RESP3 strictly. Shortcut for {@code protocol(RedisProtocol.RESP3)}.
+     * <p>
+     * The remote server must support RESP3 and the {@code HELLO} command, needed to enforce it.
+     * Takes precedence over auto-negotiation.
      * @return this
+     * @see #protocol(RedisProtocol)
+     * @see #autoNegotiateProtocol(boolean)
+     * @see #serverDefaultProtocol()
+     * @see JedisClientConfig#getRedisProtocol()
      */
     public Builder resp3() {
       return protocol(RedisProtocol.RESP3);
     }
 
     /**
-     * Shortcut to
-     * {@link redis.clients.jedis.DefaultJedisClientConfig.Builder#protocol(RedisProtocol)} with
-     * {@link RedisProtocol#RESP2}.
+     * Selects RESP2 strictly. Shortcut for {@code protocol(RedisProtocol.RESP2)}.
+     * <p>
+     * The remote server must support the {@code HELLO} command, needed to enforce it. Takes
+     * precedence over auto-negotiation.
      * @return this
+     * @see #protocol(RedisProtocol)
+     * @see #autoNegotiateProtocol(boolean)
+     * @see #serverDefaultProtocol()
+     * @see JedisClientConfig#getRedisProtocol()
      */
     public Builder resp2() {
       return protocol(RedisProtocol.RESP2);
     }
 
     /**
-     * Shortcut for the legacy "no HELLO" mode: sets {@code protocol(null)} and disables
-     * auto-negotiation so the connection skips the {@code HELLO} handshake entirely and assumes
-     * RESP2 on the wire.
+     * The connection only authenticates and keeps the protocol the server starts with. The protocol
+     * is not enforced; the client assumes RESP2.
+     * <p>
+     * Shortcut for {@code protocol(null).autoNegotiateProtocol(false)}.
      * @return this
+     * @see #protocol(RedisProtocol)
+     * @see #autoNegotiateProtocol(boolean)
+     * @see JedisClientConfig#getRedisProtocol()
      */
     public Builder serverDefaultProtocol() {
       return protocol(null).autoNegotiateProtocol(false);
     }
 
+    /**
+     * Sets the protocol for the connection, or {@code null} (default) for none.
+     * <ul>
+     * <li>{@code RESP2} or {@code RESP3}: strict selection. The remote server must support the
+     * protocol and the {@code HELLO} command, needed to enforce it. Takes precedence over
+     * auto-negotiation.</li>
+     * <li>{@code null}: no strict selection. {@link #autoNegotiateProtocol(boolean)} decides.</li>
+     * </ul>
+     * See {@link JedisClientConfig#getRedisProtocol()} for the supported configurations.
+     * @param protocol the protocol, or {@code null}
+     * @return this
+     * @see #autoNegotiateProtocol(boolean)
+     * @see #serverDefaultProtocol()
+     */
     public Builder protocol(RedisProtocol protocol) {
       this.redisProtocol = protocol;
       return this;
     }
 
     /**
-     * When the {@linkplain #protocol(RedisProtocol) protocol} is left as {@code null}, controls
-     * whether the connection attempts {@code HELLO 3} with graceful RESP2 fallback (when
-     * {@code true}, the default) or skips {@code HELLO} altogether (when {@code false}, the legacy
-     * behaviour).
-     * @param autoNegotiateProtocol whether to auto-negotiate the protocol on connect
+     * Whether the connection negotiates the protocol with the server. This setting is ignored when
+     * a strict protocol is configured with {@link #protocol(RedisProtocol)}.
+     * <p>
+     * When {@code true} (default), the connection negotiates RESP3, then RESP2. If the protocol
+     * cannot be negotiated (for example, the server does not support the {@code HELLO} command), it
+     * falls back to the server default and assumes RESP2.
+     * <p>
+     * When {@code false} and no strict protocol is configured, the connection uses the server
+     * default: the protocol is not enforced and the client assumes RESP2.
+     * @param autoNegotiateProtocol whether to negotiate the protocol on connect
      * @return this
+     * @see JedisClientConfig#getRedisProtocol()
      */
     public Builder autoNegotiateProtocol(boolean autoNegotiateProtocol) {
       this.autoNegotiateProtocol = autoNegotiateProtocol;

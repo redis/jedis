@@ -1,8 +1,9 @@
 package redis.clients.jedis.exceptions;
 
 /**
- * {@code -NOPROTO} reply from Redis Enterprise and Cloud when the requested protocol version has
- * been explicitly disabled on the server or Redis &lt; 6.0
+ * The server cannot provide the requested protocol version. Either it replied {@code -NOPROTO}
+ * (the version is not supported, or is disabled on the server, as Redis Software and Redis Cloud
+ * allow), or it has no {@code HELLO} command (for example Redis before 6.0).
  */
 public class JedisProtocolNotSupportedException extends JedisDataException {
 

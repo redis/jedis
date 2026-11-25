@@ -1,43 +1,48 @@
 package redis.clients.jedis.params;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static redis.clients.jedis.util.CommandArgumentsMatchers.hasArguments;
 
-import java.util.ArrayList;
-import java.util.List;
-
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import redis.clients.jedis.CommandArguments;
 import redis.clients.jedis.Protocol.Command;
+import redis.clients.jedis.Protocol.Keyword;
 import redis.clients.jedis.args.GeoUnit;
-import redis.clients.jedis.args.Rawable;
+import redis.clients.jedis.args.RawableFactory;
 
 public class GeoSearchParamTest {
 
-  @Test
-  public void countWithAnyFalseDoesNotAddAny() {
-    GeoSearchParam param = GeoSearchParam.geoSearchParam()
-        .fromLonLat(15, 37).byRadius(200, GeoUnit.KM).count(10, false);
-    assertFalse(argStrings(param).contains("ANY"),
-        "COUNT 10 false must not append the ANY keyword");
-  }
+  @Nested
+  class AddParamsTests {
 
-  @Test
-  public void countWithAnyTrueAddsAny() {
-    GeoSearchParam param = GeoSearchParam.geoSearchParam()
-        .fromLonLat(15, 37).byRadius(200, GeoUnit.KM).count(10, true);
-    assertTrue(argStrings(param).contains("ANY"),
-        "COUNT 10 true must append the ANY keyword");
-  }
+    @Test
+    public void countWithAnyFalseOmitsAny() {
+      GeoSearchParam params = GeoSearchParam.geoSearchParam().fromMember("m")
+          .byRadius(1, GeoUnit.KM).count(10, false);
+      CommandArguments args = new CommandArguments(Command.GEOSEARCH);
+      params.addParams(args);
 
-  private static List<String> argStrings(GeoSearchParam param) {
-    CommandArguments args = new CommandArguments(Command.GEOSEARCH);
-    param.addParams(args);
-    List<String> values = new ArrayList<>();
-    for (Rawable raw : args) {
-      values.add(raw.toString());
+      // Expected: GEOSEARCH FROMMEMBER m BYRADIUS 1.0 km COUNT 10
+      assertThat(args,
+        hasArguments(Command.GEOSEARCH, Keyword.FROMMEMBER, RawableFactory.from("m"),
+          Keyword.BYRADIUS, RawableFactory.from(1d), GeoUnit.KM, Keyword.COUNT,
+          RawableFactory.from(10)));
     }
-    return values;
+
+    @Test
+    public void countWithAnyTrueAddsAny() {
+      GeoSearchParam params = GeoSearchParam.geoSearchParam().fromMember("m")
+          .byRadius(1, GeoUnit.KM).count(10, true);
+      CommandArguments args = new CommandArguments(Command.GEOSEARCH);
+      params.addParams(args);
+
+      // Expected: GEOSEARCH FROMMEMBER m BYRADIUS 1.0 km COUNT 10 ANY
+      assertThat(args,
+        hasArguments(Command.GEOSEARCH, Keyword.FROMMEMBER, RawableFactory.from("m"),
+          Keyword.BYRADIUS, RawableFactory.from(1d), GeoUnit.KM, Keyword.COUNT,
+          RawableFactory.from(10), Keyword.ANY));
+    }
   }
 }

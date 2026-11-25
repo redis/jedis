@@ -34,8 +34,9 @@ The most recent version of this library supports redis version
 [8.2](https://github.com/redis/redis/blob/8.2/00-RELEASENOTES),
 [8.4](https://github.com/redis/redis/blob/8.4/00-RELEASENOTES),
 [8.6](https://github.com/redis/redis/blob/8.6/00-RELEASENOTES),
-[8.8](https://github.com/redis/redis/blob/8.8/00-RELEASENOTES) and
-[8.10](https://github.com/redis/redis/blob/8.10/00-RELEASENOTES).
+[8.8](https://github.com/redis/redis/blob/8.8/00-RELEASENOTES),
+[8.10](https://github.com/redis/redis/blob/8.10/00-RELEASENOTES) and
+[8.12](https://github.com/redis/redis/blob/8.12/00-RELEASENOTES).
 
 The table below highlights version compatibility of the most-recent library versions with Redis and JDK versions. Compatibility means communication features, and Redis command capabilities.
 
@@ -58,7 +59,7 @@ To get started with Jedis, first add it as a dependency in your Java project. If
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>8.0.1</version>
+    <version>8.1.0</version>
 </dependency>
 ```
 

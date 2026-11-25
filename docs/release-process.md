@@ -10,7 +10,7 @@ when a draft is published.
 
 | Branch          | Hosts               | Example          |
 |-----------------|---------------------|------------------|
-| `master`        | next minor or major | `8.1.0-SNAPSHOT` |
+| `master`        | next minor or major | `8.2.0-SNAPSHOT` |
 | `MAJOR.x`       | `MAJOR.0.PATCH`     | `7.x`, `8.x`     |
 | `MAJOR.MINOR.x` | `MAJOR.MINOR.PATCH` | `7.5.x`, `8.1.x` |
 

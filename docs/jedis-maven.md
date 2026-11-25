@@ -6,7 +6,7 @@
 <dependency>
     <groupId>redis.clients</groupId>
     <artifactId>jedis</artifactId>
-    <version>8.0.1</version>
+    <version>8.1.0</version>
 </dependency>
 ```
 
@@ -34,7 +34,7 @@ and
     <dependency>
         <groupId>redis.clients</groupId>
         <artifactId>jedis</artifactId>
-        <version>8.1.0-SNAPSHOT</version>
+        <version>8.2.0-SNAPSHOT</version>
     </dependency>
 </dependencies>
 ```

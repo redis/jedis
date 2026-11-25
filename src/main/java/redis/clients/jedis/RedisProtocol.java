@@ -1,28 +1,20 @@
 package redis.clients.jedis;
 
-import redis.clients.jedis.exceptions.JedisProtocolNotSupportedException;
-
 /**
- * Enum representing the Redis protocol version to use when connecting to a Redis server.
- *
- * <p>Three modes are supported:
- * <ul>
- *   <li>{@code null} – combined with {@link JedisClientConfig#isAutoNegotiateProtocol()} the
- *       client either skips the {@code HELLO} command altogether (auto-negotiation disabled,
- *       legacy {@link Jedis} behaviour) or attempts {@code HELLO 3} with a graceful RESP2
- *       fallback (auto-negotiation enabled, the default for {@link UnifiedJedis}-based
- *       clients).</li>
- *   <li>{@link #RESP2} – sends a {@code HELLO 2} command requesting RESP2; the connection
- *       fails if the server rejects the request.</li>
- *   <li>{@link #RESP3} – sends a {@code HELLO 3} command requesting RESP3; the connection
- *       fails if the server rejects the request.</li>
- * </ul>
+ * RESP protocol versions supported by the client.
+ * <p>
+ * How a connection chooses its protocol depends on the configured
+ * {@linkplain JedisClientConfig#getRedisProtocol() protocol} and on
+ * {@linkplain JedisClientConfig#isAutoNegotiateProtocol() auto-negotiation}.
  */
 public enum RedisProtocol {
 
   RESP2("2"),
   RESP3("3");
 
+  /**
+   * The protocol the client assumes when the protocol is not enforced.
+   */
   public static final RedisProtocol REDIS_SERVER_DEFAULT_PROTO = RESP2;
 
   private final String version;
@@ -36,10 +28,10 @@ public enum RedisProtocol {
   }
 
   /**
-   * Returns the RedisProtocol enum value corresponding to the given protocol version number.
-   * @param proto the protocol version number (2 or 3)
-   * @return the corresponding RedisProtocol enum value
-   * @throws JedisProtocolNotSupportedException if the protocol version is not recognized
+   * Returns the protocol for the given version number.
+   * @param proto the protocol version number (2 or 3), may be {@code null}
+   * @return the matching protocol, or {@code null} if {@code proto} is {@code null}
+   * @throws IllegalArgumentException if the version is not recognized
    */
   public static RedisProtocol from(Long proto) {
     if (proto == null) return null;
@@ -48,6 +40,11 @@ public enum RedisProtocol {
     throw new IllegalArgumentException("Unknown protocol version: " + proto);
   }
 
+  /**
+   * Returns the given protocol, or {@link #REDIS_SERVER_DEFAULT_PROTO} if it is {@code null}.
+   * @param proto the protocol, may be {@code null}
+   * @return {@code proto}, or the server default
+   */
   public static RedisProtocol orServerDefault(RedisProtocol proto) {
     return (proto == null) ? REDIS_SERVER_DEFAULT_PROTO : proto;
   }

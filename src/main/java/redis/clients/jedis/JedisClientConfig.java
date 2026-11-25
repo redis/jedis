@@ -11,29 +11,73 @@ import redis.clients.jedis.search.SearchProtocol;
 
 public interface JedisClientConfig {
 
+  /**
+   * The protocol configured for the connection, or {@code null} (default) if none is configured.
+   * <p>
+   * Together with {@link #isAutoNegotiateProtocol()} it decides which protocol the connection uses.
+   * The supported configurations:
+   * </p>
+   * <table border="1">
+   * <caption>Protocol and auto-negotiation combinations</caption>
+   * <tr>
+   * <th>protocol</th>
+   * <th>autoNegotiateProtocol</th>
+   * <th>Semantics</th>
+   * <th>Description</th>
+   * </tr>
+   * <tr>
+   * <td>{@code RESP2}</td>
+   * <td>ignored</td>
+   * <td>Strict protocol</td>
+   * <td>Uses RESP2. The {@code HELLO} command is required to enforce it.</td>
+   * </tr>
+   * <tr>
+   * <td>{@code RESP3}</td>
+   * <td>ignored</td>
+   * <td>Strict protocol</td>
+   * <td>Uses RESP3. The {@code HELLO} command is required to enforce it.</td>
+   * </tr>
+   * <tr>
+   * <td>{@code null}</td>
+   * <td>{@code true}</td>
+   * <td>Negotiated protocol</td>
+   * <td>Tries RESP3, then RESP2. If the protocol cannot be enforced, falls back to the server
+   * default (assumes RESP2).</td>
+   * </tr>
+   * <tr>
+   * <td>{@code null}</td>
+   * <td>{@code false}</td>
+   * <td>Server default protocol</td>
+   * <td>The protocol is not enforced and the client assumes RESP2.</td>
+   * </tr>
+   * </table>
+   * @return the configured protocol, or {@code null}
+   */
   default RedisProtocol getRedisProtocol() {
     return null;
   }
 
   /**
-   * Whether the client should auto-negotiate the highest RESP protocol available with the server
-   * when no protocol is explicitly requested.
+   * Whether the connection negotiates the protocol with the server. This setting is ignored when a
+   * strict protocol is configured with {@link #getRedisProtocol()}.
    * <p>
-   * When this returns {@code true} and {@link #getRedisProtocol()} is {@code null}, the client
-   * sends {@code HELLO 3} on connect and gracefully falls back to RESP2 if the server does not
-   * support RESP3. When {@code false} and the protocol is {@code null}, the client preserves the
-   * legacy behaviour of skipping {@code HELLO} entirely and assuming RESP2 on the wire.
+   * When {@code true} (default), the connection negotiates RESP3, then RESP2. If the protocol
+   * cannot be negotiated (for example, the server does not support the {@code HELLO} command), it
+   * falls back to the server default and assumes RESP2.
    * </p>
    * <p>
-   * When {@link #getRedisProtocol()} is non-{@code null}, this flag is ignored — the requested
-   * protocol is enforced strictly.
+   * When {@code false} and no strict protocol is configured, the connection uses the server
+   * default: the protocol is not enforced and the client assumes RESP2.
    * </p>
    * <p>
-   * The legacy {@link Jedis} class does not support RESP3 wire format, so it ignores this flag and
-   * emits a warning when callers leave it enabled.
+   * See {@link #getRedisProtocol()} for the supported configurations.
    * </p>
-   * @return {@code true} to auto-negotiate the protocol (default), {@code false} to preserve legacy
-   *         {@code HELLO}-less behaviour
+   * <p>
+   * The legacy {@link Jedis} client does not support auto-negotiation: when this setting is
+   * {@code true}, it uses the server default instead and logs a warning.
+   * </p>
+   * @return {@code true} to negotiate the protocol (default), {@code false} to use the server
+   *         default
    */
   default boolean isAutoNegotiateProtocol() {
     return true;

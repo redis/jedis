@@ -46,7 +46,7 @@ Jedis 8.0.0 is a major release that finishes the client-class consolidation star
 The negotiation logic:
 
 1. When `JedisClientConfig.getRedisProtocol() == null` and `isAutoNegotiateProtocol() == true` (the new default), the client sends `HELLO 3` on connect and gracefully falls back to RESP2 if the server rejects it.
-2. When `getRedisProtocol()` is `RESP2` or `RESP3`, that version is enforced strictly — the connection fails if the server rejects it.
+2. When `getRedisProtocol()` is `RESP2` or `RESP3`, that version is selected with `HELLO` and enforced strictly — the connection fails if the server rejects it or does not support the `HELLO` command.
 3. When `getRedisProtocol() == null` and `isAutoNegotiateProtocol() == false`, the legacy "no HELLO" behavior is preserved (RESP2 assumed on the wire).
 
 The legacy `Jedis` class doesn't fully support RESP3 protocol format and therefore ignores the auto-negotiation flag; it emits a warning if it is left enabled. To suppress the warning in `Jedis`-based code paths, use the new `serverDefaultProtocol()` shortcut:
@@ -80,6 +80,10 @@ If your application relied on RESP2 reply shapes for commands whose RESP3 shape 
 JedisClientConfig config = DefaultJedisClientConfig.builder().resp2().build();
 RedisClient client = RedisClient.builder().clientConfig(config).build();
 ```
+
+`resp2()` selects RESP2 with `HELLO 2`, so the server must support `HELLO`. For a server without it (Redis before 6.0, or a server or proxy that does not provide the command), use `serverDefaultProtocol()` instead: it sends no `HELLO` and assumes RESP2.
+
+See [Protocol Selection](../protocol-selection.md) for all combinations of `protocol` and `autoNegotiateProtocol`.
 
 #### Other RESP3-related fixes folded into this change
 

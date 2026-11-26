@@ -218,8 +218,9 @@ runs:
 
     - name: Upload test results to Codecov (unit + IT)
       if: inputs.codecov_token != '' && !cancelled() && (github.event_name == 'schedule' || github.event_name == 'push' || github.event_name == 'workflow_dispatch')
-      uses: codecov/test-results-action@v1
+      uses: codecov/codecov-action@v5
       with:
+        report_type: test_results
         fail_ci_if_error: false
         files: ./target/surefire-reports/TEST*,./target/failsafe-reports/TEST*
         flags: test-results-docker-${{ steps.args.outputs.redis_version_label }}

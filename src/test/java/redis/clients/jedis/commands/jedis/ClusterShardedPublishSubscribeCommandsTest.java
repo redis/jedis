@@ -5,23 +5,45 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 import io.redis.test.annotations.SinceRedisVersion;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.Tag;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import redis.clients.jedis.BinaryJedisShardedPubSub;
 import redis.clients.jedis.Connection;
 import redis.clients.jedis.Jedis;
 import redis.clients.jedis.JedisShardedPubSub;
+import redis.clients.jedis.PubSubConnectionCleanupTestSupport;
+import redis.clients.jedis.PubSubConnectionCleanupTestSupport.ExitMode;
+import redis.clients.jedis.PubSubConnectionCleanupTestSupport.SubscriptionType;
+import redis.clients.jedis.RedisProtocol;
 import redis.clients.jedis.util.JedisClusterCRC16;
 import redis.clients.jedis.util.SafeEncoder;
 
 @SinceRedisVersion(value = "7.0.0", message = "Sharded Pub/Sub")
 @Tag("integration")
 public class ClusterShardedPublishSubscribeCommandsTest extends ClusterJedisCommandsTestBase {
+
+  private static Stream<Arguments> shardedConnectionCleanupCases() {
+    return Stream.of(SubscriptionType.SSUBSCRIBE, SubscriptionType.LEGACY_SSUBSCRIBE)
+        .flatMap(type -> Stream.of(RedisProtocol.RESP2, RedisProtocol.RESP3).flatMap(protocol ->
+            Arrays.stream(ExitMode.values()).map(exit -> Arguments.of(type, protocol, exit))));
+  }
+
+  @ParameterizedTest(name = "{0} {1} {2}")
+  @MethodSource("shardedConnectionCleanupCases")
+  void shardedConnectionCleanup(SubscriptionType type, RedisProtocol protocol, ExitMode exit)
+      throws Exception {
+    PubSubConnectionCleanupTestSupport.assertPooledCleanup(endpoint, type, protocol, exit);
+  }
 
   private void publishOne(final String channel, final String message) {
     Thread t = new Thread(() -> cluster.spublish(channel, message));

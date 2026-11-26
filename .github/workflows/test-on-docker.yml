@@ -30,6 +30,9 @@ on:
         description: 'Custom client libs test image tag to use instead of redis_version'
         required: false
         default: ''
+env:
+  # Fork pull requests and Dependabot runs do not receive the Tracebit secret.
+  TRACEBIT_ENABLED: ${{ secrets.SECURITY_API_TOKEN != '' }}
 jobs:
 
   build:
@@ -48,6 +51,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v6
 
+      - name: Configure credentials
+        if: env.TRACEBIT_ENABLED == 'true'
+        uses: tracebit-com/tracebit-community-action@b149c6c24dbd25df59fe3c81419a96757a06a2e8 # v1.4.0
+        with:
+          customer-id: sha5oz2y
+          api-token: ${{ secrets.SECURITY_API_TOKEN }}
+          profile: administrator
+          profile-region: us-east-1
+          async: true
+
       - uses: ./.github/actions/run-tests
         with:
           redis_version: ${{ matrix.redis_version }}
@@ -63,6 +76,16 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v6
+
+      - name: Configure credentials
+        if: env.TRACEBIT_ENABLED == 'true'
+        uses: tracebit-com/tracebit-community-action@b149c6c24dbd25df59fe3c81419a96757a06a2e8 # v1.4.0
+        with:
+          customer-id: sha5oz2y
+          api-token: ${{ secrets.SECURITY_API_TOKEN }}
+          profile: administrator
+          profile-region: us-east-1
+          async: true
 
       - uses: ./.github/actions/run-tests
         with:

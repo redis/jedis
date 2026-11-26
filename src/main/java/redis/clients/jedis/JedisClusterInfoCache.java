@@ -216,7 +216,7 @@ public class JedisClusterInfoCache {
             continue;
           }
 
-          HostAndPort targetNode = generateHostAndPort(hostInfos);
+          HostAndPort targetNode = generateHostAndPort(hostInfos, jedis);
           setupNodeIfNotExist(targetNode);
           if (i == MASTER_NODE_INDEX) {
             primaryNodes.put(getNodeKey(targetNode), getNode(targetNode));
@@ -331,7 +331,7 @@ public class JedisClusterInfoCache {
             continue;
           }
 
-          HostAndPort targetNode = generateHostAndPort(hostInfos);
+          HostAndPort targetNode = generateHostAndPort(hostInfos, jedis);
           hostAndPortKeys.add(getNodeKey(targetNode));
           setupNodeIfNotExist(targetNode);
           if (i == MASTER_NODE_INDEX) {
@@ -364,8 +364,12 @@ public class JedisClusterInfoCache {
     }
   }
 
-  private HostAndPort generateHostAndPort(List<Object> hostInfos) {
-    String host = SafeEncoder.encode((byte[]) hostInfos.get(0));
+  private HostAndPort generateHostAndPort(List<Object> hostInfos, Connection jedis) {
+    byte[] rawHost = (byte[]) hostInfos.get(0);
+    // NULL (unknown-endpoint) or "" (node does not know its own IP yet) means the endpoint that
+    // answered CLUSTER SLOTS. Resolving either as-is would connect to the client's own loopback.
+    String host = rawHost == null || rawHost.length == 0 ? jedis.getHostAndPort().getHost()
+        : SafeEncoder.encode(rawHost);
     int port = ((Long) hostInfos.get(1)).intValue();
     return new HostAndPort(host, port);
   }

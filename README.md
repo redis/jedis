@@ -6,6 +6,7 @@
 [![MIT licensed](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/redis/jedis/blob/master/LICENSE)
 [![codecov](https://codecov.io/gh/redis/jedis/branch/master/graph/badge.svg?token=pAstxAAjYo)](https://codecov.io/gh/redis/jedis)
 [![Discord](https://img.shields.io/discord/697882427875393627?style=flat-square)](https://discord.gg/redis)
+[![Protected by Tracebit Community Edition](.github/assets/tracebit-badge.svg)](https://community.tracebit.com/supplychainattacks)
 
 ## What is Jedis?
 

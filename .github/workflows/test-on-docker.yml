@@ -30,6 +30,10 @@ on:
         description: 'Custom client libs test image tag to use instead of redis_version'
         required: false
         default: ''
+
+permissions:
+  contents: read
+
 jobs:
 
   build:

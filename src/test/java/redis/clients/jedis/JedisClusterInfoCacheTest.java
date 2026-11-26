@@ -6,6 +6,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import redis.clients.jedis.csc.Cache;
+import redis.clients.jedis.util.SafeEncoder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -207,7 +208,7 @@ public class JedisClusterInfoCacheTest {
     // a node that has not learned its own IP yet (e.g. single-node cluster) reports ""
     when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
         .thenReturn(Collections.singletonList(Arrays.asList(0L, 16383L,
-          Arrays.asList(new byte[0], 7000L, "id".getBytes()))));
+          Arrays.asList(new byte[0], 7000L, SafeEncoder.encode("id")))));
 
     cache.discoverClusterNodesAndSlots(mockConnection);
 
@@ -225,7 +226,7 @@ public class JedisClusterInfoCacheTest {
     // cluster-preferred-endpoint-type unknown-endpoint reports NULL
     when(mockConnection.executeCommand(argThat(commandWithArgs(CLUSTER, "SLOTS"))))
         .thenReturn(Collections.singletonList(Arrays.asList(0L, 16383L,
-          Arrays.asList(null, 7001L, "id".getBytes()))));
+          Arrays.asList(null, 7001L, SafeEncoder.encode("id")))));
 
     cache.renewClusterSlots(mockConnection);
 

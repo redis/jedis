@@ -164,6 +164,23 @@ public class ConnectionMockTest {
     }
   }
 
+  @Test
+  public void hostAndPortReflectsConnectedTargetAfterFactoryRepoint() {
+    HostAndPort connected = new HostAndPort("localhost", mockServer.getPort());
+    DefaultJedisSocketFactory socketFactory = new DefaultJedisSocketFactory(connected);
+
+    try (Connection conn = new Connection(socketFactory)) {
+      conn.connect();
+
+      // JedisSentinelPool re-points its shared factory on +switch-master while connections to the
+      // previous master are still checked out
+      socketFactory.updateHostAndPort(new HostAndPort("localhost", mockServer.getPort() + 1));
+
+      assertTrue(conn.isConnected());
+      assertEquals(connected, conn.getHostAndPort());
+    }
+  }
+
   @Nested
   class MaintenanceEventHandling extends AbstractMaintenanceEventHandlingTest {
 

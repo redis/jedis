@@ -61,7 +61,8 @@ class PeriodicFailbackTest {
         provider.getDatabase(endpoint2).setDisabled(true);
 
         // Force failover to database1 since database2 is disabled
-        provider.switchToHealthyDatabase(SwitchReason.FORCED, provider.getDatabase(endpoint2));
+        MultiDbConnectionProviderHelper.switchToHealthyDatabase(provider, SwitchReason.FORCED,
+          provider.getDatabase(endpoint2));
 
         // Manually trigger periodic check
         MultiDbConnectionProviderHelper.periodicFailbackCheck(provider);

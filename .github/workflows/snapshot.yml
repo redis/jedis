@@ -10,6 +10,9 @@ on:
       - '[0-9]+.[0-9]+.x'
   workflow_dispatch:
 
+permissions:
+  contents: read
+
 env:
   # Fork pull requests and Dependabot runs do not receive the Tracebit secret.
   TRACEBIT_ENABLED: ${{ secrets.SECURITY_API_TOKEN != '' }}

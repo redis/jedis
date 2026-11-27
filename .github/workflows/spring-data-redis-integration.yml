@@ -18,6 +18,9 @@ on:
         required: false
         default: '8'
 
+permissions:
+  contents: read
+
 env:
   # Fork pull requests and Dependabot runs do not receive the Tracebit secret.
   TRACEBIT_ENABLED: ${{ secrets.SECURITY_API_TOKEN != '' }}
